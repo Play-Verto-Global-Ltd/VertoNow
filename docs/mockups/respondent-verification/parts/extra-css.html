@@ -1,0 +1,145 @@
+<style>
+/* ── additions for this deck ────────────────────────────────────────────────
+   The sibling deck's .join-card is the DESIGN the account work started from —
+   aqua-tinted, one field, no password. What shipped is different and this deck
+   has to draw what shipped, so the production card gets its own class, copied
+   value-for-value out of app/assets/tailwind/application.css (.join-card,
+   .join-eyebrow, .join-title, .join-body, .join-input, .join-btn, .join-google,
+   .join-divider). Anything here that also exists in the app is a copy, and the
+   comment says which rule it came from. */
+.pcard{width:100%;max-width:340px;background:#272D4A;border:1px solid rgba(1,234,203,.45);
+  border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:9px;text-align:left;
+  box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.pcard .peb{font-family:var(--alata);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#01EACB}
+.pcard .ptt{font-family:var(--alata);font-size:16px;color:#fff;line-height:1.25}
+.pcard .pbd{font-family:var(--abz);font-size:12.5px;line-height:1.45;color:rgba(255,255,255,.85)}
+.pcard .pfine{font-family:var(--abz);font-size:10.5px;line-height:1.45;color:rgba(255,255,255,.75)}
+.pcard .phint{font-family:var(--abz);font-size:10.5px;line-height:1.45;color:rgba(255,255,255,.75)}
+/* .join-btn — teal, 12px radius, Alata */
+.pbtn{font-family:var(--alata);font-size:13px;padding:9px 16px;border-radius:12px;
+  color:#1C2034;background:#01EACB;text-align:center}
+/* .join-google — white, Google's own grey, the one control that ignores the palette */
+.pgoogle{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 14px;
+  border-radius:12px;background:#fff;border:1px solid rgba(0,0,0,.12);color:#1F1F1F;
+  font-family:var(--alata);font-size:13px;line-height:1.2}
+.pgoogle svg{width:16px;height:16px;flex:none}
+/* .join-divider — a rule either side, so it reads as a fork */
+.pdiv{display:flex;align-items:center;gap:9px;font-family:var(--abz);font-size:10px;
+  text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45)}
+.pdiv:before,.pdiv:after{content:"";flex:1;height:1px;background:rgba(255,255,255,.14)}
+/* .join-input — 1rem so iOS does not zoom, dark fill, 45% white border */
+.pinp{font-family:var(--abz);font-size:12.5px;padding:9px 12px;border-radius:12px;color:rgba(255,255,255,.55);
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.45)}
+.pinp.filled{color:#fff}
+.pinp.pw{display:flex;justify-content:space-between;align-items:center}
+.pinp.pw span.tog{font-size:10.5px;color:rgba(255,255,255,.8)}
+
+/* The flow strips: a row of small screens with numbered taps between them. */
+.flow{display:flex;align-items:flex-start;gap:0;flex-wrap:nowrap}
+.step{position:relative;width:250px;flex:none}
+.step + .step{margin-left:46px}
+.step .scap{font-family:var(--alata);font-size:11px;letter-spacing:.06em;color:var(--ink2);
+  margin:0 0 7px 2px;display:flex;align-items:center;gap:7px}
+.step .scap .url{font-family:var(--sys);font-size:10px;color:var(--ink3);letter-spacing:0}
+.mini{width:250px;min-height:330px;border-radius:22px;background:#12162B;border:1px solid rgba(255,255,255,.1);
+  padding:16px 14px;color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.mini.light{background:#EDEFF4;border-color:var(--line);color:var(--ink)}
+.mini .mtop{font-family:var(--abz);font-size:10px;color:rgba(255,255,255,.45);margin-bottom:10px}
+.mini .mmark{display:flex;justify-content:center;margin-bottom:14px}
+.mini .mmark svg{width:84px;height:16px}
+.mini .mh1{font-family:var(--alata);font-size:15px;line-height:1.25;margin:0 0 7px;text-align:center}
+.mini .msub{font-family:var(--abz);font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.8);
+  margin:0 0 13px;text-align:center}
+.mini .mfine{font-family:var(--abz);font-size:10px;line-height:1.45;color:rgba(255,255,255,.55);
+  margin:11px 0 0;text-align:center}
+/* The tap marker that sits between two screens. */
+.tap{position:absolute;top:150px;right:-38px;width:30px;display:flex;flex-direction:column;
+  align-items:center;gap:4px;z-index:3}
+.tap .tn{width:23px;height:23px;border-radius:50%;background:var(--aqua);color:#0B2F2A;
+  font-family:var(--alata);font-size:11.5px;display:flex;align-items:center;justify-content:center}
+.tap .tl{font-family:var(--sys);font-size:9px;color:var(--ink3);text-align:center;white-space:nowrap;
+  transform:translateX(-1px)}
+.tap.warn .tn{background:var(--pink);color:#fff}
+.tap:after{content:"";position:absolute;top:11px;left:-8px;width:46px;height:1px;
+  background:var(--line);z-index:-1}
+/* The tally under a flow. */
+.tally{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+.tally .pill{font-family:var(--alata);font-size:11px;letter-spacing:.04em;padding:5px 11px;border-radius:999px;
+  background:var(--canvas);border:1px solid var(--line);color:var(--ink2)}
+.tally .pill b{color:var(--ink)}
+.tally .pill.bad{background:rgba(216,0,39,.07);border-color:rgba(216,0,39,.3);color:#8C1023}
+.tally .pill.good{background:rgba(1,126,110,.09);border-color:rgba(1,126,110,.3);color:var(--aqua-ink)}
+.flow-title{font-family:var(--alata);font-size:13px;letter-spacing:.02em;color:var(--ink);
+  margin:0 0 3px;display:flex;align-items:center;gap:8px}
+.flow-title .tag{font-family:var(--sys);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border-radius:5px;background:var(--canvas);border:1px solid var(--line);color:var(--ink3)}
+.flow-wrap + .flow-wrap{margin-top:34px;padding-top:30px;border-top:1px dashed var(--line)}
+.flow-note{font-family:var(--sys);font-size:12px;color:var(--ink3);margin:1px 0 14px;max-width:760px;line-height:1.5}
+
+/* before/after column captions */
+.ba{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap}
+.ba .col{position:relative}
+.ba .lab{font-family:var(--alata);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  margin:0 0 8px;display:inline-block;padding:3px 9px;border-radius:6px}
+.ba .lab.now{background:var(--canvas);border:1px solid var(--line);color:var(--ink3)}
+.ba .lab.prop{background:rgba(1,234,203,.14);border:1px solid rgba(1,126,110,.35);color:var(--aqua-ink)}
+
+/* the /you banner being proposed */
+.ybanner{width:330px;border-radius:14px;padding:12px 13px;display:flex;gap:10px;align-items:flex-start;
+  background:rgba(252,211,77,.12);border:1px solid rgba(252,211,77,.42)}
+.ybanner .ic{width:19px;height:19px;border-radius:50%;background:#FCD34D;color:#4A3505;flex:none;
+  font-family:var(--alata);font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.ybanner .bt{font-family:var(--alata);font-size:12.5px;color:#fff;margin:0 0 3px}
+.ybanner .bb{font-family:var(--abz);font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.82);margin:0}
+.ybanner .ba-link{font-family:var(--abz);font-size:11.5px;color:#FCD34D;text-decoration:underline;
+  display:inline-block;margin-top:5px}
+/* the account row's tag, teal when verified and amber when not */
+.ytag{display:inline-flex;align-items:center;gap:4px;font-family:var(--alata);font-size:10px;
+  padding:2px 7px;border-radius:999px;letter-spacing:.03em}
+.ytag.ok{background:rgba(1,234,203,.16);color:#01EACB}
+.ytag.no{background:rgba(252,211,77,.16);color:#FCD34D}
+.yrow{width:330px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.2);border-radius:12px;
+  padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-family:var(--abz);font-size:12px;color:#fff}
+
+/* estimate table — .spec table with a tighter first column */
+.est td:first-child,.est th:first-child{width:38%}
+.est td.num{font-family:var(--alata);white-space:nowrap;font-size:13px}
+.tot td{background:var(--canvas);font-weight:normal}
+.tot td b{font-family:var(--alata)}
+/* option cards in the spec */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:14px 0 4px}
+.opt{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:var(--sheet)}
+.opt.pick{border-color:rgba(1,126,110,.5);background:rgba(1,234,203,.05)}
+.opt h4{font-family:var(--alata);font-size:13px;margin:0 0 6px;display:flex;align-items:center;
+  justify-content:space-between;gap:8px}
+.opt h4 .k{font-family:var(--sys);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink3);border:1px solid var(--line);border-radius:5px;padding:2px 6px;white-space:nowrap}
+.opt.pick h4 .k{color:var(--aqua-ink);border-color:rgba(1,126,110,.4)}
+.opt p{font-size:12.5px;line-height:1.5;color:var(--ink2);margin:0 0 7px}
+.opt .v{font-size:12px;color:var(--ink3);margin:0}
+.opt .v b{color:var(--ink2)}
+@media print{
+  .flow{flex-wrap:wrap}
+  .step + .step{margin-left:46px}
+  .flow-wrap + .flow-wrap{break-inside:avoid}
+  .opt{break-inside:avoid}
+}
+</style>
+<style>
+/* The sibling deck puts a spec item's body straight after its <b> title; this
+   one uses paragraphs, so they need the tighter rhythm the grid cell expects. */
+.spec ol.items li p{margin:0 0 7px}
+.spec ol.items li p:last-child{margin-bottom:0}
+</style>
+<style>
+/* Board D carries four columns rather than the usual three, so they are sized
+   to fit 1,352px of board rather than inheriting .land's 330px. */
+#board-b .state-col,#board-d .state-col{width:300px}
+#board-b .land,#board-d .land,#board-d .yrow,#board-d .ybanner{width:auto}
+#board-b .pcard,#board-d .pcard{max-width:none;width:auto}
+#board-b .legend,#board-d .legend{max-width:300px}
+.arow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:6px 0;
+  font-family:var(--abz);font-size:11.5px;color:rgba(255,255,255,.78)}
+.arow b{font-family:var(--alata);font-size:13px}
+</style>

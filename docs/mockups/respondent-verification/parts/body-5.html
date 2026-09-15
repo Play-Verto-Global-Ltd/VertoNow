@@ -1,0 +1,157 @@
+<!-- ═══════════════════════════════════════ SPEC ═════════════════════════════ -->
+<section class="spec" id="spec">
+  <h2>Spec</h2>
+  <p class="lead">What each board implies in code, what it costs, and the things this deck deliberately does not do. Everything below was read out of the tree at <code>817d3a9</code> (14 Sep 19:31); line references are to that commit.</p>
+
+  <ol class="items">
+
+    <li><span class="n">1</span><div><b>The token, and why there is no migration.</b>
+      <p><code>Player</code> already carries <code>email_verified_at</code> and an idempotent <code>verify_email!</code> that only writes when the column is nil. What it lacks is a token purpose and a send. Add <code>generates_token_for :email_confirmation, expires_in: 7.days { email_address }</code>, mirroring <code>User</code> line-for-line — keyed on the address, so that changing the address invalidates any outstanding link, which is the property that makes a stale token harmless.</p>
+      <p><b>7 days, not the 20 minutes a sign-in link gets.</b> The two are different kinds of thing: a <code>PlayerSignInLink</code> is a bearer credential stored as a digest in its own table, and is sized like one. This token grants nothing — spending it sets a timestamp — so it is sized for how long a real inbox takes to get read. <b>No migration, no new table, no schema change.</b></p>
+      <p><b>One document has to move with it.</b> <code>docs/DATA_RETENTION.md</code> states as property 4 that "every credential is single-use, a digest, or somebody else's", and enumerates the three. A <code>generates_token_for</code> token is <em>none</em> of them — it is reusable until it expires, never stored, and ours. That is the right trade for a token that grants nothing, but the property as written becomes false and has to be rewritten rather than quietly outgrown.</p></div></li>
+
+    <li><span class="n">2</span><div><b>The gate already exists and is already firing.</b>
+      <p>This is the fact that makes the whole change small. <code>PlayerAudience.for_survey</code> has filtered on <code>where.not(email_verified_at: nil)</code> since it was written, and <code>deliverable?</code> applies the same rule per-send so nothing leaks past the scope. Nothing needs building to <em>enforce</em> verification. The gate is correct, it is live, and it is silently excluding every password-signup respondent in the database.</p>
+      <p>So §1 is not "add a gate". It is "give the people already behind the gate a way through it".</p></div></li>
+
+    <li><span class="n">3</span><div><b>Why nothing else gets gated.</b>
+      <p>The creator gate sits on <b>publishing</b> because an unproven creator can collect other people's birth dates and locations under an address its owner never consented to. The respondent case has no equivalent: an unproven respondent holds only their own answers. The only thing their address is evidence <em>for</em> is whether we may write to it, so that is the only thing it gates.</p>
+      <p>Claims, results, the wallet, comparison, the account itself — all stay open. A gate on any of them would cost conversion on the exact card that exists to win it, and would protect nothing. <b>CLAUDE.md's note that SMTP is optional in this deployment is the second reason</b>: a gate on anything load-bearing would mean a misconfigured mail server locking respondents out of their own answers.</p></div></li>
+
+    <li><span class="n">4</span><div><b>The resend, and not building an oracle.</b>
+      <p>The resend lives on <code>/you</code> and <code>/you/account</code>, behind a signed-in player session, and takes <b>no address parameter</b> — it can only ever mail the account you are already inside. That is what keeps it from being either an enumeration oracle or a mail-bomb button, and it is a materially different threat model from <code>PlayerController#join</code>, which accepts an address from an anonymous caller.</p>
+      <p>Rate-limited at 5 per 10 minutes, matching the creator's. <b>The confirm landing page carries no resend</b> and echoes no address beyond what the token resolves.</p></div></li>
+
+    <li><span class="n">5</span><div><b>Copy the respondent mailer, not the creator's.</b>
+      <p><code>PlayerSignInMailer</code> is the file to copy, and specifically <em>not</em> <code>EmailConfirmationsMailer</code> — the creator's is older and hardcodes English with no <code>I18n.with_locale</code>. The respondent one already carries the two things this mail needs:</p>
+      <p><code>I18n.with_locale(SupportedLocales.coerce(player.preferred_locale))</code>, because a mailer runs in a Solid Queue job with no request and therefore no <code>Current.locale</code> — without it the mail renders in whatever locale the worker was last left in. And <code>headers["X-Entity-Ref-ID"] = SecureRandom.uuid</code>, so a resend does not stack under the original in a mail client and get missed.</p>
+      <p>Subject names the <b>organisation</b>. HTML and text parts both. Delivery wrapped the way <code>EmailConfirmationsController.deliver</code> wraps it — <code>rescue</code>, report, return nil — because the account has already been created and persisted by the time this runs, and a mail failure must never turn a completed signup into an error.</p>
+      <p><b>Two calls a builder will hit, settled here.</b> <em>Honour <code>EmailSuppression</code>.</em> The sibling transactional mail does not check it, but that table carries hard bounces and complaints — sending a confirmation to an address that has already bounced achieves nothing and spends sender reputation to do it. Skip the send, leave the account unverified, and let the banner say so. <em>No welcome mail on confirmation.</em> The creator flow sends one; a respondent has had the account since the end of the Verto and the landing page already says what changed, so a second mail would be a notification about a notification.</p>
+      <p><b>And it must degrade when SMTP is unconfigured</b>, which this deployment allows. The pattern already exists: <code>MailConfigCheck.deliverable?</code> (<code>lib/</code>, not <code>app/lib/</code>), used at <code>PlayerSessionsController</code> — when mail cannot go out, do not mint the token and do not promise the mail. The card's new sentence has to be conditional on the same check, or it promises an email that a misconfigured deploy will never send.</p>
+      <p><b>And it must carry <code>?locale=</code>, which no emailed link does today.</b> <code>#join_google</code> already puts it in the URL on purpose — "where <code>resolve_locale</code>'s <code>?locale=</code> already means the pages in between are drawn in it too". <code>#join</code> and <code>PlayerSignInMailer</code> do not. So a mail rendered in the respondent's language currently opens a page in the browser's, and a verification mail that copies the mailer verbatim inherits that. Put the locale in the link.</p>
+      <p><b>With a trap in the testing of it.</b> <code>deliverable?</code> opens <code>return true unless ActionMailer::Base.delivery_method == :smtp</code>, and delivery_method is <code>:test</code> in test and not <code>:smtp</code> in development — so it is unconditionally true in both, and the pessimistic branch is unreachable locally without stubbing. <code>test/integration/player_password_sign_in_test.rb</code> already stubs it exactly for this, and the new copy's test copies that.</p></div></li>
+
+    <li><span class="n">6</span><div><b>The Google door: what is constraint and what is choice.</b>
+      <p><b>Constraint (real, not negotiable cheaply).</b> OmniAuth's request phase is a CSRF-protected POST — <code>allowed_request_methods = [:post]</code> plus <code>request_validation_phase = TokenVerifier.new</code> — and Rails 8.1 binds the CSRF token to the session. The card cannot produce a token that validates, for a reason stronger than the controller's own comment gives: <code>cached_play_page</code> caches the <code>/play/:token</code> HTML as <b>shared bytes</b> keyed on link + deck version + locale, so for most respondents that page's token was minted during a stranger's request. The Service Worker cache is a second, independent reason. A direct POST would fail for nearly everyone.</p>
+      <p><b>Choice (reversible).</b> That the interstitial does not auto-submit is a separate decision, stated as such in the controller: a Back-button trap, and a dislike of a GET that starts a redirect when a scanner touches it. The scanner half is weak here by the controller's own later admission — "nothing is spent here", and a test asserts it. <b>The Back-button trap is real</b> and is what the auto-submit has to guard against.</p>
+      <p><b>And there is a third thing, which is neither constraint nor architecture: the two buttons are the same string.</b> <code>_join_block.html.erb</code> and <code>player_joins/show.html.erb</code> both render <code>t("auth.social_continue")</code>, so the respondent presses "Continue with Google" and arrives at a page whose button is also "Continue with Google". The step reads as a no-op because it is labelled as one.</p>
+      <p>Recommended, in this order: <b>(1) give the second button its own key</b> — one new string, one view line, no controller and no test rewrite, and it addresses the complaint as reported. <b>(2) Then, if the step still reads as friction, auto-submit</b>, guarded against <code>back_forward</code> navigations with the button left in place for that case and for no-JS. Doing it in that order means the risky half is only paid for if the cheap half does not settle it.</p>
+      <p><b>One correction worth recording, because it narrows option 3.</b> "The handoff response cannot carry a live CSRF token" is true of today's wiring, not of what is possible: a token minted on an earlier request in the <em>same browser</em> does validate on a later POST to <code>/auth/google_player</code>. What blocks it is one line — <code>:join_google</code> sitting in the <code>null_session</code> list, which nulls the session and drops the <code>Set-Cookie</code>. So a fourth path exists: lift <code>join_google</code> out of <code>null_session</code>, let it establish a session and hand back a live token, and let the card post straight out. It is cheaper than rewriting the validation phase — but it fights the two reasons that action is cookie-free (the page is service-worker cached and is routinely framed by a third party, where a <code>SameSite=Lax</code> cookie is not sent), so it is a narrowing of option 3, not an escape from it.</p>
+      <p>Deleting the page (option 3 on board E) means hand-writing a replacement for a global security hook that also guards creator sign-in. It is reachable and it is not first. Note also a fourth job the page does that its own header does not mention: <code>return redirect_to you_path if player_signed_in?</code> — which is where P3's data loss lives, and which anything removing the page would have to re-home.</p></div></li>
+
+    <li><span class="n">7</span><div><b>The 26-locale obligation, and what is already paid for.</b>
+      <p>New UI strings go in <code>en.yml</code> plus the other 24 hand-written files, then <code>bin/rails i18n:en_us</code> regenerates <code>en-US.yml</code>; <code>LocaleEnUsTest</code> fails if it is stale. Put the new keys under <code>you.*</code>, which is already covered by <code>locale_structure_parity_test.rb</code>, rather than inventing a namespace. Anything JavaScript reads has to go through <code>window.I18N</code> — <code>js:</code> plus the curated slice in <code>_i18n_js.html.erb</code> — or it renders as a raw dotted key.</p>
+      <p><b>Some of it is already paid for, but check before counting on it.</b> Three keys under <code>js.player.*</code> survive from the emailed-link era and are translated in all 26 files: <code>join_sent_title</code> ("Check your inbox"), <code>join_sent_body</code> and <code>join_sent_again</code> ("Send it again"). Two of the three reuse verbatim — the title and the resend label are exactly the words a confirmation banner wants. <b>The third does not</b>: <code>join_sent_body</code> reads "We've sent a link to %{email}. It signs you in and keeps this Verto — no password needed", which describes the sign-in link this flow no longer sends. It needs new words in all 26, so count it as new. None of the three is referenced in the JS any more, so they are dead keys being revived rather than shared.</p>
+      <p>For a session with no <code>ANTHROPIC_API_KEY</code>, <code>bin/rails i18n:translate</code> takes <code>PRINT=</code> / <code>TRANSLATIONS=</code>. Expect <b>+N lines, 0 deletions</b> per file; a deletion means stop.</p>
+      <p><b>One thing that has bitten before:</b> a new mailer namespace has to be added to <code>NAMESPACES</code> in <code>test/lib/locale_respondent_parity_test.rb</code> <em>in the same commit that creates it</em>. That file's own header records that forgetting it hid an English-only feature for three pushes.</p></div></li>
+
+    <li><span class="n">8</span><div><b>The respondents already in this state.</b>
+      <p>One query before shipping, because it decides whether a second piece of work exists: <code>Player.where(email_verified_at: nil).where.not(password_digest: nil).count</code>. Every one of those is an account that was promised mail and cannot receive it.</p>
+      <p>If it is small, do nothing — the banner on <code>/you</code> catches them the next time they visit. If it is large, a one-off mail-out is a separate, gated change with its own rate shaping, <b>not something to bolt onto this push</b>: sending to thousands of addresses that have never received mail from us is exactly how a domain lands on a suppression list.</p></div></li>
+
+    <li><span class="n">9</span><div><b>What this deck does not do.</b>
+      <p><b>One thing it does unlock, and the code says so itself.</b> <code>/you/account</code> refuses to let a respondent change their address, and gives the reason in as many words: doing so "would need the same proof-of-inbox the sign-in link gives — which is the thing this page cannot send". After §1 it can. The email-change flow is not in this deck and is not costed in the table, but it stops being blocked, and that comment becomes false and has to be rewritten with the rest.</p>
+      <p>It does not gate anything (§3). It does not touch the Service Worker, so no <code>CACHE_VERSION</code> bump is needed — the rule is that content and markup reach respondents on the next ordinary online visit, and only a change to the worker's <em>own behaviour</em> needs the bump. It does not change <code>cached_play_page</code>. It does not build the creator-facing "24 waiting on confirmation" panel that board D sketches — that is real and it is costed below, but it is a different surface. And it does not merge the verification mail with a sign-in link: they expire differently, prove different things, and one of them is a credential.</p></div></li>
+
+  <li><span class="n">10</span><div><b>The test surface, and one guard that would quietly stop guarding.</b>
+      <p>These flows carry roughly <b>96 integration, unit and mailer tests across 7 files</b>, plus <b>~31 browser tests across 3 system files</b>. There are no fixture YAMLs anywhere in the repo — every test builds its own Organisation, Survey and Player inline with <code>SecureRandom</code>-suffixed slugs, so a new test copies that shape rather than adding a fixture.</p>
+      <p>The seven: <code>join_prompt</code> (19), <code>player_claims</code> (21), <code>player_google_join</code> (20), <code>player_password_sign_in</code> (12), <code>player_sign_in</code> (10), <code>player_sign_in_mailer</code> (7), <code>player_oauth_handoff</code> (7). The three browser files are the expensive ones, since the system suite is the ~5-minute half of the gate: <code>end_screen_layout</code> (20), <code>password_visibility</code> (7), <code>end_screen_contrast</code> (4).</p>
+      <p><b>The trap.</b> <code>test/integration/player_claims_test.rb</code> guards the "join sends no mail" property with <code>assert_no_difference -&gt; { ActionMailer::Base.deliveries.size }</code>. The test environment uses the <code>:test</code> queue adapter, so a <code>deliver_later</code> mail never touches <code>deliveries</code> — that assertion would go on passing while the behaviour it describes was reversed. <b>It has to become <code>assert_enqueued_emails</code> in the same commit</b>, or the suite will report green about a fact that is no longer true. The sibling assertion on <code>PlayerSignInLink.last.origin</code> needs the same read.</p>
+      <p>Auto-submitting the interstitial (§6) is <b>mostly additive</b> against <code>player_google_join_test.rb</code>'s 20 tests rather than destructive: "the bounce page offers the button" still holds because the button stays, and "the bounce page spends nothing" still holds because the handoff is consumed at the callback either way. What it needs is <b>three new ones</b> — it fires on a first view, it does <em>not</em> fire on a <code>back_forward</code> navigation, and it does <em>not</em> fire when the handoff has expired (the page renders "That took a moment too long" and there is nothing to submit). That last one is the easiest to get wrong.</p></div></li>
+
+    <li><span class="n">11</span><div><b>The lever that would quietly become a mail-bomb amplifier.</b>
+      <p><b>This is the one thing in the deck that is not optional, and it is the reason P1's risk is not "low".</b> <code>PLAYER_JOIN_RATE_LIMIT_SCALE</code> was added on 14 September so a room of 250 people on one venue NAT could all make accounts. Its own comment says exactly why that was safe: the caps "were sized against a threat that no longer exists… it doesn't send mail and hasn't since the emailed-link era", and <em>"that is why the per-IP half of them can be scaled for a crowd, which a mail-bomb guard could not be."</em></p>
+      <p><b>Sending a confirmation from <code>#join</code> falsifies that sentence.</b> It turns a documented non-mailing endpoint back into a write primitive against a stranger's inbox, and one env var — clamped at <code>(1, 10_000)</code> — into the multiplier on how many strangers one IP may write to. <code>MAX_JOIN_ADDRESSES_PER_IP</code> is <code>30 × SCALE</code> per hour <em>per published Verto</em>; at the default that is 30 inboxes an hour, and at an event setting it is not.</p>
+      <p><b>What bounds it on the other side, and should be stated in the code:</b> the mail fires on exactly two of <code>#join</code>'s branches — a genuinely new <code>Player</code>, and an adoptable shell being given a password. It must <em>not</em> fire when an existing account authenticates, when the answer is <code>use_google</code>, or when the password is wrong. So a stranger's address can be mailed once for an account that did not exist, and never again by the same route once it does; the exposure is first-contact only, which is what makes an unscaled per-IP counter sufficient rather than a per-mailbox one.</p>
+      <p><b>The fix is small and it has to ship with P1:</b> bound the mail on its own counter at the <b>unscaled</b> number. The lever's job is to let a crowd create accounts; it was never a statement about how much mail one address may send. Creating an account and mailing a stranger are different acts and want different bounds.</p>
+      <p><b>And the prose has to move with the code, which in this repo is not a nicety.</b> Two comments become false the moment this ships and both have to be rewritten in the same commit. <code>player_controller.rb</code>'s rate-limit header says, in as many words, "An earlier version of this comment justified all of that as protection for an inbox — join 'SENDS MAIL to an address a stranger typed'. <em>It does not</em>" — a comment that already records being wrong once about exactly this. And the paragraph under it, which concludes "that is also why the per-IP half of them can be scaled for a room full of people, which a mail-bomb guard could not be", is the reasoning the new counter exists to replace. Leaving either standing would hand the next reader a justification for widening the very cap that now guards an inbox.</p>
+      <p><b>And there is no feedback loop to catch it going wrong.</b> <code>EmailSuppression::REASONS</code> declares <code>hard_bounce</code> and <code>complaint</code>, but nothing in the app ever writes them — <code>record!</code> is called only from the two unsubscribe controllers, always with <code>"unsubscribe"</code>, and there is no ESP webhook route anywhere. So a send at join-card volume to addresses nobody has proved would bounce into silence, with no mechanism to stop trying. That is an argument for the unscaled counter, not against the feature — but it should be a known gap rather than a discovered one.</p>
+      <p>A second comment joins the list above: <code>db/migrate/…_create_players.rb</code> says of the column, "Until then the address is unproven, and <em>nothing may be sent to it beyond the sign-in link itself</em>." That file already carries one claim this repo has since falsified; a second should be corrected in the same commit rather than left to accumulate.</p>
+      <p>Two more facts worth having while sizing that counter. The per-address bounds — <code>join_email</code> at 5/20min and <code>MAX_JOIN_PER_ADDRESS</code> at 5/hour — key on the <b>exact lowercased string</b>, so <code>v.ictim+1@gmail.com</code> and <code>victim@gmail.com</code> are different budgets and the same mailbox. And <code>code_budget_ok?</code> keys include <code>@survey.id</code>, so "5 per address per hour" is five <em>per published Verto</em> per hour. Neither is a flaw today, because nothing is being sent; both become the shape of the exposure the moment something is.</p></div></li>
+
+  </ol>
+
+  <h3 style="font-family:var(--alata);font-size:16px;margin:34px 0 4px">What it costs, and when it is live</h3>
+  <p class="lead" style="margin-bottom:14px">Sized against <code>e29cb2d</code> (14 Sep) — the whole respondent-Google feature, 60 files and 1,931 insertions including two migrations and 26 locale files, built and shipped in one session. That is the yardstick this repo actually moves at. Every row includes its own <code>bin/gate</code> run: five checks, ~7½ minutes, and roughly a one-in-three chance of losing the race to another session and re-running. <b>A green push to Main deploys itself</b> — CI builds the image, the <code>deploy</code> job moves <code>:main</code> and POSTs Render's hook — so "live" is the push, not a separate release.</p>
+
+  <table class="est">
+    <tr><th>Package</th><th>Files</th><th>Build</th><th>Risk</th><th>Live</th></tr>
+    <tr>
+      <td><b>P1 · Verification mail</b><br><span style="color:var(--ink3)">token, mailer + 2 views, controller, 2 routes, send from <code>#join</code>, <code>/you</code> banner, account tag + resend, card copy</span></td>
+      <td class="num">~38<br><span style="color:var(--ink3)">26 of them locales</span></td>
+      <td class="num">¾ – 1½ days</td>
+      <td><b>Medium</b>, and §11 is why. No migration and no schema change, and the gate it feeds already exists — but turning mail back on at <code>#join</code> re-arms a vector the repo deliberately disarmed, so the unscaled mail counter ships with it or not at all.</td>
+      <td class="num">Same day</td>
+    </tr>
+    <tr>
+      <td><b>P2a · Relabel the second button</b><br><span style="color:var(--ink3)">its own key instead of <code>auth.social_continue</code> twice (board E, option 2)</span></td>
+      <td class="num">~28<br><span style="color:var(--ink3)">26 of them locales</span></td>
+      <td class="num">~1 hr</td>
+      <td>None. One string and one view line. The smallest change here, and it addresses the complaint as reported.</td>
+      <td class="num">Same day</td>
+    </tr>
+    <tr>
+      <td>P2b · Guarded auto-submit<br><span style="color:var(--ink3)">only if the step still reads as friction after P2a (board E, option 1)</span></td>
+      <td class="num">3 + 3 tests</td>
+      <td class="num">2 – 3 hrs</td>
+      <td>Low, but not zero: the <code>back_forward</code> guard and the expired-handoff case are both easy to get wrong. Deferred on purpose.</td>
+      <td class="num">Optional</td>
+    </tr>
+    <tr>
+      <td><b>P3 · Bug: embedded Vertos cannot finish signup</b><br><span style="color:var(--ink3)">break out of the frame for the one navigation that leaves <code>/play/</code></span></td>
+      <td class="num">2 + tests</td>
+      <td class="num">2 – 3 hrs</td>
+      <td>Low to fix, <b>high to have</b>: on an embedded Verto <em>no</em> respondent can create an account by any route today, and no test covers it. Ship with P4 and P5.</td>
+      <td class="num">Same day</td>
+    </tr>
+    <tr>
+      <td><b>P4 · Bug: signed-in respondent loses the run</b><br><span style="color:var(--ink3)">spend the handoff and apply claims before the redirect</span></td>
+      <td class="num">2 + test</td>
+      <td class="num">~1 hr</td>
+      <td>Low, and it is <b>live data loss</b> today — this is the row to ship first.</td>
+      <td class="num">Same day</td>
+    </tr>
+    <tr>
+      <td><b>P5 · Bug: venue lever misses the interstitial</b><br><span style="color:var(--ink3)">scale <code>PlayerJoinsController</code>'s gate like its sibling</span></td>
+      <td class="num">1 + test</td>
+      <td class="num">~20 min</td>
+      <td>Low. Bites only at <code>SCALE ≥ 3</code>, i.e. exactly on an event day.</td>
+      <td class="num">Same day</td>
+    </tr>
+    <tr class="tot">
+      <td><b>P1 – P5 together</b> <span style="color:var(--ink3)">— what this deck recommends</span></td>
+      <td class="num"><b>~55</b></td>
+      <td class="num"><b>1½ – 2 days</b></td>
+      <td><b>Two or three pushes.</b> Ship P3 + P4 + P5 first as their own push — they are bugs, they are small, and they are independent of everything else. P1 does not ship without §11.</td>
+      <td class="num"><b>2 – 3 days</b></td>
+    </tr>
+    <tr>
+      <td><span style="color:var(--ink3)">P6 · Delete the interstitial entirely</span><br><span style="color:var(--ink3)">scope <code>request_validation_phase</code>, move the session write to <code>origin_param</code></span></td>
+      <td class="num">~6</td>
+      <td class="num">2 – 3 days</td>
+      <td><b>High</b>, and concentrated: a hand-written replacement for a global security hook that also guards creator sign-in. Needs its own security review, not just a Brakeman pass.</td>
+      <td class="num">Separate</td>
+    </tr>
+    <tr>
+      <td><span style="color:var(--ink3)">P7 · "24 waiting on confirmation" for creators</span><br><span style="color:var(--ink3)">explain the gap between claims and audience</span></td>
+      <td class="num">~5</td>
+      <td class="num">~2 hrs</td>
+      <td>Low. The natural follow-up once P1 makes the number movable.</td>
+      <td class="num">Follow-up</td>
+    </tr>
+  </table>
+
+  <div class="cuts">
+    <h3>Deliberately not in this plan</h3>
+    <ul>
+      <li><b>Gating anything on confirmation.</b> §3. The consequence and the remedy are already the same thing.</li>
+      <li><b>Making <code>/play/:token</code> per-session</b> so its CSRF token is live. The shared cache is a large share of a journey's CPU; trading it for one tap is paying in the thing that carries a venue full of respondents.</li>
+      <li><b>Allowing <code>GET</code> on the OmniAuth request phase.</b> The config is global — it would re-open creator sign-in to the cross-site initiation class OmniAuth 2.0 closed.</li>
+      <li><b>Merging the verification mail into the sign-in link.</b> Different expiries, different proofs, and one of the two is a bearer credential.</li>
+      <li><b>A bulk mail-out to existing unverified respondents</b>, until §8's count is known. It is a separate change with its own rate shaping.</li>
+      <li><b>Re-running a red CI job.</b> House rule: a red Main is fixed with a new commit, never a re-run.</li>
+    </ul>
+  </div>
+</section>
+
+</main>

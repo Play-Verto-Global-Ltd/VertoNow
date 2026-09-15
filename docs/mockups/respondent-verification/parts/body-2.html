@@ -1,0 +1,144 @@
+<!-- ═══════════════════════════════════════ B ════════════════════════════════ -->
+<section class="board" id="board-b">
+  <div class="board-head"><span class="no">B</span><h2>What "unverified" costs: the silent account</h2><span class="size">The case for §1, in four screens</span></div>
+  <div class="board-body wide">
+    <div class="stage"><div class="stage-row">
+
+      <div class="frame state-col">
+        <p class="state-cap">1 · What the card promised</p>
+        <div class="pcard">
+          <div class="peb">Keep this</div>
+          <div class="ptt">Keep your Vertos</div>
+          <div class="pbd">Pick a password and you're in. You'll see your answers next to everyone else's, and <b style="color:#FCD34D">hear what happens next</b>.</div>
+        </div>
+        <p class="legend">Four words doing the work: "hear what happens next" is the reason a respondent gives an address rather than just closing the tab. It is the only part of the pitch that needs mail.</p>
+        <span class="co abs" style="left:-11px;top:74px">1</span>
+      </div>
+
+      <div class="frame state-col">
+        <p class="state-cap">2 · What the council can actually send her</p>
+        <div class="land" style="background:#12162B">
+          <h5 style="font-family:var(--alata);font-size:13px;margin:0 0 11px;color:#fff">PlayerAudience.for_survey</h5>
+          <div style="font-family:var(--sys);font-size:11.5px;line-height:1.85;color:rgba(255,255,255,.82)">
+            <div>kept = players who claimed it <span style="color:rgba(255,255,255,.45)">— Priya is in</span></div>
+            <div style="color:#FF6B9D">…where.not(email_verified_at: nil) <b>— Priya is out</b></div>
+            <div style="color:rgba(255,255,255,.35)">…minus this org's opt-outs</div>
+            <div style="color:rgba(255,255,255,.35)">…minus global suppressions</div>
+          </div>
+          <div style="margin-top:13px;padding-top:11px;border-top:1px solid rgba(255,255,255,.12);
+                      font-family:var(--abz);font-size:11.5px;color:#FCD34D">
+            Nothing. Not the results, not the follow-up, not the next Verto.
+          </div>
+        </div>
+        <p class="legend"><code>deliverable?</code> applies the same rule one player at a time, so there is no second path that leaks past the scope. The filter is right — an unproven address should never be mailed. The bug is that door one produces unproven addresses and calls it a finished signup.</p>
+        <span class="co abs" style="left:-11px;top:96px">2</span>
+      </div>
+
+      <div class="frame state-col">
+        <p class="state-cap">3 · And the account offers her nothing</p>
+        <p class="state-cap" style="color:var(--ink2);text-transform:none;letter-spacing:0;font-family:var(--sys);font-size:11px">/you/account — as it renders today</p>
+        <div class="land">
+          <div style="font-family:var(--alata);font-size:11px;color:rgba(255,255,255,.6);margin-bottom:5px">Email</div>
+          <div class="yrow" style="width:auto"><span>priya.n@gmail.com</span></div>
+          <p style="font-family:var(--abz);font-size:11px;color:rgba(255,255,255,.6);margin:7px 0 0">
+            This is where your Vertos are kept.</p>
+        </div>
+        <p class="legend">The template renders a <span class="ytag ok">✓ Verified</span> tag when <code>@player.email_verified?</code> and <b>renders nothing in the unverified case</b> — no tag, no sentence, no resend. From inside the account there is no evidence anything is wrong and no control that would fix it.</p>
+        <span class="co abs" style="left:-11px;top:110px">3</span>
+      </div>
+
+      <div class="frame state-col">
+        <p class="state-cap">4 · Two accidental cures</p>
+        <div class="land">
+          <h5 style="font-family:var(--alata);font-size:13px;margin:0 0 6px;color:#fff">Sign in to your Vertos</h5>
+          <p style="font-family:var(--abz);font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.8);margin:0 0 11px">
+            Email me a link instead</p>
+          <div class="pinp filled" style="margin-bottom:8px">priya.n@gmail.com</div>
+          <div class="pbtn">Email me a link</div>
+        </div>
+        <p class="legend"><b>Two routes do exist, and that changes the framing: the capability is there, the discoverability is not.</b> (1) Sign out and ask for an emailed link — that mints <code>ORIGIN_EMAIL</code>, and spending it runs <code>verify_email!</code>. (2) Come back later and tap Continue with Google at the same address: <code>locate_or_create_player!</code> falls back to <code>Player.find_by(email_address:)</code>, finds the existing password row, and <code>verify_email!</code> runs unconditionally on it.</p>
+        <p class="legend" style="margin-top:8px">Neither is signposted anywhere, and route 1 requires signing out of a working account. So the work is <b>a purpose-built token and a place to tap it</b> — not a missing capability.</p>
+        <span class="co abs" style="left:-11px;top:118px">4</span>
+      </div>
+
+    </div></div>
+    <aside class="notes below"><h3>Notes</h3><ol>
+      <li><span class="co">1</span><p>The three sentences on the card are the creator's to overwrite (<code>Survey#join_body_text</code> falls back to this copy when the field is blank), so the promise varies per Verto — but the default is the one most Vertos ship with, and it promises mail.</p></li>
+      <li><span class="co">2</span><p><b>This is the whole business case and it is worth stating without decoration.</b> Every respondent who takes door one is a respondent the creator paid to acquire, holds an account for, and can never contact. It fails silently in both directions: nothing errors, no job retries, the creator's audience count is simply smaller than their claim count and nobody has asked why.<span class="ref">§2</span></p></li>
+      <li><span class="co">3</span><p>Worth being precise about who is affected. <b>Google respondents are fine</b> — the callback stamps <code>verify_email!</code> because the provider asserted the address, which is strictly better proof than an emailed link. <b>Emailed-link respondents are fine.</b> It is exactly the password door, which is the newest of the three and the one the card leads with.<span class="ref">§1</span></p></li>
+      <li><span class="co">4</span><p>So there are two defensible fixes and this deck picks one. Either <b>send a confirmation mail</b> (§1) or <b>widen what counts as proof</b> — but the second is not available: a typed address plus a password proves somebody chose a string, not that they can read the inbox, and treating it as proof would mean mailing whatever a stranger typed. §3 works through why the gate stays where it is.<span class="ref">§1 §3</span></p></li>
+    </ol>
+    <p class="cut">Not in scope, and worth saying so: this deck does not propose blocking an unverified respondent from anything they can do today. They keep the account, the claims, the results and the wallet. The only thing verification unlocks is <b>being written to</b>, which is the only thing it is evidence for.</p></aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ C ════════════════════════════════ -->
+<section class="board" id="board-c">
+  <div class="board-head"><span class="no">C</span><h2>The verification mail, and what the link opens</h2><span class="size">520px card · plus the two landing states</span></div>
+  <div class="board-body wide">
+    <div class="stage"><div class="stage-row">
+
+      <div class="frame">
+        <p class="state-cap">In the list</p>
+        <div class="inbox">
+          <div class="from">Playverto</div>
+          <div class="subj">Confirm your email for Haverley Town Council's Verto</div>
+          <div class="pre">One tap, and the council can tell you what it decided.</div>
+        </div>
+        <p class="state-cap" style="margin-top:18px">Opened</p>
+        <div class="mail">
+          <div class="card">
+            <div class="wm"><span class="a">play</span><span class="b">verto</span></div>
+            <h4>Confirm your email</h4>
+            <p>You created a Playverto account at the end of <b style="color:rgba(247,247,247,.9)">Car-free High Street</b>. Confirm this address and Haverley Town Council can tell you what it decided in November.</p>
+            <div class="cta">Confirm my email</div>
+            <p class="fallback">Button not working? Copy and paste this link:<br>https://app.playverto.com/you/confirm/9f3c…</p>
+            <div class="rule">
+              <p style="font-size:13px">You're already signed in — this only lets us send you news about the Vertos you kept. The link expires in 7 days. If you didn't create this account, ignore this email and we won't write again.</p>
+            </div>
+            <div class="foot">Sent by Playverto on behalf of Haverley Town Council.<br><a>Delete this account</a></div>
+          </div>
+        </div>
+        <span class="co abs" style="left:614px;top:18px">1</span>
+        <span class="co abs" style="left:614px;top:200px">2</span>
+        <span class="co abs" style="left:614px;top:548px">3</span>
+        <span class="co abs" style="left:614px;top:590px">4</span>
+      </div>
+
+      <div class="frame state-col">
+        <p class="state-cap">What the link opens</p>
+        <div class="land" style="text-align:center">
+          <div style="width:46px;height:46px;border-radius:50%;background:rgba(1,234,203,.16);color:#01EACB;display:flex;align-items:center;justify-content:center;margin:4px auto 12px"><svg viewBox="0 0 24 24" width="22" height="22" style="color:#01EACB"><use href="#i-chk"/></svg></div>
+          <h5>That's your address confirmed</h5>
+          <p>Haverley Town Council can now tell you what happens to Car-free High Street. You can stop these any time from your account.</p>
+          <div class="btn">Open my Vertos</div>
+        </div>
+        <p class="legend">No sign-in required to open it, and nothing to type. The signed token is the proof, not the session — people open these on a phone that is not signed in, exactly as <code>EmailConfirmationsController#show</code> already reasons for creators.</p>
+        <span class="co abs" style="left:-11px;top:150px">5</span>
+      </div>
+
+      <div class="frame state-col">
+        <p class="state-cap">Opened twice, or a week late</p>
+        <div class="land" style="text-align:center">
+          <div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;margin:4px auto 12px"><svg viewBox="0 0 24 24" width="22" height="22"><use href="#i-chk"/></svg></div>
+          <h5>Already confirmed</h5>
+          <p>This address was confirmed earlier. Nothing more to do.</p>
+          <div class="btn">Open my Vertos</div>
+        </div>
+        <p class="legend"><code>verify_email!</code> is idempotent by construction — it only writes when <code>email_verified_at</code> is nil — so a link re-opened from an inbox a week later must not re-stamp the date or re-send a welcome. The creator controller captures <code>first_confirmation</code> before calling it for exactly this reason; the respondent one copies that.</p>
+        <span class="co abs" style="left:-11px;top:150px">6</span>
+      </div>
+
+    </div></div>
+    <aside class="notes below"><h3>Notes</h3><ol>
+      <li><span class="co">1</span><p>Subject names the <b>organisation</b>, not Playverto — the house rule <code>PlayerSignInMailer</code> already states: the respondent has a relationship with the council that asked them something, and we are the "via". The preheader says what confirming buys, because "confirm your email" on its own is the most ignorable sentence in a inbox.<span class="ref">§5</span></p></li>
+      <li><span class="co">2</span><p>House mailer chrome, unchanged — <code>#272D4A</code> page, <code>#1C2034</code> card at 16px radius and 520px, aqua CTA, copy-paste fallback, wordmark. <b>Copy <code>app/mailers/player_sign_in_mailer.rb</code> rather than the creator's mailer</b>: it already carries the two things a respondent mail needs and the creator's does not — <code>I18n.with_locale(player.preferred_locale)</code>, because a mailer runs in a Solid Queue job with no <code>Current.locale</code>, and an <code>X-Entity-Ref-ID</code> so a second mail does not stack under the first and get missed.<span class="ref">§5</span></p></li>
+      <li><span class="co">3</span><p><b>"You're already signed in" is the sentence that makes this mail honest.</b> Unlike the creator's confirmation, nothing is blocked while it sits unread — she has the account, the claim and the results already. The mail asks for permission to write to her, and says so.<span class="ref">§3</span></p></li>
+      <li><span class="co">4</span><p><b>7 days, matching <code>User</code>'s <code>:email_confirmation</code>, not the 20 minutes a sign-in link gets.</b> A sign-in link is a bearer credential and is sized like one; this token grants nothing but the right to be mailed, and it is read on whatever day the person next opens their inbox. <code>generates_token_for :email_confirmation</code> on <code>Player</code>, mirroring <code>User</code> — <b>no migration</b>, because <code>email_verified_at</code> already exists on the table.<span class="ref">§1</span></p></li>
+      <li><span class="co">5</span><p>Landing at <code>/you/confirm/:token</code>, unauthenticated, <code>GET</code>. It is worth noting this deliberately breaks the GET/POST split that <code>PlayerSignInsController</code> uses: <b>this token is idempotent and grants nothing</b>, so a link scanner spending it costs nothing and confirming on GET is what keeps it one tap. That is the same call <code>EmailConfirmationsController#show</code> already made for creators.<span class="ref">§1 §6</span></p></li>
+      <li><span class="co">6</span><p>No "resend" button on this page and no address echoed into it beyond what the token resolves — a resend that tells you whether an address exists is an enumeration oracle. The resend lives on <code>/you</code> where the person is already signed in as the account in question (board D).<span class="ref">§4</span></p></li>
+    </ol>
+    <p class="cut"><b>What is not drawn here, and matters more than anything that is:</b> the bound on how much of this mail one IP may cause. <code>#join</code> has not sent mail since the emailed-link era, and the per-IP account caps were loosened on 14 September <em>on exactly that grounds</em>. Sending from here re-arms the vector those caps used to guard, so the mail needs its own unscaled counter — <span class="ref">§11</span>, and it is the reason this is not a half-day change.</p>
+    <p class="cut">Deliberately absent: a second consent tick. The account already took consent at signup, and asking again on the confirm page would make the mail read as a contract rather than a receipt. Also absent: any attempt to merge this with a sign-in link. They expire differently, prove different things and one of them is a credential.</p></aside>
+  </div>
+</section>

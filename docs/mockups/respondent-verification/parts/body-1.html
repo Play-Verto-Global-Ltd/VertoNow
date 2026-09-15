@@ -1,0 +1,194 @@
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Playverto · respondent accounts</p>
+    <h1>Proving the address, and the tap that need not be there</h1>
+    <p>Two changes to the account a respondent is offered at the end of a Verto. One closes a hole that is already costing us mail we promised to send. The other is the extra tap on the Google door — a page that has to exist for a reason worth understanding, carrying a button that is labelled as the thing you just did.</p>
+    <div class="meta"><span>Build 2026-09-15-a</span><span>5 boards + worked example + spec</span><span>Sibling of <code>../responder-accounts/</code></span></div>
+  </div>
+</header>
+
+<nav class="toc"><div class="wrap"><ol>
+    <li><a href="#intro"><b>The worked example</b> — Priya, and the two doors she can walk through</a></li>
+    <li><a href="#board-a"><b>A</b> — The two doors today, tap by tap</a></li>
+    <li><a href="#board-b"><b>B</b> — What "unverified" costs: the silent account</a></li>
+    <li><a href="#board-c"><b>C</b> — The verification mail, and what the link opens</a></li>
+    <li><a href="#board-d"><b>D</b> — The end card and <code>/you</code>, with the address proved</a></li>
+    <li><a href="#board-e"><b>E</b> — The Google door, one tap shorter</a></li>
+    <li><a href="#spec"><b>Spec</b> — §1–§9, the cuts, and what each piece costs</a></li>
+</ol></div></nav>
+
+<main class="wrap">
+
+<section class="intro" id="intro">
+  <h2>The worked example</h2>
+  <p class="lead">Same fiction as the two decks before this one. <b>Haverley Town Council</b> runs <b>Car-free High Street</b>; <b>Priya</b> finishes it on a phone on the bus and is offered an account. Everything below is drawn at the copy that is in <code>config/locales/en.yml</code> today, not at invented copy — where a board proposes new words they are marked as such.</p>
+  <dl class="example">
+    <dt>The card she sees</dt>
+    <dd><b>Keep this</b> · "Keep your Vertos" · "Pick a password and you're in. You'll see your answers next to everyone else's, and hear what happens next." · <b>Create my account</b><span class="cnt">player.join_*</span></dd>
+    <dt>Door one</dt>
+    <dd>Address and a password. Twelve characters minimum, the same floor <code>User</code> has.<span class="cnt">3 taps</span></dd>
+    <dt>Door two</dt>
+    <dd>Continue with Google.<span class="cnt">4 taps</span></dd>
+    <dt>What the two doors leave behind</dt>
+    <dd>Door two stamps <code>email_verified_at</code>; Google has asserted the address. <b>Door one never does.</b> Two later paths can still rescue it — both undiscoverable, neither offered as a fix (board B).<span class="cnt">the hole</span></dd>
+    <dt>What that costs</dt>
+    <dd><code>PlayerAudience.for_survey</code> filters on <code>where.not(email_verified_at: nil)</code>. Priya is in the account, holds the claim, and is <b>excluded from every mail the council ever sends about it</b> — including the one the card promised her.<span class="cnt">§2</span></dd>
+  </dl>
+</section>
+
+<!-- ═══════════════════════════════════════ A ════════════════════════════════ -->
+<section class="board" id="board-a">
+  <div class="board-head"><span class="no">A</span><h2>The two doors today, tap by tap</h2><span class="size">Drawn at shipped copy · 2026-09-15</span></div>
+  <div class="board-body wide">
+    <div class="stage">
+
+      <div class="flow-wrap">
+        <p class="flow-title">Door one — address and password <span class="tag">3 taps + typing</span></p>
+        <p class="flow-note">The card opens collapsed on its pitch and one button. The form behind it is 560px of an 844px screen, which is why it is folded (<code>d56a8f0</code>, 14 Sep).</p>
+        <div class="flow">
+
+          <div class="step">
+            <p class="scap">End screen <span class="url">/play/:token</span></p>
+            <div class="mini">
+              <div class="mtop">Thanks for taking part!</div>
+              <div class="pcard" style="max-width:none">
+                <div class="peb">Keep this</div>
+                <div class="ptt">Keep your Vertos</div>
+                <div class="pbd">Pick a password and you're in. You'll see your answers next to everyone else's, and hear what happens next.</div>
+                <div class="pbtn">Create my account</div>
+              </div>
+              <p class="mfine" style="text-align:left;margin-top:auto">The card is <code style="color:rgba(255,255,255,.5)">#272D4A</code> — Playverto's surface, not the creator's.</p>
+            </div>
+            <div class="tap"><span class="tn">1</span><span class="tl">reveal</span></div>
+          </div>
+
+          <div class="step">
+            <p class="scap">The form, revealed <span class="url">same page</span></p>
+            <div class="mini">
+              <div class="pcard" style="max-width:none">
+                <div class="pgoogle"><svg viewBox="0 0 48 48"><use href="#gmark"/></svg><span>Continue with Google</span></div>
+                <div class="pdiv"><span>or</span></div>
+                <div class="pinp filled">priya.n@gmail.com</div>
+                <div class="pinp pw"><span>••••••••••••</span><span class="tog">Show</span></div>
+                <div class="phint">At least 12 characters. You'll use it to sign back in on another device.</div>
+                <div class="pbtn">Create my account</div>
+                <div class="pfine">You're signed in the moment you're done — nothing to wait for in your inbox.</div>
+              </div>
+            </div>
+            <span class="co abs" style="left:-11px;top:236px">1</span>
+            <div class="tap"><span class="tn">2</span><span class="tl">submit</span></div>
+          </div>
+
+          <div class="step">
+            <p class="scap">The hand-back <span class="url">/you/sign-in/:token</span></p>
+            <div class="mini">
+              <div class="mmark"><svg viewBox="0 0 616 117"><use href="#wordmark"/></svg></div>
+              <h5 class="mh1">You're all set</h5>
+              <p class="msub">Tap below to open your account and keep what you've played.</p>
+              <div class="pbtn">Sign me in</div>
+              <p class="mfine">Links work once, and expire 20 minutes after they're sent.</p>
+            </div>
+            <span class="co abs" style="left:-11px;top:118px">2</span>
+            <div class="tap"><span class="tn">3</span><span class="tl">sign in</span></div>
+          </div>
+
+          <div class="step">
+            <p class="scap">Signed in <span class="url">/you</span></p>
+            <div class="mini">
+              <div class="mtop">You're signed in.</div>
+              <div class="yrow" style="width:auto;margin-bottom:9px">
+                <span>priya.n@gmail.com</span>
+              </div>
+              <p class="mfine" style="text-align:left">No <span style="color:#FCD34D">Verified</span> tag, because nothing proved the address. <code style="color:rgba(255,255,255,.5)">email_verified_at</code> is <b style="color:#FCD34D">NULL</b> and stays that way.</p>
+            </div>
+            <span class="co abs" style="left:-11px;top:118px">3</span>
+          </div>
+
+        </div>
+        <div class="tally">
+          <span class="pill"><b>3</b> taps</span>
+          <span class="pill"><b>2</b> page loads after the card</span>
+          <span class="pill bad">address <b>never</b> proved</span>
+        </div>
+      </div>
+
+      <div class="flow-wrap">
+        <p class="flow-title">Door two — Continue with Google <span class="tag">4 taps</span></p>
+        <p class="flow-note"><b>Two taps here could each be called "the extra step", so both are named.</b> <b>Tap 1</b> is the reveal: the card opens collapsed, so "Continue with Google" is not on screen until "Create my account" is pressed — added deliberately on 14 Sep (<code>d56a8f0</code>) because the open form was 560px of an 844px screen. It is a real cost and it is <em>shared with the password door</em>. <b>Tap 3</b> is the interstitial, which is unique to Google and is a second button identical to the one just pressed. This deck treats tap 3 as the extra step, because tap 1 buys something measurable and tap 3 buys nothing the respondent can see — but if the brief meant the reveal, §6 is the wrong section and the answer is to surface Google above the fold on the collapsed card, which is a layout change and a different piece of work.</p>
+        <div class="flow">
+
+          <div class="step">
+            <p class="scap">The form, revealed <span class="url">/play/:token</span></p>
+            <div class="mini">
+              <div class="pcard" style="max-width:none">
+                <div class="pgoogle"><svg viewBox="0 0 48 48"><use href="#gmark"/></svg><span>Continue with Google</span></div>
+                <div class="pdiv"><span>or</span></div>
+                <div class="pinp">your@email.com</div>
+                <div class="pinp pw"><span style="color:rgba(255,255,255,.55)">Choose a password</span><span class="tog">Show</span></div>
+                <div class="pbtn">Create my account</div>
+              </div>
+              <p class="mfine" style="text-align:left;margin-top:auto">Tap 1 (reveal) already spent, as in door one.</p>
+            </div>
+            <div class="tap"><span class="tn">2</span><span class="tl">Google</span></div>
+          </div>
+
+          <div class="step">
+            <p class="scap">The interstitial <span class="url">/you/join/:token</span></p>
+            <div class="mini" style="border-color:rgba(255,30,111,.5)">
+              <div class="mmark"><svg viewBox="0 0 616 117"><use href="#wordmark"/></svg></div>
+              <h5 class="mh1">One last tap</h5>
+              <p class="msub">Finish with Google and Car-free High Street is yours to keep.</p>
+              <div class="pgoogle"><svg viewBox="0 0 48 48"><use href="#gmark"/></svg><span>Continue with Google</span></div>
+              <p class="mfine">We ask Google for your name and email address, nothing else.</p>
+            </div>
+            <span class="co abs" style="left:222px;top:-6px">4</span>
+            <div class="tap warn"><span class="tn">3</span><span class="tl">Google, again</span></div>
+          </div>
+
+          <div class="step">
+            <p class="scap">Google <span class="url">accounts.google.com</span></p>
+            <div class="mini light">
+              <div style="display:flex;justify-content:center;margin-bottom:12px"><svg viewBox="0 0 48 48" style="width:26px;height:26px"><use href="#gmark"/></svg></div>
+              <h5 class="mh1" style="color:var(--ink);font-size:14px">Choose an account</h5>
+              <p class="msub" style="color:var(--ink3);font-size:11px">to continue to Playverto</p>
+              <div style="border:1px solid var(--line);border-radius:10px;padding:9px 11px;display:flex;gap:9px;align-items:center;background:#fff">
+                <span style="width:24px;height:24px;border-radius:50%;background:#615BF5;color:#fff;font-family:var(--alata);font-size:11px;display:flex;align-items:center;justify-content:center">P</span>
+                <span style="font-family:var(--sys);font-size:11.5px"><b>Priya Nair</b><br><span style="color:var(--ink3)">priya.n@gmail.com</span></span>
+              </div>
+            </div>
+            <div class="tap"><span class="tn">4</span><span class="tl">choose</span></div>
+          </div>
+
+          <div class="step">
+            <p class="scap">Signed in <span class="url">/you</span></p>
+            <div class="mini">
+              <div class="mtop">You're signed in.</div>
+              <div class="yrow" style="width:auto;margin-bottom:9px">
+                <span>priya.n@gmail.com</span>
+                <span class="ytag ok">✓ Verified</span>
+              </div>
+              <p class="mfine" style="text-align:left">Google asserted the address, so <code style="color:rgba(255,255,255,.5)">verify_email!</code> runs in the callback. This door has never had the problem.</p>
+            </div>
+            <span class="co abs" style="left:-11px;top:118px">5</span>
+          </div>
+
+        </div>
+        <div class="tally">
+          <span class="pill"><b>4</b> taps</span>
+          <span class="pill"><b>2</b> Playverto page loads + Google</span>
+          <span class="pill good">address proved by Google</span>
+          <span class="pill bad"><b>two</b> identical "Continue with Google" buttons, back to back</span>
+        </div>
+      </div>
+
+    </div>
+    <aside class="notes below"><h3>Notes</h3><ol>
+      <li><span class="co">1</span><p><b>The fine print already promises there is no email.</b> "You're signed in the moment you're done — nothing to wait for in your inbox." That sentence is true today and board C makes it false, so it is one of the strings that has to change in the same commit — in all 26 locale files.<span class="ref">§5 §7</span></p></li>
+      <li><span class="co">2</span><p>Door one has an interstitial too, and it is <b>not</b> the same problem. <code>PlayerSignInsController</code> splits GET from POST because corporate link scanners follow GETs, and a single-use link a scanner can spend is a link the recipient can never use. That reasoning is about <b>emailed</b> links. A signup link is handed straight back in the JSON response and never enters an inbox — so the scanner argument does not cover this screen, and §6 asks whether it should auto-submit. <b>It also carries a copy bug worth a one-line fix while someone is in there:</b> the heading and body switch on <code>proves_address?</code>, but the fine print below them does not — so a signup arrival is told "Links work once, and expire 20 minutes after they're sent", describing an email that was never sent.<span class="ref">§6</span></p></li>
+      <li><span class="co">3</span><p><b>The end state of door one is an account nobody can write to.</b> Board B is this fact drawn out. And the account page offers her nothing: <code>/you/account</code> renders the Verified tag when she is verified and <b>renders nothing at all when she is not</b> — no explanation, no resend. Two routes out do exist, and board B shows why neither counts.<span class="ref">§2 §4</span></p></li>
+      <li><span class="co">4</span><p><b>This is the screen the brief is about.</b> It is titled "One last tap", which is the app apologising for itself. It exists for a real reason — OmniAuth 2.x makes the request phase a CSRF-protected POST, and <code>/play/:token</code> is inside the Service Worker's scope and can be served from cache with an authenticity token of any age, so the card cannot POST to Google itself. §6 separates that constraint (which is real) from the decision not to auto-submit (which is a UX judgement, and reversible).<span class="ref">§6</span></p></li>
+      <li><span class="co">5</span><p>Worth saying plainly: <b>the Google door is the better door on every axis except tap count</b> — no password to invent at the end of a survey, and an address that arrives already proved. If only one of the two changes in this deck ships, §6 is the one that compounds, because it moves people onto the door that does not need §1 at all.<span class="ref">§6</span></p></li>
+    </ol>
+    <p class="cut">Neither flow is broken. Door one produces a working, signed-in account that can play, claim and read results — it simply produces one the product may never mail. That is why this is a gap rather than a bug, and why it has survived.</p></aside>
+  </div>
+</section>

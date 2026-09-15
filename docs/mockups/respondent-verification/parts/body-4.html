@@ -1,0 +1,120 @@
+<!-- ═══════════════════════════════════════ E ════════════════════════════════ -->
+<section class="board" id="board-e">
+  <div class="board-head"><span class="no">E</span><h2>The Google door, one tap shorter</h2><span class="size">The constraint, the contrast, and three ways out</span></div>
+  <div class="board-body wide">
+    <div class="stage">
+
+      <div class="flow-wrap" style="margin-bottom:6px">
+        <p class="flow-title">The contrast that makes this worth doing <span class="tag">same strategy, same respondent</span></p>
+        <p class="flow-note">Both of these buttons start <code>google_player</code>. One of them needs an interstitial and the other does not, and the difference is not the respondent — it is which page the button is standing on.</p>
+        <div class="flow">
+
+          <div class="step" style="width:288px">
+            <p class="scap">From the end card <span class="url">/play/:token</span></p>
+            <div class="mini" style="width:288px;min-height:172px;border-color:rgba(255,30,111,.5)">
+              <div class="pgoogle" style="margin-bottom:11px"><svg viewBox="0 0 48 48"><use href="#gmark"/></svg><span>Continue with Google</span></div>
+              <p class="mfine" style="text-align:left;margin:0">
+                Page is <b style="color:#FF6B9D">shared-cached server-side</b> (link + deck + locale, 1h)
+                <b style="color:#FF6B9D">and</b> cached again by the Service Worker.<br>
+                → its CSRF token was minted during <b style="color:#FF6B9D">someone else's request</b>.<br>
+                → cannot POST to <code style="color:rgba(255,255,255,.55)">/auth/google_player</code>. Needs the interstitial.</p>
+            </div>
+            <span class="co abs" style="left:-11px;top:112px">1</span>
+          </div>
+
+          <div class="step" style="width:288px">
+            <p class="scap">From the sign-in page <span class="url">/you/sign-in</span></p>
+            <div class="mini" style="width:288px;min-height:172px;border-color:rgba(1,234,203,.45)">
+              <div class="pgoogle" style="margin-bottom:11px"><svg viewBox="0 0 48 48"><use href="#gmark"/></svg><span>Continue with Google</span></div>
+              <p class="mfine" style="text-align:left;margin:0">
+                Outside the worker's scope, rendered fresh per request.<br>
+                → token is <b style="color:#01EACB">this browser's, this request's</b>.<br>
+                → <code style="color:rgba(255,255,255,.55)">button_to</code> posts straight out. <b style="color:#01EACB">One tap.</b></p>
+            </div>
+            <span class="co abs" style="left:-11px;top:112px">2</span>
+          </div>
+
+          <div class="step" style="width:288px">
+            <p class="scap">And the creator's <span class="url">/session/new</span></p>
+            <div class="mini light" style="width:288px;min-height:172px">
+              <div style="display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 14px;border-radius:12px;background:#fff;border:1px solid rgba(0,0,0,.12);color:#1F1F1F;font-family:var(--alata);font-size:13px;margin-bottom:11px"><svg viewBox="0 0 48 48" style="width:16px;height:16px"><use href="#gmark"/></svg><span>Continue with Google</span></div>
+              <p style="font-family:var(--abz);font-size:10px;line-height:1.5;color:var(--ink3);margin:0">
+                Same <code>button_to</code>, same reasoning in its own header comment, one tap. The Service Worker's scope was deliberately narrowed to <code>/play/</code> to keep it off the studio.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="flow-wrap">
+        <p class="flow-title">Three ways out — and which one to do first <span class="tag">2, then maybe 1, probably never 3</span></p>
+        <div class="opts">
+
+          <div class="opt">
+            <h4><span>1 · Auto-submit the interstitial</span><span class="k">second</span></h4>
+            <p>Keep the page, keep the live token, keep the handoff. The form submits itself on first view, so the respondent sees a branded "Taking you to Google…" beat instead of a button that looks exactly like the one they just pressed.</p>
+            <p class="v"><b>Removes:</b> the tap. <b>Keeps:</b> the page load.<br>
+               <b>Costs:</b> the Back-button trap the controller's comment names — Back from Google re-GETs this page and would re-fire. Guarded by refusing to auto-submit on a <code>back_forward</code> navigation, which is one small Stimulus controller — the layout already loads importmap through <code>layouts/_head</code>, and <code>sw_register.js</code> already listens on <code>pageshow</code>, so neither the plumbing nor the idiom is new. The button stays in place as the fallback for no-JS and for the guarded case.<br>
+               <b>Risk:</b> low. No CSRF, OmniAuth or cache change. The button stays; only who presses it moves.<br>
+               <b>Why second, not first:</b> it removes a tap, but the tap is only <em>felt</em> because of the label (option 2). Fix the label, see whether the step still reads as friction, then decide. The guard is also the part most likely to be got wrong — and the page has a fourth job nobody's docstring mentions: <code>redirect_to you_path if player_signed_in?</code>, which is where the data-loss bug below lives. Its test cost is three new cases rather than a rewrite (§10).</p>
+          </div>
+
+          <div class="opt pick">
+            <h4><span>2 · Relabel the second button</span><span class="k">recommended · do this first</span></h4>
+            <p><b>The two buttons render the same I18n string.</b> <code>auth.social_continue</code> draws the button on the card <em>and</em> the button on the interstitial, so a respondent presses "Continue with Google" and lands on a page whose button is also called "Continue with Google". <b>It reads as a no-op because it is labelled as one.</b> Give the second one its own key — a continuation, not a repeat of the choice already made.</p>
+            <p class="v"><b>Removes:</b> the <em>feeling</em> of a wasted tap, which is what the brief actually reported.<br>
+               <b>Costs:</b> one new key in 26 locale files, one view line.<br>
+               <b>Risk:</b> none — no controller, no CSRF, no test rewrite. It is the smallest change in this deck and it addresses the complaint as reported.</p>
+          </div>
+
+          <div class="opt">
+            <h4><span>3 · Delete the page</span><span class="k">largest</span></h4>
+            <p>Scope <code>OmniAuth.config.request_validation_phase</code> to accept the single-use <code>PlayerOauthHandoff</code> token for <code>/auth/google_player</code> and delegate to <code>TokenVerifier</code> for everything else. The card then posts once, straight out.</p>
+            <p class="v"><b>Removes:</b> the tap <em>and</em> the page load.<br>
+               <b>Costs:</b> a hand-written replacement for a global security hook that also guards creator sign-in, branching on <code>PATH_INFO</code>. The handoff has the right properties for the job — HMAC-SHA256, 32 random bytes, 15-minute expiry, atomic single-use — but the session write that <code>/you/join</code> performs has to move to OmniAuth's <code>origin_param</code>, and the middleware is outside the controller so it can still write a real session.<br>
+               <b>Risk:</b> high, and concentrated in the one place a mistake is worst. Not recommended as a first move; reachable later if the page load still matters once the tap is gone.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="flow-wrap">
+        <p class="flow-title">Three live bugs on this path, found while reading it <span class="tag">independent of the above</span></p>
+        <div class="ba" style="margin-bottom:18px">
+          <div class="col">
+            <div class="opt" style="max-width:890px;border-color:rgba(216,0,39,.55);background:rgba(216,0,39,.05)">
+              <h4><span>In an embedded Verto, <em>neither</em> door can finish</span><span class="k">both paths · verified</span></h4>
+              <p>A Verto is routinely framed by a third party — the card has its own copy for it (<code>join_embedded</code>, "we can't see what you played elsewhere"), and <code>_embedded()</code> tests <code>window.self !== window.top</code> to decide whether to show it. So the app knows when it is in a frame and adapts. <b>What it does next cannot work there.</b></p>
+              <p><code>after_action :allow_embedding</code> is scoped to <code>show</code>, <code>test_show</code> and <code>live_test_show</code> — the player pages only. The global policy is <code>frame_ancestors :self</code>. But both doors finish by navigating <em>in-frame</em>: <code>_joinDone</code> calls <code>window.location.assign(next)</code>, and <code>next</code> is <code>/you/sign-in/:token</code> or <code>/you/join/:token</code> — neither of which allows framing. The third-party parent gets a refused frame where the account was meant to appear. The <code>SameSite=Lax</code> cookie the code already warns about would not have survived the trip either.</p>
+              <p class="v"><b>So on an embedded Verto nobody can create an account at all, by any route</b>, and <code>test/integration/player_embedding_test.rb</code> contains the word "join" zero times. The fix is to break out of the frame for that one navigation (<code>window.top.location</code>, or <code>target="_blank"</code>) rather than to widen the CSP on the account pages — which is the more tempting and much worse option.</p>
+            </div>
+          </div>
+        </div>
+        <div class="ba">
+          <div class="col">
+            <div class="opt" style="max-width:430px;border-color:rgba(216,0,39,.4);background:rgba(216,0,39,.04)">
+              <h4><span>The already-signed-in respondent loses the run</span><span class="k">data loss · reproduced</span></h4>
+              <p><code>PlayerJoinsController#show</code> returns <code>redirect_to you_path if player_signed_in?</code> <b>before</b> it writes <code>session[:player_oauth_handoff_id]</code>. Because the <code>/play</code> HTML is shared-cached it cannot vary on sign-in state, and neither the card nor the JS gates on it — so a respondent who is <em>already signed in</em>, finishes a Verto and taps Continue with Google mints a handoff, is bounced to <code>/you</code>, and <b>the claims for the run they just finished are never applied</b>. The handoff expires unspent 15 minutes later.</p>
+              <p class="v"><b>Reproduced, not inferred.</b> A throwaway integration test — sign a respondent in with an <code>ORIGIN_EMAIL</code> link, complete a Verto, <code>POST /play/:token/join_google</code>, then <code>GET</code> the URL it hands back — holds all four assertions: the handoff is minted <em>with</em> the run's claims, the respondent is redirected to <code>/you</code>, <code>session[:player_oauth_handoff_id]</code> is never written, <code>consumed_at</code> stays nil, and <code>PlayerClaim</code> count is unchanged. 12 assertions, 0 failures, 1.6s.</p>
+              <p class="v">The email path does not have this hole: <code>PlayerSignInsController#create</code> applies the claim payload unconditionally. Fix is to spend the handoff and apply the payload before redirecting.</p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="opt" style="max-width:430px;border-color:rgba(252,211,77,.55);background:rgba(252,211,77,.07)">
+              <h4><span>The venue lever does not reach this page</span><span class="k">event-day</span></h4>
+              <p><code>#join_google</code> is capped at <code>15 × PLAYER_JOIN_RATE_LIMIT_SCALE</code> per IP per 5 minutes — the lever added on 14 Sep so a room full of people on one venue NAT can all make accounts. <code>PlayerJoinsController</code>'s own gate is <code>30 per 5 minutes</code> and is <b>not scaled by anything</b>. At <code>SCALE = 1</code> the first gate binds; at <code>SCALE ≥ 3</code> the unscaled interstitial becomes the binding constraint on exactly the crowd the lever exists for.</p>
+              <p class="v">Worse, its refusal is <code>redirect_to you_path</code> with a "too many attempts" alert — a signed-out account page, not a message on the card they were standing on. Fix is one multiplication.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <aside class="notes below"><h3>Notes</h3><ol>
+      <li><span class="co">1</span><p><b>The controller's own comment understates its case.</b> It says the page "can be served from cache with an authenticity token of any age", which sounds like a problem for offline respondents only. The stronger fact is in <code>cached_play_page</code>: the HTML is cached as <em>shared bytes</em> keyed on link + deck version + locale, so for nearly every respondent the token in that page was minted during a stranger's request. A direct POST would fail for almost everyone, not for a slow-connection minority — which makes the interstitial more load-bearing than its own docstring claims, and option 3 correspondingly more serious.<span class="ref">§6</span></p></li>
+      <li><span class="co">2</span><p>This is the fact worth carrying out of the whole board: <b>the extra step is not the price of being a respondent, and not the price of the <code>google_player</code> strategy.</b> It is the price of the button standing on a page that is cached twice over. The respondent's own sign-in page runs the identical strategy in one tap.<span class="ref">§6</span></p></li>
+      <li><span class="co">3</span><p><b>And the sharpest version of the complaint is a two-line fix, not an architectural one.</b> <code>_join_block.html.erb</code> and <code>player_joins/show.html.erb</code> both draw their button from <code>t("auth.social_continue")</code> — the same string, twice, seconds apart. The page is not badly placed so much as badly labelled: it announces itself as the thing you just did. That is why option 2 goes first and option 1 waits to see whether anything is left to fix.<span class="ref">§6</span></p></li>
+    </ol>
+    <p class="cut">Rejected without further work: making <code>/play/:token</code> per-session so its token is live. The shared cache exists because rendering that page is a large share of a journey's CPU, and trading it for one tap would be paying in the thing that carries a venue full of respondents. Also rejected: allowing <code>GET</code> on the OmniAuth request phase — the config is global, so it would re-open creator sign-in to the cross-site initiation class that OmniAuth 2.0 closed.</p></aside>
+  </div>
+</section>

@@ -1,0 +1,93 @@
+<!-- ═══════════════════════════════════════ D ════════════════════════════════ -->
+<section class="board" id="board-d">
+  <div class="board-head"><span class="no">D</span><h2>The end card and <code>/you</code>, with the address proved</h2><span class="size">Before and after · four surfaces</span></div>
+  <div class="board-body wide">
+    <div class="stage"><div class="stage-row">
+
+      <div class="frame state-col">
+        <p class="state-cap">1 · The card's fine print</p>
+        <div class="ba" style="flex-direction:column;gap:16px">
+          <div class="col">
+            <span class="lab now">Today</span>
+            <div class="pcard">
+              <div class="pbtn">Create my account</div>
+              <div class="pfine">You're signed in the moment you're done — <b style="color:#FCD34D">nothing to wait for in your inbox</b>. We never post anything, and you can delete the account in one tap.</div>
+            </div>
+          </div>
+          <div class="col">
+            <span class="lab prop">Proposed</span>
+            <div class="pcard">
+              <div class="pbtn">Create my account</div>
+              <div class="pfine">You're signed in the moment you're done. We'll send one email to confirm the address, so the organisation can tell you what happens next. We never post anything, and you can delete the account in one tap.</div>
+            </div>
+          </div>
+        </div>
+        <p class="legend">The current sentence is the one thing in the product that <b>actively contradicts</b> this change, and it is the reason the copy edit is not optional dressing — it ships in the same commit or the card lies. 26 locale files.</p>
+        <span class="co abs" style="left:-11px;top:216px">1</span>
+      </div>
+
+      <div class="frame state-col">
+        <p class="state-cap">2 · <code>/you</code>, address not yet proved</p>
+        <div class="land" style="padding-top:14px">
+          <div class="you-bar" style="padding:0 0 12px"><svg viewBox="0 0 616 117" style="width:74px;height:14px"><use href="#wordmark"/></svg></div>
+          <div class="ybanner" style="width:auto;margin-bottom:12px">
+            <span class="ic">!</span>
+            <div>
+              <p class="bt">Confirm your email</p>
+              <p class="bb">We sent a link to priya.n@gmail.com. Until you tap it, Haverley Town Council can't tell you what happens next.</p>
+              <span class="ba-link">Send it again</span>
+            </div>
+          </div>
+          <div style="font-family:var(--alata);font-size:12px;color:rgba(255,255,255,.75)">Your Vertos</div>
+        </div>
+        <p class="legend">Amber, not red — the account works and nothing is blocked. <b>It cannot reuse the creator's banner:</b> <code>shared/_email_confirmation_banner</code> opens <code>if Current.user &amp;&amp; …</code>, so it is invisible to a respondent by construction. This is a new partial, drawn in the chrome <code>/you</code> already owns — the full-bleed <code>.you-beta</code> strip above the bar, and the <code>.you-flash</code> pill inside <code>.you-main</code>.</p>
+        <span class="co abs" style="left:-11px;top:60px">2</span>
+        <span class="co abs" style="left:-11px;top:118px">3</span>
+      </div>
+
+      <div class="frame state-col">
+        <p class="state-cap">3 · <code>/you/account</code> — the email row</p>
+        <div class="ba" style="flex-direction:column;gap:14px">
+          <div class="col">
+            <span class="lab now">Today, unverified</span>
+            <div class="land" style="padding:11px 12px"><div class="yrow"><span>priya.n@gmail.com</span></div></div>
+          </div>
+          <div class="col">
+            <span class="lab prop">Proposed, unverified</span>
+            <div class="land" style="padding:11px 12px">
+              <div class="yrow"><span>priya.n@gmail.com</span><span class="ytag no">Not confirmed</span></div>
+              <p style="font-family:var(--abz);font-size:11px;color:#FCD34D;margin:7px 0 0;text-decoration:underline">Send the link again</p>
+            </div>
+          </div>
+          <div class="col">
+            <span class="lab prop">Confirmed</span>
+            <div class="land" style="padding:11px 12px"><div class="yrow"><span>priya.n@gmail.com</span><span class="ytag ok">✓ Verified</span></div></div>
+          </div>
+        </div>
+        <p class="legend">One <code>&lt;% else %&gt;</code> on an <code>if</code> that already exists. The template renders the teal tag when verified and nothing at all otherwise; the amber tag fills that branch and the state stops being invisible.</p>
+        <span class="co abs" style="left:-11px;top:152px">4</span>
+      </div>
+
+      <div class="frame state-col">
+        <p class="state-cap">4 · What the creator sees</p>
+        <div class="land">
+          <div style="font-family:var(--alata);font-size:12px;color:rgba(255,255,255,.6);margin-bottom:9px">Audience for this Verto</div>
+          <div class="arow"><span>Kept this Verto</span><b style="color:#fff">412</b></div>
+          <div class="arow"><span>Can be emailed</span><b style="color:#01EACB">388</b></div>
+          <div class="arow" style="border-top:1px solid rgba(255,255,255,.12);margin-top:4px;padding-top:9px"><span>Waiting on confirmation</span><b style="color:#FCD34D">24</b></div>
+        </div>
+        <p class="legend"><b>Not proposed here, and noted so nobody assumes it.</b> Today the creator sees an audience count smaller than their claim count with no explanation for the gap. Naming the gap is the natural follow-up to this work, but it is a separate change on a different surface and it is costed separately in §9.</p>
+        <span class="co abs" style="left:-11px;top:130px">5</span>
+      </div>
+
+    </div></div>
+    <aside class="notes below"><h3>Notes</h3><ol>
+      <li><span class="co">1</span><p>Three sentences, one of which is new. It has to say <b>what confirming buys</b> rather than that an email is coming — "you'll get an email" is a cost with no stated benefit, and the card is asking for the address at the exact moment a respondent is deciding whether to close the tab.<span class="ref">§5 §7</span></p></li>
+      <li><span class="co">2</span><p>The banner renders on <code>/you</code> only, not on the end screen. The end screen belongs to the creator's Verto and already carries the card; putting a Playverto system banner there would be the third thing competing for the same moment. Note it is a <b>new partial rather than a reused one</b> — the creator's equivalent is gated on <code>Current.user</code> and a respondent is not one, which is a small cost the estimate carries rather than a blocker.<span class="ref">§4</span></p></li>
+      <li><span class="co">3</span><p><b>The resend is the part that needs care.</b> Rate-limited like the creator's (5 per 10 minutes) and reachable only from inside a signed-in session, so it can only ever mail the address of the account you are already in — which is what keeps it from being an enumeration oracle or a mail-bomb button. Note this is a different threat model from <code>#join</code>: that endpoint takes an address from an anonymous caller, this one takes none at all.<span class="ref">§4</span></p></li>
+      <li><span class="co">4</span><p>Sequencing that matters: the Google door already stamps <code>email_verified_at</code>, so the moment the amber tag exists it is correct for Google respondents without any further work. The tag is not new state — it is the state the database has been carrying all along, finally drawn.<span class="ref">§2</span></p></li>
+      <li><span class="co">5</span><p>One number worth having before this ships, and it is a one-line query rather than a project: <code>Player.where(email_verified_at: nil).where.not(password_digest: nil).count</code> — every respondent already in this position. They are the backfill question in §8, and whether that is 20 people or 2,000 changes whether a one-off mail-out is worth writing.<span class="ref">§8</span></p></li>
+    </ol>
+    <p class="cut">Explicitly out of scope: gating anything on confirmation. No blocked claim, no hidden results, no locked wallet. The creator gate for <code>User</code> is on publishing because an unproven creator can collect other people's birth dates under a borrowed address; an unproven respondent can only fail to hear back, so the consequence and the remedy are the same thing and a gate would add nothing but harm to conversion.</p></aside>
+  </div>
+</section>
