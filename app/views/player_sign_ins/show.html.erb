@@ -23,7 +23,38 @@
                                     : t("player_sign_in.signup_body") %>
         </p>
         <%= button_to t("player_sign_in.cta"), player_sign_in_path(params[:token]),
-              method: :post, class: "you-btn you-btn-primary", form: { style: "margin:0;" } %>
+              method: :post, class: "you-btn you-btn-primary",
+              form: { id: "player-sign-in-continue", style: "margin:0;" } %>
+        <%# A signup link was handed straight back to THIS browser a moment ago
+            on the end screen, so there is nobody to confirm anything to — and
+            the tap was costing real accounts. On 15 September, of the people
+            who typed an address and a password: 15 of 39 in the room never
+            pressed it, against 1 of 14 away from one. They all have an account
+            and a password; they just never landed in it.
+
+            The POST still does the work and is not being bypassed. It is the
+            only request in this flow with a usable cookie jar: #join runs
+            under protect_from_forgery :null_session, because the play page is
+            cached by the service worker and its CSRF token can be arbitrarily
+            stale, and under null_session a cookie write is a no-op. That is
+            why a link exists at all rather than #join simply signing someone
+            in. This only spares a person pressing a button on their own behalf.
+
+            Inline on purpose, and not a Stimulus controller: controllers are
+            lazy-loaded (config/importmap.rb pins them preload: false), so one
+            more module would have to arrive before this could fire — and the
+            people it is for were on congested venue wifi, which is exactly
+            where a module fetch is least likely to land. This runs at parse
+            time with no dependency on the bundle. The button above is the
+            no-JS path and still works untouched. %>
+        <% if @auto_continue %>
+          <script>
+            (function () {
+              var f = document.getElementById("player-sign-in-continue");
+              if (f && f.requestSubmit) f.requestSubmit();
+            })();
+          </script>
+        <% end %>
         <p class="you-fine"><%= t("player_sign_in.fine", minutes: (PlayerSignInLink::LIFETIME / 60).to_i) %></p>
       </div>
     <% else %>

@@ -149,6 +149,58 @@ class PlayerSignInTest < ActionDispatch::IntegrationTest
 
   # ── The token is never stored ─────────────────────────────────────────────
 
+  # ── A signup link continues on its own ────────────────────────────────────
+  # It was handed straight back to this browser on the end screen, so there is
+  # nobody to confirm it to. The tap had a measured cost on 15 September: of
+  # the people who typed an address and a password, 15 of 39 in a room never
+  # pressed it, against 1 of 14 away from one.
+
+  def signup_link_for(pl)
+    PlayerSignInLink.mint!(player: pl, origin: PlayerSignInLink::ORIGIN_SIGNUP)
+  end
+
+  test "a signup link's page continues on its own" do
+    _link, raw = signup_link_for(player)
+
+    get player_sign_in_path(raw)
+
+    assert_response :success
+    assert_select "form#player-sign-in-continue", 1,
+                  "the POST is still what signs anyone in — it is not being bypassed"
+    assert_match(/requestSubmit/, response.body,
+                 "a signup link should not wait for a tap nobody needs to make")
+  end
+
+  test "an emailed link still waits for a human" do
+    link, raw = link_for(player)
+
+    get player_sign_in_path(raw)
+
+    assert_response :success
+    refute_match(/requestSubmit/, response.body,
+                 "an emailed link is confirmed by whoever went and fetched it — auto-continuing " \
+                 "would hand the account to the first link scanner that follows the GET")
+    assert_nil link.reload.consumed_at
+  end
+
+  test "losing the consume race does not re-arm the auto-continue" do
+    # #create renders :show with @link STILL PRESENT when find_live returned a
+    # live link and consume! then lost to a concurrent request. If the template
+    # decided to auto-continue from the link alone, that render would post,
+    # fail, re-render and post again — forever. The flag is set in #show, which
+    # this path never runs.
+    link, raw = signup_link_for(player)
+    loser = PlayerSignInLink.find(link.id)
+    def loser.consume! = false
+
+    stub_method(PlayerSignInLink, :find_live, ->(*_a) { loser }) do
+      post player_sign_in_path(raw)
+    end
+
+    assert_response :unprocessable_entity
+    refute_match(/requestSubmit/, response.body, "this would be an endless submit loop")
+  end
+
   test "only the digest is kept, so a leaked row is not a working link" do
     pl = player
     link, raw = link_for(pl)

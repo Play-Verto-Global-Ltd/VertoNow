@@ -55,6 +55,16 @@ class PlayerSignInsController < ApplicationController
     # Nothing happens here. @link may be nil — the page says so rather than
     # 404ing, because "this link has already been used" is the single most
     # likely reason someone lands here and is worth saying plainly.
+    #
+    # A SIGNUP link continues on its own from here (see the view): nobody
+    # needs to confirm a link their own browser was handed ten seconds ago.
+    #
+    # Set in the action rather than derived in the template, because #create's
+    # failure path renders :show with @link still present. A template that
+    # auto-continued whenever it saw a signup link would post, fail to consume,
+    # re-render, and post again, forever. #create never sets this, so that
+    # render always shows a button and a human.
+    @auto_continue = @link.present? && !@link.proves_address?
   end
 
   def create
