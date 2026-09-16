@@ -1818,6 +1818,39 @@
           <% end %>
         </details>
 
+        <%# Custom links — the per-audience /play addresses (SurveyLink). Named
+            for what the modal it opens calls them, and for what the creator who
+            reported this went looking for. NOT "Audience links": the panel
+            already has an Audience block (who may answer), and the two sitting
+            together read as one feature split in half — which is also how a
+            browser test looking for /audience/i found two of them. The
+            panel they live in is the dashboard's share modal, which this editor
+            has hosted as a frame all along for the phone dock; nothing on
+            desktop ever opened it, and the dashboard's own Share button only
+            appears once a Verto is live. So a creator working on a draft went
+            looking for "custom links" in the one place they'd expect to find
+            them and found nothing — which is how this was reported.
+
+            Shown for EVERY publish state on purpose. The panel handles a draft
+            itself ("Publish it and these links start working. You can set them
+            up now."), and setting an audience up before launch is the point.
+            Admin-only, matching both the modal shell at the foot of this file
+            and the require_admin! on SurveyLinksController behind it. %>
+        <% if current_membership&.admin? %>
+          <details class="publish-block">
+            <summary class="publish-block-title">Custom links <span class="pub-chev">⌄</span></summary>
+            <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:10px;">
+              Give each audience its own link — a newsletter, a partner school, a poster — and see
+              how many respond through each. You can set them up now; they start working when the
+              Verto is published.
+            </div>
+            <button type="button"
+                    data-action="click->share-modal#open"
+                    data-panel-url="<%= share_survey_path(@survey) %>"
+                    style="width:100%;padding:8px;border-radius:10px;background:transparent;color:rgba(255,255,255,0.78);font-family:'ABeeZee',sans-serif;font-size: var(--text-base);border:1px solid rgba(255,255,255,0.2);cursor:pointer;">Manage custom links →</button>
+          </details>
+        <% end %>
+
         <%# Test Mode — a second kind of link: shareable without sign-in,
             plays the full Verto (drafts included), keeps working while you
             edit, and records nothing. Served from /test/ (not /play/) so the

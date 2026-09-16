@@ -528,6 +528,43 @@ class ShareLinksTest < ActionDispatch::IntegrationTest
     assert_select "form.share-new button[type=submit]", 1
   end
 
+  # The reported complaint was "I can't find the custom links option in the
+  # Share panel" — from a DRAFT, where the dashboard's Share button does not
+  # appear and the editor had no way into the panel at all. The panel itself
+  # has always handled a draft; it was simply unreachable.
+  test "the editor opens the audience-links panel, draft or live" do
+    org = sign_in_org("audience")
+    draft = org.surveys.create!(title: "D", theme: "T", audience_age: "all", key_insight: "x",
+                                default_locale: "en", locales: [ "en" ], cards: CARDS)
+    live = published_survey(org)
+
+    [ draft, live ].each do |survey|
+      get survey_path(survey)
+      assert_response :success
+      # Scoped to the publish panel: the phone dock has its own trigger for the
+      # same modal, and this is about the desktop panel that had none.
+      assert_select ".publish-panel button[data-action='click->share-modal#open'][data-panel-url=?]",
+                    share_survey_path(survey), { count: 1 },
+                    "#{survey.published? ? 'a live' : 'a draft'} Verto needs a way into the panel"
+    end
+
+    # And the panel it opens says what a draft can do rather than turning it away.
+    get share_survey_path(draft)
+    assert_response :success
+    assert_select ".share-notice", text: /#{Regexp.escape(I18n.t('share_modal.not_live_body'))}/
+    assert_select "form.share-new button[type=submit]", 1
+  end
+
+  test "a non-admin gets no audience-links entry point" do
+    org = sign_in_org("audience-member", role: "member")
+    survey = published_survey(org)
+
+    get survey_path(survey)
+    assert_response :success
+    assert_select "button[data-action='click->share-modal#open']", { count: 0 },
+                  "the panel behind it is admin-only, so the door must be too"
+  end
+
   test "the editor's own custom-link field carries one too" do
     org = sign_in_org("submit-editor")
     survey = published_survey(org)
