@@ -21,8 +21,15 @@ module Authentication
       resume_session || request_authentication
     end
 
+    # Resolving the session is also the moment we learn the account is still
+    # being used, so it is where that gets recorded — see Session#touch_seen!
+    # for why, and for why it is throttled rather than written every request.
+    # The return value is unchanged: require_authentication and authenticated?
+    # both read it as a truthy check.
     def resume_session
       Current.session ||= find_session_by_cookie
+      Current.session&.touch_seen!
+      Current.session
     end
 
     def find_session_by_cookie
