@@ -74,6 +74,8 @@ export default class extends Controller {
 
   disconnect() {
     if (this._escHandler) document.removeEventListener("keydown", this._escHandler)
+    if (this._onResize) window.removeEventListener("resize", this._onResize)
+    clearTimeout(this._fitTimer)
     if (this._zoomRaf) cancelAnimationFrame(this._zoomRaf)
     this._exitFullscreen()
   }
@@ -105,6 +107,86 @@ export default class extends Controller {
       ;[ overall, ...regions ].filter(Boolean).forEach(s => this._selected.add(s.id))
     }
     this._paintMap()
+    this._fitHomeView()
+
+    // The fit depends on the band's aspect ratio, so it has to be redone when
+    // that changes — a window resize, and the panel opening or closing, which
+    // moves the map between a full-width band and a column beside the panel.
+    this._onResize = () => {
+      clearTimeout(this._fitTimer)
+      this._fitTimer = setTimeout(() => this._fitHomeView({ animate: true }), 120)
+    }
+    window.addEventListener("resize", this._onResize)
+  }
+
+  // ── The view the map opens on, fitted to the countries that have responses.
+  // A fixed world view spends most of a full-width band on empty Pacific for
+  // a study nobody outside Europe answered; this frames what there is to see
+  // and opens out to the whole world when the responses really are global.
+  //
+  // It sets _worldViewBox rather than the viewBox directly, because that is
+  // the box _updateMapZoom returns to when a comparison is cleared — the
+  // "home" of the existing zoom, not a competing one.
+  _fitHomeView({ animate = false } = {}) {
+    if (!this._mapSvg) return
+
+    const boxes = Object.entries(this._mapData)
+      .filter(([ , d ]) => d.segment_ids?.length)
+      .map(([ cc ]) => this._mapSvg.querySelector("#" + cc))
+      .filter(Boolean)
+      .map(el => this._boundsElFor(el).getBBox())
+      .filter(b => b.width > 0 && b.height > 0)
+
+    // No tagged regions (a waves-only comparison) — the whole world is the
+    // only honest frame.
+    if (!boxes.length) { this._applyHome(this._fullViewBox, animate); return }
+
+    let x0 = Math.min(...boxes.map(b => b.x))
+    let y0 = Math.min(...boxes.map(b => b.y))
+    let x1 = Math.max(...boxes.map(b => b.x + b.width))
+    let y1 = Math.max(...boxes.map(b => b.y + b.height))
+
+    // Breathing room around the data, and a floor on it: one small country
+    // fitted tightly is a meaningless close-up of a coastline.
+    const pad = Math.max((x1 - x0) * 0.35, (y1 - y0) * 0.35, 30)
+    x0 -= pad; x1 += pad; y0 -= pad; y1 += pad
+    let w = Math.max(x1 - x0, 150)
+    let h = Math.max(y1 - y0, 75)
+    const cx = (x0 + x1) / 2
+    const cy = (y0 + y1) / 2
+
+    // THE BAND'S HEIGHT FOLLOWS THE DATA. Fixing the height and fitting the
+    // map into it is what crops: a spread from the US to South Africa cannot
+    // sit in a 3.2:1 strip, and the country that falls outside it is one with
+    // responses — the single thing the map exists to show. So the strip gets
+    // taller for a scattered audience and shorter for a local one, between
+    // bounds that keep it a band either way.
+    const width = this._mapSvg.getBoundingClientRect().width || 1440
+    const bandH = Math.min(560, Math.max(300, width * (h / w)))
+    this.element.style.setProperty("--map-band-h", `${Math.round(bandH)}px`)
+
+    // Grow the short axis to the band's aspect — growing, never cropping, so
+    // everything inside the padded box survives.
+    const aspect = width / bandH
+    if (w / h < aspect) w = h * aspect
+    else h = w / aspect
+
+    // The source map is the limit: a box larger than the world just shows the
+    // world, and one running off an edge is pulled back inside it.
+    const [ fx, fy, fw, fh ] = this._fullViewBox
+    w = Math.min(w, fw)
+    h = Math.min(h, fh)
+    this._applyHome([
+      Math.min(Math.max(cx - w / 2, fx), fx + fw - w),
+      Math.min(Math.max(cy - h / 2, fy), fy + fh - h),
+      w, h
+    ], animate)
+  }
+
+  _applyHome(box, animate) {
+    this._worldViewBox = box
+    if (animate) this._updateMapZoom()
+    else this._mapSvg.setAttribute("viewBox", box.join(" "))
   }
 
   // ── Map: click a country to toggle its region segment into the comparison ──
@@ -117,7 +199,8 @@ export default class extends Controller {
     this._mapData = dataEl ? JSON.parse(dataEl.textContent) : {}
     if (!this._mapSvg) return
 
-    this._worldViewBox = this._mapSvg.getAttribute("viewBox").trim().split(/\s+/).map(Number)
+    this._fullViewBox  = this._mapSvg.getAttribute("viewBox").trim().split(/\s+/).map(Number)
+    this._worldViewBox = this._fullViewBox
 
     Object.entries(this._mapData).forEach(([ cc, d ]) => {
       const el = this._mapSvg.querySelector("#" + cc)

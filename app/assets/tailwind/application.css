@@ -5131,6 +5131,99 @@ button.editor-leave-btn { cursor: pointer; }
   border-bottom: 1px solid rgba(255,255,255,0.06);
   background: #1C2034;
 }
+/* ── The map band ───────────────────────────────────────────────────────────
+   Full-bleed under the filters, with its edges masked away on all four sides
+   so it dissolves into the page rather than ending on a border. The mask is
+   on the map's own stage, NOT on .regions-box-body: the compare panel and the
+   segment picker are siblings inside that body, and masking them would fade
+   the panel's own edges too. */
+.results-map-band { position: relative; margin-bottom: -46px; }
+.results-map-band .regions-box-body { overflow: visible; }
+.results-map-band .compare-stage-row { gap: 0; }
+/* Full width, not the inline preview's 640px cap. */
+.results-map-band .compare-map-stage { max-width: none; margin: 0; }
+.results-map-band .compare-map-stage .world-map {
+  display: block; width: 100%;
+  /* The controller sets --map-band-h from the spread of the data; the clamp
+     is what the band is before JS has measured anything. In compare mode the
+     body is moved out to <body>, so none of these band rules apply and the
+     map goes back to its natural size. */
+  height: var(--map-band-h, clamp(300px, 46vh, 560px));
+  -webkit-mask-image:
+    linear-gradient(180deg, transparent 0%, #000 18%, #000 58%, transparent 100%),
+    linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(180deg, transparent 0%, #000 18%, #000 58%, transparent 100%),
+    linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+  mask-composite: intersect;
+}
+/* Compare mode takes the map full-screen to be READ, not to be pretty: the
+   vignette would swallow whichever country sat near an edge. */
+.regions-box-body.is-fullscreen .world-map {
+  -webkit-mask-image: none; mask-image: none;
+  height: auto; max-height: none;
+}
+.results-map-scrim {
+  position: absolute; inset-inline: 0; top: 0; height: 96px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(28,32,52,0.88), rgba(28,32,52,0));
+}
+.results-map-chrome {
+  position: absolute; inset-inline: 0; top: 0; z-index: 2;
+  margin-bottom: 0; padding: 14px 24px;
+  /* The row is an overlay; only its controls should take the pointer, or it
+     covers the top of a map whose whole job is being clicked. */
+  pointer-events: none;
+}
+.results-map-chrome > button { pointer-events: auto; }
+.results-map-eyebrow {
+  font-family: "Alata", sans-serif; font-size: var(--text-sm);
+  letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.62);
+}
+.results-map-hint { font-family: "ABeeZee", sans-serif; font-size: var(--text-xs); color: rgba(255,255,255,0.4); }
+.results-map-compare { margin-inline-start: auto; }
+
+/* The reading column: the gutter the scroll container gave up so the map
+   could go full-bleed. */
+.results-feed-col {
+  position: relative; z-index: 1;
+  max-width: 780px; margin: 0 auto; padding: 0 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* ── The summary, on the map's fade ─────────────────────────────────────────
+   No card: a border here would re-draw the line the mask just dissolved. */
+.results-summary {
+  background: transparent; border: none; border-radius: 0; padding: 0;
+}
+.results-summary-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.results-summary-eyebrow {
+  font-family: "Alata", sans-serif; font-size: var(--text-sm);
+  color: rgba(255,255,255,0.45); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.results-summary-thinking { font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); }
+.results-summary-lead, .results-summary-rest {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-md);
+  color: rgba(255,255,255,0.72); line-height: 1.8; white-space: pre-wrap;
+}
+.results-summary-lead { min-height: 18px; }
+.results-summary-rest { margin-top: 1.1em; }
+.results-summary-more {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 10px; padding: 0; background: none; border: none; cursor: pointer;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: #01EACB;
+}
+.results-summary-more:hover { text-decoration: underline; text-underline-offset: 3px; }
+.results-summary-more svg { transition: transform 0.15s; }
+.results-summary-more.is-open svg { transform: rotate(180deg); }
+
+@media (max-width: 640px) {
+  .results-map-band { margin-bottom: -28px; }
+  .results-map-chrome { padding: 12px 16px; flex-wrap: wrap; gap: 6px; }
+  .results-map-hint { display: none; }
+  .results-feed-col { padding: 0 16px; }
+}
+
 /* ── Results header ─────────────────────────────────────────────────────────
    The tally, the exports and the two filters, pinned under the top bar. It is
    a sibling of the scrolling feed rather than its first child: sticky inside a

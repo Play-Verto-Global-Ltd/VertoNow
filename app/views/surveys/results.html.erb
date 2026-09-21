@@ -100,135 +100,188 @@
         guess, and guesses the filters' wrapping would break. The stage never
         scrolls (the feed inside it does), so the panel still holds still. %>
     <div class="results-stage">
-    <%# Scrollable results feed %>
-    <div style="flex:1;overflow-y:auto;padding:24px 24px 48px;">
-      <div style="max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:14px;">
+    <%# Scrollable results feed. No horizontal padding of its own — the map
+        band below is full-bleed, and the reading column re-applies the gutter
+        for everything that is not the map. %>
+    <div style="flex:1;overflow-y:auto;padding:0 0 48px;">
 
-        <%# ── Ask Verto summary card (brand-coloured generating state) ── %>
-        <div id="av-card" class="summary-card" style="border-radius:14px;background:rgba(1,234,203,0.05);border:1px solid rgba(1,234,203,0.18);padding:18px 22px;">
-          <div class="summary-rainbow"></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-            <span style="font-family:'Alata',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-transform:uppercase;"><%= t("results.ask_verto") %></span>
-            <span id="av-thinking" class="gen-shimmer--brand" style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);margin-left:2px;"><%= t("results.analysing") %></span>
+<%# ── The map, full width, under the filters ─────────────────────────────
+    A band rather than a card: it is the first thing under the filters and the
+    last thing before the summary, and its edges are masked away on all four
+    sides so it dissolves into the page instead of ending on a border. The
+    summary is then lifted onto that dissolve, which is what makes the two
+    read as one surface rather than two stacked blocks.
+
+    The view it opens on is FITTED to the countries that actually have
+    responses (results_compare_controller#_fitHomeView) — a Europe-only study
+    gets Europe, a global one gets the world. A fixed world view would spend
+    most of a 1440px band on empty Pacific. ── %>
+<%# ── Regions map — where responses came from (region-tagged Vertos) ──
+    Also the compare-panel's mount point, so it appears whenever
+    there's anything to compare even without a single tagged region:
+    _setupMap already tolerates empty map data (results_compare_
+    controller.js), the map just shows untinted in that case. %>
+<% region_segments = @segments.select { |s| s[:id].to_s.start_with?("region_") } %>
+<% wave_ids = @wave_stats&.size.to_i >= 2 ? @wave_stats.map { |s| "wave_#{s[:wave].position}" } : [] %>
+<% if region_segments.any? || wave_ids.any? %>
+  <%
+    # cc → { count:, name:, segment_ids: [...] }: one region segment
+    # per country (see ResolvesResultSegments), keyed here by its
+    # lowercase map shape id.
+    map_data = {}
+    region_segments.each do |seg|
+      next if seg[:country].blank?
+      cc = seg[:country].downcase
+      map_data[cc] ||= { count: 0, name: WorldRegions.name_for(seg[:country]), segment_ids: [] }
+      map_data[cc][:count] += seg[:count]
+      map_data[cc][:segment_ids] << seg[:id]
+    end
+  %>
+  <div class="results-map-band" data-controller="results-compare"
+       data-results-compare-url-value="<%= survey_results_compare_path(@survey) %>"
+       data-results-compare-summarize-url-value="<%= survey_results_summarize_texts_path(@survey) %>"
+       <%# Waves take priority as the default comparison when both exist
+           — running waves usually means the owner is mid-study and
+           wants that lens first; regions stay one click away in the
+           same picker either way. %>
+       data-results-compare-preselect-value="<%= wave_ids.any? ? (["overall"] + wave_ids).to_json : "" %>">
+    <div class="regions-box-head">
+      <span style="font-family:'Alata',sans-serif;font-size: var(--text-sm);letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);">🌍 <%= region_segments.any? ? "Audience segments" : "Compare segments" %></span>
+      <span style="font-family:'ABeeZee',sans-serif;font-size: var(--text-xs);color:rgba(255,255,255,0.35);">
+        <%= region_segments.any? ? "Click a country on the map to compare segments of your audience" : "Compare waves, or any other segment, side by side" %>
+      </span>
+      <button type="button" class="compare-open-btn" style="margin-left:auto;"
+              data-results-compare-target="openBtn"
+              data-action="click->results-compare#toggle">⛶ Compare segments</button>
+    </div>
+
+    <%# ── Map stays visible & clickable at all times; the comparison
+        panel docks beside it (never over it, so nothing on the map
+        is ever hidden behind the panel). Compare mode takes this
+        whole stage (map + panel) full-screen for real room to
+        compare — see the controller for why it's this element (not
+        the controller root above) that gets moved to <body>. ── %>
+    <div class="regions-box-body" data-results-compare-target="stage">
+      <div class="compare-stage-row">
+        <div class="regions-map-col">
+          <%# Positioned wrapper the controller zooms against — when
+              every selected segment is in one country, the map zooms
+              in on that country's shape for a closer look. ── %>
+          <div class="compare-map-stage" data-results-compare-target="mapStage">
+            <%= render "shared/world_map" %>
           </div>
-          <div id="av-text"
-               style="font-family:'ABeeZee',sans-serif;font-size: var(--text-md);color:rgba(255,255,255,0.65);line-height:1.8;white-space:pre-wrap;min-height:18px;"></div>
         </div>
 
-        <script>
-          (function() {
-            const card    = document.getElementById("av-card")
-            const textEl  = document.getElementById("av-text")
-            const thinkEl = document.getElementById("av-thinking")
-            card.classList.add("is-generating")
-            const stop = () => { card.classList.remove("is-generating"); thinkEl.style.display = "none" }
-            fetch(<%= survey_results_summary_path(@survey).to_json.html_safe %>)
-              .then(async r => {
-                // A 503 means every streaming slot is busy, not that insights
-                // are broken — show the server's wording, which says to retry.
-                if (!r.ok) throw new Error((await r.text()).trim())
-                const reader = r.body.getReader()
-                const dec    = new TextDecoder()
-                let started  = false
-                function pump() {
-                  return reader.read().then(({ done, value }) => {
-                    if (done) { stop(); return }
-                    if (!started) { started = true; stop() }
-                    textEl.textContent += dec.decode(value, { stream: true })
-                    return pump()
-                  })
-                }
-                return pump()
-              })
-              .catch(err => {
-                stop()
-                textEl.textContent = (err && err.message) || "Insights unavailable right now."
-                textEl.style.color = "rgba(255,255,255,0.2)"
-              })
-          })()
-        </script>
-
-        <%# ── Regions map — where responses came from (region-tagged Vertos) ──
-            Also the compare-panel's mount point, so it appears whenever
-            there's anything to compare even without a single tagged region:
-            _setupMap already tolerates empty map data (results_compare_
-            controller.js), the map just shows untinted in that case. %>
-        <% region_segments = @segments.select { |s| s[:id].to_s.start_with?("region_") } %>
-        <% wave_ids = @wave_stats&.size.to_i >= 2 ? @wave_stats.map { |s| "wave_#{s[:wave].position}" } : [] %>
-        <% if region_segments.any? || wave_ids.any? %>
-          <%
-            # cc → { count:, name:, segment_ids: [...] }: one region segment
-            # per country (see ResolvesResultSegments), keyed here by its
-            # lowercase map shape id.
-            map_data = {}
-            region_segments.each do |seg|
-              next if seg[:country].blank?
-              cc = seg[:country].downcase
-              map_data[cc] ||= { count: 0, name: WorldRegions.name_for(seg[:country]), segment_ids: [] }
-              map_data[cc][:count] += seg[:count]
-              map_data[cc][:segment_ids] << seg[:id]
-            end
-          %>
-          <div class="regions-box" data-controller="results-compare"
-               data-results-compare-url-value="<%= survey_results_compare_path(@survey) %>"
-               data-results-compare-summarize-url-value="<%= survey_results_summarize_texts_path(@survey) %>"
-               <%# Waves take priority as the default comparison when both exist
-                   — running waves usually means the owner is mid-study and
-                   wants that lens first; regions stay one click away in the
-                   same picker either way. %>
-               data-results-compare-preselect-value="<%= wave_ids.any? ? (["overall"] + wave_ids).to_json : "" %>">
-            <div class="regions-box-head">
-              <span style="font-family:'Alata',sans-serif;font-size: var(--text-sm);letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);">🌍 <%= region_segments.any? ? "Audience segments" : "Compare segments" %></span>
-              <span style="font-family:'ABeeZee',sans-serif;font-size: var(--text-xs);color:rgba(255,255,255,0.35);">
-                <%= region_segments.any? ? "Click a country on the map to compare segments of your audience" : "Compare waves, or any other segment, side by side" %>
-              </span>
-              <button type="button" class="compare-open-btn" style="margin-left:auto;"
-                      data-results-compare-target="openBtn"
-                      data-action="click->results-compare#toggle">⛶ Compare segments</button>
+        <div class="compare-panel hidden" data-results-compare-target="panel">
+          <div class="compare-panel-head">
+            <div>
+              <div class="compare-panel-title">Compare segments</div>
+              <div class="compare-panel-meta" data-results-compare-target="meta">Loading…</div>
             </div>
-
-            <%# ── Map stays visible & clickable at all times; the comparison
-                panel docks beside it (never over it, so nothing on the map
-                is ever hidden behind the panel). Compare mode takes this
-                whole stage (map + panel) full-screen for real room to
-                compare — see the controller for why it's this element (not
-                the controller root above) that gets moved to <body>. ── %>
-            <div class="regions-box-body" data-results-compare-target="stage">
-              <div class="compare-stage-row">
-                <div class="regions-map-col">
-                  <%# Positioned wrapper the controller zooms against — when
-                      every selected segment is in one country, the map zooms
-                      in on that country's shape for a closer look. ── %>
-                  <div class="compare-map-stage" data-results-compare-target="mapStage">
-                    <%= render "shared/world_map" %>
-                  </div>
-                </div>
-
-                <div class="compare-panel hidden" data-results-compare-target="panel">
-                  <div class="compare-panel-head">
-                    <div>
-                      <div class="compare-panel-title">Compare segments</div>
-                      <div class="compare-panel-meta" data-results-compare-target="meta">Loading…</div>
-                    </div>
-                    <button type="button" class="compare-close-btn" aria-label="Close">✕</button>
-                  </div>
-                  <div class="compare-body" data-results-compare-target="body"></div>
-                </div>
-              </div>
-
-              <%# A single horizontally-scrolling row along the bottom of the
-                  screen — not a wrapped grid beside the map — so picking
-                  regions never eats into the map's own space. Lives outside
-                  .compare-stage-row so it spans the full width, under both
-                  the map and the panel. ── %>
-              <div class="compare-picker-wrap hidden" data-results-compare-target="pickerWrap">
-                <div class="compare-picker-label">🌍 Segments — click to add or remove</div>
-                <div class="compare-picker" data-results-compare-target="picker"></div>
-              </div>
-            </div>
+            <button type="button" class="compare-close-btn" aria-label="Close">✕</button>
           </div>
-          <script type="application/json" id="results-region-map-data"><%= map_data.to_json.html_safe %></script>
-        <% end %>
+          <div class="compare-body" data-results-compare-target="body"></div>
+        </div>
+      </div>
+
+      <%# A single horizontally-scrolling row along the bottom of the
+          screen — not a wrapped grid beside the map — so picking
+          regions never eats into the map's own space. Lives outside
+          .compare-stage-row so it spans the full width, under both
+          the map and the panel. ── %>
+      <div class="compare-picker-wrap hidden" data-results-compare-target="pickerWrap">
+        <div class="compare-picker-label">🌍 Segments — click to add or remove</div>
+        <div class="compare-picker" data-results-compare-target="picker"></div>
+      </div>
+    </div>
+  </div>
+  <script type="application/json" id="results-region-map-data"><%= map_data.to_json.html_safe %></script>
+<% end %>
+
+<%# The reading column: everything that is not the map. Lifted onto the map's
+    bottom fade, which is what makes the two bleed into one another rather
+    than stacking. %>
+<div class="results-feed-col">
+
+<%# ── Ask Verto summary ── the lead paragraph only, lifted onto the map's
+    fade. The rest is a click away: this is the top of the page, and four
+    paragraphs of prose between the map and the first question is a wall to
+    scroll past for anyone who came for the numbers. ── %>
+<div id="av-card" class="summary-card results-summary">
+  <div class="summary-rainbow"></div>
+  <div class="results-summary-head">
+    <span class="results-summary-eyebrow"><%= t("results.ask_verto") %></span>
+    <span id="av-thinking" class="gen-shimmer--brand results-summary-thinking"><%= t("results.analysing") %></span>
+  </div>
+  <div class="results-summary-body">
+    <div id="av-text" class="results-summary-lead"></div>
+    <div id="av-rest" class="results-summary-rest" hidden></div>
+    <button type="button" id="av-more" class="results-summary-more" hidden
+            aria-expanded="false" aria-controls="av-rest">
+      <span class="results-summary-more-label">See more</span>
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M4 6.5 8 10.5l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const card    = document.getElementById("av-card")
+    const leadEl  = document.getElementById("av-text")
+    const restEl  = document.getElementById("av-rest")
+    const moreBtn = document.getElementById("av-more")
+    const thinkEl = document.getElementById("av-thinking")
+    card.classList.add("is-generating")
+    const stop = () => { card.classList.remove("is-generating"); thinkEl.style.display = "none" }
+
+    // The text arrives as a stream, so the split has to be redone on every
+    // chunk: the first paragraph is not knowable until the blank line after
+    // it lands, and until then everything IS the first paragraph.
+    let full = ""
+    const paint = () => {
+      const parts = full.split(/\n{2,}/)
+      leadEl.textContent = parts[0] || ""
+      const rest = parts.slice(1).join("\n\n")
+      restEl.textContent = rest
+      moreBtn.hidden = rest.length === 0
+    }
+
+    moreBtn.addEventListener("click", () => {
+      const open = restEl.hasAttribute("hidden")
+      restEl.toggleAttribute("hidden", !open)
+      moreBtn.setAttribute("aria-expanded", String(open))
+      moreBtn.classList.toggle("is-open", open)
+      moreBtn.querySelector(".results-summary-more-label").textContent = open ? "See less" : "See more"
+    })
+
+    fetch(<%= survey_results_summary_path(@survey).to_json.html_safe %>)
+      .then(async r => {
+        // A 503 means every streaming slot is busy, not that insights
+        // are broken — show the server's wording, which says to retry.
+        if (!r.ok) throw new Error((await r.text()).trim())
+        const reader = r.body.getReader()
+        const dec    = new TextDecoder()
+        let started  = false
+        function pump() {
+          return reader.read().then(({ done, value }) => {
+            if (done) { stop(); return }
+            if (!started) { started = true; stop() }
+            full += dec.decode(value, { stream: true })
+            paint()
+            return pump()
+          })
+        }
+        return pump()
+      })
+      .catch(err => {
+        stop()
+        leadEl.textContent = (err && err.message) || "Insights unavailable right now."
+        leadEl.style.color = "rgba(255,255,255,0.2)"
+      })
+  })()
+</script>
 
         <%# ── Filterable feed: stats + segment pills + per-question cards ── %>
         <%= turbo_frame_tag "results-feed" do %>
@@ -391,7 +444,7 @@
 
         <% end %><%# end results-feed turbo-frame %>
 
-      </div>
+</div><%# end reading column %>
     </div><%# end scrollable feed %>
 
   <%# ── Ask Verto ── a floating CTA that opens the chat OVER the feed rather
