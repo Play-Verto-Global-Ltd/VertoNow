@@ -267,15 +267,17 @@ it describes is real, so keep the list short.
 
 The `VertoNowMain` service (the dashboard's name for what `render.yaml` and
 section 1 call `survey-poc`) is image-backed: it runs
-`ghcr.io/napps9/survey-poc:main`, the image CI's `build_image` job pushed,
+`ghcr.io/play-verto-global-ltd/vertonow:main`, the image CI's `build_image`
+job pushed,
 instead of rebuilding from source after every hook (2–3 minutes per deploy;
 a pull is about one). How a commit reaches production:
 
-1. Every Main run pushes `ghcr.io/napps9/survey-poc:<sha>` (`build_image`,
-   alongside the test jobs).
+1. Every Main run pushes `ghcr.io/play-verto-global-ltd/vertonow:<sha>`
+   (`build_image`, alongside the test jobs).
 2. Once every other job is green, the `deploy` job moves `:main` onto that
    sha (`docker buildx imagetools create`, a registry-side retag, no rebuild)
-   and POSTs the Deploy Hook with `imgURL=ghcr.io/napps9/survey-poc:<sha>`.
+   and POSTs the Deploy Hook with
+   `imgURL=ghcr.io/play-verto-global-ltd/vertonow:<sha>`.
    Render pulls that exact image and restarts.
 
 What follows from that:
@@ -292,17 +294,44 @@ What follows from that:
   asked.
 - **Rollback (section 1) re-pulls from GHCR, not from Render.** Render records
   each deploy's image digest and "Rollback to this deploy" pulls it again from
-  `ghcr.io/napps9/survey-poc`; Render holds no copy of a pulled image (it did
+  the package it was deployed from; Render holds no copy of a pulled image (it did
   of the source builds this replaced). So never prune the package: the
   `:<sha>` versions are the rollback history, and the "untagged" versions the
   package UI shows are the per-platform and provenance manifests each tagged
   image points at — deleting them breaks that tag. A dashboard rollback moves
   what is live, not `:main`. To put an exact commit back from CI's side, POST
-  the hook yourself with `imgURL=ghcr.io/napps9/survey-poc:<known-good sha>`.
+  the hook yourself with
+  `imgURL=ghcr.io/play-verto-global-ltd/vertonow:<known-good sha>`.
+- **Rolling back past 21 September 2026 pulls a different package.** Every
+  `:<sha>` built before the namespace move lives on `ghcr.io/napps9/survey-poc`
+  and nowhere else — GHCR packages do not move between namespaces, so those
+  images were not carried over. A dashboard "Rollback to this deploy" to one of
+  them works untouched (Render replays the digest it recorded), but a hook POST
+  naming one has to spell the OLD path: `imgURL=ghcr.io/napps9/survey-poc:<sha>`.
+  So never delete that package either; it is the rollback history for
+  everything before the move.
+- **Why the image is in the org's namespace** (moved 2026-09-21). While the
+  repository lived under `napps9`, repo and package shared an owner and
+  `build_image`'s `GITHUB_TOKEN` could push with `packages: write` alone —
+  which is why ci.yml carries no registry credential. Transferring the
+  repository to the org broke that link, and pushes started being refused with
+  `denied: permission_denied: The requested installation does not exist`: not
+  a code failure, and not one any commit could fix. Run 801 is what it looked
+  like — every test job green, the image built, only the push refused, the
+  commit left on Main with the deploy job skipped. **Manage Actions access on
+  the personal package is not a way out of this**, checked on the day: its
+  "Add Repository" picker lists only that account's own repositories, so the
+  org repo cannot be added and there is no grant to give. Moving the image to
+  a package the repository's own owner holds was the only route, and it is one
+  that cannot lapse.
 - **The GHCR package is public** (a public repo's image contains nothing the
   repo does not; CI builds it with no secrets), so the service has no registry
-  credential. If the package is ever made private, add a classic personal
-  access token with `read:packages` as a Render registry credential.
+  credential. This is a setting, not a default: GHCR creates a package
+  **private**, so the org package was made public by hand at
+  **Package settings → Change visibility** after CI first pushed it, and a
+  deploy naming an image Render cannot pull fails on the pull. If the package
+  is ever made private again, add a classic personal access token with
+  `read:packages` as a Render registry credential.
 - The switch was made in place (Settings → Build & Deploy → Repository →
   Edit → Existing Image), with environment variables, the persistent disk
   and the pre-deploy command untouched. `render.yaml` mirrors the image

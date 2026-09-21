@@ -267,7 +267,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Move the main tag onto this commit's image
-        run: docker buildx imagetools create -t ghcr.io/napps9/survey-poc:main "ghcr.io/napps9/survey-poc:${GITHUB_SHA}"
+        run: docker buildx imagetools create -t ghcr.io/play-verto-global-ltd/vertonow:main "ghcr.io/play-verto-global-ltd/vertonow:${GITHUB_SHA}"
 
       - name: Trigger the Render deploy
         env:
@@ -282,8 +282,8 @@ jobs:
             exit 1
           fi
           case "$HOOK" in *\?*) sep='&' ;; *) sep='?' ;; esac
-          if curl -fsS -X POST "${HOOK}${sep}imgURL=ghcr.io/napps9/survey-poc:${GITHUB_SHA}" -o /dev/null; then
-            echo "Render deploy triggered for ghcr.io/napps9/survey-poc:${GITHUB_SHA}."
+          if curl -fsS -X POST "${HOOK}${sep}imgURL=ghcr.io/play-verto-global-ltd/vertonow:${GITHUB_SHA}" -o /dev/null; then
+            echo "Render deploy triggered for ghcr.io/play-verto-global-ltd/vertonow:${GITHUB_SHA}."
           else
             echo "::error::Deploy hook POST failed — nothing else deploys this commit. :main already names it, so Render's Manual Deploy > Deploy latest reference deploys it; re-run this job only while nothing newer has been pushed to Main (a re-run moves :main back here and cancels any newer run in flight); otherwise let the newer run deploy, or use Deploy latest reference."
             exit 1
@@ -321,12 +321,23 @@ jobs:
       # secrets needed - docker build only runs bundle install, bootsnap
       # precompile, and SECRET_KEY_BASE_DUMMY=1 assets:precompile (already in
       # the Dockerfile).
+      #
+      # The package sits in the org's namespace, the same owner as this
+      # repository, so the GITHUB_TOKEN above can write it with `packages:
+      # write` and nothing else. That is the point of it being there: the
+      # personal `napps9/survey-poc` this replaced became unwritable the
+      # moment the repository moved to the org (run 801, 21 September — every
+      # test job green, the image built, only the push refused), and it could
+      # not be granted back. A personal package's Manage-Actions-access picker
+      # offers that account's OWN repositories and nothing else, so there was
+      # no grant to give. Pre-move `:<sha>` images are still on that package —
+      # see DEPLOYMENT_RUNBOOK §7 before rolling back past the move.
       - name: Build the production image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: ${{ github.ref == 'refs/heads/Main' }}
-          tags: ghcr.io/napps9/survey-poc:${{ github.sha }}
+          tags: ghcr.io/play-verto-global-ltd/vertonow:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

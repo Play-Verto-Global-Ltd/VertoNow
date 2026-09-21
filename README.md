@@ -102,10 +102,10 @@ A few things that surprise people:
   player HTML is network-first, so respondents pick them up on their next
   ordinary online visit.
 - **Deploys are gated on CI.** Render runs the image CI builds
-  (`ghcr.io/napps9/survey-poc`): once every other job is green on a commit,
-  the `deploy` job moves the `main` tag onto that commit's image and POSTs the
-  Render deploy hook naming it, so a red push to `Main` doesn't ship — but
-  don't lean on that; push green.
+  (`ghcr.io/play-verto-global-ltd/vertonow`): once every other job is green on
+  a commit, the `deploy` job moves the `main` tag onto that commit's image and
+  POSTs the Render deploy hook naming it, so a red push to `Main` doesn't
+  ship — but don't lean on that; push green.
 
 ## Documentation
 

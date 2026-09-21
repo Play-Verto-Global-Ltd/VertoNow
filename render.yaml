@@ -1,8 +1,14 @@
 services:
   - type: web
     name: survey-poc  # "VertoNowMain" in the dashboard; keep this field — renaming a blueprint service recreates it on a sync
-    # The production image CI builds and pushes (ghcr.io/napps9/survey-poc;
-    # build_image and deploy in .github/workflows/ci.yml) — image-backed since
+    # The production image CI builds and pushes
+    # (ghcr.io/play-verto-global-ltd/vertonow; build_image and deploy in
+    # .github/workflows/ci.yml) — in the org's own namespace since the
+    # repository moved there, so CI's GITHUB_TOKEN can write it without a
+    # cross-account grant; ghcr.io/napps9/survey-poc holds every :<sha> from
+    # before the move and is what a rollback past it pulls (DEPLOYMENT_RUNBOOK
+    # §7). This reference is the dashboard's to change, not this file's — see
+    # the note below about which one is the truth — image-backed since
     # 2026-09-13, in place of a source build on every deploy (2-3 minutes each;
     # a pull is about one). The image runs under jemalloc (installed in the
     # Dockerfile and enabled by bin/docker-entrypoint) instead of glibc malloc —
@@ -12,7 +18,7 @@ services:
     # Storage image variants.
     runtime: image
     image:
-      url: ghcr.io/napps9/survey-poc:main
+      url: ghcr.io/play-verto-global-ltd/vertonow:main
     # Live deployment facts (owner-confirmed 2026-09-01): the running web
     # service and database are BOTH in Frankfurt (EU Central) — this file
     # previously said oregon, which was stale against reality. A blueprint

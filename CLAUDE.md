@@ -189,8 +189,12 @@ to run it after every push.
 ## Deploys
 
 Render runs the production image CI builds, pulled from
-`ghcr.io/napps9/survey-poc` (image-backed since 2026-09-13: a source build was
-2–3 min per deploy, a pull is about one). Every Main run pushes `:<sha>`; once
+`ghcr.io/play-verto-global-ltd/vertonow` (image-backed since 2026-09-13: a
+source build was 2–3 min per deploy, a pull is about one; in the org's own
+namespace since the repo moved there 2026-09-21, so CI's token can write it
+without a cross-account grant — `ghcr.io/napps9/survey-poc` still holds every
+pre-move `:<sha>`, which is what a rollback past it pulls). Every Main run
+pushes `:<sha>`; once
 every other job in `.github/workflows/ci.yml` (test, test_postgres,
 system_test, lint, scan_ruby, scan_js, build_image) is green, the `deploy` job
 moves `:main` onto that sha and POSTs the service's Deploy Hook naming it — so
