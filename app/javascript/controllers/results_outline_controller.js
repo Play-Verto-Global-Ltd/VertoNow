@@ -16,7 +16,7 @@ const CONDENSE_OFF = 24   // …and before it takes it back, so a scroll that
 const READING_LINE = 120  // the card under this point is the one you're reading
 
 export default class extends Controller {
-  static targets = [ "scroller", "header", "outline", "list", "item", "count" ]
+  static targets = [ "scroller", "header", "topbar", "outline", "list", "item", "count" ]
 
   connect() {
     this._cards = []
@@ -101,10 +101,32 @@ export default class extends Controller {
   }
 
   _condense(y) {
-    const want = this._condensed ? y > CONDENSE_OFF : y > CONDENSE_ON
+    let want = this._condensed ? y > CONDENSE_OFF : y > CONDENSE_ON
+
+    // Condensing gives the feed back the chrome's height, which SHRINKS how
+    // far it can scroll. On a feed that barely overflows, the browser then
+    // clamps scrollTop below the un-condense threshold, the chrome comes
+    // straight back, and the reader gets a flicker for their one flick of
+    // scrolling. Only fold if there is still something to scroll afterwards.
+    if (want && !this._condensed) {
+      const scroller = this.scrollerTarget
+      const after = scroller.scrollHeight - scroller.clientHeight - this._reclaimable()
+      if (after <= CONDENSE_OFF) want = false
+    }
+
     if (want === this._condensed) return
     this._condensed = want
     if (this.hasHeaderTarget) this.headerTarget.classList.toggle("is-condensed", want)
+    if (this.hasTopbarTarget) this.topbarTarget.classList.toggle("is-condensed", want)
+  }
+
+  // How much vertical space folding would hand back: the top bar goes
+  // entirely, and the header gives back part of its own height. Measured
+  // rather than hardcoded, since both are styled in CSS and one of them
+  // wraps at narrow widths.
+  _reclaimable() {
+    const topbar = this.hasTopbarTarget ? this.topbarTarget.offsetHeight : 0
+    return topbar + (this.hasHeaderTarget ? this.headerTarget.offsetHeight * 0.4 : 0)
   }
 
   _spy(y) {

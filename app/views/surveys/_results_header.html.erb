@@ -17,6 +17,21 @@
 
 <%# Stats strip %>
 <div class="results-header-bar">
+  <%# The way out, for the condensed header only — the top bar it normally
+      lives in folds away once you have scrolled, and a page with no way out
+      is not a saving. A second copy rather than the same node moved, because
+      moving a focusable node between parents on every scroll threshold
+      crossing is how you lose someone's focus mid-tab; only one of the two is
+      ever displayed, so only one is ever in the accessibility tree. %>
+  <%= link_to root_path, class: "editor-leave-btn rh-leave",
+        title: t("results.leave_results"),
+        "aria-label": t("results.leave_results") do %>
+    <svg class="editor-leave-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M9.5 3.5 5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="editor-leave-label"><%= t("results.leave_results") %></span>
+  <% end %>
+
   <%# The tally updates live as answers land; the breakdown below
       rebuilds on request. Only meaningful on the unsegmented view —
       a segment's count comes from its own filtered scope, which a

@@ -5130,6 +5130,21 @@ button.editor-leave-btn { cursor: pointer; }
   padding-inline: 16px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   background: #1C2034;
+  overflow: hidden;
+  transition: height 0.2s ease, opacity 0.15s ease, visibility 0s;
+}
+/* Folded away once you have scrolled: the Verto's name is what you needed on
+   arrival, and it is 54px of a page you are now reading. The way out moves
+   into the header's own row (.rh-leave) rather than going with it.
+   visibility, not just height — a 0px bar you can still tab into is a trap,
+   and it is delayed by the collapse so the fold is still visible while it
+   happens. */
+.results-top-bar.is-condensed {
+  height: 0; opacity: 0; visibility: hidden; border-bottom-width: 0;
+  transition: height 0.2s ease, opacity 0.15s ease, visibility 0s linear 0.2s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .results-top-bar { transition: none; }
 }
 /* ── The map band ───────────────────────────────────────────────────────────
    Full-bleed under the filters, with its edges masked away on all four sides
@@ -5530,6 +5545,12 @@ button.editor-leave-btn { cursor: pointer; }
    behind a click. Expanded, the segmented control and the Overall chip say it
    without one, which is worth a row of its own but not worth a row you are
    scrolling past. */
+/* The header's own copy of the way out, drawn only while the top bar that
+   normally holds it is folded away. First in the row, where it has been since
+   this page took the editor's convention. */
+.rh-leave { display: none; flex-shrink: 0; }
+.results-header.is-condensed .rh-leave { display: inline-flex; }
+
 .rh-when-menu, .rh-picker-mini { display: none; }
 .results-header.is-condensed .rh-when { display: none; }
 .results-header.is-condensed .rh-when-menu { display: block; position: relative; }

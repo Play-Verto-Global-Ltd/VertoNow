@@ -57,6 +57,25 @@ class ResultsScrollTest < ApplicationSystemTestCase
     evaluate_script("Math.round(document.querySelector('.results-header').getBoundingClientRect().height)")
   end
 
+  # Everything above the feed: the title bar and the header together.
+  def chrome_height
+    evaluate_script(<<~JS)
+      (() => {
+        const h = s => document.querySelector(s).getBoundingClientRect().height
+        return Math.round(h(".results-top-bar") + h(".results-header"))
+      })()
+    JS
+  end
+
+  def visible_leave_pills
+    evaluate_script(<<~JS)
+      [...document.querySelectorAll(".editor-leave-btn")].filter(e => {
+        const c = getComputedStyle(e)
+        return c.display !== "none" && c.visibility !== "hidden" && e.getBoundingClientRect().height > 0
+      }).length
+    JS
+  end
+
   def condensed?
     evaluate_script("document.querySelector('.results-header').classList.contains('is-condensed')")
   end
@@ -140,6 +159,69 @@ class ResultsScrollTest < ApplicationSystemTestCase
     assert_selector ".rh-when-menu-panel .rh-menu-item", text: "Last 30 days"
   end
 
+  # The title bar is what you need on arrival and 54px of a page you are now
+  # reading. It folds, and the way out moves into the header's row rather than
+  # folding with it.
+  test "condensed, the title bar folds away and the way out joins the actions' row" do
+    open_results
+    chrome_before = chrome_height
+    assert_selector ".results-top-bar .editor-verto-title", visible: true
+
+    scroll_feed_to(600)
+    assert wait_until { condensed? }
+    settle_box(find(".results-header"))
+
+    refute page.has_selector?(".results-top-bar .editor-verto-title", visible: true),
+      "the Verto's name is still drawn on a header that has condensed"
+    assert_selector ".rh-leave", visible: true
+    assert same_line?(".rh-leave", ".results-header-actions"),
+      "the way out is not on the same row as Export / Share / AI Report"
+
+    assert chrome_height < chrome_before / 2,
+      "the chrome is #{chrome_height}px condensed against #{chrome_before}px open — the fold bought almost nothing"
+  end
+
+  # The pill is rendered twice and CSS picks one. Two of them is a duplicated
+  # control; none of them is a reader with no way off the page. Both failures
+  # are silent, and the second is the one that matters.
+  test "there is exactly one way out, whatever the header is doing" do
+    open_results
+    assert_equal 1, visible_leave_pills, "expected one way out on an open header"
+
+    scroll_feed_to(600)
+    assert wait_until { condensed? }
+    settle_box(find(".results-header"))
+    assert_equal 1, visible_leave_pills, "expected one way out on a condensed header"
+
+    # The hidden one must be out of the tab order, not merely invisible — a
+    # link you can still tab to but cannot see is a trap. Asked the way a
+    # keyboard user asks it, by trying to focus each one, rather than by
+    # checking for a particular CSS property: the header's copy is hidden with
+    # display:none and the top bar's by an inherited visibility:hidden, and
+    # both are correct answers to "can I reach this".
+    assert_equal 1, evaluate_script(<<~JS), "a hidden way out can still be tabbed to"
+      [...document.querySelectorAll(".editor-leave-btn")].filter(e => {
+        e.focus()
+        const got = document.activeElement === e
+        e.blur()
+        return got
+      }).length
+    JS
+  end
+
+  test "scrolling back to the top brings the title bar back" do
+    open_results
+    scroll_feed_to(600)
+    assert wait_until { condensed? }
+
+    scroll_feed_to(0)
+    assert wait_until { !condensed? }
+    settle_box(find(".results-top-bar"))
+
+    assert_selector ".results-top-bar .editor-verto-title", visible: true
+    assert_equal 1, visible_leave_pills
+  end
+
   # Two dropdowns open over each other is what you get from four independent
   # <details>. They share a `name`, which makes the browser treat them as one
   # exclusive group — no controller, and it degrades to the old behaviour
@@ -189,19 +271,22 @@ class ResultsScrollTest < ApplicationSystemTestCase
     open_results
     rail_top = -> { evaluate_script("Math.round(document.querySelector('.results-outline').getBoundingClientRect().top)") }
     top_before = rail_top.call
-    header_before = header_height
+    chrome_before = chrome_height
 
     scroll_feed_to(1500)
     assert wait_until { condensed? }
     settle_box(find(".results-outline"))
 
-    # It rises by however much the header gave back, and no further — stated
-    # against the MEASURED shrink rather than a number, so tuning the
-    # condensed header doesn't quietly turn this into a test of nothing.
-    gave_back = header_before - header_height
+    # It rises by however much the CHROME above it gave back — the title bar
+    # and the header together — and no further. Stated against the measured
+    # shrink rather than a number, so tuning either one doesn't quietly turn
+    # this into a test of nothing. (It already earned that: the title bar
+    # learning to fold took the give-back from 27px to 113px, and this said so
+    # rather than passing.)
+    gave_back = chrome_before - chrome_height
     moved = top_before - rail_top.call
     assert moved.between?(0, gave_back + 4),
-      "the rail moved #{moved}px up the screen while the header gave back #{gave_back}px — " \
+      "the rail moved #{moved}px up the screen while the chrome gave back #{gave_back}px — " \
       "it is scrolling with the feed, not sticking to it"
   end
 
