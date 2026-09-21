@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_21_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_21_143529) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -829,6 +829,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_120000) do
     t.datetime "consent_declined_at"
     t.text "consent_text_snapshot"
     t.datetime "created_at", null: false
+    t.string "demographic_age_band"
     t.integer "demographic_birth_year"
     t.string "demographic_gender"
     t.string "demographic_heritage"
@@ -855,6 +856,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_120000) do
     t.index ["survey_id", "answered", "created_at"], name: "index_responses_on_survey_answered_created_at"
     t.index ["survey_id", "answered", "status"], name: "index_responses_on_survey_answered_status"
     t.index ["survey_id", "collection_mode"], name: "index_responses_on_survey_and_collection_mode"
+    t.index ["survey_id", "demographic_age_band"], name: "index_responses_on_survey_id_and_demographic_age_band"
     t.index ["survey_id", "demographic_birth_year"], name: "index_responses_on_survey_id_and_demographic_birth_year"
     t.index ["survey_id", "demographic_gender"], name: "index_responses_on_survey_id_and_demographic_gender"
     t.index ["survey_id", "demographic_heritage"], name: "index_responses_on_survey_id_and_demographic_heritage"

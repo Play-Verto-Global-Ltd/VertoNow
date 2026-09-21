@@ -68,7 +68,7 @@ class WizardCreateTest < ActionDispatch::IntegrationTest
     survey = @org.surveys.order(:id).last
     tail = survey.cards.last(3)
     assert tail.all? { |c| c["demographic"] }, "last three cards must be the demographic tail"
-    assert_equal [ "When were you born?", "Where do you live?", "What gender best describes you?" ],
+    assert_equal [ "How old are you?", "Where do you live?", "What gender best describes you?" ],
                  tail.map { |c| c["text"] }
     assert_equal [ "Male", "Female", "Non-binary", "Other", "Prefer not to say" ], tail.last["options"]
   end
@@ -118,7 +118,7 @@ class WizardCreateTest < ActionDispatch::IntegrationTest
     assert_match "Common Questions", response.body
   end
 
-  test "the birth demographic renders as a month+year picker in the player" do
+  test "the age demographic renders as a vertical band slider in the player" do
     with_fake_generator do
       post generate_survey_path, params: {
         theme: "T", audience_age: "a", key_insight: "k", show_results_comparison: "0"
@@ -129,7 +129,14 @@ class WizardCreateTest < ActionDispatch::IntegrationTest
 
     get play_survey_path(survey.publish_token)
     assert_response :success
-    assert_match 'class="freeform-month"', response.body
-    assert_match 'class="freeform-year"', response.body
+    # The vertical slider, with a stop per band — and no month/year inputs,
+    # which is the whole point: the player never collects a date of birth.
+    assert_match 'data-slider-axis-value="vertical"', response.body
+    assert_match 'data-slider-steps-value="7"', response.body
+    DemographicQuestions::AGE_BAND_LABELS.each do |label|
+      assert_match label, response.body
+    end
+    refute_match 'class="freeform-month"', response.body
+    refute_match 'class="freeform-year"', response.body
   end
 end

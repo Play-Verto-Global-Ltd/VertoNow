@@ -4,8 +4,93 @@
 # research collective across the platform. Cards carry "demographic" => true
 # so they're identifiable downstream and never appended twice.
 module DemographicQuestions
+  # The age bands, in card order — bottom of the vertical slider first.
+  #
+  # Three columns because three different things need three different views of
+  # a band, and conflating them is how a reworded label orphans stored data:
+  #
+  #   key   what is STORED (responses.demographic_age_band). Stable forever;
+  #         never a label, because labels are translated and reworded.
+  #   label the English card option. Overridden per locale by
+  #         `demographics.cards` — and only taken whole and at this length,
+  #         so a locale that has not caught up falls back to English rather
+  #         than shifting a respondent into the wrong band.
+  #   range the ages the band covers, for reading a legacy birth year back
+  #         into a band (ResolvesResultSegments) and for nothing else.
+  AGE_BANDS = [
+    { key: "under_16", label: "Under 16", min:  0, max:  15 },
+    { key: "16_17",    label: "16–17",    min: 16, max:  17 },
+    { key: "18_24",    label: "18–24",    min: 18, max:  24 },
+    { key: "25_34",    label: "25–34",    min: 25, max:  34 },
+    { key: "35_49",    label: "35–49",    min: 35, max:  49 },
+    { key: "50_64",    label: "50–64",    min: 50, max:  64 },
+    { key: "65_plus",  label: "65+",      min: 65, max: 200 }
+  ].freeze
+
+  AGE_BAND_LABELS = AGE_BANDS.map { |b| b[:label] }.freeze
+  AGE_BAND_KEYS   = AGE_BANDS.map { |b| b[:key] }.freeze
+
+  # A range answer is an index into the card's options. Out of range — a
+  # tampered payload, or a deck whose options were edited — records nothing
+  # rather than guessing a band, for the same reason the gender sync refuses
+  # a value the card does not offer.
+  def self.age_band_key_at(index)
+    i = Integer(index, exception: false)
+    return nil if i.nil?
+
+    AGE_BANDS.dig(i, :key) if i >= 0 && i < AGE_BANDS.length
+  end
+
+  # The band an age in years falls in. Used to read a legacy birth year from a
+  # pre-slider Verto back into the same vocabulary the new card writes, so one
+  # segment list can span both card generations.
+  def self.age_band_key_for_age(years)
+    y = Integer(years, exception: false)
+    return nil if y.nil? || y.negative?
+
+    band = AGE_BANDS.find { |b| y.between?(b[:min], b[:max]) }
+    band && band[:key]
+  end
+
+  # The stored band keys whose ages fall entirely inside [min_age, max_age].
+  #
+  # Reporting keeps its OWN, coarser bands (ResolvesResultSegments::AGE_BANDS)
+  # rather than adopting these: a Verto published before the slider must go on
+  # reporting exactly as it always did, and "Under 18" splitting into two rows
+  # overnight is a change to every existing results page. This is what lets a
+  # band-stored response land in the same reporting row as a birth-year-stored
+  # one — the slider is finer than the report, and only the account gate reads
+  # the finer distinction.
+  def self.age_band_keys_within(min_age, max_age)
+    AGE_BANDS.select { |b| b[:min] >= min_age && b[:max] <= max_age }.map { |b| b[:key] }
+  end
+
+  # The English label for a stored key. The card's own options carry the
+  # translated label; this is for surfaces that hold a key and no card.
+  def self.age_band_label(key)
+    band = AGE_BANDS.find { |b| b[:key] == key.to_s }
+    band && band[:label]
+  end
+
   CARDS = [
-    { "type" => "open_ended", "input" => "month", "text" => "When were you born?",
+    # Age as a BAND, never a date. The bands are the thresholds the law draws
+    # rather than the ones research would pick: 16 is the EU's Article 8
+    # default (and above the UK's 13 and COPPA's), 18 is the child/adult line
+    # and the threshold India's DPDP sets. Everything above 18 is the banding
+    # the results page already used, so historical segments still compare.
+    #
+    # A `range` card rather than a type of its own, for the same reason
+    # Heritage and Neurodiversity are multiple_choice: the vertical slider,
+    # its dot stops, its keyboard handling and its `role="slider"` ARIA all
+    # already exist and are tested. `demographic_key` carries the meaning.
+    #
+    # Note what is NOT here: the old card was `input: "month"` and the browser
+    # packed "YYYY-MM" into the answer, so a date of birth to month precision
+    # sat in responses.answers for every respondent of every Verto. A range
+    # answer is an index into the options below — a band and nothing finer.
+    { "type" => "range", "text" => "How old are you?",
+      "slider_axis" => "vertical",
+      "options" => AGE_BAND_LABELS,
       "demographic" => true },
     { "type" => "open_ended", "input" => "location", "text" => "Where do you live?",
       "description" => "Powered by OpenStreetMap — helps build a map you can explore after finishing.",
@@ -109,6 +194,7 @@ module DemographicQuestions
     return card["demographic_key"].to_s if card["demographic_key"].to_s.strip.present?
 
     case
+    when card["type"] == "range"             then "age"
     when card["input"] == "month"            then "age"
     when card["input"] == "location"         then "location"
     when card["type"] == "multiple_choice"   then "gender"
@@ -143,10 +229,24 @@ module DemographicQuestions
     # answer sync about what a card IS across both card generations — an
     # explicit demographic_key where one is stored, the input otherwise.
     case key_for(card)
-    when "age"      then month_answer(text)
+    when "age"      then age_answer(card, text)
     when "location" then location_answer(text)
     else text
     end
+  end
+
+  # Two card generations answer to "age", and they store different things.
+  # The slider stores an index into the card's own options — which are the
+  # TRANSLATED ones on a localised deck, so the label comes off the card
+  # rather than out of AGE_BANDS. The retired month card stored "1977-09".
+  def self.age_answer(card, text)
+    return month_answer(text) unless card["type"].to_s == "range"
+
+    options = Array(card["options"])
+    i = Integer(text, exception: false)
+    return text if i.nil? || i.negative? || i >= options.length
+
+    options[i].to_s
   end
 
   # "1977-09" → "September 1977". English, like the rest of this page's own

@@ -66,7 +66,9 @@ class DefaultConsentGateTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".play-consent-banner", 1
     assert_select ".preview-overlay[data-consent-pending]"
-    assert_select ".play-consent-body", text: /birth date/
+    # "your age", not "your birth date": the tail asks for an age band now,
+    # and the gate is the one place a respondent is told what is collected.
+    assert_select ".play-consent-body", text: /your age/
   end
 
   test "the gate links to the privacy policy" do

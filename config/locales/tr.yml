@@ -281,7 +281,7 @@ tr:
     consent_agree: "Kabul et ve devam et"
     consent_decline: "Kabul etmiyorum"
     consent_declined: "Sorun değil — bu sayfayı kapatabilirsiniz."
-    consent_default_text: "Bu Verto, yanıtlarınızın yanı sıra doğum tarihinizi, nerede yaşadığınızı ve cinsiyetinizi sorar. Katılım gönüllüdür, yanıtlarınız anonimdir ve araştırma için kullanılabilir."
+    consent_default_text: "Bu Verto, yanıtlarınızın yanı sıra yaşınızı, nerede yaşadığınızı ve cinsiyetinizi sorar. Katılım gönüllüdür, yanıtlarınız anonimdir ve araştırma için kullanılabilir."
     consent_privacy_link: "Verilerinizi nasıl işliyoruz"
     respondent_code_title: 'Başlamadan önce'
     respondent_code_prompt_default: 'Hatırlayacağınız bir kod uydurun'
@@ -1645,7 +1645,8 @@ tr:
         - text: "Bunu sizin için nasıl daha iyi hale getirebiliriz?"
   demographics:
     cards:
-      - text: "Ne zaman doğdunuz?"
+      - text: "Kaç yaşındasın?"
+        options: ["16'nın altı", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Nerede yaşıyorsunuz?"
         description: "OpenStreetMap altyapısıyla — bitirdikten sonra keşfedebileceğiniz bir harita oluşturmaya yardımcı olur."
       - text: "Sizi en iyi tanımlayan cinsiyet hangisi?"

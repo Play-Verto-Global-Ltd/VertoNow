@@ -133,7 +133,12 @@ class ShowcaseVertoSeederTest < ActiveSupport::TestCase
     cards.each do |card|
       media =
         case card["type"]
-        when "range"    then card["range_theme"]
+        # A demographic card carries a fixed image and never a reaction
+        # animation — image_demographic_tail gives it one, and AssetPopulator
+        # excludes these cards from media population for the same reason it
+        # excludes scaffolding. The age slider is a `range` card, so without
+        # this branch it would be asked for a theme nothing intends it to have.
+        when "range"    then card["demographic"] ? card["image"] : card["range_theme"]
         when "tap_card" then Array(card["option_images"]).presence&.all?(&:present?)
         else                 card["image"]
         end
@@ -155,7 +160,10 @@ class ShowcaseVertoSeederTest < ActiveSupport::TestCase
   end
 
   test "the range card names a real reaction animation" do
-    cards.select { |c| c["type"] == "range" }.each do |card|
+    # Demographic range cards excluded: the age slider is a form field, not an
+    # opinion scale, and a character reacting to someone's age band is not the
+    # product. AssetPopulator never assigns one either.
+    cards.select { |c| c["type"] == "range" && !c["demographic"] }.each do |card|
       assert_includes NpsHelper::RANGE_THEMES, card["range_theme"], card["text"]
     end
   end

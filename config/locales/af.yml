@@ -282,7 +282,7 @@ af:
     consent_agree: "Stem in & gaan voort"
     consent_decline: "Ek stem nie saam nie"
     consent_declined: "Geen probleem nie — jy kan hierdie bladsy toemaak."
-    consent_default_text: "Hierdie Verto vra jou geboortedatum, waar jy woon en jou geslag, saam met jou antwoorde. Deelname is vrywillig, jou antwoorde is anoniem, en dit kan vir navorsing gebruik word."
+    consent_default_text: "Hierdie Verto vra jou ouderdom, waar jy woon en jou geslag, saam met jou antwoorde. Deelname is vrywillig, jou antwoorde is anoniem, en dit kan vir navorsing gebruik word."
     consent_privacy_link: "Hoe ons jou data hanteer"
     respondent_code_title: "Voordat jy begin"
     respondent_code_prompt_default: "Dink 'n kode op wat jy sal onthou"
@@ -1648,7 +1648,8 @@ af:
         - text: "Hoe kan ons dit vir jou verbeter?"
   demographics:
     cards:
-      - text: "Wanneer is jy gebore?"
+      - text: "Hoe oud is jy?"
+        options: ["Onder 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Waar woon jy?"
         description: "Aangedryf deur OpenStreetMap — help bou 'n kaart wat jy kan verken nadat jy klaar is."
       - text: "Watter geslag beskryf jou die beste?"

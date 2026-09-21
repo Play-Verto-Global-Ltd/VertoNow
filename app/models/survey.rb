@@ -754,6 +754,14 @@ class Survey < ApplicationRecord
   def self.normalize_range_cards!(cards, fill: RANGE_DEFAULT_LABELS)
     Array(cards).map do |card|
       next card unless card.is_a?(Hash) && card["type"].to_s == "range"
+      # The age slider is a range card by construction, not by choice: it
+      # reuses the vertical slider widget, but its stops are a fixed registry
+      # (DemographicQuestions::AGE_BANDS), not a scale a creator sizes.
+      # Resampling it to RANGE_POINTS would silently drop two of its seven
+      # bands — and "16–17" is one of them, which is the boundary the account
+      # gate reads. The player sizes the track from labels.size, so a
+      # seven-stop slider renders exactly as a five-stop one does.
+      next card if card["demographic"]
       c = card.dup
       c["options"] = normalize_range_labels(c["options"], fill: fill)
       # Translations align to options POSITIONALLY, so a resized scale has to

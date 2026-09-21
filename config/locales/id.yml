@@ -281,7 +281,7 @@ id:
     consent_agree: "Setuju & lanjutkan"
     consent_decline: "Saya tidak setuju"
     consent_declined: "Tidak masalah — Anda bisa menutup halaman ini."
-    consent_default_text: "Verto ini menanyakan tanggal lahir, tempat tinggal, dan jenis kelamin Anda, di samping jawaban Anda. Partisipasi bersifat sukarela, jawaban Anda anonim, dan dapat digunakan untuk penelitian."
+    consent_default_text: "Verto ini menanyakan usia, tempat tinggal, dan jenis kelamin Anda, di samping jawaban Anda. Partisipasi bersifat sukarela, jawaban Anda anonim, dan dapat digunakan untuk penelitian."
     consent_privacy_link: "Cara kami menangani data Anda"
     respondent_code_title: 'Sebelum mulai'
     respondent_code_prompt_default: 'Buat kode yang akan Anda ingat'
@@ -1644,7 +1644,8 @@ id:
         - text: "Bagaimana kami bisa membuatnya lebih baik untuk Anda?"
   demographics:
     cards:
-      - text: "Kapan Anda lahir?"
+      - text: "Berapa usia Anda?"
+        options: ["Di bawah 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Di mana Anda tinggal?"
         description: "Didukung oleh OpenStreetMap — membantu membangun peta yang bisa Anda jelajahi setelah selesai."
       - text: "Jenis kelamin mana yang paling menggambarkan Anda?"

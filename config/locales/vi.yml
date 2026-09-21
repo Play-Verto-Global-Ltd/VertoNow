@@ -281,7 +281,7 @@ vi:
     consent_agree: "Đồng ý & tiếp tục"
     consent_decline: "Tôi không đồng ý"
     consent_declined: "Không sao — bạn có thể đóng trang này."
-    consent_default_text: "Verto này hỏi ngày sinh, nơi bạn sống và giới tính của bạn, bên cạnh các câu trả lời. Tham gia là tự nguyện, câu trả lời của bạn được ẩn danh và có thể được dùng cho nghiên cứu."
+    consent_default_text: "Verto này hỏi độ tuổi, nơi bạn sống và giới tính của bạn, bên cạnh các câu trả lời. Tham gia là tự nguyện, câu trả lời của bạn được ẩn danh và có thể được dùng cho nghiên cứu."
     consent_privacy_link: "Cách chúng tôi xử lý dữ liệu của bạn"
     respondent_code_title: 'Trước khi bắt đầu'
     respondent_code_prompt_default: 'Hãy tự đặt một mã bạn sẽ nhớ'
@@ -1644,7 +1644,8 @@ vi:
         - text: "Chúng tôi có thể cải thiện nó cho bạn như thế nào?"
   demographics:
     cards:
-      - text: "Bạn sinh vào ngày nào?"
+      - text: "Bạn bao nhiêu tuổi?"
+        options: ["Dưới 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Bạn sống ở đâu?"
         description: "Được hỗ trợ bởi OpenStreetMap — giúp tạo một bản đồ bạn có thể khám phá sau khi hoàn thành."
       - text: "Giới tính nào mô tả bạn đúng nhất?"

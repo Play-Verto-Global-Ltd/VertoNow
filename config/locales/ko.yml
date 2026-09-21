@@ -281,7 +281,7 @@ ko:
     consent_agree: "동의하고 계속하기"
     consent_decline: "동의하지 않음"
     consent_declined: "괜찮습니다 — 이 페이지를 닫으셔도 됩니다."
-    consent_default_text: "이 Verto는 답변과 함께 생년월일, 거주 지역, 성별을 묻습니다. 참여는 자발적이며, 답변은 익명으로 처리되고 연구에 사용될 수 있습니다."
+    consent_default_text: "이 Verto는 답변과 함께 나이, 거주 지역, 성별을 묻습니다. 참여는 자발적이며, 답변은 익명으로 처리되고 연구에 사용될 수 있습니다."
     consent_privacy_link: "데이터 처리 방침"
     respondent_code_title: '시작하기 전에'
     respondent_code_prompt_default: '기억할 수 있는 코드를 만들어 주세요'
@@ -1643,7 +1643,8 @@ ko:
         - text: "어떻게 하면 더 좋아질 수 있을까요?"
   demographics:
     cards:
-      - text: "언제 태어나셨나요?"
+      - text: "나이가 어떻게 되시나요?"
+        options: ["16세 미만", "16–17세", "18–24세", "25–34세", "35–49세", "50–64세", "65세 이상"]
       - text: "어디에 살고 계세요?"
         description: "OpenStreetMap 기반입니다 — 참여를 마친 뒤 살펴볼 수 있는 지도를 만드는 데 도움이 됩니다."
       - text: "본인을 가장 잘 나타내는 성별은 무엇인가요?"

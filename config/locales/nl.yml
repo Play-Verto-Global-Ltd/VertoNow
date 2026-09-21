@@ -281,7 +281,7 @@ nl:
     consent_agree: "Akkoord & doorgaan"
     consent_decline: "Ik ga niet akkoord"
     consent_declined: "Geen probleem — je kunt deze pagina sluiten."
-    consent_default_text: "Dit Verto vraagt naast je antwoorden om je geboortedatum, waar je woont en je gender. Deelname is vrijwillig, je antwoorden zijn anoniem en kunnen voor onderzoek worden gebruikt."
+    consent_default_text: "Dit Verto vraagt naast je antwoorden om je leeftijd, waar je woont en je gender. Deelname is vrijwillig, je antwoorden zijn anoniem en kunnen voor onderzoek worden gebruikt."
     consent_privacy_link: "Hoe we met je gegevens omgaan"
     respondent_code_title: 'Voordat je begint'
     respondent_code_prompt_default: 'Verzin een code die je onthoudt'
@@ -1645,7 +1645,8 @@ nl:
         - text: "Hoe kunnen we het voor jou verbeteren?"
   demographics:
     cards:
-      - text: "Wanneer ben je geboren?"
+      - text: "Hoe oud ben je?"
+        options: ["Onder 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Waar woon je?"
         description: "Mogelijk gemaakt door OpenStreetMap — helpt een kaart te bouwen die je na afloop kunt verkennen."
       - text: "Welk gender beschrijft jou het best?"

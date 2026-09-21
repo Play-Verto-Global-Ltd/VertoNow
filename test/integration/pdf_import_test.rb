@@ -71,7 +71,7 @@ class PdfImportTest < ActionDispatch::IntegrationTest
     assert_equal "welcome_card", survey.cards.first["type"]
     assert_equal "select_one_grid", survey.cards[1]["type"]
     demographics = survey.cards.select { |c| c["demographic"] }
-    assert_equal [ "When were you born?", "Where do you live?", "What gender best describes you?" ],
+    assert_equal [ "How old are you?", "Where do you live?", "What gender best describes you?" ],
                  demographics.map { |c| c["text"] }
     assert_equal demographics, survey.cards.last(3), "demographics must sit at the end"
   end

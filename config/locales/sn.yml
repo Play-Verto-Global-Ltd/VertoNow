@@ -283,7 +283,7 @@ sn:
     consent_agree: "Bvuma & Uenderere"
     consent_decline: "Handibvumi"
     consent_declined: "Hapana dambudziko — unogona kuvhara peji rino."
-    consent_default_text: "Verto iyi inobvunza zuva rako rekuzvarwa, kwaunogara uye vukama hwako, pamwe nemhinduro dzako. Kutora chikamu kunozvidira, mhinduro dzako hadzizivikanwi kuti ndedzani, uye dzingashandiswa mutsvakurudzo."
+    consent_default_text: "Verto iyi inobvunza zera rako, kwaunogara uye vukama hwako, pamwe nemhinduro dzako. Kutora chikamu kunozvidira, mhinduro dzako hadzizivikanwi kuti ndedzani, uye dzingashandiswa mutsvakurudzo."
     consent_privacy_link: "Kuti tinobata sei dhata rako"
     respondent_code_title: 'Usati Watanga'
     respondent_code_prompt_default: 'Gadzira kodhi yauchayeuka'
@@ -1653,7 +1653,8 @@ sn:
         - text: "Tingazviita Sei Nani Kwauri?"
   demographics:
     cards:
-      - text: "Wakaberekwa Riini?"
+      - text: "Une makore mangani?"
+        options: ["Pasi pemakore 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Unogara Kupi?"
         description: "Inoshandiswa neOpenStreetMap — inobatsira kuvaka mepu yaunogona kuongorora mushure mekupedza."
       - text: "Ndeipi jenda inokutsanangura zvakanyanya?"

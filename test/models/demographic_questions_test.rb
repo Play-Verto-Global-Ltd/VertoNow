@@ -1,10 +1,61 @@
 require "test_helper"
 
 class DemographicQuestionsTest < ActiveSupport::TestCase
-  test "the birth-date card uses the month+year-only picker, not free text" do
-    card = DemographicQuestions.cards.find { |c| c["text"] == "When were you born?" }
-    assert_equal "month", card["input"]
+  test "the age card is a vertical band slider, and stores no date of birth" do
+    card = DemographicQuestions.cards.first
+
+    assert_equal "range", card["type"]
+    assert_equal "vertical", card["slider_axis"]
+    assert_equal DemographicQuestions::AGE_BAND_LABELS, card["options"]
     assert card["demographic"]
+
+    # The point of the card: a band, never a date. "month" was the input that
+    # packed "YYYY-MM" into the answer for every respondent of every Verto.
+    refute_equal "month", card["input"]
+    assert_equal "age", DemographicQuestions.key_for(card)
+  end
+
+  test "the age bands carry the thresholds the law draws" do
+    keys = DemographicQuestions::AGE_BAND_KEYS
+    assert_equal %w[under_16 16_17 18_24 25_34 35_49 50_64 65_plus], keys
+
+    # 16 (EU Article 8 default) and 18 (child/adult, and India's DPDP) are the
+    # two boundaries anything downstream gates on, so they must be band edges
+    # rather than values that fall inside one.
+    assert_equal "under_16", DemographicQuestions.age_band_key_for_age(15)
+    assert_equal "16_17",    DemographicQuestions.age_band_key_for_age(16)
+    assert_equal "16_17",    DemographicQuestions.age_band_key_for_age(17)
+    assert_equal "18_24",    DemographicQuestions.age_band_key_for_age(18)
+  end
+
+  test "the age slider keeps all seven bands through range normalisation" do
+    # Survey.normalize_range_cards! resizes every range card to RANGE_POINTS
+    # (5), sampling evenly when there are more. Run over the age card that
+    # would drop two bands — including "16–17", the boundary the account gate
+    # reads — so the exemption is pinned rather than incidental.
+    card = DemographicQuestions.cards.first
+    kept = Survey.normalize_range_cards!([ card ]).first
+
+    assert_equal DemographicQuestions::AGE_BAND_LABELS, kept["options"]
+    assert_equal 7, kept["options"].size
+
+    # An ordinary range card is still resized, so the exemption is narrow.
+    ordinary = { "type" => "range", "options" => DemographicQuestions::AGE_BAND_LABELS.dup }
+    assert_equal Survey::RANGE_POINTS,
+                 Survey.normalize_range_cards!([ ordinary ]).first["options"].size
+  end
+
+  test "a range index resolves to a band key, and a bad one to nothing" do
+    assert_equal "under_16", DemographicQuestions.age_band_key_at(0)
+    assert_equal "65_plus",  DemographicQuestions.age_band_key_at(6)
+    assert_equal "65_plus",  DemographicQuestions.age_band_key_at("6")
+
+    # A tampered payload, or a deck whose options were edited, records nothing
+    # rather than guessing a band.
+    assert_nil DemographicQuestions.age_band_key_at(7)
+    assert_nil DemographicQuestions.age_band_key_at(-1)
+    assert_nil DemographicQuestions.age_band_key_at("banana")
+    assert_nil DemographicQuestions.age_band_key_at(nil)
   end
 
   test "append_to adds the demographic tail once and never duplicates it" do

@@ -179,9 +179,14 @@ module ResolvesResultSegments
     this_year = Date.current.year
 
     AGE_BANDS.filter_map do |label, min_age, max_age|
-      # A band maps to a birth-year window; the boundary year is approximate by
-      # up to a birthday, which is the right trade for not storing birth dates.
+      # Two card generations, one reporting row. A Verto published before the
+      # age slider denormalises a birth year, which maps to a band by a window
+      # approximate to within a birthday — the right trade for not storing
+      # birth dates. A Verto carrying the slider denormalises a band key
+      # directly, and the keys inside this reporting band join the same row.
+      keys  = DemographicQuestions.age_band_keys_within(min_age, max_age)
       scope = base.where(demographic_birth_year: (this_year - max_age)..(this_year - min_age))
+                  .or(base.where(demographic_age_band: keys))
       count = scope.reorder(nil).count
       next if count < MIN_DEMOGRAPHIC_SAMPLE
 

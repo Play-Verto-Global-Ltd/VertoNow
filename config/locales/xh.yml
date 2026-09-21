@@ -290,7 +290,7 @@ xh:
     consent_agree: "Vuma uze uqhubeke"
     consent_decline: "Andivumi"
     consent_declined: "Akukho ngxaki — ungavala eli phepha."
-    consent_default_text: "Le Verto ibuza umhla wakho wokuzalwa, apho uhlala khona kunye nesini sakho, ngokunye kwiimpendulo zakho. Ukuthatha inxaxheba kukuzithandela, iimpendulo zakho azaziwa ngumnini, kwaye zinokusetyenziselwa uphando."
+    consent_default_text: "Le Verto ibuza iminyaka yakho, apho uhlala khona kunye nesini sakho, ngokunye kwiimpendulo zakho. Ukuthatha inxaxheba kukuzithandela, iimpendulo zakho azaziwa ngumnini, kwaye zinokusetyenziselwa uphando."
     consent_privacy_link: "Indlela esiyiphatha ngayo idatha yakho"
     respondent_code_title: 'Phambi kokuba uqale'
     respondent_code_prompt_default: 'Yila ikhowudi oya kuyikhumbula'
@@ -1673,7 +1673,8 @@ xh:
   # Kufanaselwe ngendawo; iinketho zigcina ubude bekhadi elibhalisiweyo.
   demographics:
     cards:
-      - text: "Wazalwa nini?"
+      - text: "Uneminyaka emingaphi?"
+        options: ["Ngaphantsi kwe-16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Uhlala phi?"
         description: "Iqhutywa yiOpenStreetMap — inceda ukwakha imephu onokuyihlola emva kokugqiba."
       - text: "Sesiphi isini esikuchaza kakuhle?"

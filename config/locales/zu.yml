@@ -289,7 +289,7 @@ zu:
     consent_agree: "Vuma bese uqhubeka"
     consent_decline: "Angivumi"
     consent_declined: "Akunankinga — ungavala leli khasi."
-    consent_default_text: "Le-Verto icela usuku lwakho lokuzalwa, lapho uhlala khona kanye nobulili bakho, ndawonye nezimpendulo zakho. Ukubamba iqhaza kungokuzithandela, izimpendulo zakho azaziwa ukuthi ngezakho, futhi zingasetshenziselwa ucwaningo."
+    consent_default_text: "Le-Verto icela iminyaka yakho, lapho uhlala khona kanye nobulili bakho, ndawonye nezimpendulo zakho. Ukubamba iqhaza kungokuzithandela, izimpendulo zakho azaziwa ukuthi ngezakho, futhi zingasetshenziselwa ucwaningo."
     consent_privacy_link: "Indlela esiphatha ngayo idatha yakho"
     respondent_code_title: 'Ngaphambi kokuqala'
     respondent_code_prompt_default: 'Zenzele ikhodi ozoyikhumbula'
@@ -1670,7 +1670,8 @@ zu:
   # the registry lengths.
   demographics:
     cards:
-      - text: "Wazalwa nini?"
+      - text: "Uneminyaka emingaki?"
+        options: ["Ngaphansi kuka-16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Uhlala kuphi?"
         description: "Kunikwa amandla yi-OpenStreetMap — kusiza ukwakha ibalazwe ongalicwaninga ngemva kokuqeda."
       - text: "Yibuphi ubulili obukuchaza kangcono?"

@@ -281,7 +281,7 @@ ja:
     consent_agree: "同意して続ける"
     consent_decline: "同意しません"
     consent_declined: "問題ありません — このページを閉じてください。"
-    consent_default_text: "この Verto では、回答に加えて生年月日、お住まいの地域、性別をお尋ねします。参加は任意で、回答は匿名であり、研究に利用されることがあります。"
+    consent_default_text: "この Verto では、回答に加えて年齢、お住まいの地域、性別をお尋ねします。参加は任意で、回答は匿名であり、研究に利用されることがあります。"
     consent_privacy_link: "データの取り扱いについて"
     respondent_code_title: 'はじめる前に'
     respondent_code_prompt_default: '覚えられるコードを決めてください'
@@ -1643,7 +1643,8 @@ ja:
         - text: "あなたにとってより良くするには、どこを改善すればよいですか？"
   demographics:
     cards:
-      - text: "生年月日を教えてください"
+      - text: "年齢を教えてください"
+        options: ["16歳未満", "16–17歳", "18–24歳", "25–34歳", "35–49歳", "50–64歳", "65歳以上"]
       - text: "お住まいはどちらですか？"
         description: "OpenStreetMap を利用しています。回答後に見られるマップづくりに役立ちます。"
       - text: "あなたを最もよく表す性別はどれですか？"

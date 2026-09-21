@@ -123,6 +123,10 @@ class RespondentDataExport
       "device"         => response.device_kind,
       "demographics"   => {
         "birth_year" => response.demographic_birth_year,
+        # The band, as the words the person actually picked rather than the
+        # key they are stored under — this is the export someone reads about
+        # themselves, and "16_17" is storage, not an answer.
+        "age_band"   => DemographicQuestions.age_band_label(response.demographic_age_band),
         "gender"     => response.demographic_gender,
         "region"     => response.region_label,
         "country"    => response.region_country,

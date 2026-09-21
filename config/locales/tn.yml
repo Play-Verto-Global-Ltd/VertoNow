@@ -291,7 +291,7 @@ tn:
     consent_agree: "Dumela & tswelela"
     consent_decline: "Ga ke dumele"
     consent_declined: "Ga go na bothata — o ka tswala tsebe e."
-    consent_default_text: "Verto e e botsa letsatsi la gago la matsalo, kwa o nnang teng le bong jwa gago, mmogo le dikarabo tsa gago. Go tsaya karolo ga go patelesege, dikarabo tsa gago ga di na leina, mme di ka dirisediwa dipatlisiso."
+    consent_default_text: "Verto e e botsa dingwaga tsa gago, kwa o nnang teng le bong jwa gago, mmogo le dikarabo tsa gago. Go tsaya karolo ga go patelesege, dikarabo tsa gago ga di na leina, mme di ka dirisediwa dipatlisiso."
     consent_privacy_link: "Kafa re tshwarang data ya gago ka teng"
     respondent_code_title: 'Pele o simolola'
     respondent_code_prompt_default: 'Tlhama khoutu e o tla e gopolang'
@@ -1672,7 +1672,8 @@ tn:
   # the registry lengths.
   demographics:
     cards:
-      - text: "O tsholetswe leng?"
+      - text: "O na le dingwaga tse kae?"
+        options: ["Ka fa tlase ga 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "O nna kae?"
         description: "E thusiwa ke OpenStreetMap — e thusa go aga mmapa o o ka o sekasekang morago ga go fetsa."
       - text: "Ke bong bofe jo bo go tlhalosang sentle thata?"

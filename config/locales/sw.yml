@@ -281,7 +281,7 @@ sw:
     consent_agree: "Kubali na uendelee"
     consent_decline: "Sikubali"
     consent_declined: "Hakuna shida — unaweza kufunga ukurasa huu."
-    consent_default_text: "Verto hii inauliza tarehe yako ya kuzaliwa, unapoishi na jinsia yako, pamoja na majibu yako. Kushiriki ni kwa hiari, majibu yako hayana utambulisho, na yanaweza kutumika kwa utafiti."
+    consent_default_text: "Verto hii inauliza umri wako, unapoishi na jinsia yako, pamoja na majibu yako. Kushiriki ni kwa hiari, majibu yako hayana utambulisho, na yanaweza kutumika kwa utafiti."
     consent_privacy_link: "Jinsi tunavyoshughulikia data yako"
     respondent_code_title: 'Kabla ya kuanza'
     respondent_code_prompt_default: 'Tunga msimbo utakaokumbuka'
@@ -1645,7 +1645,8 @@ sw:
         - text: "Tunawezaje kuiboresha kwa ajili yako?"
   demographics:
     cards:
-      - text: "Ulizaliwa lini?"
+      - text: "Una umri gani?"
+        options: ["Chini ya 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Unaishi wapi?"
         description: "Inaendeshwa na OpenStreetMap — husaidia kujenga ramani unayoweza kuchunguza baada ya kumaliza."
       - text: "Ni jinsia gani inayokuelezea vizuri zaidi?"

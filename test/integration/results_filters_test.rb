@@ -132,22 +132,50 @@ class ResultsFiltersTest < ActionDispatch::IntegrationTest
     assert_select "a.seg-pill[href*='range=7d']", minimum: 1
   end
 
-  test "the player denormalises gender and birth year from the answers" do
+  test "the player denormalises gender and the age band from the answers" do
     gender_idx = @survey.cards.find_index { |c| c["demographic"] && c["type"] == "multiple_choice" }
-    birth_idx  = @survey.cards.find_index { |c| c["demographic"] && c["input"] == "month" }
+    age_idx    = @survey.cards.find_index { |c| c["demographic"] && c["type"] == "range" }
     token = SecureRandom.uuid
 
+    # The age slider stores the INDEX of the stop, not its label — so "1" is
+    # the second band, and the band recorded has to come from that position
+    # rather than from any text the respondent saw.
     post submit_survey_path(@survey.publish_token),
          params: { session_token: token,
                    answers: { "0" => { "value" => "Yes" },
                               gender_idx.to_s => { "value" => "Female" },
-                              birth_idx.to_s  => { "value" => "1990-04" } } }.to_json,
+                              age_idx.to_s    => { "value" => 1 } } }.to_json,
          headers: { "Content-Type" => "application/json" }
     assert_response :success
 
     resp = Response.find_by!(session_token: token)
     assert_equal "Female", resp.demographic_gender
+    assert_equal "16_17", resp.demographic_age_band
+    # No date of birth is recorded by a Verto carrying the slider.
+    assert_nil resp.demographic_birth_year
+  end
+
+  test "a Verto still carrying the retired month card denormalises a birth year" do
+    # Published Vertos keep the card they were published with, so the year
+    # path has to go on working for as long as any of them is collecting.
+    legacy = @survey.cards.reject { |c| c["demographic"] && c["type"] == "range" }
+    legacy << { "type" => "open_ended", "input" => "month",
+                "text" => "When were you born?", "demographic" => true }
+    @survey.update_column(:cards, legacy)
+
+    birth_idx = legacy.find_index { |c| c["demographic"] && c["input"] == "month" }
+    token = SecureRandom.uuid
+
+    post submit_survey_path(@survey.publish_token),
+         params: { session_token: token,
+                   answers: { "0" => { "value" => "Yes" },
+                              birth_idx.to_s => { "value" => "1990-04" } } }.to_json,
+         headers: { "Content-Type" => "application/json" }
+    assert_response :success
+
+    resp = Response.find_by!(session_token: token)
     assert_equal 1990, resp.demographic_birth_year
+    assert_nil resp.demographic_age_band
   end
 
   test "a gender the Verto never offered is refused" do

@@ -43,7 +43,9 @@ class DemographicTilesTest < ActionDispatch::IntegrationTest
     body = JSON.parse(response.body)
     assert body["ok"]
     assert_equal "age", body["card"]["demographic_key"]
-    assert_equal "month", body["card"]["input"]
+    assert_equal "range", body["card"]["type"]
+    assert_equal "vertical", body["card"]["slider_axis"]
+    assert_equal DemographicQuestions::AGE_BAND_LABELS, body["card"]["options"]
     assert body["card"]["demographic"]
   end
 

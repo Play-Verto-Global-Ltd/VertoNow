@@ -102,7 +102,13 @@ class CorpusIndexer
       this_year = Date.current.year
 
       ResolvesResultSegments::AGE_BANDS.filter_map do |label, min_age, max_age|
+        # Same two-generation join as the results page: a birth year from a
+        # pre-slider Verto, a band key from one carrying the slider. The
+        # reporting bands stay the coarser ones so a figure published from
+        # this Verto last month and one published next month mean the same.
+        keys  = DemographicQuestions.age_band_keys_within(min_age, max_age)
         scope = base.where(demographic_birth_year: (this_year - max_age)..(this_year - min_age))
+                    .or(base.where(demographic_age_band: keys))
         next if scope.reorder(nil).count < CorpusEntry.min_sample_size
 
         [ "Age: #{label}", scope ]

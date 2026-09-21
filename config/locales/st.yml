@@ -291,7 +291,7 @@ st:
     consent_agree: "Dumela mme o tswele pele"
     consent_decline: "Ha ke dumele"
     consent_declined: "Ha ho bothata — o ka kwala leqephe lena."
-    consent_default_text: "Verto ena e botsa letsatsi la tswalo la hao, moo o dulang teng le bong ba hao, hammoho le dikarabo tsa hao. Ho nka karolo ha ho a qobelleha, dikarabo tsa hao ha di na lebitso, mme di ka sebediswa bakeng sa dipatlisiso."
+    consent_default_text: "Verto ena e botsa lilemo tsa hao, moo o dulang teng le bong ba hao, hammoho le dikarabo tsa hao. Ho nka karolo ha ho a qobelleha, dikarabo tsa hao ha di na lebitso, mme di ka sebediswa bakeng sa dipatlisiso."
     consent_privacy_link: "Kamoo re tsamaisang datha ya hao kateng"
     respondent_code_title: 'Pele o qala'
     respondent_code_prompt_default: 'Etsa khoutu eo o tla e hopola'
@@ -1672,7 +1672,8 @@ st:
   # the registry lengths.
   demographics:
     cards:
-      - text: "O hlahile neng?"
+      - text: "U lilemo li kae?"
+        options: ["Ka tlase ho 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "O dula kae?"
         description: "E tsamaiswa ke OpenStreetMap — e thusa ho aha mmapa oo o ka o sekasekang ha o qeta."
       - text: "Ke bong bofe bo o hlalosang ka ho fetisisa?"

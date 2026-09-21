@@ -281,7 +281,7 @@ it:
     consent_agree: "Accetto e continuo"
     consent_decline: "Non accetto"
     consent_declined: "Nessun problema: puoi chiudere questa pagina."
-    consent_default_text: "Questo Verto chiede la tua data di nascita, dove vivi e il tuo genere, oltre alle tue risposte. La partecipazione è volontaria, le tue risposte sono anonime e possono essere usate per la ricerca."
+    consent_default_text: "Questo Verto chiede la tua età, dove vivi e il tuo genere, oltre alle tue risposte. La partecipazione è volontaria, le tue risposte sono anonime e possono essere usate per la ricerca."
     consent_privacy_link: "Come trattiamo i tuoi dati"
     respondent_code_title: 'Prima di iniziare'
     respondent_code_prompt_default: 'Inventa un codice che ricorderai'
@@ -1645,7 +1645,8 @@ it:
         - text: "Come possiamo migliorarlo per te?"
   demographics:
     cards:
-      - text: "Qual è la tua data di nascita?"
+      - text: "Quanti anni hai?"
+        options: ["Meno di 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Dove vivi?"
         description: "Basato su OpenStreetMap — aiuta a costruire una mappa che potrai esplorare alla fine."
       - text: "Quale genere ti descrive meglio?"

@@ -294,7 +294,7 @@ en:
     consent_agree: "Agree & continue"
     consent_decline: "I don't agree"
     consent_declined: "No problem — you can close this page."
-    consent_default_text: "This Verto asks for your birth date, where you live and your gender, alongside your answers. Taking part is voluntary, your answers are anonymous, and they may be used for research."
+    consent_default_text: "This Verto asks for your age, where you live and your gender, alongside your answers. Taking part is voluntary, your answers are anonymous, and they may be used for research."
     consent_privacy_link: "How we handle your data"
     respondent_code_title: 'Before you start'
     respondent_code_prompt_default: 'Make up a code you''ll remember'
@@ -1943,7 +1943,8 @@ en:
   # the registry lengths.
   demographics:
     cards:
-      - text: "When were you born?"
+      - text: "How old are you?"
+        options: ["Under 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Where do you live?"
         description: "Powered by OpenStreetMap — helps build a map you can explore after finishing."
       - text: "What gender best describes you?"

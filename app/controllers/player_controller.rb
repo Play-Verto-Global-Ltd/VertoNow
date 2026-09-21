@@ -1723,11 +1723,30 @@ class PlayerController < ApplicationController
     allowed    = gender_idx ? Array(cards[gender_idx]["options"]).map(&:to_s) : []
     resp.demographic_gender = allowed.include?(gender) ? gender : nil
 
+    # Age, across two card generations. A Verto published before the slider
+    # still carries the month card and still denormalises a year; a new one
+    # carries the band slider and denormalises a key. A deck has one or the
+    # other, never both, so each branch clears the column it does not own —
+    # otherwise a creator swapping the card on a still-editable deck would
+    # leave the old value behind, and the results page would read a stale
+    # birth year beside a fresh band.
+    band_idx = cards.find_index { |c| c.is_a?(Hash) && c["demographic"] && c["type"].to_s == "range" }
     birth_idx = cards.find_index { |c| c.is_a?(Hash) && c["demographic"] && c["input"] == "month" }
-    raw_year  = birth_idx ? answers[birth_idx.to_s]&.dig("value").to_s[/\A(\d{4})/, 1] : nil
-    year      = raw_year&.to_i
-    # A year outside living memory is a typo or a probe, not a birth year.
-    resp.demographic_birth_year = year && year.between?(1900, Date.current.year) ? year : nil
+
+    if band_idx
+      # A range answer is an index into the card's options, so the band comes
+      # from its POSITION, never from the label — the labels are translated
+      # per Verto, and matching on one would band a French respondent as nil.
+      raw = answers[band_idx.to_s]&.dig("value")
+      resp.demographic_age_band   = DemographicQuestions.age_band_key_at(raw)
+      resp.demographic_birth_year = nil
+    else
+      raw_year = birth_idx ? answers[birth_idx.to_s]&.dig("value").to_s[/\A(\d{4})/, 1] : nil
+      year     = raw_year&.to_i
+      # A year outside living memory is a typo or a probe, not a birth year.
+      resp.demographic_birth_year = year && year.between?(1900, Date.current.year) ? year : nil
+      resp.demographic_age_band   = nil
+    end
 
     # Opt-in demographics (DemographicQuestions::OPTIONAL_CARDS), same
     # tamper-guard posture: values must be options the card actually offers.

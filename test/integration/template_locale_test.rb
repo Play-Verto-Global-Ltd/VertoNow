@@ -30,7 +30,9 @@ class TemplateLocaleTest < ActionDispatch::IntegrationTest
 
     # The demographic tail follows too — this used to be English on every
     # Verto regardless of language.
-    gender = survey.cards.find { |c| c["demographic"] && c["options"].present? }
+    # The gender card specifically: the age slider is also a demographic card
+    # carrying options now, so "the demographic one with options" is ambiguous.
+    gender = survey.cards.find { |c| c["demographic"] && c["type"] == "multiple_choice" }
     assert gender, "no demographic options card appended"
     assert_equal I18n.t("demographics.cards", locale: :fr).last[:options].map(&:to_s), gender["options"]
     refute_includes gender["options"], "Prefer not to say"
@@ -44,7 +46,7 @@ class TemplateLocaleTest < ActionDispatch::IntegrationTest
     assert_equal SurveyTemplates.find("csat")[:name], survey.title
     assert_equal SurveyTemplates.find("csat")[:cards].first["text"], survey.cards.first["text"]
     assert_equal "Prefer not to say",
-                 survey.cards.find { |c| c["demographic"] && c["options"].present? }["options"].last
+                 survey.cards.find { |c| c["demographic"] && c["type"] == "multiple_choice" }["options"].last
   end
 
   test "a wrong-length translated options list is refused, not spliced" do

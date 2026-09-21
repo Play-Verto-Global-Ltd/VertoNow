@@ -281,7 +281,7 @@ pl:
     consent_agree: "Zgadzam się i kontynuuję"
     consent_decline: "Nie zgadzam się"
     consent_declined: "Nie ma problemu — możesz zamknąć tę stronę."
-    consent_default_text: "To Verto pyta o Twoją datę urodzenia, miejsce zamieszkania i płeć, obok Twoich odpowiedzi. Udział jest dobrowolny, Twoje odpowiedzi są anonimowe i mogą zostać wykorzystane do badań."
+    consent_default_text: "To Verto pyta o Twój wiek, miejsce zamieszkania i płeć, obok Twoich odpowiedzi. Udział jest dobrowolny, Twoje odpowiedzi są anonimowe i mogą zostać wykorzystane do badań."
     consent_privacy_link: "Jak przetwarzamy Twoje dane"
     respondent_code_title: 'Zanim zaczniesz'
     respondent_code_prompt_default: 'Wymyśl kod, który zapamiętasz'
@@ -1647,7 +1647,8 @@ pl:
         - text: "Jak możemy to dla Ciebie ulepszyć?"
   demographics:
     cards:
-      - text: "Jaka jest Twoja data urodzenia?"
+      - text: "Ile masz lat?"
+        options: ["Poniżej 16", "16–17", "18–24", "25–34", "35–49", "50–64", "65+"]
       - text: "Gdzie mieszkasz?"
         description: "Oparte na OpenStreetMap — pomaga zbudować mapę, którą możesz przeglądać po zakończeniu."
       - text: "Która płeć najlepiej Cię opisuje?"
