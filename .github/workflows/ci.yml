@@ -333,7 +333,7 @@ jobs:
       # no grant to give. Pre-move `:<sha>` images are still on that package —
       # see DEPLOYMENT_RUNBOOK §7 before rolling back past the move.
       - name: Build the production image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: ${{ github.ref == 'refs/heads/Main' }}
