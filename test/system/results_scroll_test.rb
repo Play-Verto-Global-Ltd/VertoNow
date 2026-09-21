@@ -65,6 +65,18 @@ class ResultsScrollTest < ApplicationSystemTestCase
     evaluate_script("document.querySelector('.ro-item.is-current')?.textContent.replace(/\\s+/g,' ').trim() || null")
   end
 
+  # Two boxes are on the same line iff their vertical spans overlap. Comparing
+  # `top` would fail on anything the header centres, which is everything in it.
+  def same_line?(a, b)
+    evaluate_script(<<~JS)
+      (() => {
+        const x = document.querySelector("#{a}").getBoundingClientRect()
+        const y = document.querySelector("#{b}").getBoundingClientRect()
+        return x.bottom > y.top + 1 && x.top < y.bottom - 1
+      })()
+    JS
+  end
+
   # A smooth scroll takes a few hundred milliseconds, so "it has started
   # moving" is not "it has arrived" — measuring at the first non-zero
   # scrollTop reads a position mid-animation. Waits for two consecutive
@@ -98,6 +110,55 @@ class ResultsScrollTest < ApplicationSystemTestCase
   # The point of the rail: it says where you are. Two different scroll
   # positions must mark two different questions, and the one marked has to be
   # the one on screen.
+  # The point of condensing: the filters join the actions' row instead of
+  # costing a row of their own, and each collapses to the one option in force.
+  # All of it is CSS ordering and display, which is exactly the kind of thing
+  # that regresses without any test noticing.
+  test "condensed, the filters join the actions' row and show only what is selected" do
+    open_results
+    assert_selector ".rh-when .rh-when-btn", count: 4, visible: true
+    assert_no_selector ".rh-when-menu", visible: true
+
+    scroll_feed_to(600)
+    assert wait_until { condensed? }
+
+    refute page.has_selector?(".rh-when", visible: true),
+      "the four-option segmented control is still drawn on the condensed header"
+    assert_selector ".rh-when-menu summary", visible: true
+    assert_equal "All time", find(".rh-when-menu summary .rh-picker-active").text.strip
+
+    assert same_line?(".results-header-filters", ".results-header-actions"),
+      "the filters are still on a row of their own next to a condensed header"
+
+    # …and the options are one click away. settle_box first: the header's
+    # padding animates as it condenses, and Cuprite clicks by coordinate — a
+    # click dispatched mid-transition lands on whatever is passing through
+    # that point.
+    settle_box(find(".rh-when-menu summary"))
+    find(".rh-when-menu summary").click
+    assert_selector ".rh-when-menu-panel .rh-menu-item", count: 4, visible: true
+    assert_selector ".rh-when-menu-panel .rh-menu-item", text: "Last 30 days"
+  end
+
+  # Two dropdowns open over each other is what you get from four independent
+  # <details>. They share a `name`, which makes the browser treat them as one
+  # exclusive group — no controller, and it degrades to the old behaviour
+  # rather than breaking anywhere that doesn't support it.
+  test "opening one header menu closes the others" do
+    open_results
+    scroll_feed_to(600)
+    assert wait_until { condensed? }
+
+    settle_box(find(".rh-when-menu summary"))
+    find(".rh-when-menu summary").click
+    assert_selector ".rh-when-menu[open]"
+
+    find(".results-header-actions details:first-of-type summary").click
+    assert_selector ".results-header-actions details[open]"
+    refute page.has_selector?(".rh-when-menu[open]", wait: 1),
+      "the date menu stayed open behind the export menu"
+  end
+
   test "the rail marks the question you are reading, and moves as you scroll" do
     open_results
     wait_until { current_row.present? }
@@ -126,15 +187,22 @@ class ResultsScrollTest < ApplicationSystemTestCase
   # sticky element inside an `overflow: hidden` ancestor silently scrolls away.
   test "the rail stays put while the feed moves under it" do
     open_results
-    top_before = evaluate_script("Math.round(document.querySelector('.results-outline').getBoundingClientRect().top)")
+    rail_top = -> { evaluate_script("Math.round(document.querySelector('.results-outline').getBoundingClientRect().top)") }
+    top_before = rail_top.call
+    header_before = header_height
 
     scroll_feed_to(1500)
     assert wait_until { condensed? }
-    top_after = evaluate_script("Math.round(document.querySelector('.results-outline').getBoundingClientRect().top)")
+    settle_box(find(".results-outline"))
 
-    # It rises by however much the header gave back, and no further.
-    assert (top_before - top_after).between?(0, 40),
-      "the rail moved #{top_before - top_after}px up the screen — it is scrolling with the feed, not sticking to it"
+    # It rises by however much the header gave back, and no further — stated
+    # against the MEASURED shrink rather than a number, so tuning the
+    # condensed header doesn't quietly turn this into a test of nothing.
+    gave_back = header_before - header_height
+    moved = top_before - rail_top.call
+    assert moved.between?(0, gave_back + 4),
+      "the rail moved #{moved}px up the screen while the header gave back #{gave_back}px — " \
+      "it is scrolling with the feed, not sticking to it"
   end
 
   test "clicking a question scrolls the feed to it" do

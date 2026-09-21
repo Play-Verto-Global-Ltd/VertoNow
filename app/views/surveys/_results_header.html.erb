@@ -63,14 +63,19 @@
       </svg>Play link
     <% end %>
   </div>
+</div><%# end results-header-bar %>
 
+  <%# A SIBLING of the tally strip, not a child of it: condensed, the header
+      is one row of [tally] [filters] [actions], and those three have to be
+      orderable against each other. Nested, the filters could only ever land
+      to the right of the actions. %>
   <div class="results-header-actions">
     <%# ── Export: every way of getting the numbers out, in one menu. They were
         three separate triggers — a Download dropdown, a Google Sheets button
         and (below) a Share panel — sitting side by side doing neighbouring
         jobs, which is three decisions where the creator has one intention. ── %>
     <% csv_item = "display:block;padding:8px 12px;border-radius:7px;font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.7);text-decoration:none;white-space:nowrap;" %>
-    <details class="results-export-menu" style="position:relative;">
+    <details class="results-export-menu" name="results-header-menu" style="position:relative;">
       <summary class="rh-pill">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M8 2.5v8m0 0L5 7.6M8 10.5l3-2.9M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -124,7 +129,7 @@
         (SharedResultsController). Same dropdown chrome as Download
         above; copy-link idiom cribbed from the test-link block in
         surveys/show.html.erb. ── %>
-    <details class="results-export-menu" style="position:relative;">
+    <details class="results-export-menu" name="results-header-menu" style="position:relative;">
       <summary class="rh-pill">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M6.6 9.4a2.6 2.6 0 0 0 3.9.3l2-2a2.6 2.6 0 0 0-3.7-3.7l-1.1 1.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -292,8 +297,7 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </div><%# end results-header-actions %>
 
 
 <%# Date window. Narrows the base, so the segment counts below are
@@ -304,19 +308,45 @@
       SEGMENTED CONTROL rather than four more pills: a different shape is how
       the page says "pick exactly one of these" without a word of copy, and it
       stops the window reading as one more segment to add. %>
+  <%# The window is deliberately kept when switching it, but the segment is
+      not carried across ranges blindly — a segment that falls below the
+      small-cell threshold in a narrower window disappears, and linking to it
+      would 404 the pill. %>
+  <% when_active = (@date_range.presence || "all")
+     when_href   = ->(id) { survey_results_path(@survey, range: (id == "all" ? nil : id)) } %>
+
   <div class="rh-when" role="group" aria-label="When">
     <% date_range_options.each do |opt| %>
-      <% current = (@date_range.presence || "all") == opt[:id] %>
-      <%# The window is deliberately kept when switching it, but the
-          segment is not carried across ranges blindly — a segment that
-          falls below the small-cell threshold in a narrower window
-          disappears, and linking to it would 404 the pill. %>
-      <%= link_to opt[:label],
-            survey_results_path(@survey, range: (opt[:id] == "all" ? nil : opt[:id])),
+      <% current = when_active == opt[:id] %>
+      <%= link_to opt[:label], when_href.call(opt[:id]),
             class: "rh-when-btn#{' is-active' if current}",
             aria: { current: current.to_s } %>
     <% end %>
   </div>
+
+  <%# The same four, as a menu showing only the one in force — what the
+      condensed header swaps the segmented control for, so the filters fit on
+      the actions' row. Both forms are rendered and CSS picks one, rather than
+      one <details> that the expanded state forces open: a closed <details>
+      hides its content through the UA stylesheet (::details-content, and
+      differently per engine), and overriding that is a browser-quirk bet on
+      a control people navigate the page with. Only one is ever displayed, so
+      only one is ever in the accessibility tree. %>
+  <details class="results-export-menu rh-when-menu" name="results-header-menu">
+    <summary class="rh-pill rh-pill--picker">
+      <span class="rh-picker-active"><%= date_range_options.find { |o| o[:id] == when_active }&.dig(:label) %></span>
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M4 6.5 8 10.5l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </summary>
+    <div class="rh-when-menu-panel">
+      <% date_range_options.each do |opt| %>
+        <%= link_to opt[:label], when_href.call(opt[:id]),
+              class: "rh-menu-item#{' is-active' if when_active == opt[:id]}",
+              aria: { current: (when_active == opt[:id]).to_s } %>
+      <% end %>
+    </div>
+  </details>
 
   <%# Segment filter — partner shares, links, waves, regions, demographics.
       Overall is drawn in the bar as the reset; everything else lives in a
@@ -327,26 +357,46 @@
       controller. %>
   <% if @segments.size > 1 %>
     <% active_is_overall = @active_segment[:id].to_s == "overall" %>
+    <%# The reset, as its own chip. Folds away condensed, where the picker
+        beside it names Overall itself and carries the way back. %>
     <%= link_to survey_results_path(@survey, range: @date_range),
-          class: "seg-pill rh-seg", aria: { current: active_is_overall.to_s } do %>
+          class: "seg-pill rh-seg rh-picker-wide", aria: { current: active_is_overall.to_s } do %>
       Overall<span class="seg-pill-count"><%= @overall_total %></span>
     <% end %>
 
-    <details class="results-export-menu rh-segments">
+    <details class="results-export-menu rh-segments" name="results-header-menu">
       <summary class="rh-pill rh-pill--picker">
         <%# The active segment, not the word "Segments", once one is chosen:
             the control's job is to say what you are looking at. %>
         <% if active_is_overall %>
-          <span>Segments</span>
+          <%# Condensed, this pill is the WHOLE segment filter — the Overall
+              chip beside it has folded away — so it has to name what is in
+              force rather than what it opens. Two labels, one displayed. %>
+          <span class="rh-picker-wide">Segments</span>
+          <span class="rh-picker-mini rh-picker-active">Overall</span>
         <% else %>
           <span class="rh-picker-active"><%= @active_segment[:label] %></span>
         <% end %>
-        <span class="rh-picker-n"><%= @segments.size - 1 %></span>
+        <%# "12" is how many segments are on offer, which reads as a count of
+            the thing named the moment the label becomes "Overall". %>
+        <span class="rh-picker-n rh-picker-wide"><%= @segments.size - 1 %></span>
         <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M4 6.5 8 10.5l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </summary>
       <div class="rh-segments-panel">
+        <%# The way back to Overall. It is drawn as a chip in the filter row
+            too, but that chip folds away when the header condenses — and a
+            reader who can narrow to Spain but never widen again is stuck. %>
+        <div class="rh-group rh-group--reset">
+          <span class="rh-group-label" style="color:rgba(255,255,255,0.45);">all</span>
+          <div class="rh-group-rail">
+            <%= link_to survey_results_path(@survey, range: @date_range),
+                  class: "seg-pill rh-seg", aria: { current: active_is_overall.to_s } do %>
+              Overall<span class="seg-pill-count"><%= @overall_total %></span>
+            <% end %>
+          </div>
+        </div>
         <% results_segment_groups(@segments).each do |group| %>
           <div class="rh-group">
             <span class="rh-group-label" style="color:<%= group[:accent] %>;"><%= group[:key] %></span>

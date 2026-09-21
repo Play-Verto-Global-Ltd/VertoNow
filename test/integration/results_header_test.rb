@@ -31,6 +31,45 @@ class ResultsHeaderTest < ActionDispatch::IntegrationTest
     follow_redirect! if response.redirect?
   end
 
+  # The condensed header folds the standalone Overall chip away and lets the
+  # segment picker name Overall itself. That leaves the picker's PANEL as the
+  # only way back — so a reader who narrows to one country and then scrolls
+  # can never widen again unless the panel carries its own reset.
+  test "the segment picker's panel carries the way back to Overall" do
+    3.times { @survey.responses.create!(session_token: SecureRandom.uuid, answered: true, status: "completed", region_country: "GB", answers: { "0" => { "value" => "A" } }) }
+    Response::MIN_REGION_SAMPLE_SIZE.times do
+      @survey.responses.create!(session_token: SecureRandom.uuid, answered: true, status: "completed",
+                                region_country: "US", answers: { "0" => { "value" => "B" } })
+    end
+
+    get survey_results_path(@survey, segment: "region_US")
+    assert_response :success
+
+    reset = css_select(".rh-segments-panel .rh-group--reset a").first
+    assert reset, "the picker's panel has no Overall row — a condensed reader cannot widen again"
+    assert_includes reset.text, "Overall"
+    assert_equal survey_results_path(@survey), reset["href"]
+  end
+
+  # The date window is rendered twice: as the segmented control the expanded
+  # header shows, and as a menu naming only the one in force for the condensed
+  # one. Both are real controls, so both have to point at the same places — a
+  # menu that dropped a range, or linked to the wrong one, would only be
+  # noticed by someone scrolling.
+  test "the collapsed date menu offers the same ranges as the segmented control" do
+    get survey_results_path(@survey, range: "30d")
+
+    control = css_select(".rh-when .rh-when-btn")
+    menu    = css_select(".rh-when-menu-panel .rh-menu-item")
+
+    assert_equal 4, control.size
+    assert_equal control.map { |a| a["href"] }, menu.map { |a| a["href"] }
+    assert_equal control.map { |a| a.text.strip }, menu.map { |a| a.text.strip }
+
+    assert_equal "Last 30 days", css_select(".rh-when-menu summary .rh-picker-active").first.text.strip,
+      "the collapsed pill does not name the range actually in force"
+  end
+
   test "the header renders before the results-feed frame, not inside it" do
     get survey_results_path(@survey)
     assert_response :success
