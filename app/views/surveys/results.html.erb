@@ -669,48 +669,76 @@
 
   </div><%# end middle column %>
 
-  <%# ── Chat panel ── %>
-  <div style="width:320px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.07);background:#161B2E;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1;"
-       data-controller="results-chat"
+  <%# ── Ask Verto ── a floating CTA that opens the chat OVER the feed rather
+      than beside it. It used to be a permanent 320px column, which charged
+      every reader the width whether or not they ever asked anything — and the
+      feed is the page. Both halves are position:fixed, so they hold the
+      corner while the feed scrolls underneath (the shell doesn't scroll; the
+      feed div inside it does, which is why this is fixed rather than sticky).
+      The pill is the Ask page's own .ask-fab, so the product has one floating
+      CTA rather than two that nearly match.
+      No backdrop, deliberately: this is a panel over the page, not a modal —
+      the numbers it is answering about stay readable and scrollable beside
+      it. ── %>
+  <div data-controller="results-chat"
        data-results-chat-url-value="<%= survey_chat_path(@survey) %>"
-       data-results-chat-theme-value="<%= @survey.theme.to_s.gsub('"', '&quot;') %>">
+       data-results-chat-theme-value="<%= @survey.theme.to_s.gsub('"', '&quot;') %>"
+       data-action="keydown.esc@window->results-chat#closeOnEsc">
 
-    <%# Chat header %>
-    <div style="flex-shrink:0;padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,0.07);">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-family:'Alata',sans-serif;font-size: var(--text-md);color:#fff;letter-spacing:0.03em;">Ask Verto</span>
-        <span style="margin-left:auto;font-family:'ABeeZee',sans-serif;font-size: var(--text-xs);color:rgba(255,255,255,0.25);background:rgba(1,234,203,0.12);border:1px solid rgba(1,234,203,0.2);border-radius:20px;padding:2px 8px;">AI</span>
+    <%# Round, gradient, glowing: this is the one control on the page that
+        opens an AI, and it wears the brand ramp the rest of the product's
+        generating states use. The ramp is the RING and the glyph sits on a
+        dark core — the ramp drifts through #FFFA77, and no single glyph
+        colour stays legible across a moving rainbow.
+        The label is a real element rather than an aria-label so there is one
+        source of truth for the accessible name and the hover tooltip; it is
+        faded rather than hidden, which keeps it in the accessibility tree. %>
+    <button type="button" class="results-ask-fab"
+            data-results-chat-target="fab"
+            data-action="click->results-chat#toggle"
+            aria-expanded="false" aria-controls="results-ask-panel">
+      <span class="results-ask-fab-label"><%= t("results.ask_verto") %></span>
+      <span class="results-ask-fab-core" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+          <path d="M12 2.6l1.9 5.6 5.6 1.9-5.6 1.9L12 17.6l-1.9-5.6L4.5 10.1l5.6-1.9L12 2.6Z"
+                fill="currentColor"/>
+          <path d="M18.4 15.1l.85 2.5 2.5.85-2.5.85-.85 2.5-.85-2.5-2.5-.85 2.5-.85.85-2.5Z"
+                fill="currentColor" opacity="0.75"/>
+        </svg>
+      </span>
+    </button>
+
+    <div id="results-ask-panel" class="results-ask-panel"
+         data-results-chat-target="panel"
+         aria-label="<%= t("results.ask_verto") %>">
+
+      <div class="results-ask-head">
+        <div class="results-ask-head-row">
+          <span class="results-ask-title">Ask Verto</span>
+          <span class="results-ask-badge">AI</span>
+          <button type="button" class="results-ask-close"
+                  data-action="click->results-chat#close"
+                  aria-label="<%= t("share_modal.close") %>">✕</button>
+        </div>
+        <p class="results-ask-sub">Ask questions about your Verto results</p>
       </div>
-      <p style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.25);margin:6px 0 0;line-height:1.5;">Ask questions about your Verto results</p>
-    </div>
 
-    <%# Messages area %>
-    <div data-results-chat-target="messages"
-         style="flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:0;">
-    </div>
+      <div class="results-ask-messages" data-results-chat-target="messages"></div>
 
-    <%# Input area %>
-    <div style="flex-shrink:0;border-top:1px solid rgba(255,255,255,0.07);padding:12px 12px;">
-      <div style="display:flex;gap:8px;align-items:flex-end;">
+      <div class="results-ask-composer">
         <textarea data-results-chat-target="input"
                   data-action="keydown->results-chat#keydown"
                   placeholder="Ask about your results…"
-                  rows="2"
-                  style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;color:rgba(255,255,255,0.8);font-family:'ABeeZee',sans-serif;font-size: var(--text-md);resize:none;outline:none;line-height:1.5;"
-                  onfocus="this.style.borderColor='rgba(1,234,203,0.4)'"
-                  onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
-        <button data-results-chat-target="sendBtn"
-                data-action="click->results-chat#send"
-                style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:#01EACB;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;"
-                onmouseover="this.style.background='#00C4AB'"
-                onmouseout="this.style.background='#01EACB'">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  rows="2"></textarea>
+        <button class="results-ask-send" data-results-chat-target="sendBtn"
+                data-action="click->results-chat#send">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M1 7h12M7 1l6 6-6 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
-    </div>
 
-  </div><%# end chat panel %>
+    </div>
+  </div><%# end Ask Verto %>
 
 </div><%# end outer shell %>

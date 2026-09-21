@@ -5131,6 +5131,152 @@ button.editor-leave-btn { cursor: pointer; }
   border-bottom: 1px solid rgba(255,255,255,0.06);
   background: #1C2034;
 }
+/* ── Ask Verto on results: floating CTA + slide-over ────────────────────────
+   Both halves are fixed to the viewport. The results shell itself never
+   scrolls — the feed div inside it does — so fixed is what keeps these still
+   while the numbers move underneath, and it costs the feed nothing when the
+   panel is shut. z-index sits above the feed (z 1) and the top bar, and well
+   under .app-modal's 9999: the freeform-answers modal must still cover this. */
+/* The ramp is the one every AI surface in the product drifts — the generating
+   summary card's sweep, the shimmering "Analysing responses…" — so this reads
+   as the same thing rather than as a coloured button. 2px of it shows around
+   a dark core, and the core is what keeps the sparkle legible while the
+   gradient moves underneath: the ramp passes through #FFFA77, and no single
+   glyph colour survives a moving rainbow. */
+.results-ask-fab {
+  position: fixed; inset-inline-end: 22px; bottom: 22px; z-index: 40;
+  width: 58px; height: 58px; padding: 2px; border: none; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(90deg,#01EACB,#0CA7FF,#615BF5,#FF1E6F,#FFFA77,#01EACB);
+  background-size: 300% 100%;
+  animation: gen-shimmer-shift 6s linear infinite;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45), 0 0 26px rgba(1,234,203,0.3);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.results-ask-fab-core {
+  width: 100%; height: 100%; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #12162B; color: #fff;
+}
+.results-ask-fab:hover, .results-ask-fab:focus-visible {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.5), 0 0 34px rgba(1,234,203,0.5);
+}
+/* The name, parked to the button's inline-start. Faded, not hidden: it IS the
+   button's accessible name, and display:none or visibility:hidden would take
+   it out of the accessibility tree and leave an icon labelled with nothing. */
+.results-ask-fab-label {
+  position: absolute; inset-inline-end: calc(100% + 10px);
+  padding: 7px 13px; border-radius: 100px; white-space: nowrap;
+  background: rgba(20,23,38,0.92); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.14); color: #fff;
+  font-family: "Alata", sans-serif; font-size: 12px; letter-spacing: 0.03em;
+  opacity: 0; transform: translateX(6px); pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.results-ask-fab:hover .results-ask-fab-label,
+.results-ask-fab:focus-visible .results-ask-fab-label { opacity: 1; transform: none; }
+/* Shut, the panel is out of the tab order and the a11y tree (visibility), not
+   just invisible — an off-screen chat you can still tab into is a trap. */
+.results-ask-panel {
+  position: fixed; z-index: 41;
+  inset-block: 66px 18px; inset-inline-end: 18px;
+  width: min(380px, calc(100vw - 36px));
+  display: flex; flex-direction: column; overflow: hidden;
+  background: #1C2034; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  visibility: hidden; opacity: 0; transform: translateX(12px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+}
+.results-ask-panel.is-open {
+  visibility: visible; opacity: 1; transform: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s;
+}
+/* The pill gets out of the way of its own panel — the ✕ is the way back, and
+   a launcher sitting on top of what it launched is just a second close
+   button with the wrong label. */
+.results-ask-fab.is-open { opacity: 0; pointer-events: none; }
+
+.results-ask-head {
+  flex-shrink: 0; padding: 15px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.results-ask-head-row { display: flex; align-items: center; gap: 8px; }
+.results-ask-title {
+  font-family: "Alata", sans-serif; font-size: var(--text-md);
+  color: #fff; letter-spacing: 0.03em;
+}
+.results-ask-badge {
+  margin-inline-start: auto;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-xs);
+  color: rgba(255,255,255,0.4);
+  background: rgba(1,234,203,0.12); border: 1px solid rgba(1,234,203,0.2);
+  border-radius: 20px; padding: 2px 8px;
+}
+.results-ask-close {
+  background: transparent; border: none; cursor: pointer; padding: 2px 4px;
+  color: rgba(255,255,255,0.45); font-size: 14px; line-height: 1;
+  transition: color 0.15s;
+}
+.results-ask-close:hover { color: #fff; }
+.results-ask-sub {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
+  color: rgba(255,255,255,0.3); margin: 6px 0 0; line-height: 1.5;
+}
+.results-ask-messages {
+  flex: 1; overflow-y: auto; padding: 14px 12px;
+  display: flex; flex-direction: column;
+}
+.results-ask-composer {
+  flex-shrink: 0; display: flex; gap: 8px; align-items: flex-end;
+  padding: 12px; border-top: 1px solid rgba(255,255,255,0.07);
+}
+.results-ask-composer textarea {
+  flex: 1; resize: none; outline: none; line-height: 1.5;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+  padding: 9px 12px; color: rgba(255,255,255,0.8);
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-md);
+  transition: border-color 0.15s;
+}
+.results-ask-composer textarea:focus { border-color: rgba(1,234,203,0.4); }
+.results-ask-send {
+  flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px;
+  background: #01EACB; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.results-ask-send:hover { background: #00C4AB; }
+.results-ask-send:disabled { opacity: 0.5; cursor: default; }
+/* On a phone the panel is the screen — a 380px column inset on both sides of
+   a 390px viewport leaves a chat you cannot read. */
+@media (max-width: 640px) {
+  .results-ask-panel { inset-block: 62px 12px; inset-inline: 12px; width: auto; }
+  /* The consent banner's strip is pointer-events:none and its panel is
+     centred with a 560px cap, so at desktop the pill sits clear of it. At
+     phone width that panel IS the width, and it lands on the pill: measured
+     at 390x844, the panel occupies y 618-833 and the pill 786-826, so the
+     pill is simply unclickable until the banner is answered. Lifting it by
+     the panel's height would be a guess that the longest translation breaks
+     — the panel is four lines of prose plus a button row — so while the
+     banner is up the pill docks at the top instead, where this page has
+     nothing below the bar. It drops back the moment consent is given
+     (cookie_consent_controller adds .hidden to the banner root). */
+  body:has(.cookie-consent-banner:not(.hidden)) .results-ask-fab {
+    top: 62px; bottom: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .results-ask-panel { transition: visibility 0s; }
+  /* The gradient drift is the button's whole "this is the AI" signal, so it
+     stops rather than freezing mid-ramp at whatever colour it happened to be:
+     background-position 0% is the teal end, which is where the rest of this
+     page's AI lives. */
+  .results-ask-fab { transition: none; animation: none; background-position: 0% 50%; }
+  .results-ask-fab-label { transition: none; }
+}
+
 /* Read-only name/theme: the same pair as the editor's, minus the affordances
    of a field you can type into. Not .is-locked — that variant dims itself to
    say an edit is being REFUSED, and nothing is being refused here; renaming

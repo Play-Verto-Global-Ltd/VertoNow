@@ -2,14 +2,43 @@ import { Controller } from "@hotwired/stimulus"
 import { t } from "lib/i18n"
 
 export default class extends Controller {
-  static targets = ["messages", "input", "sendBtn"]
+  static targets = ["messages", "input", "sendBtn", "panel", "fab"]
   static values  = { url: String, theme: String }
 
   _messages = []
   _loading  = false
+  _greeted  = false
 
-  connect() {
-    this._addMessage("assistant", `Hi! I'm Verto. I've analysed the results for "${this.themeValue}". Ask me anything about the responses!`)
+  // The greeting waits for the panel to be opened. It used to be written at
+  // connect, which was free when the chat was a permanent column and is not
+  // now: a closed panel would announce itself to a screen reader on every
+  // results page load, before anyone had asked for it.
+  toggle() {
+    this.panelTarget.classList.contains("is-open") ? this.close() : this.open()
+  }
+
+  open() {
+    if (!this._greeted) {
+      this._greeted = true
+      this._addMessage("assistant", `Hi! I'm Verto. I've analysed the results for "${this.themeValue}". Ask me anything about the responses!`)
+    }
+    this.panelTarget.classList.add("is-open")
+    this.fabTarget.classList.add("is-open")
+    this.fabTarget.setAttribute("aria-expanded", "true")
+    this.inputTarget.focus()
+  }
+
+  close() {
+    this.panelTarget.classList.remove("is-open")
+    this.fabTarget.classList.remove("is-open")
+    this.fabTarget.setAttribute("aria-expanded", "false")
+    // Focus goes back to the control that opened it, or it lands on <body>
+    // and the next Tab starts from the top of the page.
+    this.fabTarget.focus()
+  }
+
+  closeOnEsc() {
+    if (this.panelTarget.classList.contains("is-open")) this.close()
   }
 
   send() {
