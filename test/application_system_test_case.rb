@@ -334,14 +334,19 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # click landed the page's module graph had loaded. Keep that wait, and make
   # it explicit: every controller named on the page, connected. It costs the
   # real load time and nothing more. A test that opted into the real banner
-  # still clicks it. Kept under this name so the ~160 call sites read as they
-  # always did.
+  # still clicks it — AND then waits, because the accident it inherited is
+  # weaker than it looks: the Accept-all click proves the COOKIE-CONSENT
+  # controller has connected and nothing else. Every other controller on the
+  # page is still racing importmap, so a real-banner test that reaches for a
+  # Stimulus-driven control next is making exactly the bet this method was
+  # written to stop making. ResultsAskPanelTest is the first test to take it
+  # (real banner, then a click on the Ask pill), and it flaked in CI within
+  # half an hour of being written. Both paths now end the same way: every
+  # controller named on the page, connected. Kept under this name so the ~160
+  # call sites read as they always did.
   def dismiss_cookie_banner
-    if real_cookie_banner
-      click_button "Accept all" if has_button?("Accept all", wait: 2)
-    else
-      wait_for_stimulus
-    end
+    click_button "Accept all" if real_cookie_banner && has_button?("Accept all", wait: 2)
+    wait_for_stimulus
   end
 
   # Importmap loads modules progressively; a gesture that starts the moment

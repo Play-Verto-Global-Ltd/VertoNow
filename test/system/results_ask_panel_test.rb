@@ -86,6 +86,10 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
       visit survey_results_path(@survey)
       assert_selector ".cookie-consent-banner", wait: 5
       assert_selector ".results-ask-fab"
+      # This is the one test here that keeps the banner, so it never calls
+      # dismiss_cookie_banner and never inherits its wait. The pill is
+      # server-rendered; the controller that makes it do anything is not.
+      wait_for_stimulus
 
       find(".results-ask-fab").click
       assert_selector "#results-ask-panel", visible: true
