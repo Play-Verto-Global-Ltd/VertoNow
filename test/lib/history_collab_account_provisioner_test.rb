@@ -1,6 +1,6 @@
 require "test_helper"
 
-# The History Collab client account is provisioned from two disjoint places
+# The History CoLab client account is provisioned from two disjoint places
 # (the data migration for an existing database, db/seeds.rb for a fresh one),
 # so the properties that matter are all about running MORE THAN ONCE without
 # doing damage — most sharply, never resetting the password of a user who
@@ -25,16 +25,16 @@ class HistoryCollabAccountProvisionerTest < ActiveSupport::TestCase
   def jamie          = User.find_by(email_address: HistoryCollabAccountProvisioner::JAMIE_EMAIL)
   def nick           = User.find_by(email_address: HistoryCollabAccountProvisioner::NICK_EMAIL)
 
-  test "creates a managed History Collab org" do
+  test "creates a managed History CoLab org" do
     HistoryCollabAccountProvisioner.new.call
 
-    assert history_collab, "expected The History Collab organisation"
-    assert_equal "The History Collab", history_collab.name
+    assert history_collab, "expected The History CoLab organisation"
+    assert_equal "The History CoLab", history_collab.name
     refute history_collab.verto_creation_enabled?,
-           "The History Collab is a managed account — its whole point is that it cannot create Vertos"
+           "The History CoLab is a managed account — its whole point is that it cannot create Vertos"
   end
 
-  test "puts Jamie in The History Collab as an admin and in Playverto as a member" do
+  test "puts Jamie in The History CoLab as an admin and in Playverto as a member" do
     HistoryCollabAccountProvisioner.new.call
 
     assert jamie, "expected Jamie's user"
@@ -45,7 +45,7 @@ class HistoryCollabAccountProvisionerTest < ActiveSupport::TestCase
     assert PlayvertoStaff.member?(jamie)
   end
 
-  test "puts Nick in The History Collab as an admin, with his Playverto admin role" do
+  test "puts Nick in The History CoLab as an admin, with his Playverto admin role" do
     HistoryCollabAccountProvisioner.new.call
 
     assert nick, "expected Nick's user"
@@ -64,7 +64,7 @@ class HistoryCollabAccountProvisionerTest < ActiveSupport::TestCase
 
     [ jamie, nick ].each do |user|
       assert PlayvertoStaff.member?(user),
-             "#{user.email_address} should be able to create in The History Collab"
+             "#{user.email_address} should be able to create in The History CoLab"
     end
   end
 

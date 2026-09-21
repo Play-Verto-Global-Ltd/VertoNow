@@ -1,11 +1,26 @@
-# Provisions The History Collab client account and the Playverto people who
+# Provisions The History CoLab client account and the Playverto people who
 # work in it.
 #
+# THE SPELLING IS "CoLab", and only ORG_NAME carries it. The slug and this
+# class keep the original "collab", deliberately:
+#
+#   * ORG_SLUG is the identity find_or_create_by! matches on, and it is
+#     internal — no route or view reads an organisation's slug. Changing it
+#     would mean a window in which the old row is findable under neither
+#     spelling, and the next provisioner run creates a SECOND account rather
+#     than finding the first. The rename migration swallows its own errors by
+#     design (see its header), so that window is not hypothetical.
+#   * The class name is referenced by an already-landed migration
+#     (20260921120000). Renaming the constant would leave that migration
+#     pointing at something that no longer exists.
+#
+# Neither is user-visible; ORG_NAME is the one that reaches a screen.
+#
 # Third account of this shape, after Alpbach and Unleash Football, and for the
-# same reasons: The History Collab is a MANAGED account, so the org is created
+# same reasons: The History CoLab is a MANAGED account, so the org is created
 # with verto_creation_enabled false and the Playverto team builds its Verto.
 # Jamie and Nick are both admins of it — but it is their membership of the
-# PLAYVERTO org, not their History Collab role, that actually lets them create
+# PLAYVERTO org, not their History CoLab role, that actually lets them create
 # inside a restricted account (see PlayvertoStaff). Those Playverto memberships
 # are granted here rather than assumed: this class is what makes "both grantees
 # can build in the managed account" true, so it must not depend on another
@@ -28,7 +43,7 @@
 #   * an existing membership keeps whatever role it has.
 class HistoryCollabAccountProvisioner
   ORG_SLUG    = "the-history-collab"
-  ORG_NAME    = "The History Collab"
+  ORG_NAME    = "The History CoLab"
   JAMIE_EMAIL = "jamie@playverto.com"
   JAMIE_NAME  = "Jamie"
   NICK_EMAIL  = "nick@playverto.com"
@@ -41,7 +56,7 @@ class HistoryCollabAccountProvisioner
     jamie = find_or_create_user!(JAMIE_EMAIL, JAMIE_NAME)
     nick  = find_or_create_user!(NICK_EMAIL, NICK_NAME)
 
-    # Admin in The History Collab is "full features in the History Collab
+    # Admin in The History CoLab is "full features in the History CoLab
     # account" — members, invites, brand, sharing.
     Membership.find_or_create_by!(user: jamie, organisation: history_collab) { |m| m.role = "admin" }
     Membership.find_or_create_by!(user: nick,  organisation: history_collab) { |m| m.role = "admin" }
