@@ -221,6 +221,7 @@ ja:
     share_not_enabled: "まだ共有されていません。アカウントの管理者が結果の共有を有効にできます。"
     title: 結果
     editor: "← エディター"
+    leave_results: '結果を離れる'
     ask_verto: Vertoに聞く
     analysing: 回答を分析中…
     view_all_answers: "すべての回答を見る（%{count}）"

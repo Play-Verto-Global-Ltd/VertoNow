@@ -231,6 +231,7 @@ tn:
     share_not_enabled: "Ga e ise e abelanwe — motsamaisi wa akhaonto ya gago a ka bulela go abelana dipholo."
     title: "Diphetho"
     editor: "← Sefetodi"
+    leave_results: 'Tswa mo diphethong'
     ask_verto: "Ask Verto"
     analysing: "E sekaseka dikarabo…"
     view_all_answers: "Bona dikarabo tsotlhe (%{count})"

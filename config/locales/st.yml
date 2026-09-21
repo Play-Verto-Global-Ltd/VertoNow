@@ -231,6 +231,7 @@ st:
     share_not_enabled: "Ha e so arolelanwe — motsamaisi wa akhaonto ya hao a ka bulela ho arolelana diphetho."
     title: "Diphetho"
     editor: "← Mohlophisi"
+    leave_results: 'Tswa diphethong'
     ask_verto: "Botsa Verto"
     analysing: "E ntse e hlahloba dikarabo…"
     view_all_answers: "Sheba dikarabo tsohle (%{count})"

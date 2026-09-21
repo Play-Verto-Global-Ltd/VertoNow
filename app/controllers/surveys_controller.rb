@@ -1321,6 +1321,11 @@ class SurveysController < ApplicationController
   RESULTS_LEADERBOARD_ROWS = 20
 
   def results
+    # Results drops the global top nav for the same reason the editor does:
+    # this is a room you are inside, not a page you browse to, and its own top
+    # bar carries the way out ("Leave results", the editor's convention).
+    # ⌘K still reaches everywhere the nav did.
+    @hide_main_nav = true
     @date_range = params[:range].presence
     base, @segments, @active_segment = resolve_result_segments(@survey, params[:segment], @date_range)
     @overall_total  = base.count

@@ -221,6 +221,7 @@ tr:
     share_not_enabled: "Henüz paylaşılmadı — hesabınızın bir yöneticisi sonuç paylaşımını açabilir."
     title: Sonuçlar
     editor: "← Editör"
+    leave_results: 'Sonuçlardan çık'
     ask_verto: Verto'ya sor
     analysing: Yanıtlar analiz ediliyor…
     view_all_answers: "Tüm yanıtları gör (%{count})"

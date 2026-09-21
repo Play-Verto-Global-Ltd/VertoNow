@@ -221,6 +221,7 @@ fr:
     share_not_enabled: "Pas encore partagé — un administrateur de votre compte peut activer le partage des résultats."
     title: Résultats
     editor: "← Éditeur"
+    leave_results: 'Quitter les résultats'
     ask_verto: Demander à Verto
     analysing: Analyse des réponses…
     view_all_answers: "Voir toutes les réponses (%{count})"

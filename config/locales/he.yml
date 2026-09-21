@@ -221,6 +221,7 @@ he:
     share_not_enabled: "עדיין לא משותף — מנהל בחשבון שלך יכול להפעיל שיתוף תוצאות."
     title: תוצאות
     editor: "← עורך"
+    leave_results: 'יציאה מהתוצאות'
     ask_verto: שאל את Verto
     analysing: מנתח תגובות…
     view_all_answers: "הצג את כל התשובות (%{count})"

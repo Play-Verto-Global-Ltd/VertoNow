@@ -221,6 +221,7 @@ ar:
     share_not_enabled: "لم تتم المشاركة بعد — يمكن لمسؤول في حسابك تفعيل مشاركة النتائج."
     title: النتائج
     editor: "← المحرر"
+    leave_results: 'مغادرة النتائج'
     ask_verto: اسأل Verto
     analysing: جارٍ تحليل الإجابات…
     view_all_answers: "عرض كل الإجابات (%{count})"

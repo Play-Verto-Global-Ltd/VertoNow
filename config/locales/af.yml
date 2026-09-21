@@ -222,6 +222,7 @@ af:
     share_not_enabled: "Nog nie gedeel nie — 'n admin van jou rekening kan resultate-deling aanskakel."
     title: "Resultate"
     editor: "← Redigeerder"
+    leave_results: 'Verlaat resultate'
     ask_verto: "Vra Verto"
     analysing: "Ontleed antwoorde…"
     view_all_answers: "Sien alle antwoorde (%{count})"

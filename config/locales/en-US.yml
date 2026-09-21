@@ -239,6 +239,7 @@ en-US:
     share_not_enabled: "Not shared yet — an admin of your account can turn on results sharing."
     title: "Results"
     editor: "← Editor"
+    leave_results: 'Leave results'
     ask_verto: "Ask Verto"
     analysing: "Analyzing responses…"
     view_all_answers: "View all answers (%{count})"

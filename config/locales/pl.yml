@@ -221,6 +221,7 @@ pl:
     share_not_enabled: "Jeszcze nieudostępnione — administrator Twojego konta może włączyć udostępnianie wyników."
     title: Wyniki
     editor: "← Edytor"
+    leave_results: 'Opuść wyniki'
     ask_verto: Zapytaj Verto
     analysing: Analizowanie odpowiedzi…
     view_all_answers: "Zobacz wszystkie odpowiedzi (%{count})"

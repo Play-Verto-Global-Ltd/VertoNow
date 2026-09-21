@@ -5118,6 +5118,32 @@ button.editor-leave-btn { cursor: pointer; }
   border-color: rgba(255,255,255,0.14);
 }
 
+/* ── Results top bar ────────────────────────────────────────────────────────
+   Results hides the global nav (@hide_main_nav) like the editor does, so this
+   strip is the page's only chrome and it borrows the editor's top-left
+   convention: the leave pill, then the Verto's name. A real bar rather than
+   the editor's floating one — the results feed scrolls its whole width, and
+   floating chrome over a dense feed hides the numbers underneath it. */
+.results-top-bar {
+  height: 54px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 8px;
+  padding-inline: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: #1C2034;
+}
+/* Read-only name/theme: the same pair as the editor's, minus the affordances
+   of a field you can type into. Not .is-locked — that variant dims itself to
+   say an edit is being REFUSED, and nothing is being refused here; renaming
+   simply lives in the editor. */
+.editor-verto-title.is-static { cursor: default; }
+.editor-verto-title.is-static:hover { background: transparent; border-color: transparent; }
+/* The editor caps the name at 22ch to leave room for Saved / Undo / Redo and
+   lets focus reveal the rest; this bar has neither those controls nor a focus
+   state to grow into, so it gives the name the room instead — and the full
+   string rides in a title attribute either way. */
+.results-top-bar .editor-verto-title { max-width: 38ch; }
+.results-top-bar .editor-verto-theme { max-width: 26ch; }
+
 /* Survey card wrapper (for the results show page) */
 .survey-card-wrap {
   cursor: pointer;

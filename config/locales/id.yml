@@ -221,6 +221,7 @@ id:
     share_not_enabled: "Belum dibagikan — admin akun Anda dapat mengaktifkan berbagi hasil."
     title: Hasil
     editor: "← Editor"
+    leave_results: 'Keluar dari hasil'
     ask_verto: Tanya Verto
     analysing: Menganalisis tanggapan…
     view_all_answers: "Lihat semua jawaban (%{count})"

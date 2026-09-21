@@ -229,6 +229,7 @@ zu:
     share_not_enabled: "Akukabelwana ngakho okwamanje — umphathi we-akhawunti yakho angavula ukwabelana ngemiphumela."
     title: "Imiphumela"
     editor: "← Umhleli"
+    leave_results: 'Shiya imiphumela'
     ask_verto: "Buza i-Verto"
     analysing: "Kuhlaziywa izimpendulo…"
     view_all_answers: "Buka zonke izimpendulo (%{count})"

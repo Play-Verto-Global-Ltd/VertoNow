@@ -221,6 +221,7 @@ ko:
     share_not_enabled: "아직 공유되지 않았습니다. 계정 관리자가 결과 공유를 켤 수 있습니다."
     title: 결과
     editor: "← 편집기"
+    leave_results: '결과 나가기'
     ask_verto: Verto에게 묻기
     analysing: 응답 분석 중…
     view_all_answers: "모든 답변 보기 (%{count})"

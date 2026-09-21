@@ -221,6 +221,7 @@ vi:
     share_not_enabled: "Chưa được chia sẻ — quản trị viên của tài khoản bạn có thể bật chia sẻ kết quả."
     title: Kết quả
     editor: "← Trình chỉnh sửa"
+    leave_results: 'Rời kết quả'
     ask_verto: Hỏi Verto
     analysing: Đang phân tích phản hồi…
     view_all_answers: "Xem tất cả câu trả lời (%{count})"

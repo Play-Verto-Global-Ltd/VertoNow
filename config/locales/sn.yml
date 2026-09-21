@@ -223,6 +223,7 @@ sn:
     share_not_enabled: "Haisati yagoverwa — mutungamiri weakaunti yako anogona kubatidza kugoverwa kwemhinduro."
     title: "Mhedzisiro"
     editor: "← Chigadziriso"
+    leave_results: 'Buda mumhedzisiro'
     ask_verto: "Ask Verto"
     analysing: "Kuongorora Mhinduro…"
     view_all_answers: "Ona mhinduro dzose (%{count})"

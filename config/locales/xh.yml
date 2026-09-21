@@ -230,6 +230,7 @@ xh:
     share_not_enabled: "Ayikabelwana ngayo okwangoku — umlawuli we-akhawunti yakho angavula ukwabelana ngeziphumo."
     title: "Iziphumo"
     editor: "← Umhleli"
+    leave_results: 'Phuma kwiziphumo'
     ask_verto: "Ask Verto"
     analysing: "Kuhlalutywa iimpendulo…"
     view_all_answers: "Jonga zonke iimpendulo (%{count})"

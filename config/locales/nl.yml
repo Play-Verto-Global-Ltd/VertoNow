@@ -221,6 +221,7 @@ nl:
     share_not_enabled: "Nog niet gedeeld — een beheerder van je account kan het delen van resultaten inschakelen."
     title: Resultaten
     editor: "← Editor"
+    leave_results: 'Resultaten verlaten'
     ask_verto: Vraag het Verto
     analysing: Antwoorden analyseren…
     view_all_answers: "Alle antwoorden bekijken (%{count})"

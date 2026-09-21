@@ -221,6 +221,7 @@ sw:
     share_not_enabled: "Bado haijashirikiwa — msimamizi wa akaunti yako anaweza kuwasha kushiriki matokeo."
     title: Matokeo
     editor: "← Mhariri"
+    leave_results: 'Ondoka kwenye matokeo'
     ask_verto: Muulize Verto
     analysing: Inachambua majibu…
     view_all_answers: "Ona majibu yote (%{count})"

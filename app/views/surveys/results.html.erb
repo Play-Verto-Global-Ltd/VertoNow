@@ -57,18 +57,35 @@
   <%# ── Middle: top-bar + scrollable content ── %>
   <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;position:relative;z-index:1;">
 
-    <%# Top bar %>
-    <div style="height:54px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 24px;gap:12px;background:#1C2034;">
-      <span style="font-family:'Alata',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;"><%= t("results.title") %></span>
-      <span style="color:rgba(255,255,255,0.15);">·</span>
-      <span style="font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;"><%= @survey.theme %></span>
-      <%# A viewer has no editor to go back to, so their way out is the
-          dashboard they came from. %>
-      <%= link_to (can_edit_vertos? ? t("results.editor") : t("nav.my_vertos")),
-            (can_edit_vertos? ? survey_path(@survey) : root_path),
-            style: "flex-shrink:0;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.4);text-decoration:none;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);transition:all 0.15s;",
-            onmouseover: "this.style.color='white';this.style.borderColor='rgba(255,255,255,0.3)'",
-            onmouseout:  "this.style.color='rgba(255,255,255,0.4)';this.style.borderColor='rgba(255,255,255,0.1)'" %>
+    <%# ── Top bar ── the page hides the global nav (@hide_main_nav), so this
+        strip is the whole chrome and it wears the editor's convention: the
+        way out as a glass pill at the inline-start edge, the Verto's name
+        beside it. Read-only here — renaming stays in the editor, which is
+        why these carry .is-static rather than the editor's contenteditable.
+        The theme only joins the name when the two differ: the pair reads as
+        name-then-subject, and most Vertos share both, which would otherwise
+        print the same words twice. %>
+    <div class="results-top-bar">
+      <%= link_to root_path, class: "editor-leave-btn",
+            title: t("results.leave_results"),
+            "aria-label": t("results.leave_results") do %>
+        <svg class="editor-leave-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M9.5 3.5 5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="editor-leave-label"><%= t("results.leave_results") %></span>
+      <% end %>
+      <span class="editor-verto-title is-static" title="<%= @survey.title %>"><%= @survey.title %></span>
+      <% if @survey.theme.present? && @survey.theme != @survey.title %>
+        <span class="editor-verto-title editor-verto-theme is-static" title="<%= @survey.theme %>"><%= @survey.theme %></span>
+      <% end %>
+      <%# A viewer has no editor to go back to — the pill above is their whole
+          way out, so only an editor is offered the door back into it. %>
+      <% if can_edit_vertos? %>
+        <%= link_to t("results.editor"), survey_path(@survey),
+              style: "margin-inline-start:auto;flex-shrink:0;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.4);text-decoration:none;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);transition:all 0.15s;",
+              onmouseover: "this.style.color='white';this.style.borderColor='rgba(255,255,255,0.3)'",
+              onmouseout:  "this.style.color='rgba(255,255,255,0.4)';this.style.borderColor='rgba(255,255,255,0.1)'" %>
+      <% end %>
     </div>
 
     <%# Scrollable results feed %>

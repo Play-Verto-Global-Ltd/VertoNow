@@ -221,6 +221,7 @@ de:
     share_not_enabled: "Noch nicht geteilt — ein Admin deines Kontos kann das Teilen der Ergebnisse einschalten."
     title: Ergebnisse
     editor: "← Editor"
+    leave_results: 'Ergebnisse verlassen'
     ask_verto: Verto fragen
     analysing: Antworten werden analysiert…
     view_all_answers: "Alle Antworten ansehen (%{count})"
