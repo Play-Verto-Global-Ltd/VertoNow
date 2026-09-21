@@ -302,13 +302,26 @@ What follows from that:
   what is live, not `:main`. To put an exact commit back from CI's side, POST
   the hook yourself with
   `imgURL=ghcr.io/play-verto-global-ltd/vertonow:<known-good sha>`.
-- **Rolling back past 21 September 2026 pulls a different package.** Every
-  `:<sha>` built before the namespace move lives on `ghcr.io/napps9/survey-poc`
-  and nowhere else — GHCR packages do not move between namespaces, so those
-  images were not carried over. A dashboard "Rollback to this deploy" to one of
-  them works untouched (Render replays the digest it recorded), but a hook POST
-  naming one has to spell the OLD path: `imgURL=ghcr.io/napps9/survey-poc:<sha>`.
-  So never delete that package either; it is the rollback history for
+- **`imgURL` must name the repository the service is configured with.** The
+  hook validates it: an `imgURL` pointing anywhere else is refused with
+  **HTTP 400**, and the deploy job then goes red on `curl -f` having deployed
+  nothing. Measured on 21 September — the run that landed the namespace move
+  POSTed the org image while the dashboard still named `napps9/survey-poc`,
+  and got a 400; the same POST succeeded minutes later, unchanged, once the
+  service's image reference had been repointed. So the dashboard reference is
+  not documentation of what CI does, it is a precondition for CI being allowed
+  to do it. Changing the image path in `ci.yml` without changing it in the
+  dashboard stops every deploy.
+- **Rolling back past 21 September 2026 goes through the dashboard, not the
+  hook.** Every `:<sha>` built before the namespace move lives on
+  `ghcr.io/napps9/survey-poc` and nowhere else — GHCR packages do not move
+  between namespaces, so those images were not carried over. **Rollback to
+  this deploy** reaches them: Render replays the digest it recorded, which
+  needs no path and does not care which package it came from. A hook POST
+  cannot, because that old path is no longer the service's configured
+  repository and the bullet above is what happens. If a pre-move image has to
+  go back through CI, the service's image reference must be pointed at the old
+  package first. Never delete that package: it is the rollback history for
   everything before the move.
 - **Why the image is in the org's namespace** (moved 2026-09-21). While the
   repository lived under `napps9`, repo and package shared an owner and
@@ -326,12 +339,22 @@ What follows from that:
   that cannot lapse.
 - **The GHCR package is public** (a public repo's image contains nothing the
   repo does not; CI builds it with no secrets), so the service has no registry
-  credential. This is a setting, not a default: GHCR creates a package
-  **private**, so the org package was made public by hand at
-  **Package settings → Change visibility** after CI first pushed it, and a
-  deploy naming an image Render cannot pull fails on the pull. If the package
-  is ever made private again, add a classic personal access token with
-  `read:packages` as a Render registry credential.
+  credential. This is a setting, not a default, and on an org it is two:
+  GHCR creates a package **private**, and the org's **Settings → Packages →
+  Package creation** governs which visibilities exist at all — with `Public`
+  unticked there, the package's own Change-visibility dialog greys Public out
+  and says "Setting is disabled by organization administrators". Both had to
+  be done by hand on 21 September, org policy first, then
+  **Package settings → Change visibility → Public**. Checking the result needs
+  no credentials — GHCR issues an anonymous pull token for a public package
+  and `UNAUTHORIZED` for a private one:
+
+  ```
+  curl -s 'https://ghcr.io/token?scope=repository%3Aplay-verto-global-ltd%2Fvertonow%3Apull&service=ghcr.io'
+  ```
+
+  If the package is ever made private again, add a classic personal access
+  token with `read:packages` as a Render registry credential.
 - The switch was made in place (Settings → Build & Deploy → Repository →
   Edit → Existing Image), with environment variables, the persistent disk
   and the pre-deploy command untouched. `render.yaml` mirrors the image

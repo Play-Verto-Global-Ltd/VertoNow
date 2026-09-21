@@ -199,7 +199,11 @@ every other job in `.github/workflows/ci.yml` (test, test_postgres,
 system_test, lint, scan_ruby, scan_js, build_image) is green, the `deploy` job
 moves `:main` onto that sha and POSTs the service's Deploy Hook naming it — so
 `:main` always means the last green commit, and the deploy is of the exact
-image CI proved. Image-backed services have no auto-deploy: that hook is the
+image CI proved. The hook refuses (400) an `imgURL` outside the image
+repository the Render service is configured with, so that dashboard field and
+the path in `ci.yml` have to move together — changing one alone stops every
+deploy (measured 2026-09-21; `docs/DEPLOYMENT_RUNBOOK.md` §7). Image-backed
+services have no auto-deploy: that hook is the
 only automated path, and the job goes red rather than quiet if the secret is missing or
 the POST fails. A `workflow_dispatch` on Main deploys too — that is the
 recovery for a run that died with `startup_failure`; the dashboard's Manual
