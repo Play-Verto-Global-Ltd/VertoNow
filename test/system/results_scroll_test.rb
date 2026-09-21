@@ -1,0 +1,158 @@
+require "application_system_test_case"
+
+# The two things results_outline_controller does with the feed's scroll
+# position: condense the header, and mark where the reader is in the rail.
+#
+# Both need a browser and neither has any other coverage — they are pure
+# client behaviour on a page whose scrolling element is a div rather than the
+# window, which is exactly the kind of thing that breaks silently when someone
+# later reaches for `window.scrollY`.
+#
+# Each test below was checked by breaking the code under it, not assumed.
+class ResultsScrollTest < ApplicationSystemTestCase
+  # The rail is only drawn where there is a margin to draw it in.
+  WIDE = 1440
+
+  def setup
+    super
+    @org  = Organisation.create!(name: "O", slug: "rs-#{SecureRandom.hex(3)}")
+    @user = User.create!(name: "U", email_address: "rs-#{SecureRandom.hex(3)}@test.com",
+                         password: "verylongpassword")
+    @user.verify_email!
+    @org.memberships.create!(user: @user, role: "admin")
+
+    # Enough cards that the feed is several screens tall — the spy has nothing
+    # to say about a page that fits.
+    cards = (1..16).map { |n| { "type" => "multiple_choice", "text" => "Question #{n}", "options" => %w[A B] } }
+    @survey = @org.surveys.create!(
+      title: "Scroll", theme: "Th", audience_age: "all", key_insight: "k",
+      default_locale: "en", locales: [ "en" ],
+      publish_token: SecureRandom.hex(8), published_at: Time.current, cards: cards
+    )
+    3.times do
+      answers = (0...16).to_h { |i| [ i.to_s, { "value" => "A" } ] }
+      @survey.responses.create!(session_token: SecureRandom.uuid, answered: true,
+                                status: "completed", answers: answers)
+    end
+  end
+
+  def open_results
+    page.driver.browser.resize(width: WIDE, height: 900)
+    sign_in_as(@user)
+    visit survey_results_path(@survey)
+    dismiss_cookie_banner
+    assert_selector ".ro-item", minimum: 16, wait: 5
+    wait_for_stimulus
+  end
+
+  def scroll_feed_to(y)
+    execute_script("document.querySelector('.results-stage > div').scrollTop = #{y}")
+  end
+
+  def scroll_top
+    evaluate_script("document.querySelector('.results-stage > div').scrollTop")
+  end
+
+  def header_height
+    evaluate_script("Math.round(document.querySelector('.results-header').getBoundingClientRect().height)")
+  end
+
+  def condensed?
+    evaluate_script("document.querySelector('.results-header').classList.contains('is-condensed')")
+  end
+
+  def current_row
+    evaluate_script("document.querySelector('.ro-item.is-current')?.textContent.replace(/\\s+/g,' ').trim() || null")
+  end
+
+  # A smooth scroll takes a few hundred milliseconds, so "it has started
+  # moving" is not "it has arrived" — measuring at the first non-zero
+  # scrollTop reads a position mid-animation. Waits for two consecutive
+  # identical readings instead of a fixed sleep.
+  def wait_for_scroll_settle
+    last = nil
+    wait_until do
+      now = scroll_top
+      settled = last == now
+      last = now
+      settled
+    end
+  end
+
+  test "the header gives back its space once you have scrolled, and takes it back at the top" do
+    open_results
+    tall = header_height
+    assert_not condensed?, "the header starts condensed — nothing has been scrolled yet"
+
+    scroll_feed_to(600)
+    assert wait_until { condensed? }, "scrolling the feed did not condense the header"
+    short = header_height
+    assert short < tall,
+      "the header still measures #{short}px after condensing (was #{tall}px) — the class landed but bought nothing"
+
+    scroll_feed_to(0)
+    assert wait_until { !condensed? },
+      "scrolling back to the top left the header condensed"
+  end
+
+  # The point of the rail: it says where you are. Two different scroll
+  # positions must mark two different questions, and the one marked has to be
+  # the one on screen.
+  test "the rail marks the question you are reading, and moves as you scroll" do
+    open_results
+    wait_until { current_row.present? }
+    first = current_row
+
+    scroll_feed_to(evaluate_script("document.querySelector('.results-stage > div').scrollHeight") / 2)
+    assert wait_until { current_row != first }, "the marked question did not change when the feed scrolled"
+    middle = current_row
+
+    # …and it is a question actually in view, not merely a different one.
+    n = middle.to_s[/\A(\d+)/, 1].to_i
+    assert n.positive?
+    in_view = evaluate_script(<<~JS)
+      (() => {
+        const card = document.getElementById("rc-card-#{n - 1}")
+        const box  = document.querySelector(".results-stage > div").getBoundingClientRect()
+        const r    = card.getBoundingClientRect()
+        return r.bottom > box.top && r.top < box.bottom
+      })()
+    JS
+    assert in_view, "the rail marks question #{n}, which is not on screen"
+  end
+
+  # The rail holds still. It is `position: sticky` inside the scrolling div,
+  # which is the part that would break if the layout around it changed — a
+  # sticky element inside an `overflow: hidden` ancestor silently scrolls away.
+  test "the rail stays put while the feed moves under it" do
+    open_results
+    top_before = evaluate_script("Math.round(document.querySelector('.results-outline').getBoundingClientRect().top)")
+
+    scroll_feed_to(1500)
+    assert wait_until { condensed? }
+    top_after = evaluate_script("Math.round(document.querySelector('.results-outline').getBoundingClientRect().top)")
+
+    # It rises by however much the header gave back, and no further.
+    assert (top_before - top_after).between?(0, 40),
+      "the rail moved #{top_before - top_after}px up the screen — it is scrolling with the feed, not sticking to it"
+  end
+
+  test "clicking a question scrolls the feed to it" do
+    open_results
+    assert_equal 0, scroll_top
+
+    find(".ro-item", text: /\A\s*5\b/, match: :first).click
+
+    assert wait_until { scroll_top > 0 }, "clicking a row did not scroll the feed"
+    wait_for_scroll_settle
+    landed = evaluate_script(<<~JS)
+      (() => {
+        const box = document.querySelector(".results-stage > div").getBoundingClientRect()
+        const r   = document.getElementById("rc-card-4").getBoundingClientRect()
+        return Math.round(r.top - box.top)
+      })()
+    JS
+    assert landed.abs < 60,
+      "clicked question 5 and its card landed #{landed}px from the top of the feed"
+  end
+end

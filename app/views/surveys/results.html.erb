@@ -54,8 +54,14 @@
     <div class="gen-orb gen-orb-4"></div>
   </div>
 
-  <%# ── Middle: top-bar + scrollable content ── %>
-  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;position:relative;z-index:1;">
+  <%# ── Middle: top-bar + scrollable content ──
+      results-outline lives here rather than on the scrolling div because it
+      reads the feed's scroll position for TWO things that are not both inside
+      it: the question rail beside the feed, and the header above it, which
+      gives back most of its 112px once you have scrolled past the first
+      screen. Both are descendants of this column, so both can be targets. %>
+  <div data-controller="results-outline"
+       style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;position:relative;z-index:1;">
 
     <%# ── Top bar ── the page hides the global nav (@hide_main_nav), so this
         strip is the whole chrome and it wears the editor's convention: the
@@ -103,7 +109,8 @@
     <%# Scrollable results feed. No horizontal padding of its own — the map
         band below is full-bleed, and the reading column re-applies the gutter
         for everything that is not the map. %>
-    <div style="flex:1;overflow-y:auto;padding:0 0 48px;">
+    <div style="flex:1;overflow-y:auto;padding:0 0 48px;"
+         data-results-outline-target="scroller">
 
 <%# ── The map, full width, under the filters ─────────────────────────────
     A band rather than a card: it is the first thing under the filters and the
@@ -198,9 +205,13 @@
   <script type="application/json" id="results-region-map-data"><%= map_data.to_json.html_safe %></script>
 <% end %>
 
-<%# The reading column: everything that is not the map. Lifted onto the map's
-    bottom fade, which is what makes the two bleed into one another rather
-    than stacking. %>
+<%# Everything below the map: the question rail in the left margin, and the
+    reading column. The column is lifted onto the map's bottom fade, which is
+    what makes the two bleed into one another rather than stacking. %>
+<div class="results-body">
+
+<%= render "surveys/results_outline", aggregated: @aggregated %>
+
 <div class="results-feed-col">
 
 <%# ── Ask Verto summary ── the lead paragraph only, lifted onto the map's
@@ -298,7 +309,7 @@
               waves ARE the axis of comparison, so the pills must not also
               narrow them. %>
           <% if @wave_stats&.size.to_i >= 2 %>
-            <div class="s-card" style="cursor:default;overflow:visible;margin-bottom:10px;">
+            <div class="s-card" style="cursor:default;overflow:visible;">
               <div class="s-card-header" style="padding:9px 14px;gap:10px;">
                 <span class="s-badge" style="background:rgba(97,91,245,0.18);color:#9d97ff;">🔁 Wave over wave</span>
                 <%# The "Compare segments" trigger further down opens this same
@@ -350,7 +361,7 @@
               the per-person drill-down. Never on the public share page,
               which renders only _result_cards. %>
           <% if @responders.present? %>
-            <div class="s-card" style="cursor:default;overflow:visible;margin-bottom:10px;">
+            <div class="s-card" style="cursor:default;overflow:visible;">
               <div class="s-card-header" style="padding:9px 14px;gap:10px;">
                 <span class="s-badge" style="background:rgba(12,167,255,0.15);color:#0CA7FF;">🔑 Responders</span>
                 <span style="margin-left:auto;font-family:'Alata',sans-serif;font-size: var(--text-sm);color:#01EACB;">
@@ -387,7 +398,7 @@
               the filters, and the retake policy already decides which runs
               count), so it must not read as filtered by the pills below. %>
           <% if @survey.leaderboard_active? && @leaderboard %>
-            <div class="s-card" style="cursor:default;overflow:visible;margin-bottom:10px;">
+            <div class="s-card" style="cursor:default;overflow:visible;">
               <div class="s-card-header" style="padding:9px 14px;gap:10px;">
                 <span class="s-badge" style="background:rgba(245,158,11,0.15);color:#F59E0B;">🏆 Leaderboard</span>
                 <span style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.55);">
@@ -445,6 +456,7 @@
         <% end %><%# end results-feed turbo-frame %>
 
 </div><%# end reading column %>
+</div><%# end results-body %>
     </div><%# end scrollable feed %>
 
   <%# ── Ask Verto ── a floating CTA that opens the chat OVER the feed rather

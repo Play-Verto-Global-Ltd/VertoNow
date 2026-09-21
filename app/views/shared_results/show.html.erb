@@ -101,7 +101,9 @@
 
     <%# Per-question cards — the exact partial the owner's results page
         renders, with shared: true redacting free-text sections. %>
-    <div style="display:flex;flex-direction:column;gap:14px;">
+    <%# Same 22px between cards as the owner's feed (#results-feed) — the two
+        surfaces render the same cards and should read at the same rhythm. %>
+    <div style="display:flex;flex-direction:column;gap:22px;">
       <%= render "surveys/result_cards", aggregated: @aggregated, total: @total, shared: true %>
     </div>
 

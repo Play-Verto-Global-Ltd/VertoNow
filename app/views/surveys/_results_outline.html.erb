@@ -1,0 +1,42 @@
+<%# ── The question outline ────────────────────────────────────────────────────
+    One row per question, in the feed's left margin: its type, its position and
+    how many people answered it. It holds still while the feed scrolls and
+    marks where the reader is (results_outline_controller), and clicking a row
+    scrolls the feed to that card.
+
+    Server-rendered rather than built from the DOM, so it is there on the first
+    paint and a reader with no JavaScript still gets a table of contents with
+    working anchors — the buttons are <a href="#rc-card-N">, and the controller
+    only intercepts the click to scroll the FEED (the page itself never
+    scrolls; the div inside the stage does, and a browser following the anchor
+    would scroll that same div with no offset control).
+
+    Outside the results-feed turbo frame, which auto-refresh reloads — so the
+    controller re-reads the counts off the cards after a frame render rather
+    than letting this list drift behind the numbers beside it.
+
+    Locals:
+      aggregated — AggregatesSurveyResults#aggregate_results output, the same
+                   list _result_cards draws, so index N here is card N there.
+%>
+<nav class="results-outline" aria-label="<%= t("results.outline_label", default: "Questions") %>"
+     data-results-outline-target="outline">
+  <div class="results-outline-head"><%= pluralize(aggregated.size, "question") %></div>
+  <div class="results-outline-list" data-results-outline-target="list">
+    <% aggregated.each_with_index do |result, idx| %>
+      <% type = result[:type]
+         meta = card_type_meta(type)
+         accent = CardTypes.meta(type)["accent"].presence || "#8B85FF" %>
+      <a class="ro-item" href="#rc-card-<%= idx %>"
+         data-results-outline-target="item"
+         data-results-outline-index-param="<%= idx %>"
+         data-action="click->results-outline#go"
+         title="<%= result[:card]["text"] %>">
+        <span class="ro-dot" style="background:<%= accent %>;" aria-hidden="true"></span>
+        <span class="ro-num"><%= idx + 1 %></span>
+        <span class="ro-type"><%= meta[:badge] %></span>
+        <span class="ro-n" data-results-outline-target="count"><%= result[:total] %></span>
+      </a>
+    <% end %>
+  </div>
+</nav>

@@ -5183,12 +5183,110 @@ button.editor-leave-btn { cursor: pointer; }
 .results-map-hint { font-family: "ABeeZee", sans-serif; font-size: var(--text-xs); color: rgba(255,255,255,0.4); }
 .results-map-compare { margin-inline-start: auto; }
 
+/* Everything below the map: the outline rail in the left margin and the
+   reading column in the middle. Three tracks rather than a flex row, so the
+   centre track stays centred on the PAGE whether or not the rail is drawn —
+   a flex row with the rail in it would shove the reading column 128px right
+   on a wide screen and back again on a narrow one.
+
+   The centre track is `min(780px, 100%)` and NOT `minmax(0, 780px)`: the
+   second is a flexible track that the fr siblings negotiate with, and it
+   settled at 660px on a 1440 screen — the reading column narrowed by 120px
+   the moment the rail existed, which is the one thing this layout was chosen
+   to avoid. A length expression is sized before the fr tracks see any of it. */
+.results-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) min(780px, 100%) minmax(0, 1fr);
+  align-items: start;
+}
+
 /* The reading column: the gutter the scroll container gave up so the map
-   could go full-bleed. */
+   could go full-bleed. The grid centres it now, so it carries no `margin:
+   0 auto` — an AUTO INLINE MARGIN on a grid item absorbs the track's free
+   space instead of letting the item stretch into it, which sized this to its
+   content (660.5px in a 780px track) and centred the result. Same visual
+   centring, silently 120px narrower. */
 .results-feed-col {
+  grid-column: 2;
   position: relative; z-index: 1;
-  max-width: 780px; margin: 0 auto; padding: 0 24px;
-  display: flex; flex-direction: column; gap: 14px;
+  max-width: 780px; padding: 0 24px;
+  display: flex; flex-direction: column; gap: 22px;
+}
+
+/* The per-question cards are children of the turbo frame, which is a plain
+   block — so until this rule they sat flush against each other and what
+   looked like spacing was two borders and their padding. */
+#results-feed { display: flex; flex-direction: column; gap: 22px; }
+
+/* ── The question outline ────────────────────────────────────────────────────
+   A rail in the left margin listing every question: its type, its position and
+   how many answered it. It holds still while the feed scrolls past and marks
+   where the reader is — a twenty-card Verto is several screens of scrolling
+   with no way to tell how far in you are or how much is left.
+
+   It lives in the grid's left track, which was empty space on any screen wide
+   enough to draw it, so it costs the reading column nothing. Below 1290px
+   there is no such margin and it is simply not drawn: the feed is scrollable
+   without it, and stealing width from the answers to say where you are in
+   them is the wrong trade. */
+.results-outline {
+  grid-column: 1; justify-self: end;
+  width: 236px; margin-inline-end: 24px;
+  position: sticky; top: 14px;
+  /* Padded, not bordered: a boxed rail beside a column of boxed cards reads
+     as a second feed. */
+  display: flex; flex-direction: column; gap: 8px;
+}
+.results-outline-head {
+  font-family: "Alata", sans-serif; font-size: var(--text-2xs);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3); padding-inline: 10px;
+}
+/* Twenty questions is taller than the viewport, so the rail scrolls inside
+   itself rather than letting its own bottom disappear off the screen. */
+.results-outline-list {
+  display: flex; flex-direction: column; gap: 1px;
+  max-height: calc(100vh - 230px); overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+.ro-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 8px;
+  background: none; border: 0; width: 100%; text-align: start; cursor: pointer;
+  color: rgba(255,255,255,0.5);
+  transition: background 0.15s, color 0.15s;
+}
+.ro-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+.ro-item.is-current { background: rgba(1,234,203,0.1); color: #fff; }
+.ro-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex: 0 0 auto;
+  opacity: 0.55; transition: opacity 0.15s, transform 0.15s;
+}
+.ro-item.is-current .ro-dot { opacity: 1; transform: scale(1.5); }
+.ro-num {
+  font-family: "Alata", sans-serif; font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums; min-width: 1.4em; text-align: end;
+  color: rgba(255,255,255,0.35);
+}
+.ro-item.is-current .ro-num { color: #01EACB; }
+.ro-type {
+  flex: 1; min-width: 0;
+  font-family: "Alata", sans-serif; font-size: var(--text-2xs);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ro-n {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-2xs);
+  color: rgba(255,255,255,0.32); font-variant-numeric: tabular-nums;
+  min-width: 2em; text-align: end; flex: 0 0 auto;
+}
+.ro-item.is-current .ro-n { color: rgba(255,255,255,0.6); }
+
+@media (max-width: 1289px) {
+  .results-outline { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ro-item, .ro-dot { transition: none; }
 }
 
 /* ── The summary, on the map's fade ─────────────────────────────────────────
@@ -5389,10 +5487,57 @@ button.editor-leave-btn { cursor: pointer; }
   padding: 12px 16px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   background: #1C2034;
+  transition: padding 0.2s ease, box-shadow 0.2s ease;
 }
 .results-header-bar { display: flex; align-items: center; gap: 16px; }
 .results-header-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 8px; }
 .results-header-filters { display: flex; align-items: center; gap: 10px; margin-top: 11px; }
+
+/* ── The header, condensed ───────────────────────────────────────────────────
+   Past the first screen the header is 112px of a page the reader is scrolling
+   THROUGH, so it gives most of that back: the facts that only matter on
+   arrival (the publish date, the play link, "of N overall", the completed /
+   asked-to-hear tiles) fold away, the headline count and the pills shrink,
+   and the filters — the one thing still worth knowing while you read — stay.
+   Toggled by results_outline_controller, which already owns the feed's scroll
+   listener.
+
+   Everything that leaves does so by max-width rather than display:none, so it
+   collapses along the row it sits in instead of popping. The transitions are
+   on the properties that actually change; a transition on `all` here would
+   also animate the pills' hover colours. */
+.results-header.is-condensed { padding: 6px 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.22); }
+.results-header.is-condensed .results-header-bar { gap: 12px; }
+.results-header.is-condensed .results-header-filters { margin-top: 6px; gap: 8px; }
+
+/* The word "responses" stays while the rest folds away: a bare "44" beside an
+   Auto ↻ toggle is a number with no noun, and it costs 70px. */
+.rh-meta, .rh-of, .ask-stat {
+  transition: max-width 0.2s ease, opacity 0.15s ease, margin 0.2s ease;
+  max-width: 340px; overflow: hidden;
+}
+.results-header.is-condensed :is(.rh-meta, .rh-of, .ask-stat) {
+  max-width: 0; opacity: 0; margin-inline: 0; padding-inline: 0; border-width: 0;
+}
+.rh-count-word { transition: font-size 0.2s ease; }
+.results-header.is-condensed .rh-count-word { font-size: var(--text-sm); }
+.rh-count-num { transition: font-size 0.2s ease; }
+.results-header.is-condensed .rh-count-num { font-size: 19px; }
+.rh-pill { transition: background 0.15s, border-color 0.15s, color 0.15s, padding 0.2s ease, font-size 0.2s ease; }
+.results-header.is-condensed .rh-pill { padding: 4px 11px; font-size: 11px; }
+.results-header.is-condensed .rh-pill svg { width: 12px; height: 12px; }
+.results-header.is-condensed .rh-when { padding: 2px; }
+.results-header.is-condensed .rh-when-btn { padding: 3px 11px; font-size: 11px; }
+.results-header.is-condensed .rh-toggle { padding: 3px 10px; font-size: 11px; }
+.results-header.is-condensed .seg-pill { padding: 3px 10px; font-size: 11px; }
+
+/* A reader who asked not to be animated gets the same layout, arrived at
+   instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .results-header, .rh-meta, .rh-of, .ask-stat, .rh-count-word, .rh-count-num, .rh-pill {
+    transition: none;
+  }
+}
 .rh-livewrap { display: flex; align-items: center; gap: 10px; }
 .rh-tally { display: flex; align-items: center; gap: 10px; }
 

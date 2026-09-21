@@ -45,7 +45,11 @@
      thumb     = result_card_thumb_style(card_data)
      opt_thumbs = result_option_thumbs(card_data) %>
 
-  <div class="rc-card">
+  <%# The id is the outline rail's anchor (surveys/_results_outline). Rendered
+      here rather than added by JS so the rail's links work before any script
+      has run, and on the shared page, which has no rail but does get
+      linkable questions out of it. %>
+  <div class="rc-card" id="rc-card-<%= idx %>">
 
     <div class="rc-head">
       <span class="s-badge <%= card_meta[:badge_css] %>"><%= card_meta[:badge] %></span>
