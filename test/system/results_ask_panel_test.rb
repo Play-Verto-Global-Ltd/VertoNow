@@ -37,6 +37,53 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
     visit survey_results_path(@survey)
     dismiss_cookie_banner
     assert_selector ".results-ask-fab", wait: 5
+    # The pill is server-rendered, so finding it says nothing about whether
+    # results-chat has been imported and connected — controllers are pinned
+    # preload: false and arrive lazily. Every other results system test waits
+    # for this before driving anything; this file did not.
+    wait_for_stimulus
+  end
+
+  # Presses Escape until the panel shuts, or gives up.
+  #
+  # CI run 35609455398 failed here with the panel still open and the greeting
+  # in it, so the click had gone through results-chat and its actions —
+  # #toggle on the pill and keydown.esc@window — were bound. closeOnEsc is
+  # synchronous and unconditional once it fires, which leaves only one place
+  # for that run to have gone wrong: the synthetic keystroke never reached the
+  # handler. It did not reproduce in nine full runs of the same CI shard
+  # locally, including under twice the worker count, so the mechanism is NOT
+  # established — this is written for what is known, which is that one
+  # dispatched key was lost somewhere between Ferrum and the page.
+  #
+  # Retrying the press cannot hide a broken handler: closeOnEsc has no state
+  # and no guard beyond "is it open", so a panel that stays open through six
+  # seconds of Escapes is a panel whose wiring is wrong, and this still fails
+  # — with escape_diagnostics, so the next occurrence costs one look rather
+  # than an afternoon of not reproducing it.
+  def close_with_escape
+    wait_until(timeout: 6) do
+      press_keys(:escape)
+      page.has_no_selector?("#results-ask-panel", visible: true, wait: 0.3)
+    end
+  end
+
+  def escape_diagnostics
+    evaluate_script(<<~JS)
+      (() => {
+        const app = window.Stimulus || window.application
+        const el  = document.querySelector("[data-controller~='results-chat']")
+        const c   = app && el ? app.getControllerForElementAndIdentifier(el, "results-chat") : null
+        const a   = document.activeElement
+        return JSON.stringify({
+          controllerConnected: !!c,
+          panelHasIsOpen: document.querySelector("#results-ask-panel")?.classList.contains("is-open"),
+          activeElement: a ? (a.className || a.tagName) : null,
+          documentHasFocus: document.hasFocus(),
+          windowAction: el ? el.getAttribute("data-action") : null
+        })
+      })()
+    JS
   end
 
   test "the page carries no global nav — its own bar is the whole chrome" do
@@ -70,8 +117,7 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
     find(".results-ask-fab").click
     assert_selector "#results-ask-panel", visible: true
 
-    press_keys(:escape)
-    assert_no_selector "#results-ask-panel", visible: true
+    assert close_with_escape, "PANEL STILL OPEN — #{escape_diagnostics}"
     assert evaluate_script("document.activeElement.classList.contains('results-ask-fab')"),
       "focus was left on the page instead of the pill that opened the panel"
   end
