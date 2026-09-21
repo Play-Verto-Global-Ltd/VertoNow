@@ -57,6 +57,54 @@ class ResultsMapBandTest < ApplicationSystemTestCase
     evaluate_script("document.querySelector('.world-map').getAttribute('viewBox')").to_s.split(/\s+/).map(&:to_f)
   end
 
+  # The inline width _paintMap writes, which is empty until the controller has
+  # loaded its data and decided what is selected. Measuring before that gets
+  # the browser's default 1px and compares it against a painted 1.6px — a race
+  # the full suite lost and a single-file run won.
+  def painted?(code)
+    evaluate_script(<<~JS).to_s.present?
+      (() => {
+        const el = document.querySelector(".world-map ##{code}")
+        const path = el.tagName.toLowerCase() === "g" ? el.querySelector("path") : el
+        return path.style.strokeWidth
+      })()
+    JS
+  end
+
+  def stroke_px_for(code)
+    evaluate_script(<<~JS)
+      (() => {
+        const el = document.querySelector(".world-map ##{code}")
+        const path = el.tagName.toLowerCase() === "g" ? el.querySelector("path") : el
+        return getComputedStyle(path).strokeWidth
+      })()
+    JS
+  end
+
+  def zoom_factor
+    evaluate_script(<<~JS)
+      (() => {
+        const svg = document.querySelector(".world-map")
+        return svg.getBoundingClientRect().width / Number(svg.getAttribute("viewBox").split(/\\s+/)[2])
+      })()
+    JS
+  end
+
+  # Re-fit through the real controller with only one country's worth of data,
+  # which is the zoom that exposed the stroke.
+  def zoom_to_europe
+    evaluate_script(<<~JS)
+      (() => {
+        const el = document.querySelector(".results-map-band")
+        const app = window.Stimulus || window.application
+        const c = app.getControllerForElementAndIdentifier(el, "results-compare")
+        c._mapData = { gb: { segment_ids: ["region_GB"], count: 9, name: "UK" } }
+        c._fitHomeView()
+      })()
+    JS
+    sleep 0.3
+  end
+
   def country_in_frame?(code)
     evaluate_script(<<~JS)
       (() => {
@@ -94,6 +142,26 @@ class ResultsMapBandTest < ApplicationSystemTestCase
     assert_equal true, country_in_frame?("gb")
     assert local_width < 500,
       "a UK-only audience still opens on a #{local_width.round}-unit view — the fit is not narrowing to the data"
+  end
+
+  # Stroke widths are in user units, so they are multiplied by the zoom. That
+  # was invisible while the map was always the whole world, and the moment the
+  # view was fitted to the data a European audience got a heavy white band
+  # around each country. non-scaling-stroke is what holds it; this asserts the
+  # property rather than the declaration, so it still fails if the rule is
+  # overridden somewhere else rather than deleted.
+  test "a country's outline is the same weight however far the map is zoomed" do
+    seed_responses("GB", "US", "ZA")
+    open_results
+    assert_selector ".results-map-band .world-map", wait: 5
+    wait_for_stimulus
+
+    wait_until { painted?("gb") }
+    wide = stroke_px_for("gb")
+    zoom_to_europe
+    assert_operator zoom_factor, :>, 2.0, "the test did not actually zoom in"
+    assert_equal wide, stroke_px_for("gb"),
+      "the outline changed weight when the map zoomed — it is scaling with the viewBox"
   end
 
   test "the band is full-bleed: wider than the reading column beneath it" do

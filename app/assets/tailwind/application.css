@@ -10647,7 +10647,14 @@ body.generating-overlay-active .bottom-bar { display: none; }
 
 /* ── Region tags: world map + region list (player regions view & results) ── */
 .world-map { width: 100%; height: auto; display: block; }
-.world-map path { fill: rgba(255,255,255,0.10); transition: fill 0.2s; }
+.world-map path {
+  fill: rgba(255,255,255,0.10); transition: fill 0.2s;
+  /* Keep a selected country's outline the same weight however far the map is
+     zoomed — without this the stroke is in user units and the fitted view
+     (results_compare_controller#_fitHomeView) scales it up with everything
+     else, so a European audience got a heavy band around each country. */
+  vector-effect: non-scaling-stroke;
+}
 .region-row {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 14px; border-radius: 12px;

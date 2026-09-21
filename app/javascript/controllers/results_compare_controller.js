@@ -240,8 +240,15 @@ export default class extends Controller {
       paths.forEach(p => {
         p.style.fill = `rgba(1,234,203,${alpha.toFixed(2)})`
         p.style.stroke = selected ? MAP_SELECTED_STROKE : ""
-        p.style.strokeWidth = selected ? "2.4" : ""
-        p.style.filter = selected ? "drop-shadow(0 0 4px rgba(255,255,255,0.6))" : ""
+        // Widths are in USER units, so they are multiplied by however far the
+        // map is zoomed in. That was invisible while the map was always the
+        // whole world in a 640px box (2.4 units ≈ 2px); fitting the view to
+        // the data zooms to ~1.8x on a European audience and the same 2.4
+        // rendered as a 4.4px band around every country. vector-effect
+        // (in the stylesheet) pins the stroke to device pixels so it is the
+        // same weight at every zoom, and 1.6 is that weight.
+        p.style.strokeWidth = selected ? "1.6" : ""
+        p.style.filter = selected ? "drop-shadow(0 0 2px rgba(255,255,255,0.45))" : ""
       })
     })
   }
