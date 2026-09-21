@@ -57,6 +57,33 @@ class ResultsScrollTest < ApplicationSystemTestCase
     evaluate_script("Math.round(document.querySelector('.results-header').getBoundingClientRect().height)")
   end
 
+  def top_bar_height
+    evaluate_script("Math.round(document.querySelector('.results-top-bar').getBoundingClientRect().height)")
+  end
+
+  # Waits for the fold to be COMPLETELY over. Two separate traps here, both of
+  # which turned the suite red before this said what it says now:
+  #
+  #   * settle_box on the header says nothing about it. The header's own box
+  #     is stable long before the bar above it has finished collapsing.
+  #   * Height reaching zero is not the end either. The bar's visibility is
+  #     transitioned with a 0.2s delay, deliberately — it must stay visible
+  #     while it collapses — so for one window it is 0px tall and still
+  #     `visibility: visible`, and its children are merely CLIPPED rather than
+  #     hidden. A clipped child still reports its own height, which is how
+  #     "exactly one way out" counted two.
+  def wait_for_fold
+    wait_until do
+      evaluate_script(<<~JS)
+        (() => {
+          const el = document.querySelector(".results-top-bar")
+          return Math.round(el.getBoundingClientRect().height) === 0 &&
+                 getComputedStyle(el).visibility === "hidden"
+        })()
+      JS
+    end
+  end
+
   # Everything above the feed: the title bar and the header together.
   def chrome_height
     evaluate_script(<<~JS)
@@ -82,6 +109,27 @@ class ResultsScrollTest < ApplicationSystemTestCase
 
   def current_row
     evaluate_script("document.querySelector('.ro-item.is-current')?.textContent.replace(/\\s+/g,' ').trim() || null")
+  end
+
+  # Opens a <details> in the header, and keeps trying until it is open.
+  #
+  # The header is mid-animation for 200ms after it condenses — the title bar
+  # collapsing 54px to nothing moves everything below it — and Cuprite clicks
+  # by COORDINATE, computed one round-trip before the click lands. settle_box
+  # on the summary was not enough: CI 35616357129 lost the click anyway and
+  # Main went red on it.
+  #
+  # Clicking a toggle twice would close it again, so this checks the state
+  # between attempts and only clicks while it is shut. That is why it cannot
+  # hide a summary that does not open its details: a <details> that stays
+  # closed through six seconds of clicks still fails here.
+  def open_menu(selector)
+    settle_box(find("#{selector} summary"))
+    opened = wait_until(timeout: 6) do
+      find("#{selector} summary").click unless page.has_selector?("#{selector}[open]", wait: 0)
+      page.has_selector?("#{selector}[open]", wait: 0.3)
+    end
+    assert opened, "#{selector} did not open"
   end
 
   # Two boxes are on the same line iff their vertical spans overlap. Comparing
@@ -126,9 +174,6 @@ class ResultsScrollTest < ApplicationSystemTestCase
       "scrolling back to the top left the header condensed"
   end
 
-  # The point of the rail: it says where you are. Two different scroll
-  # positions must mark two different questions, and the one marked has to be
-  # the one on screen.
   # The point of condensing: the filters join the actions' row instead of
   # costing a row of their own, and each collapses to the one option in force.
   # All of it is CSS ordering and display, which is exactly the kind of thing
@@ -149,12 +194,8 @@ class ResultsScrollTest < ApplicationSystemTestCase
     assert same_line?(".results-header-filters", ".results-header-actions"),
       "the filters are still on a row of their own next to a condensed header"
 
-    # …and the options are one click away. settle_box first: the header's
-    # padding animates as it condenses, and Cuprite clicks by coordinate — a
-    # click dispatched mid-transition lands on whatever is passing through
-    # that point.
-    settle_box(find(".rh-when-menu summary"))
-    find(".rh-when-menu summary").click
+    # …and the options are one click away.
+    open_menu(".rh-when-menu")
     assert_selector ".rh-when-menu-panel .rh-menu-item", count: 4, visible: true
     assert_selector ".rh-when-menu-panel .rh-menu-item", text: "Last 30 days"
   end
@@ -169,7 +210,7 @@ class ResultsScrollTest < ApplicationSystemTestCase
 
     scroll_feed_to(600)
     assert wait_until { condensed? }
-    settle_box(find(".results-header"))
+    wait_for_fold
 
     refute page.has_selector?(".results-top-bar .editor-verto-title", visible: true),
       "the Verto's name is still drawn on a header that has condensed"
@@ -190,7 +231,7 @@ class ResultsScrollTest < ApplicationSystemTestCase
 
     scroll_feed_to(600)
     assert wait_until { condensed? }
-    settle_box(find(".results-header"))
+    wait_for_fold
     assert_equal 1, visible_leave_pills, "expected one way out on a condensed header"
 
     # The hidden one must be out of the tab order, not merely invisible — a
@@ -231,8 +272,7 @@ class ResultsScrollTest < ApplicationSystemTestCase
     scroll_feed_to(600)
     assert wait_until { condensed? }
 
-    settle_box(find(".rh-when-menu summary"))
-    find(".rh-when-menu summary").click
+    open_menu(".rh-when-menu")
     assert_selector ".rh-when-menu[open]"
 
     find(".results-header-actions details:first-of-type summary").click
@@ -241,6 +281,9 @@ class ResultsScrollTest < ApplicationSystemTestCase
       "the date menu stayed open behind the export menu"
   end
 
+  # The point of the rail: it says where you are. Two different scroll
+  # positions must mark two different questions, and the one marked has to be
+  # the one on screen.
   test "the rail marks the question you are reading, and moves as you scroll" do
     open_results
     wait_until { current_row.present? }

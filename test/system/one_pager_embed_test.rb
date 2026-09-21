@@ -37,6 +37,22 @@ class OnePagerEmbedTest < ApplicationSystemTestCase
       origin = Capybara.current_session.server.base_url
       copy   = copy_of(pager, origin, survey.publish_token)
 
+      # Boot the player ONCE before framing it, so its cold start is not
+      # inside the page's own patience. The one-pager gives up on the live
+      # Verto after six seconds and falls back to its built-in demo
+      # (`setTimeout(() => finish(false), 6000)`) — a deliberate product
+      # choice, because a marketing page must not show a blank laptop for
+      # twenty seconds. On a loaded runner this test is often the first in its
+      # worker to render /play/ at all, so it paid template compilation and an
+      # uncached asset fetch inside that budget, lost the race, and got the
+      # fallback — at which point the 15s wait below can never be satisfied,
+      # however long it is. CI 35616357129 went red exactly there.
+      #
+      # It changes nothing about what is under test: the framing contract is
+      # still asserted against a cold FILE and a real cross-origin frame.
+      visit "#{origin}/play/#{survey.publish_token}"
+      assert_selector "body", wait: 15
+
       visit "file://#{copy}"
 
       # is-live is only set once the embedded player has actually announced
