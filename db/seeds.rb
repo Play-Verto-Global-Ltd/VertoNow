@@ -66,6 +66,13 @@ AlpbachAccountProvisioner.new.call
 # existing one.
 UnleashFootballAccountProvisioner.new.call
 
+# The History Collab client account, and Jamie's and Nick's access to it. Same
+# two-path split, and the same create-only provisioner, as the two accounts
+# above: this line covers a FRESH database,
+# db/migrate/20260921120000_provision_history_collab_account.rb covers an
+# existing one.
+HistoryCollabAccountProvisioner.new.call
+
 # The showcase Verto in the Playverto org itself — one deck that plays every
 # answer type, with imagery, branching and points on. Same split as the Alpbach
 # account above, for the same reason: this line covers a FRESH database,
