@@ -5217,11 +5217,164 @@ button.editor-leave-btn { cursor: pointer; }
 .results-summary-more svg { transition: transform 0.15s; }
 .results-summary-more.is-open svg { transform: rotate(180deg); }
 
+/* ── Result cards ───────────────────────────────────────────────────────────
+   One card per question in the feed. The card is the page's own dark surface
+   rather than the white panel it used to be: a white sheet under the map's
+   fade read as a separate document, and every answer on it had to be drawn in
+   a second palette.
+
+   The answers are rows, and the bar IS the row — the tint fills the row from
+   the left instead of sitting in a track beside the label. Same reading as a
+   bar chart, but the label sits on its own share rather than next to it, and
+   one row height carries the picture, the label, the percentage and the count
+   without a four-column grid that a long option name breaks.
+
+   Thumbnails: the Verto's own art. .rc-thumb is the card's picture (or its
+   type gradient where there is none, so the question text starts at the same
+   place down the whole feed); .rc-othumb is one option's, drawn only where
+   that option HAS one. No bg-image-healer on either — a blank 28px square
+   during a deploy's stop/start is not the missing full-bleed panel that
+   controller exists for, and one preload per option would be forty requests
+   on a twenty-card Verto. */
+.rc-card {
+  /* 14px, not the mockup's 16: the wave / responder / leaderboard cards above
+     the questions are .s-card, and two radii in one column read as a mistake. */
+  border-radius: 14px; padding: 14px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.rc-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rc-cardn { font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: rgba(255,255,255,0.3); }
+.rc-answers {
+  margin-inline-start: auto;
+  font-family: "Alata", sans-serif; font-size: var(--text-sm); color: #01EACB;
+}
+.rc-answers.is-zero { color: rgba(255,255,255,0.2); }
+
+.rc-ask { display: flex; align-items: center; gap: 12px; }
+.rc-thumb {
+  width: 52px; height: 52px; flex: 0 0 auto; border-radius: 10px;
+  background-size: cover; background-repeat: no-repeat;
+  background-position: var(--focal-x, 50%) var(--focal-y, 50%);
+}
+.rc-q {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-lg);
+  color: #fff; line-height: 1.4; min-width: 0;
+}
+.rc-empty {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-base);
+  color: rgba(255,255,255,0.3); font-style: italic;
+}
+
+.rc-rows { display: flex; flex-direction: column; gap: 5px; }
+.rc-row { position: relative; border-radius: 9px; overflow: hidden; background: rgba(255,255,255,0.04); }
+/* The share, painted behind the row's own content. inset-inline-start keeps it
+   growing from the reading edge in Arabic and Hebrew. */
+.rc-fill {
+  position: absolute; inset-block: 0; inset-inline-start: 0;
+  background: rgba(1,234,203,0.22);
+}
+.rc-rowin { position: relative; display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.rc-othumb {
+  width: 30px; height: 30px; flex: 0 0 auto; border-radius: 7px; margin: -2px 0;
+  background-size: cover; background-repeat: no-repeat;
+  background-position: var(--focal-x, 50%) var(--focal-y, 50%);
+}
+.rc-label {
+  flex: 1; min-width: 0;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-base); color: rgba(255,255,255,0.9);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Both number columns are fixed-width and end-aligned, so they read down the
+   card as columns rather than trailing each label's own width. */
+.rc-pct {
+  font-family: "Alata", sans-serif; font-size: var(--text-lg); color: #fff;
+  font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: end;
+}
+.rc-n {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-xs); color: rgba(255,255,255,0.4);
+  font-variant-numeric: tabular-nums; min-width: 2.2em; text-align: end;
+}
+
+/* Scales, ratings and a tap card's per-statement blocks: short labels, and
+   many rows per card — an eleven-point NPS at the full row height is most of
+   a screen. Tighter rhythm, same anatomy. */
+.rc-rows.is-compact .rc-rowin { padding: 5px 12px; }
+.rc-rows.is-compact .rc-label { font-size: var(--text-sm); }
+.rc-rows.is-compact .rc-pct   { font-size: var(--text-base); }
+.rc-rank {
+  font-family: "Alata", sans-serif; font-size: var(--text-base); color: #01EACB;
+  min-width: 14px; text-align: end; font-variant-numeric: tabular-nums;
+}
+.rc-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+/* An answer nobody gave still holds its place — a scale with a gap in it is
+   the finding, and dropping the row would quietly change the shape people
+   read. Recessed, not removed. */
+.rc-row.is-zero { background: rgba(255,255,255,0.02); }
+.rc-row.is-zero .rc-label { color: rgba(255,255,255,0.35); }
+.rc-row.is-zero .rc-pct   { color: rgba(255,255,255,0.35); }
+
+/* A tap card's statements: each is its own little block of rows, captioned. */
+.rc-group { display: flex; flex-direction: column; gap: 5px; }
+.rc-group + .rc-group { margin-top: 10px; }
+.rc-group-head { display: flex; align-items: center; gap: 9px; }
+.rc-group-label {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-base);
+  color: rgba(255,255,255,0.62); line-height: 1.35; min-width: 0;
+}
+
+/* The star line on a rating card, and the star glyphs that label its rows. */
+.rc-stars { display: flex; align-items: center; gap: 10px; }
+.rc-stars-row { color: #FFCC00; letter-spacing: 1px; }
+.rc-stars-glyphs { font-size: var(--text-2xl); letter-spacing: 2px; }
+.rc-avg { font-family: "Alata", sans-serif; font-size: var(--text-3xl); color: #01EACB; line-height: 1; }
+
+/* The welcome card's one number. */
+.rc-big-line { display: flex; align-items: baseline; gap: 7px; }
+.rc-big { font-family: "Alata", sans-serif; font-size: var(--text-4xl); color: #01EACB; line-height: 1; }
+.rc-big-word { font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: rgba(255,255,255,0.45); }
+
+/* Free text, the lead table and the "Other" write-ins. */
+.rc-sub {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
+  color: rgba(255,255,255,0.35); font-style: italic;
+}
+.rc-section { margin-top: 2px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.07); }
+.rc-section-head {
+  font-family: "Alata", sans-serif; font-size: var(--text-2xs);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); margin-bottom: 7px;
+}
+.rc-quotes { display: flex; flex-direction: column; gap: 5px; max-height: 200px; overflow-y: auto; }
+.rc-quote {
+  padding: 8px 11px; border-radius: 8px; background: rgba(255,255,255,0.04);
+  border-inline-start: 2px solid rgba(255,30,111,0.45);
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-base);
+  color: rgba(255,255,255,0.85); line-height: 1.5; overflow-wrap: anywhere;
+}
+.rc-more { font-family: "ABeeZee", sans-serif; font-size: var(--text-xs); color: rgba(255,255,255,0.3); padding: 2px 11px; }
+.rc-table-wrap { max-height: 220px; overflow: auto; }
+.rc-table {
+  width: 100%; border-collapse: collapse;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: rgba(255,255,255,0.85);
+}
+.rc-table th {
+  text-align: start; padding: 6px 9px; font-weight: normal; white-space: nowrap;
+  color: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.rc-table td { padding: 6px 9px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
 @media (max-width: 640px) {
   .results-map-band { margin-bottom: -28px; }
   .results-map-chrome { padding: 12px 16px; flex-wrap: wrap; gap: 6px; }
   .results-map-hint { display: none; }
   .results-feed-col { padding: 0 16px; }
+  .rc-thumb { width: 42px; height: 42px; }
+  /* The count drops before the percentage: at this width the share is what is
+     being read, and the raw number is a tap away in the export. */
+  .rc-rowin { padding: 8px 10px; gap: 8px; }
+  .rc-rowin .rc-n { display: none; }
 }
 
 /* ── Results header ─────────────────────────────────────────────────────────
@@ -14582,22 +14735,26 @@ body.generating-overlay-active .bottom-bar { display: none; }
    "View all answers" panel behind it (freeform_answers_controller). The
    preview is clamped by lines rather than characters, so a long answer reads
    as a paragraph that trails off, not a sentence cut mid-word; the panel is
-   the dark surface the share and report modals use, over the dark page. */
+   the dark surface the share and report modals use, over the dark page.
+
+   The preview itself is on the dark result card since 2026-09-21 — it was
+   black-on-white while the card had a white right panel. */
 .freeform-preview-item {
-  padding: 7px 11px; border-radius: 7px; background: rgba(0,0,0,0.03);
-  border-left: 2px solid rgba(1,234,203,0.25);
+  padding: 8px 11px; border-radius: 8px; background: rgba(255,255,255,0.04);
+  border-inline-start: 2px solid rgba(1,234,203,0.45);
 }
 /* The clamp sits on an unpadded inner block: a clamped box clips at its
    padding edge, so clamping the padded wrapper would leave a sliver of the
    fourth line showing in the bottom padding. */
 .freeform-preview-item__text {
-  font-family: "ABeeZee", sans-serif; font-size: var(--text-base); color: #111; line-height: 1.5;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-base);
+  color: rgba(255,255,255,0.85); line-height: 1.5;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   overflow-wrap: anywhere;
 }
 .freeform-view-all {
   align-self: flex-start; margin-top: 2px; padding: 7px 14px; border-radius: 100px;
-  background: rgba(1,234,203,0.12); border: 1px solid rgba(1,234,203,0.35); color: #0a8f7c;
+  background: rgba(1,234,203,0.12); border: 1px solid rgba(1,234,203,0.35); color: #01EACB;
   font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); cursor: pointer; transition: background 0.15s;
 }
 .freeform-view-all:hover { background: rgba(1,234,203,0.22); }

@@ -3,10 +3,16 @@
     Locals:
       result — an aggregate_results entry for a tap_card (needs :counts, :card)
 
-    Shared by the Verto results page and the Common Question results page,
+    Written for the Verto results page and the Common Question results page,
     which had grown two copies of the same three-segment bar. It is a loop over
-    TapScales now rather than a hand-written Yes/Unsure/No triple, so a
-    five-point card reports on five and neither page has to know that.
+    TapScales rather than a hand-written Yes/Unsure/No triple, so a five-point
+    card reports on five and neither page has to know that.
+
+    The Common Question page is the only caller since 2026-09-21: the Verto's
+    result cards moved onto the dark surface and draw a row per response
+    (surveys/_result_cards) rather than one stacked bar, so every answer on a
+    card is read the same way whatever its type. This page is still a light
+    surface, hence the black captions below.
 
     Each segment is painted in its own response's colour and captioned in
     whichever of black or white reads on it (BrandPalette.contrast_text), so a

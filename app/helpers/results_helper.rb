@@ -41,4 +41,41 @@ module ResultsHelper
     grouped << { key: "other", accent: "rgba(255,255,255,0.45)", segments: others } if others.any?
     grouped
   end
+
+  # { option label => the inline style that paints its thumbnail }, for the
+  # result card's answer rows.
+  #
+  # Keyed by LABEL because that is what the aggregator tallies under: counts
+  # come back as { "Play on!" => 12 }, in whatever order the answers arrived,
+  # and are then sorted by size — so there is no index left to line up against
+  # by the time a row is drawn. `option_images` is positional against `options`
+  # (BUG-026), so the map is built by index here, while the pairing still
+  # exists, and a label that appears twice keeps the FIRST slot's picture
+  # rather than the last one silently winning.
+  #
+  # Only options that actually have a picture get an entry — the rows draw a
+  # thumbnail iff the label is in this hash, so the ones without stay flush
+  # with their own text instead of carrying a placeholder tile.
+  def result_option_thumbs(card)
+    images = Array(card.is_a?(Hash) ? card["option_images"] : nil)
+    return {} unless images.any?(&:present?)
+
+    Array(card["options"]).each_with_index.with_object({}) do |(label, i), out|
+      image = images[i]
+      next if image.blank?
+      out[label.to_s] ||= "background-image:url('#{image}'); #{option_focal_style(card, i)}"
+    end
+  end
+
+  # The card's own picture for the question row — its panel photo, or a video
+  # card's poster frame, both of which are what the respondent actually looked
+  # at. nil when the card has neither, and the view falls back to the type
+  # gradient so the question text starts in the same place down the feed.
+  def result_card_thumb_style(card)
+    return nil unless card.is_a?(Hash)
+    image = card["image"].presence || card["video_poster"].presence
+    return nil if image.blank?
+
+    "background-image:url('#{image}'); #{card_focal_style(card)}"
+  end
 end

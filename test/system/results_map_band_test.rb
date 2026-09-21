@@ -58,9 +58,18 @@ class ResultsMapBandTest < ApplicationSystemTestCase
   end
 
   # The inline width _paintMap writes, which is empty until the controller has
-  # loaded its data and decided what is selected. Measuring before that gets
-  # the browser's default 1px and compares it against a painted 1.6px — a race
-  # the full suite lost and a single-file run won.
+  # loaded its data and decided what is selected.
+  #
+  # This is the wait for EVERY assertion about the opened map, not just the
+  # stroke. wait_for_stimulus returns when the controller connects; connect
+  # only kicks off `await fetch(...)`, and _paintMap / _fitHomeView run when
+  # that resolves. So "connected" says nothing about whether the map has been
+  # fitted yet — measuring there gets the world view and the browser's default
+  # 1px stroke. Both races were won by a single-file run and lost by the full
+  # suite (the stroke on 2026-09-21 morning, the fit that afternoon).
+  #
+  # _paintMap and _fitHomeView are called on consecutive lines with no await
+  # between them, so a painted stroke means the fit has already happened.
   def painted?(code)
     evaluate_script(<<~JS).to_s.present?
       (() => {
@@ -123,6 +132,7 @@ class ResultsMapBandTest < ApplicationSystemTestCase
     open_results
     assert_selector ".results-map-band .world-map", wait: 5
     wait_for_stimulus
+    wait_until { painted?("gb") }
 
     %w[gb us za].each do |cc|
       assert_equal true, country_in_frame?(cc),
@@ -137,6 +147,7 @@ class ResultsMapBandTest < ApplicationSystemTestCase
     open_results
     assert_selector ".results-map-band .world-map", wait: 5
     wait_for_stimulus
+    wait_until { painted?("gb") }
     local_width = view_box[2]
 
     assert_equal true, country_in_frame?("gb")

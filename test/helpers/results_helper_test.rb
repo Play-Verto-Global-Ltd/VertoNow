@@ -2,6 +2,13 @@ require "test_helper"
 
 class ResultsHelperTest < ActionView::TestCase
   include ResultsHelper
+  # result_option_thumbs reaches for option_focal_style, and
+  # result_card_thumb_style for card_focal_style — both ApplicationHelper, both
+  # already in the view context this helper renders inside.
+  include ApplicationHelper
+
+  IMG = "/assets/verto-library/a.jpg".freeze
+  IMG2 = "/assets/verto-library/b.jpg".freeze
 
   def seg(id, count = 1)
     { id: id, label: id.to_s.titleize, count: count }
@@ -49,5 +56,81 @@ class ResultsHelperTest < ActionView::TestCase
 
     assert_equal (ids - [ "overall" ]).sort, drawn.sort
     assert_equal drawn.uniq, drawn
+  end
+
+  # ── result_option_thumbs ────────────────────────────────────────────────────
+  # The index-to-label hop is the whole point of this helper, and it is the
+  # part that silently mis-renders rather than failing: counts come back keyed
+  # by label and sorted by size, so an off-by-one here puts one option's
+  # photograph on another option's row and nothing anywhere says so. Each test
+  # below was checked by breaking the helper under it.
+
+  test "an option's picture is keyed by its LABEL, taken from its own slot" do
+    card = { "options" => %w[Red Green Blue], "option_images" => [ IMG, "", IMG2 ] }
+
+    thumbs = result_option_thumbs(card)
+
+    assert_includes thumbs["Red"], IMG
+    assert_includes thumbs["Blue"], IMG2
+    assert_nil thumbs["Green"], "an option with no picture must not get one"
+  end
+
+  test "a card with no option_images at all maps nothing" do
+    assert_empty result_option_thumbs({ "options" => %w[Red Green] })
+    assert_empty result_option_thumbs({ "options" => %w[Red Green], "option_images" => [ "", nil ] })
+    assert_empty result_option_thumbs(nil)
+  end
+
+  # option_images is positional and may be SHORTER than options (a deck that
+  # gained statements after its pictures were set). The tail must map to
+  # nothing rather than wrapping or raising.
+  test "options past the end of option_images get no picture" do
+    thumbs = result_option_thumbs({ "options" => %w[A B C], "option_images" => [ IMG ] })
+
+    assert_includes thumbs["A"], IMG
+    assert_nil thumbs["B"]
+    assert_nil thumbs["C"]
+  end
+
+  # Two statements can legitimately read the same. Whichever wins, it must be
+  # deterministic — and first is the one a reader can predict from the card.
+  test "a label that appears twice keeps the first slot's picture" do
+    thumbs = result_option_thumbs({ "options" => [ "Same", "Same" ], "option_images" => [ IMG, IMG2 ] })
+
+    assert_includes thumbs["Same"], IMG
+    refute_includes thumbs["Same"], IMG2
+  end
+
+  test "an option's own reposition rides along with its picture" do
+    card = { "options" => %w[A B], "option_images" => [ IMG, IMG2 ],
+             "option_focals" => [ nil, { "x" => 20, "y" => 80 } ] }
+
+    thumbs = result_option_thumbs(card)
+
+    assert_includes thumbs["B"], "--focal-x: 20%"
+    assert_includes thumbs["B"], "--focal-y: 80%"
+    assert_includes thumbs["A"], "--focal-x: 50%", "an unreframed option centres, as it does in the player"
+  end
+
+  # ── result_card_thumb_style ─────────────────────────────────────────────────
+
+  test "the card's own picture carries the card's reposition" do
+    style = result_card_thumb_style({ "image" => IMG, "focal_x" => 30 })
+
+    assert_includes style, IMG
+    assert_includes style, "--focal-x: 30%"
+  end
+
+  # A video card's panel is a clip, which a 52px background can't be. Its
+  # poster frame is the still of that same clip, and is what the respondent
+  # saw first.
+  test "a video card falls back to its poster frame" do
+    assert_includes result_card_thumb_style({ "video" => "/v.mp4", "video_poster" => IMG }), IMG
+  end
+
+  test "a card with no art of its own gets no tile" do
+    assert_nil result_card_thumb_style({ "text" => "Pick one" })
+    assert_nil result_card_thumb_style({ "image" => "" })
+    assert_nil result_card_thumb_style(nil)
   end
 end
