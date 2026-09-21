@@ -199,4 +199,79 @@ class DemographicQuestionsTest < ActiveSupport::TestCase
     assert_equal 3, DemographicQuestions.append_to([]).size
     assert(DemographicQuestions.append_to([]).none? { |c| c.key?("demographic_key") })
   end
+
+  # ── display_answer ─────────────────────────────────────────────────────────
+  #
+  # The results page shows these to a person, and what is stored is a widget's
+  # output: "1977-09", "CC|Region|Postcode". The edges below are the ones real
+  # data has — a country picked with no region, a postcode segment the older
+  # answers do not carry, and the malformed values that any free-typed column
+  # eventually collects.
+  #
+  # The rule throughout: anything unparseable comes back UNCHANGED. It is
+  # still an answer somebody gave.
+
+  def month_card = { "type" => "open_ended", "input" => "month", "demographic" => true }
+  def place_card = { "type" => "open_ended", "input" => "location", "demographic" => true }
+
+  test "a birth month reads as a month and a year" do
+    assert_equal "September 1977", DemographicQuestions.display_answer(month_card, "1977-09")
+    assert_equal "January 2001",   DemographicQuestions.display_answer(month_card, "2001-01")
+    # The player pads, but an import need not have.
+    assert_equal "March 1984", DemographicQuestions.display_answer(month_card, "1984-3")
+  end
+
+  test "a birth month that is not one is left exactly as it was stored" do
+    [ "sometime in 1977", "1977", "1977-13", "1977-00", "", "1977-09-04" ].each do |raw|
+      assert_equal raw, DemographicQuestions.display_answer(month_card, raw),
+        "#{raw.inspect} was rewritten instead of being shown as given"
+    end
+  end
+
+  test "a location reads as a place" do
+    assert_equal "Catalunya, Spain", DemographicQuestions.display_answer(place_card, "ES|Catalunya")
+    assert_equal "Greater London, England, United Kingdom · SW1A 1AA",
+                 DemographicQuestions.display_answer(place_card, "GB|Greater London, England|SW1A 1AA")
+  end
+
+  # The region is optional in the picker, and "DE|" is the commonest shape
+  # after the full one — a respondent who named a country and no more.
+  test "a country with no region is just the country" do
+    assert_equal "Germany", DemographicQuestions.display_answer(place_card, "DE|")
+    assert_equal "Nepal",   DemographicQuestions.display_answer(place_card, "NP|")
+    assert_equal "Germany", DemographicQuestions.display_answer(place_card, "DE|   ")
+  end
+
+  # sync_region_from_answers! refuses an unknown code too — the response keeps
+  # the answer without being region-tagged. "XX" is not a place, so it is not
+  # printed as one.
+  test "an unknown or missing country code is left as it was stored" do
+    assert_equal "XX|Somewhere", DemographicQuestions.display_answer(place_card, "XX|Somewhere")
+    assert_equal "just a place",  DemographicQuestions.display_answer(place_card, "just a place")
+    assert_equal "",              DemographicQuestions.display_answer(place_card, "")
+  end
+
+  test "every other card's answer passes straight through" do
+    plain = { "type" => "open_ended", "text" => "Why did you come?" }
+    assert_equal "ES|Catalunya", DemographicQuestions.display_answer(plain, "ES|Catalunya")
+    assert_equal "1977-09",      DemographicQuestions.display_answer(plain, "1977-09")
+    assert_equal "1977-09",      DemographicQuestions.display_answer(nil, "1977-09")
+
+    # A demographic card that is neither of these two — the gender pick.
+    gender = { "type" => "multiple_choice", "demographic" => true }
+    assert_equal "Female", DemographicQuestions.display_answer(gender, "Female")
+  end
+
+  # The card's "View all answers (N)" is counted by the aggregator from the
+  # RAW values; the panel's "of N" is counted from these formatted ones. If a
+  # non-blank answer could format to blank the two would disagree, and the
+  # panel would quietly be short.
+  test "nothing non-blank ever formats to blank" do
+    [ month_card, place_card ].each do |card|
+      [ "1977-09", "DE|", "|", "ES|", "x", "0", "GB||" ].each do |raw|
+        assert_predicate DemographicQuestions.display_answer(card, raw).strip, :present?,
+          "#{raw.inspect} formatted to nothing — the card would count it and the panel would not"
+      end
+    end
+  end
 end

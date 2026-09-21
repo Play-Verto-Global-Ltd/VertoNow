@@ -13,7 +13,13 @@ class FreeformAnswersTest < ActionDispatch::IntegrationTest
   CARDS = [
     { "type" => "open_ended",      "text" => "Why did you come?" },
     { "type" => "multiple_choice", "text" => "Colour?", "options" => %w[Blue Green] },
-    { "type" => "open_ended",      "text" => "Where do you live?", "demographic" => "location" }
+    { "type" => "open_ended",      "text" => "Where do you live?", "demographic" => "location" },
+    # Shaped like the real tail — `input` is what the answer sync and
+    # DemographicQuestions.key_for actually read.
+    { "type" => "open_ended", "text" => "Where do you really live?",
+      "input" => "location", "demographic" => true },
+    { "type" => "open_ended", "text" => "When were you born?",
+      "input" => "month", "demographic" => true }
   ].freeze
 
   def setup
@@ -126,9 +132,6 @@ class FreeformAnswersTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     refute JSON.parse(response.body)["ok"]
 
-    get survey_results_answers_path(@survey, card_index: 2), as: :json
-    assert_response :unprocessable_entity, "the demographic tail is open_ended in shape only"
-
     get survey_results_answers_path(@survey, card_index: 40), as: :json
     assert_response :unprocessable_entity
 
@@ -204,6 +207,83 @@ class FreeformAnswersTest < ActionDispatch::IntegrationTest
     sign_in @admin
     get survey_results_path(@survey)
     assert_select ".freeform-preview-item__text", text: /\A\s*#{Regexp.escape(long.strip)}\s*\z/, count: 1
+  end
+
+  # ── The demographic tail ─────────────────────────────────────────────────
+  #
+  # Birth month and location are open_ended cards whose answers are written by
+  # the player's own widgets, so they are stored structured: "1977-09" and
+  # "CC|Region". They were refused this endpoint on the grounds that those are
+  # picks rather than answers — which left a creator with 292 birth months and
+  # a view of the newest ten.
+  #
+  # They are served now, and rendered as words on the way. Both halves matter:
+  # opening a panel onto 122 rows of "DE|" would answer the ask and help
+  # nobody.
+
+  # Two per card, far enough apart in time to be orderable, plus the shapes
+  # that have to survive: a country with no region, and a postcode segment.
+  def seed_demographics
+    [ [ "ES|Catalunya", "1977-09" ], [ "DE|", "1992-10" ],
+      [ "GB|Greater London, England|SW1A 1AA", "2001-01" ] ].each_with_index do |(place, born), i|
+      @survey.responses.create!(
+        session_token: SecureRandom.uuid, status: "completed", locale: "en", answered: true,
+        created_at: (10 - i).minutes.ago,
+        answers: { "3" => { "type" => "open_ended", "value" => place },
+                   "4" => { "type" => "open_ended", "value" => born } }
+      )
+    end
+  end
+
+  def demographic_answers(index, **params)
+    get survey_results_answers_path(@survey, card_index: index, **params), as: :json
+    assert_response :success
+    JSON.parse(response.body)
+  end
+
+  test "the demographic tail is served, as words rather than as storage" do
+    seed_demographics
+    sign_in @admin
+
+    place = demographic_answers(3)
+    assert place["ok"]
+    assert_equal 3, place["total"]
+    assert_equal [ "Greater London, England, United Kingdom · SW1A 1AA", "Germany", "Catalunya, Spain" ],
+                 place["answers"].map { |a| a["text"] },
+                 "newest first, and none of them reading as a storage format"
+
+    born = demographic_answers(4)
+    assert_equal [ "January 2001", "October 1992", "September 1977" ], born["answers"].map { |a| a["text"] }
+  end
+
+  # The search box filters what the panel DISPLAYS. Typing "Spain" into a list
+  # showing "Catalunya, Spain" and getting nothing would be broken, however
+  # defensible "ES|Catalunya doesn't contain Spain" is.
+  test "the search matches the words shown, not the stored code" do
+    seed_demographics
+    sign_in @admin
+
+    assert_equal 1, demographic_answers(3, q: "Spain")["matched"]
+    assert_equal 1, demographic_answers(3, q: "germany")["matched"], "and case-insensitively, like every other card"
+    assert_equal 1, demographic_answers(4, q: "September")["matched"]
+  end
+
+  test "the result card offers the panel on a demographic question too" do
+    seed_demographics
+    sign_in @admin
+    get survey_results_path(@survey)
+    assert_response :success
+
+    buttons = css_select("button.freeform-view-all")
+    urls    = buttons.map { |b| b["data-freeform-answers-url-param"] }
+    assert urls.any? { |u| u.include?("card_index=3") },
+      "the location card previews ten answers and offers no way to the other 112"
+    assert urls.any? { |u| u.include?("card_index=4") }
+
+    # …and its preview reads as words as well, not just the panel behind it.
+    assert_select ".freeform-preview-item__text", text: /Catalunya, Spain/
+    assert_select ".freeform-preview-item__text", text: /September 1977/
+    refute_match "ES|Catalunya", response.body
   end
 
   test "the public shared-results page keeps freeform answers hidden and has no panel" do

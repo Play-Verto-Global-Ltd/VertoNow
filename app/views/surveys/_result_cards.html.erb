@@ -236,10 +236,20 @@
         <% preview = result[:texts].last(10).reverse %>
         <div style="display:flex;flex-direction:column;gap:5px;">
           <% preview.each do |text| %>
-            <div class="freeform-preview-item"><div class="freeform-preview-item__text"><%= text %></div></div>
+            <%# The demographic tail's answers are structured strings, not
+                sentences — "DE|" is a person in Germany. See
+                DemographicQuestions.display_answer; every other card's text
+                comes back through it unchanged. %>
+            <div class="freeform-preview-item"><div class="freeform-preview-item__text"><%= DemographicQuestions.display_answer(card_data, text) %></div></div>
           <% end %>
         </div>
-        <% if result[:texts].any? && answers && card_data["demographic"].blank? %>
+        <%# The demographic tail used to be denied this button, on the grounds
+            that its values are picks rather than answers anyone reads one by
+            one. Two hundred and ninety-two birth months with no way to see
+            past the newest ten is not that argument working — they are
+            answers, and now that they are rendered as words they are
+            readable ones. %>
+        <% if result[:texts].any? && answers %>
           <button type="button" class="freeform-view-all"
                   data-action="click->freeform-answers#open"
                   data-freeform-answers-url-param="<%= survey_results_answers_path(answers[:survey], card_index: idx, segment: answers[:segment], range: answers[:range]) %>"

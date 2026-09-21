@@ -115,6 +115,77 @@ module DemographicQuestions
     end
   end
 
+  # ── Reading a demographic answer back ──────────────────────────────────────
+  #
+  # The month and location cards are open_ended, so their answers are stored
+  # as strings — but they are STRUCTURED strings written by the player's own
+  # widgets rather than sentences somebody typed: "1977-09" from the
+  # month/year pair (player_controller.js pads the month), and
+  # "CC|Region|Postcode" from the location picker, the last two segments
+  # optional (PlayerController#sync_region_from_answers! parses the same
+  # shape and is the definition of it).
+  #
+  # Rendered raw on the results page they read as storage rather than as
+  # answers: "DE|" is a person who lives in Germany. So every surface that
+  # shows one to a human goes through here — the result card's preview and
+  # the "View all answers" panel alike, which is also what keeps the panel's
+  # SEARCH honest: it filters what it displays, so typing "Germany" finds the
+  # people in Germany rather than nothing.
+  #
+  # Anything this can't parse comes back unchanged. A value that doesn't fit
+  # the shape is still an answer somebody gave, and hiding it behind a dash
+  # would be worse than showing it as it was stored.
+  def self.display_answer(card, value)
+    text = value.to_s
+    return text unless card.is_a?(Hash) && card["demographic"]
+
+    # key_for rather than card["input"] directly, so this agrees with the
+    # answer sync about what a card IS across both card generations — an
+    # explicit demographic_key where one is stored, the input otherwise.
+    case key_for(card)
+    when "age"      then month_answer(text)
+    when "location" then location_answer(text)
+    else text
+    end
+  end
+
+  # "1977-09" → "September 1977". English, like the rest of this page's own
+  # chrome ("Card 3", "answers", the header's publish date) — localising this
+  # one string and nothing around it would read as a bug rather than a
+  # translation.
+  def self.month_answer(text)
+    m = text.match(/\A(\d{4})-(\d{1,2})\z/)
+    return text unless m
+
+    month = m[2].to_i
+    return text unless month.between?(1, 12)
+
+    "#{Date::MONTHNAMES[month]} #{m[1]}"
+  end
+
+  # "ES|Catalunya" → "Catalunya, Spain"; "DE|" → "Germany";
+  # "GB|London|SW1A 1AA" → "London, United Kingdom · SW1A 1AA".
+  #
+  # An unknown country code falls through to the raw value rather than being
+  # printed as a code: sync_region_from_answers! refuses those too, so the
+  # response carries the answer without being region-tagged, and "XX" is not
+  # a place.
+  def self.location_answer(text)
+    sep = text.index("|")
+    return text unless sep
+
+    code = text[0...sep].to_s.upcase
+    return text unless WorldRegions.valid?(code)
+
+    rest     = text[(sep + 1)..].to_s
+    sep2     = rest.index("|")
+    label    = (sep2 ? rest[0...sep2] : rest).strip
+    postcode = sep2 ? rest[(sep2 + 1)..].to_s.strip : nil
+
+    place = [ label.presence, WorldRegions.name_for(code) ].compact.join(", ")
+    postcode.present? ? "#{place} · #{postcode}" : place
+  end
+
   # Every key Survey.sanitize_cards_images! will accept. CORE_KEYS supplies
   # "gender" — the reservation the old comment promised — plus "age" and
   # "location" now that the tail trio is insertable from the modal.

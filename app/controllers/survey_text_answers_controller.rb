@@ -28,9 +28,13 @@ class SurveyTextAnswersController < ApplicationController
     # look every answer up under a key ("-1") no response has.
     card   = idx.negative? ? nil : Array(survey.cards)[idx]
 
-    # The demographic tail (birth month, location) is open_ended too, but its
-    # values are structured picks, not answers anyone reads one by one.
-    unless card.is_a?(Hash) && card["type"] == "open_ended" && card["demographic"].blank?
+    # The demographic tail (birth month, location) is open_ended too, and is
+    # served here like any other freeform card. It used to be refused on the
+    # grounds that its values are structured picks rather than answers anyone
+    # reads one by one — but a creator looking at 292 birth months wants to
+    # page and search them exactly as they would any other column, and
+    # DemographicQuestions.display_answer now renders them as words.
+    unless card.is_a?(Hash) && card["type"] == "open_ended"
       return render json: { ok: false, error: "Not a freeform question." }, status: :unprocessable_entity
     end
 
@@ -41,7 +45,7 @@ class SurveyTextAnswersController < ApplicationController
     query = params[:q].to_s.strip.downcase
     page  = [ params[:page].to_i, 1 ].max
 
-    answers = collect_answers(segment[:scope], idx)
+    answers = collect_answers(segment[:scope], idx, card)
     matched = query.blank? ? answers : answers.select { |a| a[:text].downcase.include?(query) }
     slice   = matched[(page - 1) * PER_PAGE, PER_PAGE] || []
 
@@ -67,7 +71,12 @@ class SurveyTextAnswersController < ApplicationController
   # are counting the same thing. The batch walker orders by id, so the list
   # is sorted by arrival afterwards rather than trusting ids to follow it —
   # an import writes its rows in file order, not in time order.
-  def collect_answers(scope, idx)
+  # Formatted HERE rather than on the way out, so the search filters the words
+  # the panel actually shows: a demographic location is stored "ES|Catalunya",
+  # and a creator typing "Spain" into a box listing "Catalunya, Spain" and
+  # getting nothing back would be right to call that broken. Every other
+  # card's text comes through display_answer unchanged.
+  def collect_answers(scope, idx, card)
     key = idx.to_s
     out = []
     each_response(scope) do |answers, created_at|
@@ -77,7 +86,7 @@ class SurveyTextAnswersController < ApplicationController
       value = a["value"]
       next if value.nil? || value == false
 
-      text = value.to_s.strip
+      text = DemographicQuestions.display_answer(card, value.to_s.strip).strip
       next if text.blank?
 
       out << { text: text, at: created_at }
