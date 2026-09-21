@@ -54,17 +54,23 @@ export default class extends Controller {
     if (frame) frame.src = this.urlValue
   }
 
-  // Never interrupt the AI-report modal, an open download/compare menu, or a
-  // focused field inside the frame — a mid-edit reload would either discard
-  // unsaved state (the report brief, an in-place markdown edit) or just close
-  // whatever the creator has open.
+  // Never interrupt the AI-report modal, an open export/share/segments menu, or
+  // a focused field — a mid-edit reload would either discard unsaved state (the
+  // report brief, an in-place markdown edit) or just close whatever the creator
+  // has open.
+  //
+  // Scoped to the DOCUMENT, not the frame. These used to live inside
+  // #results-feed and the guard looked there; the header moved them out, which
+  // would have left every one of them unguarded — a tick mid-typing in the
+  // share panel, or with the report modal open, is exactly what this exists to
+  // prevent, and where the node sits in the tree has nothing to do with it.
   _blocked() {
     const frame = document.getElementById("results-feed")
     if (!frame) return true
-    if (frame.querySelector(".report-modal:not(.hidden)")) return true
-    if (frame.querySelector("details[open]")) return true
+    if (document.querySelector(".report-modal:not(.hidden)")) return true
+    if (document.querySelector("details[open]")) return true
     const active = document.activeElement
-    if (active && frame.contains(active) && [ "INPUT", "TEXTAREA", "SELECT" ].includes(active.tagName)) return true
+    if (active && [ "INPUT", "TEXTAREA", "SELECT" ].includes(active.tagName)) return true
     return false
   }
 

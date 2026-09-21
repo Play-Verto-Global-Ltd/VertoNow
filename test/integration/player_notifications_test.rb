@@ -477,7 +477,9 @@ class PlayerNotificationsTest < ActionDispatch::IntegrationTest
     admin_for(s.organisation)
 
     get survey_results_path(s)
-    assert_match "1 asked to hear", response.body
+    # The count and its label are separate elements since the header made them
+    # a stat tile, so assert the pair rather than one contiguous string.
+    assert_select ".ask-stat", text: /1\s*asked to hear/
 
     s.update!(join_prompt_enabled: false)
     get survey_results_path(s)

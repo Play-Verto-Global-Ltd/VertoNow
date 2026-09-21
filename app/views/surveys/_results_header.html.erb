@@ -1,0 +1,369 @@
+<%# ── Results header ─────────────────────────────────────────────────────────
+    What the page is about, above what the page shows: the tally, the way out
+    to the data, and the two filters that decide what every card below counts.
+    It used to sit under the AI summary and the map, a scroll away from the
+    top, and it wrapped mid-item at 1440 — "115 asked to hear" over three
+    lines, thirteen segment pills of four different kinds over three rows.
+
+    It lives OUTSIDE the results-feed frame and outside the scrolling div, so
+    it is pinned under the top bar rather than scrolling away: the filters that
+    decide what you are looking at stay reachable while you look at it. The
+    cost is that a filter click is now a full Turbo visit rather than a frame
+    swap — the server does identical work either way (a frame navigation
+    renders the whole action and Turbo keeps one node), and the AI summary
+    replays from its cache (survey_summaries_controller) rather than calling
+    the model again. ── %>
+<div class="results-header">
+
+<%# Stats strip %>
+<div class="results-header-bar">
+  <%# The tally updates live as answers land; the breakdown below
+      rebuilds on request. Only meaningful on the unsegmented view —
+      a segment's count comes from its own filtered scope, which a
+      broadcast carrying whole-Verto totals would contradict. %>
+  <% if @active_segment && @active_segment[:id] != "overall" %>
+    <div class="rh-count">
+      <span class="rh-count-num"><%= @total %></span>
+      <span class="rh-count-word">response<%= @total == 1 ? "" : "s" %></span>
+    </div>
+  <% else %>
+    <%# The toggle lives OUTSIDE #results-live — that node is replaced
+        wholesale on every broadcast (see results_live partial) and
+        would wipe any state kept inside it. Off by default: opt-in,
+        not a reversal of why auto-rebuild was rejected (see the
+        partial's own comment). %>
+    <div data-controller="results-autorefresh"
+         data-results-autorefresh-url-value="<%= survey_results_path(@survey, segment: @active_segment[:id]) %>"
+         data-action="turbo:before-stream-render->results-autorefresh#markDirty"
+         class="rh-livewrap">
+      <%= turbo_stream_from(*ResultsActivity.stream_for(@survey)) %>
+      <%= render "surveys/results_live",
+            survey: @survey, live: false,
+            **ResultsActivity.counts_for(@survey) %>
+      <button type="button" data-results-autorefresh-target="toggle"
+              data-action="click->results-autorefresh#toggle"
+              class="rh-toggle">Auto ↻ off</button>
+    </div>
+  <% end %>
+  <% if @active_segment && @active_segment[:id] != "overall" %>
+    <span class="rh-of">of <%= @overall_total %> overall</span>
+  <% end %>
+
+  <%# Metadata, not controls. These were dressed as buttons and competed with
+      the real ones for the same attention; the date is a fact and the play
+      link is a link. %>
+  <div class="rh-meta">
+    <% if @survey.published_at %>
+      <span>Published <%= @survey.published_at.strftime("%b %-d, %Y") %></span>
+      <span class="rh-meta-dot" aria-hidden="true">·</span>
+    <% end %>
+    <%= link_to play_survey_url(@survey.publish_token), class: "rh-meta-link", target: "_blank" do %>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M6.5 3.5H3.5v9h9v-3M9.5 3.5h3v3M12.5 3.5 7 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>Play link
+    <% end %>
+  </div>
+
+  <div class="results-header-actions">
+    <%# ── Export: every way of getting the numbers out, in one menu. They were
+        three separate triggers — a Download dropdown, a Google Sheets button
+        and (below) a Share panel — sitting side by side doing neighbouring
+        jobs, which is three decisions where the creator has one intention. ── %>
+    <% csv_item = "display:block;padding:8px 12px;border-radius:7px;font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.7);text-decoration:none;white-space:nowrap;" %>
+    <details class="results-export-menu" style="position:relative;">
+      <summary class="rh-pill">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 2.5v8m0 0L5 7.6M8 10.5l3-2.9M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>Export
+      </summary>
+      <div style="position:absolute;right:0;top:calc(100% + 6px);background:#272D4A;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:6px;min-width:185px;z-index:30;box-shadow:0 10px 28px rgba(0,0,0,0.4);display:flex;flex-direction:column;">
+        <%= link_to "Raw responses (.csv)", survey_results_export_path(@survey, kind: "responses", segment: @active_segment[:id]),
+              data: { turbo: false }, style: csv_item,
+              onmouseover: "this.style.background='rgba(255,255,255,0.06)'", onmouseout: "this.style.background='transparent'" %>
+        <%= link_to "Summary (.csv)", survey_results_export_path(@survey, kind: "summary", segment: @active_segment[:id]),
+              data: { turbo: false }, style: csv_item,
+              onmouseover: "this.style.background='rgba(255,255,255,0.06)'", onmouseout: "this.style.background='transparent'" %>
+        <%= link_to "Raw responses (.xlsx)", survey_results_export_path(@survey, kind: "responses", segment: @active_segment[:id], format: "xlsx"),
+              data: { turbo: false }, style: csv_item,
+              onmouseover: "this.style.background='rgba(255,255,255,0.06)'", onmouseout: "this.style.background='transparent'" %>
+        <%= link_to "Summary (.xlsx)", survey_results_export_path(@survey, kind: "summary", segment: @active_segment[:id], format: "xlsx"),
+              data: { turbo: false }, style: csv_item,
+              onmouseover: "this.style.background='rgba(255,255,255,0.06)'", onmouseout: "this.style.background='transparent'" %>
+        <%# Google Sheets lives in here now rather than beside the Download
+            trigger: it is the same intention (get these numbers somewhere
+            else), and as a separate teal button it read as a rival CTA to
+            AI Report. The submit form is kept whole — sheets_export needs
+            its button and status span together. %>
+        <% if google_sheets_configured? %>
+          <div style="height:1px;background:rgba(255,255,255,0.1);margin:5px 8px;"></div>
+          <% if Current.user&.google_connected? %>
+            <%= form_with url: survey_google_sheet_path(@survey, segment: @active_segment[:id]), method: :post,
+                  data: { controller: "sheets-export", action: "submit->sheets-export#submit", turbo: false },
+                  html: { style: "margin:0;" } do %>
+              <button type="submit" data-sheets-export-target="button" class="rh-menu-item">Export to Google Sheets</button>
+              <span data-sheets-export-target="status" class="rh-menu-status"></span>
+            <% end %>
+          <% else %>
+            <%= link_to "Connect Google Sheets", google_connect_path(survey_id: @survey.id, segment: @active_segment[:id]),
+                  data: { turbo: false }, class: "rh-menu-item" %>
+          <% end %>
+        <% end %>
+
+        <%# One respondent's own data, for a subject access or erasure
+            request. Admin-only, so it's only offered to admins. %>
+        <% if current_membership&.admin? %>
+          <div style="height:1px;background:rgba(255,255,255,0.1);margin:5px 8px;"></div>
+          <%= link_to t("respondent_data.menu_link"), survey_respondent_data_path(@survey),
+                style: csv_item,
+                onmouseover: "this.style.background='rgba(255,255,255,0.06)'", onmouseout: "this.style.background='transparent'" %>
+        <% end %>
+      </div>
+    </details>
+
+    <%# ── Share results: a public, read-only link to this page
+        (SharedResultsController). Same dropdown chrome as Download
+        above; copy-link idiom cribbed from the test-link block in
+        surveys/show.html.erb. ── %>
+    <details class="results-export-menu" style="position:relative;">
+      <summary class="rh-pill">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M6.6 9.4a2.6 2.6 0 0 0 3.9.3l2-2a2.6 2.6 0 0 0-3.7-3.7l-1.1 1.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M9.4 6.6a2.6 2.6 0 0 0-3.9-.3l-2 2a2.6 2.6 0 0 0 3.7 3.7l1.1-1.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>Share
+      </summary>
+      <div style="position:absolute;right:0;top:calc(100% + 6px);background:#272D4A;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px;min-width:280px;z-index:30;box-shadow:0 10px 28px rgba(0,0,0,0.4);">
+        <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.6);line-height:1.5;margin-bottom:10px;">
+          A read-only link to these results — no sign-in needed. Open-ended answers, contact details and exports stay hidden.
+        </div>
+        <% if @survey.results_share_token.present? %>
+          <input type="text" readonly id="results-share-url"
+                 value="<%= shared_results_url(@survey.results_share_token) %>"
+                 style="width:100%;padding:8px 12px;border-radius:10px;background:rgba(1,234,203,0.07);border:1px solid rgba(1,234,203,0.25);color:rgba(255,255,255,0.78);font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);outline:none;" />
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button type="button"
+                    onclick="(navigator.clipboard?.writeText(document.getElementById('results-share-url').value) ?? Promise.reject()).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy link',2000)}).catch(()=>{this.textContent='Copy failed — select &amp; copy';setTimeout(()=>this.textContent='Copy link',2000)})"
+                    style="flex:1;padding:8px;border-radius:10px;background:transparent;color:rgba(255,255,255,0.78);font-family:'ABeeZee',sans-serif;font-size: var(--text-base);border:1px solid rgba(255,255,255,0.2);cursor:pointer;">Copy link</button>
+            <%= link_to "↗ Open", shared_results_path(@survey.results_share_token), target: "_blank",
+                  style: "flex:1;text-align:center;padding:8px;border-radius:10px;background:transparent;color:rgba(255,255,255,0.78);font-family:'ABeeZee',sans-serif;font-size: var(--text-base);border:1px solid rgba(255,255,255,0.2);cursor:pointer;text-decoration:none;" %>
+          </div>
+
+          <%# Minting, pausing and revoking the link are admin calls
+              (ResultsSharesController), so only an admin is shown
+              the buttons — everyone else gets the address to pass
+              on, which is the part sharing actually needs. %>
+          <% if current_membership&.admin? %>
+            <% if @survey.results_share_active? %>
+              <%= button_to "Pause", results_share_survey_path(@survey), method: :patch, params: { active: "0" },
+                    form: { style: "margin:8px 0 0;" },
+                    style: "width:100%;padding:8px;border-radius:10px;background:transparent;color:rgba(255,255,255,0.55);font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);border:1px solid rgba(255,255,255,0.12);cursor:pointer;" %>
+            <% else %>
+              <div style="margin-top:8px;padding:6px 10px;border-radius:8px;background:rgba(255,204,0,0.1);color:#FFCC00;font-family:'ABeeZee',sans-serif;font-size: var(--text-xs);">Paused — the link keeps working once resumed.</div>
+              <%= button_to "Resume", results_share_survey_path(@survey), method: :patch, params: { active: "1" },
+                    form: { style: "margin:8px 0 0;" },
+                    style: "width:100%;padding:8px;border-radius:10px;background:rgba(1,234,203,0.15);color:#01EACB;font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);border:1px solid rgba(1,234,203,0.3);cursor:pointer;" %>
+            <% end %>
+            <%= button_to "Reset link", results_share_survey_path(@survey), method: :post, params: { reset: "1" },
+                  form: { style: "margin:6px 0 0;", data: { turbo_confirm: "Reset the link? The old one stops working immediately." } },
+                  style: "width:100%;padding:8px;border-radius:10px;background:transparent;color:rgba(255,255,255,0.55);font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);border:1px solid rgba(255,255,255,0.12);cursor:pointer;" %>
+            <%= button_to "Turn off sharing", results_share_survey_path(@survey), method: :delete,
+                  form: { style: "margin:6px 0 0;", data: { turbo_confirm: "Turn off results sharing? The link stops working immediately." } },
+                  style: "width:100%;padding:8px;border-radius:10px;background:transparent;color:rgba(255,110,110,0.75);font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);border:1px solid rgba(255,110,110,0.2);cursor:pointer;" %>
+          <% elsif !@survey.results_share_active? %>
+            <div style="margin-top:8px;padding:6px 10px;border-radius:8px;background:rgba(255,204,0,0.1);color:#FFCC00;font-family:'ABeeZee',sans-serif;font-size: var(--text-xs);"><%= t("results.share_paused_by_admin") %></div>
+          <% end %>
+        <% elsif current_membership&.admin? %>
+          <%= button_to "Enable results sharing", results_share_survey_path(@survey), method: :post,
+                form: { style: "margin:0;" },
+                style: "width:100%;padding:10px;border-radius:12px;background:#01EACB;color:#1C2034;font-family:'ABeeZee',sans-serif;font-size: var(--text-md);border:none;cursor:pointer;font-weight:600;" %>
+        <% else %>
+          <div style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.45);font-family:'ABeeZee',sans-serif;font-size: var(--text-xs);"><%= t("results.share_not_enabled") %></div>
+        <% end %>
+      </div>
+    </details>
+
+    <%# ── AI Report: brief → generate → preview, edit in place, download
+        PDF, save to Google Drive. First open shows a 3-question brief
+        (goal / audience / length) that steers the AI away from a
+        generic, over-long report; the answers persist on the Verto so
+        regenerations reuse them. ── %>
+    <div data-controller="report-export"
+         data-report-export-stream-url-value="<%= survey_results_report_stream_path(@survey) %>"
+         data-report-export-drive-url-value="<%= survey_google_drive_path(@survey) %>"
+         data-report-export-save-url-value="<%= survey_results_report_path(@survey) %>"
+         data-report-export-exists-value="<%= @survey.results_report.present? %>"
+         data-report-export-brief-value="<%= @survey.results_report_brief.presence || "{}" %>"
+         style="display:inline-flex;">
+      <button type="button" data-action="click->report-export#open" class="rh-pill rh-pill--ai">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2.6l1.9 5.6 5.6 1.9-5.6 1.9L12 17.6l-1.9-5.6L4.5 10.1l5.6-1.9L12 2.6Z" fill="currentColor"/>
+        </svg>AI Report
+      </button>
+
+      <div class="report-modal hidden" data-report-export-target="modal" data-action="click->report-export#backdrop">
+        <div class="report-modal-card" data-action="click->report-export#stop">
+          <div class="report-modal-head">
+            <span>✨ AI Report</span>
+            <button type="button" class="report-modal-x" data-action="click->report-export#close" aria-label="Close">✕</button>
+          </div>
+          <div class="report-modal-body">
+            <div data-report-export-target="status" class="report-modal-status"></div>
+
+            <%# Report brief — three questions that guide the AI. %>
+            <div class="report-brief hidden" data-report-export-target="brief">
+              <div class="report-brief-intro">Three quick questions so the report says what you need — nothing generic, no padding.</div>
+              <label class="report-brief-field">
+                What should this report achieve?
+                <input type="text" data-report-export-target="goal"
+                       placeholder="e.g. Show our funder the programme's impact on confidence" />
+              </label>
+              <label class="report-brief-field">
+                Who will read it?
+                <input type="text" data-report-export-target="audience"
+                       placeholder="e.g. Board members with 5 minutes, not analysts" />
+              </label>
+              <label class="report-brief-field">
+                How long should it be?
+                <select data-report-export-target="length">
+                  <option value="short">Short — about a page</option>
+                  <option value="standard" selected>Standard — two to three pages</option>
+                  <option value="detailed">Detailed — full breakdown</option>
+                </select>
+              </label>
+              <div class="report-brief-field">
+                What should it include?
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
+                  <label style="display:flex;align-items:center;gap:8px;font-weight:normal;cursor:pointer;">
+                    <input type="checkbox" checked value="key_findings" data-report-export-target="sectionBoxes" />
+                    Key findings
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;font-weight:normal;cursor:pointer;">
+                    <input type="checkbox" checked value="breakdown" data-report-export-target="sectionBoxes" />
+                    Question-by-question breakdown
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;font-weight:normal;cursor:pointer;">
+                    <input type="checkbox" checked value="patterns" data-report-export-target="sectionBoxes" />
+                    Patterns &amp; recommendations
+                  </label>
+                </div>
+                <span style="display:block;margin-top:4px;font-size:12px;opacity:0.65;">The executive summary is always included.</span>
+              </div>
+              <button type="button" class="report-foot-btn report-foot-primary" style="align-self:flex-start;"
+                      data-action="click->report-export#generate">✨ Generate report</button>
+            </div>
+
+            <div data-report-export-target="body" class="report-doc"></div>
+            <textarea class="report-editor hidden" data-report-export-target="editor"
+                      spellcheck="false" aria-label="Edit the report markdown"></textarea>
+          </div>
+          <div class="report-modal-foot">
+            <%# Both renders are built by a job (each spikes 100-200MB), so this
+                asks for one and collects it when it's ready rather than holding
+                the request open for it. Same create endpoint for both — see
+                report_export_controller.js#_requestRender. %>
+            <button type="button" class="report-foot-btn report-foot-primary"
+                    data-action="click->report-export#downloadPdf"
+                    data-report-export-target="pdfBtn"
+                    data-report-export-render-url="<%= survey_report_renders_path(@survey) %>">⤓ Download PDF</button>
+            <%# Figures only, no AI step — works even before a report has ever
+                been generated for this Verto. %>
+            <button type="button" class="report-foot-btn"
+                    data-action="click->report-export#downloadInfographic"
+                    data-report-export-render-url="<%= survey_report_renders_path(@survey) %>">🖼 Share card (PDF)</button>
+            <% if google_sheets_configured? %>
+              <button type="button" class="report-foot-btn" data-action="click->report-export#saveDrive" data-report-export-target="driveBtn">Save to Google Drive</button>
+              <span class="report-foot-status" data-report-export-target="driveStatus"></span>
+            <% end %>
+            <%# Hand-editing the report is editing (ResultsReportsController#update
+                refuses a viewer), so a viewer isn't shown the way in. The
+                Stimulus controller treats both targets as optional. %>
+            <% if can_edit_vertos? %>
+              <button type="button" class="report-foot-btn hidden" data-action="click->report-export#edit" data-report-export-target="editBtn">✎ Edit</button>
+              <button type="button" class="report-foot-btn hidden" data-action="click->report-export#save" data-report-export-target="saveBtn">✓ Save changes</button>
+            <% end %>
+            <%# An explicit Regenerate rewrites the stored report under a new
+                brief, hand edits and all (ResultsReportStreamsController
+                refuses a viewer's once one exists); the first Generate still
+                comes from the brief above. %>
+            <% if can_edit_vertos? %>
+              <button type="button" class="report-foot-btn hidden" data-action="click->report-export#regenerate" data-report-export-target="regenBtn">↻ Regenerate</button>
+            <% end %>
+            <button type="button" class="report-foot-btn report-foot-close" data-action="click->report-export#close" style="margin-left:auto;">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<%# Date window. Narrows the base, so the segment counts below are
+    counted within the window too — a range that only moved the charts
+    while the pills kept whole-Verto totals would misreport one of them. %>
+<div class="results-header-filters">
+  <%# The date window is four fixed, mutually exclusive options, so it is a
+      SEGMENTED CONTROL rather than four more pills: a different shape is how
+      the page says "pick exactly one of these" without a word of copy, and it
+      stops the window reading as one more segment to add. %>
+  <div class="rh-when" role="group" aria-label="When">
+    <% date_range_options.each do |opt| %>
+      <% current = (@date_range.presence || "all") == opt[:id] %>
+      <%# The window is deliberately kept when switching it, but the
+          segment is not carried across ranges blindly — a segment that
+          falls below the small-cell threshold in a narrower window
+          disappears, and linking to it would 404 the pill. %>
+      <%= link_to opt[:label],
+            survey_results_path(@survey, range: (opt[:id] == "all" ? nil : opt[:id])),
+            class: "rh-when-btn#{' is-active' if current}",
+            aria: { current: current.to_s } %>
+    <% end %>
+  </div>
+
+  <%# Segment filter — partner shares, links, waves, regions, demographics.
+      Overall is drawn in the bar as the reset; everything else lives in a
+      picker, because this list is thirteen pills on a partnered deck and a
+      toolbar that wraps to three rows is not a toolbar. A <details>, like
+      the Download and Share menus above it — the browser already owns
+      open/close, Escape and click-through, and none of it costs a
+      controller. %>
+  <% if @segments.size > 1 %>
+    <% active_is_overall = @active_segment[:id].to_s == "overall" %>
+    <%= link_to survey_results_path(@survey, range: @date_range),
+          class: "seg-pill rh-seg", aria: { current: active_is_overall.to_s } do %>
+      Overall<span class="seg-pill-count"><%= @overall_total %></span>
+    <% end %>
+
+    <details class="results-export-menu rh-segments">
+      <summary class="rh-pill rh-pill--picker">
+        <%# The active segment, not the word "Segments", once one is chosen:
+            the control's job is to say what you are looking at. %>
+        <% if active_is_overall %>
+          <span>Segments</span>
+        <% else %>
+          <span class="rh-picker-active"><%= @active_segment[:label] %></span>
+        <% end %>
+        <span class="rh-picker-n"><%= @segments.size - 1 %></span>
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4 6.5 8 10.5l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </summary>
+      <div class="rh-segments-panel">
+        <% results_segment_groups(@segments).each do |group| %>
+          <div class="rh-group">
+            <span class="rh-group-label" style="color:<%= group[:accent] %>;"><%= group[:key] %></span>
+            <div class="rh-group-rail">
+              <% group[:segments].each do |seg| %>
+                <%= link_to survey_results_path(@survey, segment: seg[:id], range: @date_range),
+                      class: "seg-pill rh-seg", style: "--seg-accent:#{group[:accent]}",
+                      aria: { current: (seg[:id] == @active_segment[:id]).to_s } do %>
+                  <span class="rh-seg-dot"></span><%= seg[:label] %><span class="seg-pill-count"><%= seg[:count] %></span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+</div><%# end results-header-filters %>
+
+</div><%# end results-header %>

@@ -5,31 +5,35 @@
     the second gets the pulse and the refresh affordance, because the charts below
     are still showing the older aggregation until the creator asks for a rebuild.
     Rebuilding them automatically would re-aggregate every response for every
-    viewer on every submission, and move the page under someone reading it. %>
-<div id="results-live" style="display:flex;align-items:center;gap:10px;">
-  <div style="display:flex;align-items:baseline;gap:5px;">
-    <span style="font-family:'Alata',sans-serif;font-size:34px;color:#01EACB;line-height:1;<%= "animation:results-live-pulse 1.1s ease-out;" if live %>">
-      <%= responders %>
-    </span>
-    <span style="font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.35);">
-      response<%= responders == 1 ? "" : "s" %>
-    </span>
+    viewer on every submission, and move the page under someone reading it.
+
+    The headline is the one number people open this page for, so it keeps its
+    34px; the supporting counts are .ask-stat tiles — the same component Ask
+    Verto's scope folder uses — because they were three interchangeable grey
+    phrases in a row that wrapped mid-phrase at 1440. %>
+<div id="results-live" class="rh-tally">
+  <div class="rh-count">
+    <span class="rh-count-num<%= " is-pulsing" if live %>"><%= responders %></span>
+    <span class="rh-count-word">response<%= responders == 1 ? "" : "s" %></span>
   </div>
 
-  <span style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.25);">
-    <%= completed %> completed
-  </span>
+  <div class="ask-stat rh-stat" style="--stat-accent:#01EACB;">
+    <span class="ask-stat-dot"></span>
+    <span class="ask-stat-num"><%= completed %></span>
+    <span class="ask-stat-label">completed</span>
+  </div>
 
   <%# Did anyone join? Only shown once the creator has switched the ask on —
       on every other Verto it would be a permanent zero that means nothing.
       A count, deliberately, and never a list: the creator is being told how
       many people want to hear what happened, not who they are. %>
   <% if survey.join_prompt? %>
-    <% joined = survey.player_claims.count %>
-    <span title="People who asked to hear what came of this Verto"
-          style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.25);">
-      · <%= joined %> asked to hear
-    </span>
+    <div class="ask-stat rh-stat" style="--stat-accent:#8B85FF;"
+         title="People who asked to hear what came of this Verto">
+      <span class="ask-stat-dot"></span>
+      <span class="ask-stat-num"><%= survey.player_claims.count %></span>
+      <span class="ask-stat-label">asked to hear</span>
+    </div>
   <% end %>
 
   <% if live %>
@@ -38,6 +42,6 @@
     <%= link_to "↻ Refresh breakdown",
           survey_results_path(survey, segment: params[:segment]),
           data: { turbo_frame: "results-feed" },
-          style: "font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:#01EACB;text-decoration:none;border:1px solid rgba(1,234,203,0.35);border-radius:8px;padding:4px 10px;white-space:nowrap;" %>
+          class: "rh-refresh" %>
   <% end %>
 </div>

@@ -4,8 +4,8 @@ require "application_system_test_case"
 # column and became a floating pill that opens a panel OVER the feed.
 #
 # Three of the four assertions here exist because nothing else in the suite
-# can see them: the panel is positioned (fixed, so it holds still while the
-# feed scrolls), it is hidden in a way that also takes it out of the tab order
+# can see them: the panel is positioned (absolute inside the stage below the
+# header, so it holds still while the feed scrolls), it is hidden in a way that also takes it out of the tab order
 # rather than merely moving it off screen, and the pill has to be clickable on
 # a phone — where the consent banner is full width and lands exactly on it.
 # The fourth is the guard for the change before it: the global nav is gone
@@ -61,7 +61,7 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
     before = panel_viewport_y
     scroll_feed(600)
     assert_equal before, panel_viewport_y,
-      "the panel moved with the feed — it is not fixed to the viewport"
+      "the panel moved with the feed — it is not anchored to the stage"
   end
 
   test "Escape closes it and hands focus back to the pill that opened it" do
@@ -101,8 +101,8 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
       evaluate_script("Math.round(document.querySelector('#results-ask-panel').getBoundingClientRect().y)")
     end
 
-    # The shell itself never scrolls; the feed div inside it does, which is the
-    # whole reason the panel has to be fixed rather than sticky.
+    # The stage never scrolls; the feed div inside it does, which is the whole
+    # reason the panel is anchored to the stage rather than made sticky.
     def scroll_feed(by)
       evaluate_script(<<~JS)
         (() => {
