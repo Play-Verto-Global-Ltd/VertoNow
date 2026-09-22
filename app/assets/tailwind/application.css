@@ -5359,17 +5359,24 @@ button.editor-leave-btn { cursor: pointer; }
 }
 /* ── What the answers say, and why the question was asked ───────────────────
    Beside the question, in the margin the outline rail's opposite number left
-   empty. Absolutely positioned rather than a column of the card, because the
-   card must keep its 780px: the answer rows are the page, and a reading is a
-   note in the margin of one. It hangs from the card's top edge and is free to
-   be taller or shorter than the card without moving anything.
+   empty. Below 1290px — the same width the rail gives up at — there is no
+   margin to hang it in, so it comes back into the card under the answers,
+   which is the base case here; the margin layout is the media query.
 
-   Below 1290px — the same width the outline rail gives up at — there is no
-   margin to hang it in, so it comes back into the card under the answers. */
-.rc-card { position: relative; }
+   It is a COLUMN of the card, not an overlay on the page. The first cut
+   positioned it absolutely, which kept the answer rows at their 780px for
+   free — and let a box taller than its own card run down over the next
+   card's box. A reading of three sentences over a Why with two badges is
+   about 240px against a two-option card's 190px, so the collision was the
+   common case rather than the edge one, and it was unreadable: two headings
+   drawn over each other. As a column it cannot overlap, because the row is
+   as tall as whichever side is taller.
+
+   The card keeps its 780px by growing past the feed instead: the aside and
+   its gap are added to the card's width, so they spill into the margin the
+   rail's opposite number left empty, exactly as the overlay did. The surface
+   moves to .rc-main so the extra width is not drawn as part of the card. */
 .rc-aside {
-  position: absolute; inset-inline-start: calc(100% + 24px); top: 14px;
-  width: 268px;
   display: flex; flex-direction: column; gap: 10px;
 }
 .rc-tell {
@@ -5414,25 +5421,52 @@ button.editor-leave-btn { cursor: pointer; }
   line-height: 1.55; color: rgba(255,255,255,0.5);
 }
 
-@media (max-width: 1289px) {
+/* Under the card, inside it, separated from the answers by a rule.
+   An aside with nothing to show must show nothing: most cards have no Why
+   tagging, and a question the model declined to read gets no reading, so an
+   empty box is the common case here — and the first cut still drew its rule
+   and 28px of space under every set of answers on the page. The rule divides
+   the answers from what is said about them; with neither half present there
+   is nothing to divide. */
+.rc-aside {
+  margin-top: 14px; padding-top: 13px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.rc-aside:not(:has(> .rc-why)):not(:has(> .rc-tell:not([hidden]))) {
+  margin-top: 0; padding-top: 0; border-top: 0;
+}
+/* In the card, revealing and then removing a shimmer would move every set of
+   answers under it twice on a cold cache. In the margin it costs the feed no
+   movement at all, so it is the wide layout that turns it back on. */
+.rc-tell-wait { display: none; }
+
+/* .rc-main is the card's surface; it exists only to let the aside beside it
+   be a sibling column. Everywhere the aside is in the card — below the
+   breakpoint, and on any card that has none — it is not a box at all, and
+   the card's own children lay out exactly as they did before it. */
+.rc-main { display: contents; }
+
+@media (min-width: 1290px) {
+  .rc-card:has(> .rc-aside) {
+    flex-direction: row; align-items: flex-start; gap: 24px;
+    /* The aside and its gap, added to the card rather than taken out of it:
+       the answer rows keep the full width of the feed and the box spills
+       into the margin beside them. */
+    width: calc(100% + 292px);
+    background: none; border: 0; padding: 0; border-radius: 0;
+  }
+  .rc-card:has(> .rc-aside) > .rc-main {
+    display: flex; flex-direction: column; gap: 12px;
+    flex: 1 1 auto; min-width: 0;
+    border-radius: 14px; padding: 14px 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
   .rc-aside {
-    position: static; width: auto;
-    margin-top: 14px; padding-top: 13px;
-    border-top: 1px solid rgba(255,255,255,0.07);
+    flex: 0 0 268px; margin-top: 14px;
+    padding-top: 0; border-top: 0;
   }
-  /* An aside with nothing to show must show nothing. Most cards have no Why
-     tagging, and a question the model declined to read gets no reading, so
-     the common case here is an empty box — which still drew its own rule and
-     28px of space under every set of answers on the page.
-     The rule is the divider between the answers and what is said about them;
-     with neither half present there is nothing to divide. */
-  .rc-aside:not(:has(> .rc-why)):not(:has(> .rc-tell:not([hidden]))) {
-    margin-top: 0; padding-top: 0; border-top: 0;
-  }
-  /* Below the breakpoint the box is IN the card, so revealing and then
-     removing a shimmer would move every set of answers under it twice on a
-     cold cache. In the margin above it costs the feed no movement at all. */
-  .rc-tell-wait { display: none; }
+  .rc-tell-wait { display: block; }
 }
 
 .rc-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

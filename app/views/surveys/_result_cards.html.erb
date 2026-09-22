@@ -76,6 +76,11 @@
       has run, and on the shared page, which has no rail but does get
       linkable questions out of it. %>
   <div class="rc-card" id="rc-card-<%= idx %>">
+    <%# The card's own surface, so the aside beside it can be a real sibling
+        column rather than an absolutely positioned overlay. display:contents
+        below the breakpoint, and on any card with no aside, so neither pays
+        for a box it does not need. %>
+    <div class="rc-main">
 
     <div class="rc-head">
       <span class="s-badge <%= card_meta[:badge_css] %>"><%= card_meta[:badge] %></span>
@@ -353,6 +358,8 @@
         <% end %>
       </div>
     <% end %>
+
+    </div><%# end rc-main %>
 
     <%# ── What this question's answers say, and why it was asked ────────────
         Beside the question rather than under the answers: the feed's right

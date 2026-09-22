@@ -7,6 +7,12 @@ require "application_system_test_case"
 # Escape. The endpoint's own contract is covered in
 # test/integration/freeform_answers_test.rb; this is the browser half.
 class FreeformAnswersModalTest < ApplicationSystemTestCase
+  # Every click that opens the panel goes through click_settled with this as
+  # its expected outcome. The results header condenses and expands as the feed
+  # scrolls, over a transition, and Cuprite clicks by coordinate — so a button
+  # scrolled into view can move out from under its own click. See the helper.
+  PANEL_OPEN = "[data-freeform-answers-target='modal']:not(.hidden)".freeze
+
   def setup
     super
     @org  = Organisation.create!(name: "O", slug: "ffm-#{SecureRandom.hex(3)}")
@@ -37,8 +43,8 @@ class FreeformAnswersModalTest < ApplicationSystemTestCase
     sign_in_as(@user)
     visit survey_results_path(@survey)
     dismiss_cookie_banner
-    click_settled("View all answers (130) →")
-    assert_selector "[data-freeform-answers-target='modal']:not(.hidden)", wait: 5
+    click_settled("View all answers (130) →", until_selector: PANEL_OPEN)
+    assert_selector PANEL_OPEN, wait: 5
     assert_selector ".freeform-item", count: 100, wait: 10
   end
 
@@ -117,8 +123,8 @@ class FreeformAnswersModalTest < ApplicationSystemTestCase
     visit survey_results_path(@survey)
     dismiss_cookie_banner
 
-    click_settled("View all answers (44) →")
-    assert_selector "[data-freeform-answers-target='modal']:not(.hidden)", wait: 5
+    click_settled("View all answers (44) →", until_selector: PANEL_OPEN)
+    assert_selector PANEL_OPEN, wait: 5
     # The eyebrow is set in small caps by CSS, so what the browser shows is
     # uppercase — matched case-insensitively, since the case is the style's.
     within("[data-freeform-answers-target='modal']") do
@@ -132,10 +138,10 @@ class FreeformAnswersModalTest < ApplicationSystemTestCase
     press_keys(:escape)
     assert_selector "[data-freeform-answers-target='modal'].hidden", visible: :all, wait: 5
 
-    # click_settled, not click_button: this one is ABOVE the viewport, so
-    # reaching it scrolls the feed back up and the header expands under the
-    # click. See the helper — it cost a 1-in-10 failure here to find.
-    click_settled("View all answers (130) →")
+    # This one is ABOVE the viewport, so reaching it scrolls the feed back up
+    # and the header expands under the click — the worst case for the race,
+    # and where it was first caught.
+    click_settled("View all answers (130) →", until_selector: PANEL_OPEN)
     within("[data-freeform-answers-target='modal']") do
       assert_text(/freeform answers/i, wait: 5)
       assert_no_text(/written-in answers/i)

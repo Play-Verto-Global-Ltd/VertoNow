@@ -5,10 +5,11 @@ require "application_system_test_case"
 #
 # Three things here need a browser and have no other coverage:
 #
-#   * WHERE it sits. It is absolutely positioned out into the page's right
-#     margin, which is a layout that fails in exactly one way — by being wider
-#     than the margin it was given and putting the whole page into horizontal
-#     scroll. No markup assertion can see that.
+#   * WHERE it sits. It is a column of the card that spills into the page's
+#     right margin, and it fails in two ways no markup assertion can see: by
+#     being wider than the margin it was given, putting the whole page into
+#     horizontal scroll, and — while it was an overlay rather than a column —
+#     by being taller than its own card and running over the next one's box.
 #   * WHICH card it lands on. The fetch returns a map keyed by deck index and
 #     the controller hands each reading to the slot carrying that index. A
 #     reading under the wrong chart is the failure that matters, and it looks
@@ -24,9 +25,12 @@ class ResultsInsightBoxTest < ApplicationSystemTestCase
   WIDE   = 1600 # room for the rail, the 780px feed and the 268px box
   NARROW = 1280 # one pixel under the breakpoint, where the box comes back in
 
+  # Deliberately ADJACENT. A box taller than its own card used to run down
+  # over the next card's box, which is the bug the column layout fixes and
+  # which no non-adjacent fixture can see.
   READINGS = {
-    "1" => "Cost is the barrier for three in four, well ahead of time.",
-    "3" => "Most would come back, which is not what the barrier question suggested."
+    "1" => "Cost is the barrier for three in four, well ahead of time, and the people who name it are the same ones who say they would come back.",
+    "2" => "Most would come back, which is not what the barrier question on its own suggested."
   }.freeze
 
   def setup
@@ -112,8 +116,8 @@ class ResultsInsightBoxTest < ApplicationSystemTestCase
     geometry = evaluate_script(<<~JS)
       (() => {
         const aside = document.querySelector(".rc-tell[data-index='1']").closest(".rc-aside")
-        const card  = aside.closest(".rc-card")
-        const a = aside.getBoundingClientRect(), c = card.getBoundingClientRect()
+        const main  = aside.closest(".rc-card").querySelector(".rc-main")
+        const a = aside.getBoundingClientRect(), c = main.getBoundingClientRect()
         return {
           asideLeft:  Math.round(a.left),
           cardRight:  Math.round(c.right),
@@ -131,6 +135,32 @@ class ResultsInsightBoxTest < ApplicationSystemTestCase
     refute geometry["overflowX"], "the box put the results page into horizontal scroll"
   end
 
+  # The bug the column layout exists to fix, and the one the first cut had:
+  # absolutely positioned, a box taller than its own card ran straight down
+  # over the next card's box, drawing two headings on top of each other. A
+  # reading of three sentences over a Why with two badges clears 240px, and a
+  # two-option card is under 200px, so it was the common case.
+  test "a box taller than its own card does not run over the next one" do
+    open_results(WIDE)
+    wait_for_readings
+
+    settle_box(find("#rc-card-1"))
+    boxes = evaluate_script(<<~JS)
+      (() => {
+        const rect = (i) => {
+          const a = document.querySelector(`#rc-card-${i} .rc-aside`).getBoundingClientRect()
+          return { top: Math.round(a.top), bottom: Math.round(a.bottom), height: Math.round(a.height) }
+        }
+        return { first: rect(1), second: rect(2) }
+      })()
+    JS
+
+    assert_operator boxes["first"]["height"], :>, 0, "the fixture must actually fill both boxes"
+    assert_operator boxes["second"]["height"], :>, 0
+    assert_operator boxes["first"]["bottom"], :<=, boxes["second"]["top"],
+      "one question's reading is drawn over the next question's reading"
+  end
+
   # Under the breakpoint there is no margin to hang it in, so it comes back
   # into the card under the answers — the alternative being a box that either
   # overlaps the chart or scrolls the page sideways on a laptop.
@@ -145,7 +175,8 @@ class ResultsInsightBoxTest < ApplicationSystemTestCase
         const rows  = aside.closest(".rc-card").querySelector(".rc-rows, .rc-row")
         const a = aside.getBoundingClientRect(), r = rows.getBoundingClientRect()
         return {
-          position:  getComputedStyle(aside).position,
+          width:     Math.round(a.width),
+          rowsWidth: Math.round(r.width),
           asideTop:  Math.round(a.top),
           rowsBottom: Math.round(r.bottom),
           overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth
@@ -153,7 +184,8 @@ class ResultsInsightBoxTest < ApplicationSystemTestCase
       })()
     JS
 
-    assert_equal "static", geometry["position"]
+    assert_equal geometry["rowsWidth"], geometry["width"],
+      "in the card it spans the answers, rather than keeping the margin's 268px"
     assert_operator geometry["asideTop"], :>=, geometry["rowsBottom"],
       "the box is sitting over the answers instead of under them"
     refute geometry["overflowX"]
@@ -175,7 +207,7 @@ class ResultsInsightBoxTest < ApplicationSystemTestCase
           const a = document.querySelector(`#rc-card-${i} .rc-aside`)
           return a ? px(a) : null
         }
-        return { tagged: of(1), bare: of(2), unread: of(5) }
+        return { tagged: of(1), bare: of(4), unread: of(5) }
       })()
     JS
 

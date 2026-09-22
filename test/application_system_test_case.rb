@@ -273,14 +273,30 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # the scroll that starts the resize happens before the measurement, and
   # settle_box then waits for the resize to finish.
   #
-  # For a button whose own geometry is stable but whose OPEN/SHUT state the
-  # click toggles, see open_menu in results_scroll_test.rb — a different
-  # hazard (Capybara retrying a click that raised) with a different fix.
-  def click_settled(locator = nil, **options)
-    el = locator.is_a?(Capybara::Node::Element) ? locator : find(:button, locator, **options)
-    page.execute_script("arguments[0].scrollIntoView({ block: 'center' })", el)
-    settle_box(el)
-    el.click
+  # Settling is necessary and, on its own, not sufficient: Cuprite scrolls the
+  # node into view AGAIN inside its own click, so a pre-scroll narrows the
+  # window without closing it. Pass `until_selector:` and the click is retried
+  # until the thing it is supposed to do has happened — the same shape as
+  # open_menu in results_scroll_test.rb, and for the same reason.
+  #
+  # This cannot paper over a handler that doesn't work: every attempt is a
+  # real click, so a button wired to nothing fails all of them and the
+  # caller's own assertion still fails. Checked that way, by deleting the
+  # data-action the panel opens from.
+  #
+  # Returns whether the expected state arrived; callers assert on it as they
+  # would after any click, so a false is a normal failure with a normal
+  # message rather than a raise from in here.
+  def click_settled(locator = nil, until_selector: nil, attempts: 4, **options)
+    attempts.times do
+      el = locator.is_a?(Capybara::Node::Element) ? locator : find(:button, locator, **options)
+      page.execute_script("arguments[0].scrollIntoView({ block: 'center' })", el)
+      settle_box(el)
+      el.click
+      return true if until_selector.nil?
+      return true if page.has_selector?(until_selector, wait: 2)
+    end
+    false
   end
 
   # Type keys with no pointer involved. Cuprite's Element#send_keys CLICKS the
