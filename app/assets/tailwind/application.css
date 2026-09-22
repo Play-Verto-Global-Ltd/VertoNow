@@ -5468,7 +5468,13 @@ button.editor-leave-btn { cursor: pointer; }
   letter-spacing: 0.1em; text-transform: uppercase;
   color: rgba(255,255,255,0.4); margin-bottom: 7px;
 }
-.rc-quotes { display: flex; flex-direction: column; gap: 5px; max-height: 200px; overflow-y: auto; }
+/* No height cap: this used to be a 200px box with its own scrollbar, which
+   showed four of the twenty write-ins it held and hid the rest behind a
+   scroll nobody saw — "I still can't see all of the other answers", on the
+   day the section gained a button offering exactly that. The preview is ten
+   items now, like the freeform preview above it, and the rest are behind the
+   button, so the box has no reason to scroll. */
+.rc-quotes { display: flex; flex-direction: column; gap: 5px; }
 .rc-quote {
   padding: 8px 11px; border-radius: 8px; background: rgba(255,255,255,0.04);
   border-inline-start: 2px solid rgba(255,30,111,0.45);
