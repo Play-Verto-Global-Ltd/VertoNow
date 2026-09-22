@@ -298,14 +298,28 @@
         <% if shared %>
           <div class="rc-sub"><%= t("shared_results.hidden_answers", count: result[:other_texts].size) %></div>
         <% else %>
+          <%# The newest ten, in full, and the same panel the freeform cards
+              open for the rest (kind=other on SurveyTextAnswersController):
+              an "Other" written in is an answer like any other, and this
+              section used to stop at twenty cut to 200 characters and a
+              "+ N more" that led nowhere. Newest first, like the freeform
+              preview — the aggregator walks in arrival order. %>
           <div class="rc-quotes">
-            <% result[:other_texts].first(20).each do |text| %>
-              <div class="rc-quote"><%= text.truncate(200) %></div>
-            <% end %>
-            <% if result[:other_texts].size > 20 %>
-              <div class="rc-more">+ <%= result[:other_texts].size - 20 %> more</div>
+            <% result[:other_texts].last(10).reverse.each do |text| %>
+              <div class="rc-quote"><%= text %></div>
             <% end %>
           </div>
+          <% if answers %>
+            <div style="margin-top:8px;">
+              <button type="button" class="freeform-view-all"
+                      data-action="click->freeform-answers#open"
+                      data-freeform-answers-url-param="<%= survey_results_answers_path(answers[:survey], card_index: idx, kind: "other", segment: answers[:segment], range: answers[:range]) %>"
+                      data-freeform-answers-question-param="<%= card_data["text"] %>"
+                      data-freeform-answers-eyebrow-param="<%= t("results.freeform_other_eyebrow") %>">
+                <%= t("results.view_all_answers", count: result[:other_texts].size) %> →
+              </button>
+            </div>
+          <% end %>
         <% end %>
       </div>
     <% end %>

@@ -233,6 +233,7 @@ pl:
     combination_hint: "Wybierz więcej niż jeden, aby je połączyć: jeden z każdego wiersza zawęża widok, dwa z tego samego wiersza go poszerzają."
     combination_suppressed_title: "Za mało odpowiedzi, aby pokazać tę kombinację"
     combination_suppressed_body: "Mniej niż %{count} osób spełnia wszystkie wybrane filtry, a pokazanie ich odpowiedzi mogłoby kogoś zidentyfikować. Usuń jeden filtr, aby poszerzyć widok."
+    freeform_other_eyebrow: "Inne: odpowiedzi wpisane"
   shared_results:
     title: Wyniki
     read_only_badge: Tylko do odczytu

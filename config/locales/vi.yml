@@ -233,6 +233,7 @@ vi:
     combination_hint: "Chọn nhiều hơn một để kết hợp: mỗi hàng một mục sẽ thu hẹp, hai mục cùng hàng sẽ mở rộng."
     combination_suppressed_title: "Quá ít phản hồi để hiển thị tổ hợp này"
     combination_suppressed_body: "Chưa đến %{count} người khớp với mọi bộ lọc bạn đã chọn, và hiển thị câu trả lời của họ có thể làm lộ danh tính ai đó. Bỏ bớt một bộ lọc để mở rộng."
+    freeform_other_eyebrow: "Khác: câu trả lời tự viết"
   shared_results:
     title: Kết quả
     read_only_badge: Chỉ xem

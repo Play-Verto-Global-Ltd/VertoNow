@@ -233,6 +233,7 @@ ar:
     combination_hint: "اختر أكثر من واحد لدمجها: واحد من كل صف يضيّق العرض، واثنان من الصف نفسه يوسّعانه."
     combination_suppressed_title: "الردود قليلة جدًا لعرض هذه التركيبة"
     combination_suppressed_body: "أقل من %{count} أشخاص يطابقون كل المرشحات التي اخترتها، وعرض إجاباتهم قد يكشف هوية أحدهم. أزل مرشحًا لتوسيع العرض."
+    freeform_other_eyebrow: "أخرى: إجابات مكتوبة"
   shared_results:
     title: النتائج
     read_only_badge: للقراءة فقط

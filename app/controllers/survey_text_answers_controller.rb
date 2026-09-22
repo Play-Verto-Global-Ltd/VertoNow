@@ -20,7 +20,7 @@ class SurveyTextAnswersController < ApplicationController
   rate_limit to: 120, within: 1.minute,
              with: -> { render json: { ok: false, error: "Too many requests — please slow down." }, status: :too_many_requests }
 
-  # GET /surveys/:id/results/answers?card_index=&segment=&range=&q=&page=
+  # GET /surveys/:id/results/answers?card_index=&kind=&segment=&range=&q=&page=
   def index
     survey = Current.organisation.surveys.without_report_text.find(params[:id])
     idx    = params[:card_index].to_i
@@ -28,13 +28,21 @@ class SurveyTextAnswersController < ApplicationController
     # look every answer up under a key ("-1") no response has.
     card   = idx.negative? ? nil : Array(survey.cards)[idx]
 
+    # Two things a card collects as free text: its answer, when it is a
+    # freeform question, and the "Other" a closed question lets a respondent
+    # write in instead of picking one of its options. The same panel serves
+    # both — paged, newest first, searched on the server — and kind=other
+    # reads the second. Any card can carry write-ins, so that kind takes any
+    # card that exists.
+    #
     # The demographic tail (birth month, location) is open_ended too, and is
     # served here like any other freeform card. It used to be refused on the
     # grounds that its values are structured picks rather than answers anyone
     # reads one by one — but a creator looking at 292 birth months wants to
     # page and search them exactly as they would any other column, and
     # DemographicQuestions.display_answer now renders them as words.
-    unless card.is_a?(Hash) && card["type"] == "open_ended"
+    other = params[:kind].to_s == "other"
+    unless card.is_a?(Hash) && (other || card["type"] == "open_ended")
       return render json: { ok: false, error: "Not a freeform question." }, status: :unprocessable_entity
     end
 
@@ -45,7 +53,7 @@ class SurveyTextAnswersController < ApplicationController
     query = params[:q].to_s.strip.downcase
     page  = [ params[:page].to_i, 1 ].max
 
-    answers = collect_answers(segment[:scope], idx, card)
+    answers = collect_answers(segment[:scope], idx, card, other: other)
     matched = query.blank? ? answers : answers.select { |a| a[:text].downcase.include?(query) }
     slice   = matched[(page - 1) * PER_PAGE, PER_PAGE] || []
 
@@ -76,21 +84,33 @@ class SurveyTextAnswersController < ApplicationController
   # and a creator typing "Spain" into a box listing "Catalunya, Spain" and
   # getting nothing back would be right to call that broken. Every other
   # card's text comes through display_answer unchanged.
-  def collect_answers(scope, idx, card)
+  def collect_answers(scope, idx, card, other: false)
     key = idx.to_s
     out = []
     each_response(scope) do |answers, created_at|
       a = answers[key]
       next unless a.is_a?(Hash)
 
-      value = a["value"]
-      next if value.nil? || value == false
-
-      text = DemographicQuestions.display_answer(card, value.to_s.strip).strip
+      text = other ? other_text(a) : answer_text(a, card)
       next if text.blank?
 
       out << { text: text, at: created_at }
     end
     out.sort_by! { |a| -a[:at].to_f }
+  end
+
+  def answer_text(a, card)
+    value = a["value"]
+    return nil if value.nil? || value == false
+
+    DemographicQuestions.display_answer(card, value.to_s.strip).strip
+  end
+
+  # A write-in on the aggregator's own terms too (aggregate_results keeps a
+  # present string and nothing else), so the section's "N free-text" and this
+  # panel's "of N" count the same thing.
+  def other_text(a)
+    other = a["other"]
+    other.respond_to?(:presence) ? other.presence&.strip : nil
   end
 end

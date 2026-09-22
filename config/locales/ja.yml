@@ -233,6 +233,7 @@ ja:
     combination_hint: "複数選ぶと組み合わせられます。各行から1つずつ選ぶと絞り込まれ、同じ行から2つ選ぶと広がります。"
     combination_suppressed_title: "回答が少なすぎるため、この組み合わせは表示できません"
     combination_suppressed_body: "選択したすべてのフィルターに該当する人が%{count}人未満のため、回答を表示すると個人が特定されるおそれがあります。フィルターを1つ外して範囲を広げてください。"
+    freeform_other_eyebrow: "その他：自由記述の回答"
   shared_results:
     title: 結果
     read_only_badge: 読み取り専用

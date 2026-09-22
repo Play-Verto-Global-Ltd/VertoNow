@@ -233,6 +233,7 @@ ko:
     combination_hint: "여러 개를 선택하면 조합됩니다. 각 행에서 하나씩 고르면 범위가 좁아지고, 같은 행에서 두 개를 고르면 넓어집니다."
     combination_suppressed_title: "응답이 너무 적어 이 조합을 표시할 수 없습니다"
     combination_suppressed_body: "선택한 모든 필터에 해당하는 사람이 %{count}명 미만이어서, 응답을 표시하면 개인이 식별될 수 있습니다. 필터를 하나 제거해 범위를 넓혀 보세요."
+    freeform_other_eyebrow: "기타: 직접 입력한 답변"
   shared_results:
     title: 결과
     read_only_badge: 읽기 전용

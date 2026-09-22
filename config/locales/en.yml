@@ -236,6 +236,7 @@ en:
     analysing: "Analysing responses…"
     view_all_answers: "View all answers (%{count})"
     freeform_eyebrow: "Freeform answers"
+    freeform_other_eyebrow: "Other: written-in answers"
     freeform_search_placeholder: "Search answers…"
     freeform_copy: "Copy all"
     freeform_load_more: "Load more"

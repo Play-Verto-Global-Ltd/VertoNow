@@ -233,6 +233,7 @@ nl:
     combination_hint: "Kies er meer dan één om ze te combineren: één per rij verfijnt de weergave, twee uit dezelfde rij verbreden die."
     combination_suppressed_title: "Te weinig antwoorden om deze combinatie te tonen"
     combination_suppressed_body: "Minder dan %{count} mensen voldoen aan alle gekozen filters, en hun antwoorden tonen zou iemand herkenbaar kunnen maken. Haal een filter weg om de weergave te verbreden."
+    freeform_other_eyebrow: "Anders: ingevulde antwoorden"
   shared_results:
     title: Resultaten
     read_only_badge: Alleen-lezen

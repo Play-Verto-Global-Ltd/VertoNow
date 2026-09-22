@@ -242,6 +242,7 @@ xh:
     combination_hint: "Khetha ngaphezu kwesinye ukuze uzidibanise: esinye kumgca ngamnye sinciphisa umbono, ezimbini kumgca omnye ziyawandisa."
     combination_suppressed_title: "Iimpendulo zimbalwa kakhulu ukuba kuboniswe olu dibaniso"
     combination_suppressed_body: "Bangaphantsi kuka-%{count} abantu abahambelana nazo zonke izihluzi ozikhethileyo, kwaye ukubonisa iimpendulo zabo kungachaza ukuba ngubani. Susa isihluzi esinye ukuze wandise umbono."
+    freeform_other_eyebrow: "Okunye: iimpendulo ezibhaliweyo"
   shared_results:
     title: "Iziphumo"
     read_only_badge: "Ukufunda kuphela"

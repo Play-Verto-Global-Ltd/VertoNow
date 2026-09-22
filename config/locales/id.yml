@@ -233,6 +233,7 @@ id:
     combination_hint: "Pilih lebih dari satu untuk menggabungkannya: satu dari tiap baris mempersempit tampilan, dua dari baris yang sama memperluasnya."
     combination_suppressed_title: "Terlalu sedikit tanggapan untuk menampilkan kombinasi ini"
     combination_suppressed_body: "Kurang dari %{count} orang cocok dengan semua filter yang Anda pilih, dan menampilkan jawaban mereka bisa mengungkap identitas seseorang. Hapus satu filter untuk memperluas tampilan."
+    freeform_other_eyebrow: "Lainnya: jawaban yang ditulis"
   shared_results:
     title: Hasil
     read_only_badge: Hanya baca

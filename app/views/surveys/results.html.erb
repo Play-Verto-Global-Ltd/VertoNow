@@ -22,7 +22,8 @@
     <div class="app-modal__panel freeform-modal">
       <div class="freeform-modal__head">
         <div style="min-width:0;">
-          <div class="freeform-modal__eyebrow"><%= t("results.freeform_eyebrow") %></div>
+          <div class="freeform-modal__eyebrow" data-freeform-answers-target="eyebrow"
+               data-default-label="<%= t("results.freeform_eyebrow") %>"><%= t("results.freeform_eyebrow") %></div>
           <div class="freeform-modal__question" data-freeform-answers-target="question"></div>
         </div>
         <button type="button" class="freeform-modal__close" data-action="click->freeform-answers#close"

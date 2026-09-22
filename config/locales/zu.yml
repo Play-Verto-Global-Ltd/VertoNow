@@ -241,6 +241,7 @@ zu:
     combination_hint: "Khetha okungaphezu kokukodwa ukuze ukuhlanganise: okukodwa kumugqa ngamunye kunciphisa umbono, okubili kumugqa ofanayo kuyawandisa."
     combination_suppressed_title: "Izimpendulo zimbalwa kakhulu ukuba kuboniswe le nhlanganisela"
     combination_suppressed_body: "Bangaphansi kuka-%{count} abantu abahambisana nazo zonke izihlungi ozikhethile, futhi ukubonisa izimpendulo zabo kungaveza ukuthi ngubani. Susa isihlungi esisodwa ukuze wandise umbono."
+    freeform_other_eyebrow: "Okunye: izimpendulo ezibhaliwe"
   shared_results:
     title: "Imiphumela"
     read_only_badge: "Ukufunda kuphela"

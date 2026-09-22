@@ -235,6 +235,7 @@ sn:
     combination_hint: "Sarudza zvinopfuura chimwe kuti uzvibatanidze: chimwe kubva mumutsara wega wega chinodzikisa maonero, zviviri kubva mumutsara mumwe zvinoawedzera."
     combination_suppressed_title: "Mhinduro dzishoma zvakanyanya kuti muratidzwe musanganiswa uyu"
     combination_suppressed_body: "Vanhu vasingasviki %{count} ndivo vanoenderana nezvisefo zvose zvawasarudza, uye kuratidza mhinduro dzavo kungazivisa kuti ndiani. Bvisa chisefo chimwe kuti uwedzere maonero."
+    freeform_other_eyebrow: "Zvimwe: mhinduro dzakanyorwa"
   shared_results:
     title: "Mhedzisiro"
     read_only_badge: "Kungoverenga"

@@ -233,6 +233,7 @@ es:
     combination_hint: "Elige más de uno para combinarlos: uno de cada fila acota la vista, dos de la misma fila la amplían."
     combination_suppressed_title: "Muy pocas respuestas para mostrar esta combinación"
     combination_suppressed_body: "Menos de %{count} personas cumplen todos los filtros que has elegido, y mostrar sus respuestas podría identificar a alguien. Quita un filtro para ampliar la vista."
+    freeform_other_eyebrow: "Otro: respuestas escritas"
   shared_results:
     title: Resultados
     read_only_badge: Solo lectura

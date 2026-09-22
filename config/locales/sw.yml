@@ -233,6 +233,7 @@ sw:
     combination_hint: "Chagua zaidi ya kimoja ili kuviunganisha: kimoja kutoka kila safu hupunguza mwonekano, viwili kutoka safu moja huupanua."
     combination_suppressed_title: "Majibu ni machache mno kuonyesha mchanganyiko huu"
     combination_suppressed_body: "Chini ya watu %{count} wanalingana na vichujio vyote ulivyochagua, na kuonyesha majibu yao kunaweza kumtambulisha mtu. Ondoa kichujio kimoja ili kupanua mwonekano."
+    freeform_other_eyebrow: "Nyingine: majibu yaliyoandikwa"
   shared_results:
     title: Matokeo
     read_only_badge: Kusoma tu

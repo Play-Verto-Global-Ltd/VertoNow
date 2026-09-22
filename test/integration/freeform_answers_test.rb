@@ -140,6 +140,91 @@ class FreeformAnswersTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  # ── "Other" on a closed question ──────────────────────────────────────────
+  # A closed card lets a respondent write an "Other" in instead of picking;
+  # the card listed twenty of them cut to 200 characters and a "+ N more"
+  # that led nowhere. The same panel serves them now — kind=other.
+
+  # Twenty-five write-ins on the Colour card, one a minute, the first blank
+  # (which is not an answer), every even one through the named link.
+  def seed_others
+    25.times do |i|
+      @survey.responses.create!(
+        session_token: SecureRandom.uuid, status: "completed", locale: "en", answered: true,
+        created_at: (60 - i).minutes.ago,
+        survey_link: i.even? ? @link : nil,
+        answers: { "0" => { "type" => "open_ended", "value" => "Came for the colours" },
+                   "1" => { "type" => "multiple_choice", "value" => "Other", "other" => i.zero? ? "  " : "Shade #{i}" } }
+      )
+    end
+  end
+
+  def others(**params)
+    get survey_results_answers_path(@survey, card_index: 1, kind: "other", **params), as: :json
+    assert_response :success
+    JSON.parse(response.body)
+  end
+
+  test "kind=other pages a closed question's write-ins, newest first, blank ones left out" do
+    seed_others
+    sign_in @admin
+    data = others
+
+    assert data["ok"]
+    assert_equal "Colour?", data["question"]
+    assert_equal 24, data["total"], "the blank write-in is not an answer, as the card's own count says"
+    assert_equal "Shade 24", data["answers"].first["text"]
+    ats = data["answers"].map { |a| a["at"] }
+    assert_equal ats.sort.reverse, ats, "not newest first"
+    refute data["has_more"]
+  end
+
+  test "kind=other searches on the server and follows the page's segment" do
+    seed_others
+    sign_in @admin
+
+    assert_equal 6, others(q: "SHADE 2")["matched"], "Shade 2 and Shade 20..24, case-insensitively"
+    assert_equal 12, others(segment: "link_#{@link.id}")["total"], "the even write-ins, the blank one aside"
+  end
+
+  test "kind=other on a question nobody wrote in for is empty, and a card that isn't there is refused" do
+    sign_in @admin
+    assert_equal 0, others["total"]
+
+    get survey_results_answers_path(@survey, card_index: 40, kind: "other"), as: :json
+    assert_response :unprocessable_entity
+    get survey_results_answers_path(@survey, card_index: -1, kind: "other"), as: :json
+    assert_response :unprocessable_entity
+  end
+
+  test "the closed card previews the newest ten write-ins in full and offers every one of them" do
+    seed_others
+    long = "Long " * 80 # 400 characters — used to be cut to 200 in this section
+    @survey.responses.create!(session_token: SecureRandom.uuid, status: "completed", locale: "en", answered: true,
+                              answers: { "0" => { "type" => "open_ended", "value" => "x" },
+                                         "1" => { "type" => "multiple_choice", "value" => "Other", "other" => long } })
+    sign_in @admin
+
+    get survey_results_path(@survey)
+    assert_response :success
+    assert_select ".rc-section .rc-quote", 10
+    assert_select ".rc-section .rc-quote", text: /Shade 24/, count: 1
+    assert_select ".rc-section .rc-quote", text: /\A\s*#{Regexp.escape(long.strip)}\s*\z/, count: 1
+    refute_match "+ 5 more", response.body, "the dead '+ N more' line is gone from write-ins too"
+
+    get survey_results_path(@survey, segment: "link_#{@link.id}", range: "30d")
+    buttons = css_select("button.freeform-view-all").select { |b| b["data-freeform-answers-url-param"].include?("kind=other") }
+    assert_equal 1, buttons.size
+    button = buttons.first
+    assert_match "View all answers (12)", button.text
+    url = button["data-freeform-answers-url-param"]
+    assert_match "card_index=1", url
+    assert_match "segment=link_#{@link.id}", url, "the panel must follow the page's segment"
+    assert_match "range=30d", url, "the panel must follow the page's date range"
+    assert_equal "Colour?", button["data-freeform-answers-question-param"]
+    assert_equal "Other: written-in answers", button["data-freeform-answers-eyebrow-param"]
+  end
+
   test "counts what the card counted: false is not an answer, 0 is" do
     @survey.responses.create!(session_token: SecureRandom.uuid, status: "completed", locale: "en", answered: true,
                               answers: { "0" => { "type" => "open_ended", "value" => false } })
@@ -287,12 +372,14 @@ class FreeformAnswersTest < ActionDispatch::IntegrationTest
   end
 
   test "the public shared-results page keeps freeform answers hidden and has no panel" do
+    seed_others
     @survey.update!(results_share_token: SecureRandom.urlsafe_base64(18), results_share_active: true)
     get shared_results_path(@survey.results_share_token)
     assert_response :success
 
     refute_match "freeform-view-all", response.body
     refute_match "Answer 129", response.body
+    refute_match "Shade 24", response.body, "a write-in is free text, hidden on the shared page like the rest"
     assert_select "[data-freeform-answers-target='modal']", 0
   end
 end

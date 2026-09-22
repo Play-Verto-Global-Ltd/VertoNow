@@ -234,6 +234,7 @@ af:
     combination_hint: "Kies meer as een om hulle te kombineer: een uit elke ry vernou die aansig, twee uit dieselfde ry verbreed dit."
     combination_suppressed_title: "Te min antwoorde om hierdie kombinasie te wys"
     combination_suppressed_body: "Minder as %{count} mense pas by al die filters wat jy gekies het, en om hul antwoorde te wys kan iemand identifiseer. Haal 'n filter af om die aansig te verbreed."
+    freeform_other_eyebrow: "Ander: ingeskryfde antwoorde"
   shared_results:
     title: "Resultate"
     read_only_badge: "Leesalleen"

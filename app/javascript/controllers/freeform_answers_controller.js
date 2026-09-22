@@ -17,20 +17,26 @@ import { t } from "lib/i18n"
 const COPY_ALL_MAX_PAGES = 50
 
 export default class extends Controller {
-  static targets = ["modal", "question", "search", "list", "status", "more", "copy"]
+  static targets = ["modal", "eyebrow", "question", "search", "list", "status", "more", "copy"]
 
   connect() {
     this._answers = []
     this._seq = 0
   }
 
+  // Params: url (required), question, and an optional eyebrow — the line
+  // over the question that says what KIND of text this is. A freeform card
+  // leaves it at the shell's default ("Freeform answers"); a closed card's
+  // write-ins pass their own, and the next open without one puts the default
+  // back rather than leaving the last caller's label on someone else's panel.
   open(event) {
-    const { url, question } = event.params
+    const { url, question, eyebrow } = event.params
     if (!url) return
     this.url   = url
     this.query = ""
     this.page  = 0
     this._answers = []
+    if (this.hasEyebrowTarget) this.eyebrowTarget.textContent = eyebrow || this.eyebrowTarget.dataset.defaultLabel || ""
     this.questionTarget.textContent = question || ""
     this.searchTarget.value = ""
     this.listTarget.innerHTML = ""

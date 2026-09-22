@@ -233,6 +233,7 @@ tr:
     combination_hint: "Birleştirmek için birden fazla seçin: her satırdan biri görünümü daraltır, aynı satırdan ikisi genişletir."
     combination_suppressed_title: "Bu kombinasyonu göstermek için çok az yanıt var"
     combination_suppressed_body: "Seçtiğiniz tüm filtrelere %{count} kişiden azı uyuyor ve yanıtlarını göstermek birini tanınır kılabilir. Görünümü genişletmek için bir filtreyi kaldırın."
+    freeform_other_eyebrow: "Diğer: yazılan yanıtlar"
   shared_results:
     title: Sonuçlar
     read_only_badge: Salt okunur

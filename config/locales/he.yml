@@ -233,6 +233,7 @@ he:
     combination_hint: "בחרו יותר מאחד כדי לשלב ביניהם: אחד מכל שורה מצמצם את התצוגה, שניים מאותה שורה מרחיבים אותה."
     combination_suppressed_title: "מעט מדי תשובות כדי להציג שילוב זה"
     combination_suppressed_body: "פחות מ-%{count} אנשים תואמים את כל המסננים שבחרתם, והצגת תשובותיהם עלולה לזהות מישהו. הסירו מסנן כדי להרחיב את התצוגה."
+    freeform_other_eyebrow: "אחר: תשובות שנכתבו"
   shared_results:
     title: תוצאות
     read_only_badge: לקריאה בלבד

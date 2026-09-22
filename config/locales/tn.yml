@@ -243,6 +243,7 @@ tn:
     combination_hint: "Tlhopha go feta e le nngwe go di kopanya: e le nngwe mo moleng mongwe le mongwe e fokotsa pono, tse pedi mo moleng o le mongwe di a e atolosa."
     combination_suppressed_title: "Dikarabo di potlana thata go bontsha kopano eno"
     combination_suppressed_body: "Batho ba ka fa tlase ga %{count} ba tsamaisana le difiltara tsotlhe tse o di tlhophileng, mme go bontsha dikarabo tsa bone go ka senola gore ke mang. Tlosa filtara e le nngwe go atolosa pono."
+    freeform_other_eyebrow: "Tse dingwe: dikarabo tse di kwadilweng"
   shared_results:
     title: "Diphetho"
     read_only_badge: "Go bala fela"

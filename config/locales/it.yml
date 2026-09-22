@@ -233,6 +233,7 @@ it:
     combination_hint: "Scegline più di uno per combinarli: uno per riga restringe la vista, due della stessa riga la ampliano."
     combination_suppressed_title: "Troppe poche risposte per mostrare questa combinazione"
     combination_suppressed_body: "Meno di %{count} persone corrispondono a tutti i filtri scelti, e mostrare le loro risposte potrebbe identificare qualcuno. Togli un filtro per ampliare la vista."
+    freeform_other_eyebrow: "Altro: risposte scritte"
   shared_results:
     title: Risultati
     read_only_badge: Sola lettura

@@ -233,6 +233,7 @@ pt:
     combination_hint: "Escolha mais de um para combiná-los: um de cada linha restringe a visualização, dois da mesma linha a ampliam."
     combination_suppressed_title: "Respostas insuficientes para mostrar esta combinação"
     combination_suppressed_body: "Menos de %{count} pessoas correspondem a todos os filtros escolhidos, e mostrar as suas respostas poderia identificar alguém. Remova um filtro para ampliar a visualização."
+    freeform_other_eyebrow: "Outro: respostas escritas"
   shared_results:
     title: Resultados
     read_only_badge: Somente leitura

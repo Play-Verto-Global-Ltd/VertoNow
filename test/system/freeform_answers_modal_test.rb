@@ -18,13 +18,17 @@ class FreeformAnswersModalTest < ApplicationSystemTestCase
       title: "FFM", theme: "Th", audience_age: "all", key_insight: "k",
       default_locale: "en", locales: [ "en" ],
       publish_token: SecureRandom.hex(8), published_at: Time.current,
-      cards: [ { "type" => "open_ended", "text" => "What stood out?" } ]
+      cards: [ { "type" => "open_ended", "text" => "What stood out?" },
+               { "type" => "multiple_choice", "text" => "Colour?", "options" => %w[Blue Green] } ]
     )
+    # Every third respondent wrote an "Other" in on the Colour card — 44 of
+    # them — for the write-in half of the panel below.
     130.times do |i|
+      answers = { "0" => { "type" => "open_ended", "value" => "Answer #{i}" } }
+      answers["1"] = { "type" => "multiple_choice", "value" => "Other", "other" => "Other #{i}" } if (i % 3).zero?
       @survey.responses.create!(
         session_token: SecureRandom.uuid, status: "completed", locale: "en", answered: true,
-        created_at: (200 - i).minutes.ago,
-        answers: { "0" => { "type" => "open_ended", "value" => "Answer #{i}" } }
+        created_at: (200 - i).minutes.ago, answers: answers
       )
     end
   end
@@ -102,6 +106,37 @@ class FreeformAnswersModalTest < ApplicationSystemTestCase
     within("[data-freeform-answers-target='modal']") do
       assert_text "No answers match.", wait: 15
       assert_selector ".freeform-item", count: 0
+    end
+  end
+
+  # The "Other" a closed question collects opens in the same panel, with its
+  # own eyebrow — and the next freeform card to open it gets the default back,
+  # rather than the last caller's label over its own answers.
+  test "a closed question's write-ins open in the same panel" do
+    sign_in_as(@user)
+    visit survey_results_path(@survey)
+    dismiss_cookie_banner
+
+    click_button "View all answers (44) →"
+    assert_selector "[data-freeform-answers-target='modal']:not(.hidden)", wait: 5
+    # The eyebrow is set in small caps by CSS, so what the browser shows is
+    # uppercase — matched case-insensitively, since the case is the style's.
+    within("[data-freeform-answers-target='modal']") do
+      assert_text(/other: written-in answers/i)
+      assert_text "Colour?"
+      assert_selector ".freeform-item", count: 44, wait: 10
+      assert_equal "Other 129", first(".freeform-item__text").text
+      assert_text "Showing 44 of 44"
+    end
+
+    press_keys(:escape)
+    assert_selector "[data-freeform-answers-target='modal'].hidden", visible: :all, wait: 5
+
+    click_button "View all answers (130) →"
+    within("[data-freeform-answers-target='modal']") do
+      assert_text(/freeform answers/i, wait: 5)
+      assert_no_text(/written-in answers/i)
+      assert_text "What stood out?"
     end
   end
 
