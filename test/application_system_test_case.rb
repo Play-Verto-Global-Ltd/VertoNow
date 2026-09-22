@@ -256,6 +256,33 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     result["settled"]
   end
 
+  # Click something only once it has stopped moving.
+  #
+  # Cuprite clicks by COORDINATE: it scrolls the node into view, measures its
+  # centre, then dispatches a mouse event there. Anything that resizes between
+  # the measure and the dispatch has moved the node out from under the click,
+  # and nothing raises — the click lands on whatever is at those coordinates
+  # instead and the test simply finds that what it clicked didn't happen.
+  #
+  # The results page does exactly that: its header condenses as the feed
+  # scrolls and expands as it comes back, over a transition, so scrolling a
+  # button into view starts a resize. Measured 2026-09-22 while chasing a
+  # 1-in-10 failure in FreeformAnswersModalTest — between before and after one
+  # click the button moved 434px (y 56 → 490) as the header went 112px → 63px.
+  # Scrolling it to the middle first and settling its box removes both halves:
+  # the scroll that starts the resize happens before the measurement, and
+  # settle_box then waits for the resize to finish.
+  #
+  # For a button whose own geometry is stable but whose OPEN/SHUT state the
+  # click toggles, see open_menu in results_scroll_test.rb — a different
+  # hazard (Capybara retrying a click that raised) with a different fix.
+  def click_settled(locator = nil, **options)
+    el = locator.is_a?(Capybara::Node::Element) ? locator : find(:button, locator, **options)
+    page.execute_script("arguments[0].scrollIntoView({ block: 'center' })", el)
+    settle_box(el)
+    el.click
+  end
+
   # Type keys with no pointer involved. Cuprite's Element#send_keys CLICKS the
   # node at its geometric centre to focus it first (cuprite page.rb) — inside
   # a popover, a modal, or anything mid-animation that click is its own

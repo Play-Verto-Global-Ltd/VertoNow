@@ -32,10 +32,18 @@
                    carrying the segment and date range the page aggregated
                    under so the panel shows the same answers the card counted.
                    Omitted (the shared page, or any renderer without a page
-                   filter to follow), no button is drawn. %>
+                   filter to follow), no button is drawn.
+      insights   — true where the page has a question-insights controller to
+                   fill the readings in. The WHY half of the aside needs no
+                   such thing — it is already on the card — so the shared page
+                   gets the provenance without the analysis, which is the
+                   right way round: why a question was asked is worth sharing
+                   with whoever you sent the link to; the creator's reading of
+                   their own numbers is theirs. %>
 <%
-  shared  = local_assigns.fetch(:shared, false)
-  answers = local_assigns[:answers]
+  shared   = local_assigns.fetch(:shared, false)
+  answers  = local_assigns[:answers]
+  insights = local_assigns.fetch(:insights, false)
 %>
 <% aggregated.each_with_index do |result, idx| %>
   <% type      = result[:type]
@@ -344,6 +352,59 @@
           <% end %>
         <% end %>
       </div>
+    <% end %>
+
+    <%# ── What this question's answers say, and why it was asked ────────────
+        Beside the question rather than under the answers: the feed's right
+        margin was empty on any screen wide enough for the outline rail, and
+        twenty of these stacked under twenty charts would have added four
+        thousand pixels to a page that has spent three rounds getting shorter.
+        Below 1290px there is no margin and it drops back under the card.
+
+        The WHY half is free — competency, condition and outcome are already
+        on the card, written by the generator against Playverto's reading of
+        the OECD "Acting in the world" sequence (config/competencies.yml), and
+        shown in the editor's Why tab. Most decks carry none of it: the tagging
+        only exists on cards that came through the generator or were optimised,
+        so the half renders or doesn't, per card.
+
+        The READING half is filled in by question-insights from one cached
+        call. Rendered as an empty slot so there is a place to put it — the
+        aside itself only exists if one of the two halves can appear. %>
+    <% if CardTypes.question?(type) %>
+      <% comp = Framework.competency?(card_data["competency"]) ? Framework.competency(card_data["competency"]) : nil
+         cond = Framework.condition?(card_data["condition"])   ? Framework.condition(card_data["condition"])   : nil
+         has_why = comp || cond || card_data["outcome"].present? %>
+      <% if has_why || insights %>
+        <aside class="rc-aside" aria-label="<%= t("results.insight_aside_label") %>">
+          <% if insights %>
+            <div class="rc-tell" data-question-insights-target="slot" data-index="<%= idx %>" hidden>
+              <div class="rc-tell-head"><%= t("results.insight_heading") %></div>
+              <p class="rc-tell-body"></p>
+            </div>
+            <div class="rc-tell-wait gen-shimmer--brand" data-question-insights-target="wait" hidden><%= t("results.insight_reading") %></div>
+          <% end %>
+
+          <% if has_why %>
+            <div class="rc-why">
+              <div class="rc-why-head"><%= t("results.why_heading") %></div>
+              <% if comp || cond %>
+                <div class="rc-why-badges">
+                  <% [ comp, cond ].compact.each do |meta| %>
+                    <span class="rc-why-badge" style="--why-accent:<%= meta["accent"] %>;"
+                          title="<%= meta["blurb"] %>">
+                      <span class="rc-why-dot"></span><%= meta["label"] %>
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+              <% if card_data["outcome"].present? %>
+                <p class="rc-why-body"><%= card_data["outcome"] %></p>
+              <% end %>
+            </div>
+          <% end %>
+        </aside>
+      <% end %>
     <% end %>
 
   </div><%# end rc-card %>

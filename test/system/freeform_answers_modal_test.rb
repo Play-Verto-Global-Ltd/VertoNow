@@ -37,7 +37,7 @@ class FreeformAnswersModalTest < ApplicationSystemTestCase
     sign_in_as(@user)
     visit survey_results_path(@survey)
     dismiss_cookie_banner
-    click_button "View all answers (130) →"
+    click_settled("View all answers (130) →")
     assert_selector "[data-freeform-answers-target='modal']:not(.hidden)", wait: 5
     assert_selector ".freeform-item", count: 100, wait: 10
   end
@@ -117,7 +117,7 @@ class FreeformAnswersModalTest < ApplicationSystemTestCase
     visit survey_results_path(@survey)
     dismiss_cookie_banner
 
-    click_button "View all answers (44) →"
+    click_settled("View all answers (44) →")
     assert_selector "[data-freeform-answers-target='modal']:not(.hidden)", wait: 5
     # The eyebrow is set in small caps by CSS, so what the browser shows is
     # uppercase — matched case-insensitively, since the case is the style's.
@@ -132,7 +132,10 @@ class FreeformAnswersModalTest < ApplicationSystemTestCase
     press_keys(:escape)
     assert_selector "[data-freeform-answers-target='modal'].hidden", visible: :all, wait: 5
 
-    click_button "View all answers (130) →"
+    # click_settled, not click_button: this one is ABOVE the viewport, so
+    # reaching it scrolls the feed back up and the header expands under the
+    # click. See the helper — it cost a 1-in-10 failure here to find.
+    click_settled("View all answers (130) →")
     within("[data-freeform-answers-target='modal']") do
       assert_text(/freeform answers/i, wait: 5)
       assert_no_text(/written-in answers/i)

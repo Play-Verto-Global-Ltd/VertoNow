@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_21_143529) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_22_113623) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -1136,6 +1136,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_143529) do
     t.string "render_mode", default: "cards", null: false
     t.boolean "respondent_code_enabled", default: false, null: false
     t.string "respondent_code_prompt"
+    t.json "results_insights"
     t.text "results_report"
     t.text "results_report_brief"
     t.datetime "results_report_edited_at"

@@ -296,8 +296,15 @@
   })()
 </script>
 
-        <%# ── Filterable feed: stats + segment pills + per-question cards ── %>
-        <%= turbo_frame_tag "results-feed" do %>
+        <%# ── Filterable feed: stats + segment pills + per-question cards ──
+            question-insights rides ON the frame rather than outside it: the
+            readings are of THIS segment's numbers, so when a filter click
+            replaces the frame the controller has to disconnect and fetch
+            again. Everything else on this page that survives a frame swap
+            wants to; this is the one thing that must not. %>
+        <%= turbo_frame_tag "results-feed",
+              data: { controller: "question-insights",
+                      question_insights_url_value: survey_results_insights_path(@survey, segment: @active_segment[:id]) } do %>
 
           <%# OAuth round-trip feedback — flash isn't rendered on fullscreen pages %>
           <% if params[:google_connected] %>
@@ -458,7 +465,7 @@
         <% if @active_segment[:suppressed] %>
           <%= render "surveys/results_suppressed" %>
         <% else %>
-          <%= render "surveys/result_cards", aggregated: @aggregated, total: @total,
+          <%= render "surveys/result_cards", aggregated: @aggregated, total: @total, insights: true,
                 answers: { survey: @survey, segment: @active_segment[:id], range: @date_range } %>
         <% end %>
 

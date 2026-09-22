@@ -13,6 +13,46 @@ class SurveySummariesController < ApplicationController
   # lock creators out of reading text they already paid for. The rate limit
   # still bounds the cold-cache case (P0-4).
   throttle_ai to: 30, within: 1.hour, name: "ai-summary", respond: :plain, only: %i[ show texts ]
+  throttle_ai to: 30, within: 1.hour, name: "ai-question-insights", respond: :json, only: %i[ questions ]
+
+  # GET /surveys/:id/results/insights?segment=
+  #
+  # One reading per question — what each chart actually says — for the boxes
+  # beside the result cards. JSON rather than a stream, unlike its two
+  # neighbours above: this is N readings at once and the page has to hand each
+  # one to a different card, so there is nothing useful to render until the
+  # whole tool call has come back anyway. The payload is a few KB.
+  #
+  # Cached in surveys.results_insights against BOTH the segment and the
+  # response count, because a reading of "United Kingdom" replayed under
+  # "Overall" would be wrong in the most convincing possible way — it is prose
+  # about numbers that are no longer on the screen. The whole-survey summary
+  # above caches on the count alone and has exactly that wrinkle; this does not
+  # inherit it.
+  def questions
+    survey = Current.organisation.surveys.find(params[:id])
+    _base, segments, segment = resolve_result_segments(survey, params[:segment])
+    total = segment[:scope].count
+
+    cached = survey.results_insights
+    if cached.is_a?(Hash) && cached["segment"] == segment[:id] && cached["count"] == total
+      return render json: { ok: true, cached: true, insights: cached["questions"] || {} }
+    end
+
+    aggregated = aggregate_results(Array(survey.cards), segment[:scope])
+    insights   = QuestionInsights.new.call(survey: survey, aggregated: aggregated, total: total)
+
+    survey.update_columns(results_insights: {
+      "segment" => segment[:id], "count" => total, "questions" => insights
+    })
+
+    render json: { ok: true, cached: false, insights: insights }
+  rescue ActiveRecord::RecordNotFound
+    raise
+  rescue => e
+    ErrorReporting.report("SurveySummariesController#questions", e)
+    render json: { ok: false, error: "Readings unavailable." }, status: :service_unavailable
+  end
 
   def show
     survey    = Current.organisation.surveys.find(params[:id])

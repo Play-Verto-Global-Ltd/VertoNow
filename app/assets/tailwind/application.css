@@ -5357,6 +5357,84 @@ button.editor-leave-btn { cursor: pointer; }
   border: 1px solid rgba(255,255,255,0.07);
   display: flex; flex-direction: column; gap: 12px;
 }
+/* ── What the answers say, and why the question was asked ───────────────────
+   Beside the question, in the margin the outline rail's opposite number left
+   empty. Absolutely positioned rather than a column of the card, because the
+   card must keep its 780px: the answer rows are the page, and a reading is a
+   note in the margin of one. It hangs from the card's top edge and is free to
+   be taller or shorter than the card without moving anything.
+
+   Below 1290px — the same width the outline rail gives up at — there is no
+   margin to hang it in, so it comes back into the card under the answers. */
+.rc-card { position: relative; }
+.rc-aside {
+  position: absolute; inset-inline-start: calc(100% + 24px); top: 14px;
+  width: 268px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.rc-tell {
+  padding: 11px 13px; border-radius: 10px;
+  background: rgba(1,234,203,0.07);
+  border-inline-start: 2px solid rgba(1,234,203,0.5);
+}
+.rc-tell-head, .rc-why-head {
+  font-family: "Alata", sans-serif; font-size: var(--text-2xs);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.rc-tell-head { color: #01EACB; margin-bottom: 5px; }
+.rc-tell-body {
+  margin: 0;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
+  line-height: 1.6; color: rgba(255,255,255,0.84);
+}
+/* Only ever seen on a cold cache — the second visit is a database read.
+   Rendered hidden and revealed by the controller, so a page whose JavaScript
+   never arrives shows no shimmer waiting on a fetch that will never run. */
+.rc-tell-wait {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
+  padding: 11px 13px;
+}
+.rc-why { padding: 10px 13px; border-radius: 10px; background: rgba(255,255,255,0.035); }
+.rc-why-head { color: rgba(255,255,255,0.35); margin-bottom: 7px; }
+.rc-why-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 7px; }
+/* The accent is the competency's own, from config/competencies.yml, so a
+   badge here is the same colour as the badge in the editor's Why tab. */
+.rc-why-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px; border-radius: 100px;
+  background: color-mix(in srgb, var(--why-accent) 14%, transparent);
+  color: var(--why-accent);
+  font-family: "Alata", sans-serif; font-size: var(--text-2xs);
+  letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap;
+}
+.rc-why-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--why-accent); }
+.rc-why-body {
+  margin: 0;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
+  line-height: 1.55; color: rgba(255,255,255,0.5);
+}
+
+@media (max-width: 1289px) {
+  .rc-aside {
+    position: static; width: auto;
+    margin-top: 14px; padding-top: 13px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+  /* An aside with nothing to show must show nothing. Most cards have no Why
+     tagging, and a question the model declined to read gets no reading, so
+     the common case here is an empty box — which still drew its own rule and
+     28px of space under every set of answers on the page.
+     The rule is the divider between the answers and what is said about them;
+     with neither half present there is nothing to divide. */
+  .rc-aside:not(:has(> .rc-why)):not(:has(> .rc-tell:not([hidden]))) {
+    margin-top: 0; padding-top: 0; border-top: 0;
+  }
+  /* Below the breakpoint the box is IN the card, so revealing and then
+     removing a shimmer would move every set of answers under it twice on a
+     cold cache. In the margin above it costs the feed no movement at all. */
+  .rc-tell-wait { display: none; }
+}
+
 .rc-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .rc-cardn { font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: rgba(255,255,255,0.3); }
 .rc-answers {
