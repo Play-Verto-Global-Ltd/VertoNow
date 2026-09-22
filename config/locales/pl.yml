@@ -1695,8 +1695,6 @@ pl:
         text: "Czy któreś z poniższych Cię opisuje?"
         description: "Chodzi o to, jak myślisz i przetwarzasz informacje — wybierz wszystkie pasujące."
         options: ["ADHD", "Autyzm", "Dysleksja", "Dyspraksja", "Dyskalkulia", "Zespół Tourette'a", "Inna forma neuroróżnorodności", "Żadne z powyższych", "Wolę nie mówić"]
-    postcode_placeholder: "Kod pocztowy (opcjonalnie)"
-    postcode_note: "Używany wyłącznie do zrozumienia ogólnych wzorców regionalnych — nigdy nie jest wyświetlany indywidualnie."
   oops:
     private_link_title: "Ups — to prywatny link do edytora"
     private_link_body: "Ten link otwiera edytor Verto, z którego może korzystać tylko jego twórca — to nie jest publiczny link do udostępniania, więc nie ma tu w co grać."

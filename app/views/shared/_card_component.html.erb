@@ -1070,21 +1070,11 @@
               </button>
             </div>
             <div class="location-search-credit"><%= t("player.region_search_credit") %></div>
-            <%# Optional, off by default (Survey#capture_postcode?) — the ONE
-                field on this card precise enough that k-anonymity actually
-                matters, so it stays out of results segmentation and drill-down
-                entirely for now (raw exports only) rather than joining
-                region_country/region_label as a filterable pill. %>
-            <% if @survey.capture_postcode? %>
-              <div class="location-postcode-wrap">
-                <input type="text" autocomplete="postal-code" maxlength="10" class="location-postcode-field"
-                       placeholder="<%= t("demographics.postcode_placeholder", locale: display_locale) %>"
-                       aria-label="<%= t("demographics.postcode_placeholder", locale: display_locale) %>"
-                       data-location-search-target="postcode"
-                       data-action="input->location-search#postcodeChanged" />
-                <div class="location-postcode-note"><%= t("demographics.postcode_note", locale: display_locale) %></div>
-              </div>
-            <% end %>
+            <%# There was an optional typed postcode field here, off by default.
+                It is gone: a postcode is precise enough to identify a household,
+                which made it the one thing this card collected that no amount
+                of small-cell suppression downstream would have made safe. The
+                card now asks for a place and nothing finer. %>
           </div>
         </div>
       <% else %>

@@ -1693,8 +1693,6 @@ sw:
         text: "Je, yoyote kati ya haya yanakuelezea?"
         description: "Kuhusu jinsi unavyofikiri na kuchakata taarifa — chagua yote yanayokuhusu."
         options: ["ADHD", "Usonji (Autism)", "Dyslexia", "Dyspraxia", "Dyscalculia", "Tourette", "Aina nyingine ya tofauti za ubongo", "Hakuna kati ya haya", "Napendelea kutosema"]
-    postcode_placeholder: "Msimbo wa posta (si lazima)"
-    postcode_note: "Hutumika tu kuelewa mienendo mipana ya kikanda — haionyeshwi kamwe kibinafsi."
   oops:
     private_link_title: "Samahani — hiki ni kiungo cha faragha cha kihariri"
     private_link_body: "Kiungo hiki hufungua kihariri cha Verto, kinachotumika na mtengenezaji wake pekee — si kiungo cha umma cha kushiriki, kwa hivyo hakuna cha kucheza hapa."

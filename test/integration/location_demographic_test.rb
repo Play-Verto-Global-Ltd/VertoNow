@@ -20,10 +20,9 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     org
   end
 
-  def create_survey(org, capture_postcode: false)
+  def create_survey(org)
     org.surveys.create!(title: "T", theme: "T", audience_age: "all", key_insight: "x",
                         default_locale: "en", locales: [ "en" ], cards: CARDS,
-                        capture_postcode: capture_postcode,
                         publish_token: SecureRandom.urlsafe_base64(18), published_at: Time.current)
   end
 
@@ -57,11 +56,17 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     assert_equal "Austin, Texas", resp.region_label
   end
 
-  # ── Postcode capture (Survey#capture_postcode?) ───────────────────────────
+  # ── Postcodes are gone ────────────────────────────────────────────────────
+  #
+  # The optional postcode field was removed from the location card and the
+  # collected values purged (PurgeCollectedPostcodes). These pin the server
+  # side of that, because the field's absence from the DOM is not the
+  # guarantee — a respondent can have a published deck open in a tab from
+  # before the removal, and the submit endpoint takes whatever it is sent.
 
-  test "a three-segment CC|Label|POSTCODE answer populates region_postcode when the toggle is on" do
-    org = create_org_and_sign_in("postcode")
-    s   = create_survey(org, capture_postcode: true)
+  test "a three-segment CC|Label|POSTCODE answer stores no postcode anywhere" do
+    org = create_org_and_sign_in("postcode-gone")
+    s   = create_survey(org)
 
     json_post submit_survey_path(s.publish_token),
               { session_token: "loc-#{SecureRandom.hex(4)}",
@@ -72,13 +77,17 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     assert_response :success
     resp = s.responses.reload.last
     assert_equal "GB", resp.region_country
-    assert_equal "Bristol", resp.region_label
-    assert_equal "BS1 4DJ", resp.region_postcode
+    assert_equal "Bristol", resp.region_label, "the label must not absorb the discarded segment"
+    assert_nil resp.region_postcode
+
+    # The answer itself, not just the denormalised column: this is the half a
+    # raw export reads, so leaving it would have kept every postcode in play.
+    assert_equal "GB|Bristol", resp.answers["2"]["value"]
   end
 
-  test "a legacy two-segment CC|Label answer never leaks into region_postcode, even with the toggle on" do
-    org = create_org_and_sign_in("postcode-legacy")
-    s   = create_survey(org, capture_postcode: true)
+  test "a two-segment answer is left exactly as it arrived" do
+    org = create_org_and_sign_in("postcode-two-seg")
+    s   = create_survey(org)
 
     json_post submit_survey_path(s.publish_token),
               { session_token: "loc-#{SecureRandom.hex(4)}",
@@ -87,41 +96,36 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
                   "2" => { "type" => "open_ended", "value" => "US|Austin, Texas" }
                 } }
     resp = s.responses.reload.last
-    assert_equal "US", resp.region_country
-    assert_equal "Austin, Texas", resp.region_label, "the label must not have absorbed a phantom third segment"
+    assert_equal "US|Austin, Texas", resp.answers["2"]["value"]
+    assert_equal "Austin, Texas", resp.region_label
     assert_nil resp.region_postcode
   end
 
-  test "region_postcode stays nil when the toggle is off, even if a three-segment answer arrives" do
-    org = create_org_and_sign_in("postcode-off")
-    s   = create_survey(org, capture_postcode: false)
-
-    json_post submit_survey_path(s.publish_token),
-              { session_token: "loc-#{SecureRandom.hex(4)}",
-                answers: {
-                  "1" => { "type" => "yes_no", "value" => "Yes" },
-                  "2" => { "type" => "open_ended", "value" => "GB|Bristol|BS1 4DJ" }
-                } }
-    resp = s.responses.reload.last
-    assert_equal "GB", resp.region_country, "country/label still resolve independently of the toggle"
-    assert_nil resp.region_postcode, "the toggle being off must block the column, regardless of what the client sent"
-  end
-
-  test "a tampered postcode segment is normalised, not stored raw" do
+  test "extra pipes past the third segment are discarded with it" do
     org = create_org_and_sign_in("postcode-tamper")
-    s   = create_survey(org, capture_postcode: true)
+    s   = create_survey(org)
 
     json_post submit_survey_path(s.publish_token),
               { session_token: "loc-#{SecureRandom.hex(4)}",
                 answers: {
                   "1" => { "type" => "yes_no", "value" => "Yes" },
-                  "2" => { "type" => "open_ended", "value" => "GB|Bristol| bs1<script>4dj-99999|extra|pipes" }
+                  "2" => { "type" => "open_ended", "value" => "GB|Bristol| bs1<script>4dj|extra|pipes" }
                 } }
     resp = s.responses.reload.last
     assert_equal "GB", resp.region_country
     assert_equal "Bristol", resp.region_label
-    assert_match(/\A[A-Z0-9 \-]{1,10}\z/, resp.region_postcode)
-    refute_includes resp.region_postcode, "<"
+    assert_nil resp.region_postcode
+    assert_equal "GB|Bristol", resp.answers["2"]["value"]
+  end
+
+  test "the location card renders no postcode field" do
+    org = create_org_and_sign_in("postcode-dom")
+    s   = create_survey(org)
+
+    get play_survey_path(s.publish_token)
+    assert_response :success
+    assert_no_match(/location-postcode-field/, response.body)
+    assert_no_match(/autocomplete="postal-code"/, response.body)
   end
 
   test "an invalid country code leaves the response untagged" do

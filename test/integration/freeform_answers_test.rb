@@ -307,7 +307,8 @@ class FreeformAnswersTest < ActionDispatch::IntegrationTest
   # nobody.
 
   # Two per card, far enough apart in time to be orderable, plus the shapes
-  # that have to survive: a country with no region, and a postcode segment.
+  # that have to survive: a country with no region, and a stale three-segment
+  # value whose postcode must not reach the panel.
   def seed_demographics
     [ [ "ES|Catalunya", "1977-09" ], [ "DE|", "1992-10" ],
       [ "GB|Greater London, England|SW1A 1AA", "2001-01" ] ].each_with_index do |(place, born), i|
@@ -333,7 +334,7 @@ class FreeformAnswersTest < ActionDispatch::IntegrationTest
     place = demographic_answers(3)
     assert place["ok"]
     assert_equal 3, place["total"]
-    assert_equal [ "Greater London, England, United Kingdom · SW1A 1AA", "Germany", "Catalunya, Spain" ],
+    assert_equal [ "Greater London, England, United Kingdom", "Germany", "Catalunya, Spain" ],
                  place["answers"].map { |a| a["text"] },
                  "newest first, and none of them reading as a storage format"
 

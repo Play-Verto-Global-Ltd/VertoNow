@@ -1693,8 +1693,6 @@ it:
         text: "Qualcuna di queste ti descrive?"
         description: "Riguarda il modo in cui pensi ed elabori le informazioni — scegli tutte quelle pertinenti."
         options: ["ADHD", "Autismo", "Dislessia", "Disprassia", "Discalculia", "Tourette", "Un'altra forma di neurodivergenza", "Nessuna di queste", "Preferisco non rispondere"]
-    postcode_placeholder: "CAP (facoltativo)"
-    postcode_note: "Usato solo per capire modelli regionali generali — non viene mai mostrato singolarmente."
   oops:
     private_link_title: "Ops — questo è un link privato dell'editor"
     private_link_body: "Questo link apre l'editor del Verto, utilizzabile solo dal suo creatore — non è il link pubblico di condivisione, quindi qui non c'è nulla da giocare."

@@ -1701,8 +1701,6 @@ sn:
         text: "Pane Chero Chinotevera Chinokutsanangura Here?"
         description: "Pamusoro pekuti unofunga uye unogadzirisa sei ruzivo — sarudza chero chinokodzera."
         options: ["ADHD", "Autism", "Dyslexia", "Dyspraxia", "Dyscalculia", "Tourette's", "Rimwe Rudzi Rwekusiyana Kwepfungwa", "Hapana Pane Izvi", "Handidi Kutaura"]
-    postcode_placeholder: "Kodhi Yeposi (hazvina kumanikidzwa)"
-    postcode_note: "Inoshandiswa chete kunzwisisa maitiro makuru edunhu — haitomboratidzwi zvemunhu mumwe."
   oops:
     private_link_title: "Oo — iyoyo rinki yakavanzika yeChigadziriso"
     private_link_body: "Rinki iyi inovhura Chigadziriso cheVerto, chinoshandiswa nemugadziri wacho chete — haisi rinki yeruzhinji yekugovana, saka hapana chekutamba pano."

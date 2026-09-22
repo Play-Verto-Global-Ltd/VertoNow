@@ -281,8 +281,17 @@ class DemographicQuestionsTest < ActiveSupport::TestCase
 
   test "a location reads as a place" do
     assert_equal "Catalunya, Spain", DemographicQuestions.display_answer(place_card, "ES|Catalunya")
-    assert_equal "Greater London, England, United Kingdom · SW1A 1AA",
+  end
+
+  # Postcodes are no longer collected and the stored ones were purged, but a
+  # third segment can still arrive from a stale client. It is dropped on the
+  # way in AND on the way out — showing one here would put a postcode back on
+  # the results page the moment one slipped through.
+  test "a third postcode segment is never shown" do
+    assert_equal "Greater London, England, United Kingdom",
                  DemographicQuestions.display_answer(place_card, "GB|Greater London, England|SW1A 1AA")
+    assert_equal "Bristol, United Kingdom",
+                 DemographicQuestions.display_answer(place_card, "GB|Bristol|BS1 4DJ")
   end
 
   # The region is optional in the picker, and "DE|" is the commonest shape

@@ -263,8 +263,13 @@ module DemographicQuestions
     "#{Date::MONTHNAMES[month]} #{m[1]}"
   end
 
-  # "ES|Catalunya" → "Catalunya, Spain"; "DE|" → "Germany";
-  # "GB|London|SW1A 1AA" → "London, United Kingdom · SW1A 1AA".
+  # "ES|Catalunya" → "Catalunya, Spain"; "DE|" → "Germany".
+  #
+  # A third "|POSTCODE" segment is split off and DISCARDED rather than shown.
+  # Postcodes are no longer collected, and the stored ones were stripped when
+  # the field was removed — but a value from a stale client could still arrive
+  # in that shape, and a label of "London|SW1A 1AA" would be worse than one
+  # that is simply "London".
   #
   # An unknown country code falls through to the raw value rather than being
   # printed as a code: sync_region_from_answers! refuses those too, so the
@@ -277,13 +282,11 @@ module DemographicQuestions
     code = text[0...sep].to_s.upcase
     return text unless WorldRegions.valid?(code)
 
-    rest     = text[(sep + 1)..].to_s
-    sep2     = rest.index("|")
-    label    = (sep2 ? rest[0...sep2] : rest).strip
-    postcode = sep2 ? rest[(sep2 + 1)..].to_s.strip : nil
+    rest  = text[(sep + 1)..].to_s
+    sep2  = rest.index("|")
+    label = (sep2 ? rest[0...sep2] : rest).strip
 
-    place = [ label.presence, WorldRegions.name_for(code) ].compact.join(", ")
-    postcode.present? ? "#{place} · #{postcode}" : place
+    [ label.presence, WorldRegions.name_for(code) ].compact.join(", ")
   end
 
   # Every key Survey.sanitize_cards_images! will accept. CORE_KEYS supplies

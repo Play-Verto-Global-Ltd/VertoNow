@@ -1696,8 +1696,6 @@ af:
         text: "Beskryf enige van hierdie jou?"
         description: "Oor hoe jy dink en inligting verwerk — kies almal wat van toepassing is."
         options: ["ADHD", "Outisme", "Disleksie", "Dispraksie", "Diskalkulie", "Tourette-sindroom", "'n Ander vorm van neurodivergensie", "Geen van hierdie nie", "Verkies om nie te sê nie"]
-    postcode_placeholder: "Poskode (opsioneel)"
-    postcode_note: "Word slegs gebruik om breë streekspatrone te verstaan — nooit individueel gewys nie."
   oops:
     private_link_title: "Oeps — dit is 'n private redigeerskakel"
     private_link_body: "Hierdie skakel maak die Verto-redigeerder oop, wat slegs deur sy skepper gebruik kan word — dit is nie die openbare deelskakel nie, so daar is niks om hier te speel nie."

@@ -1661,41 +1661,35 @@ class PlayerController < ApplicationController
     value = idx && resp.answers.is_a?(Hash) ? resp.answers[idx.to_s]&.dig("value") : nil
     sep = value.to_s.index("|")
     country = sep ? value[0...sep].to_s.upcase.presence : nil
-    # Everything after the first "|" used to be the WHOLE label — now it may
-    # itself carry a second "|POSTCODE" segment (capture_postcode). Parsed
-    # from `rest`, not the raw value, so a legacy two-segment "CC|Label"
-    # answer (no second pipe) still resolves exactly as it always did: sep2
-    # is nil, postcode stays nil, label is `rest` unchanged.
+    # Everything after the first "|" is the label. A third "|POSTCODE" segment
+    # is still PARSED OFF and discarded rather than treated as part of the
+    # label: postcodes are no longer collected, but a respondent can have a
+    # deck open in a tab from before the field was removed, and a stale client
+    # packing three segments must not write "London|SW1A 1AA" into region_label
+    # — which is what dropping the split would do.
     rest    = sep ? value[(sep + 1)..].to_s : nil
     sep2    = rest&.index("|")
     label   = rest ? (sep2 ? rest[0...sep2] : rest).strip.first(60).presence : nil
-    postcode = rest && sep2 ? rest[(sep2 + 1)..] : nil
+
+    # And the answer itself is rewritten to the two-segment form, so a stale
+    # client cannot leave a postcode sitting in `answers` where the columns
+    # below no longer keep one. Nulling region_postcode alone would have made
+    # the platform look postcode-free while every raw export still carried it.
+    if sep2 && idx
+      resp.answers = resp.answers.merge(
+        idx.to_s => resp.answers[idx.to_s].merge("value" => "#{country}|#{rest[0...sep2]}")
+      )
+    end
 
     if country && WorldRegions.valid?(country)
       resp.region_country  = country
       resp.region_label    = label
-      # Re-derived from the toggle's CURRENT state, same as every other
-      # region field here — a respondent who answered while the toggle was on
-      # loses the postcode from this denormalised column if a creator somehow
-      # turns it off again (SETTINGS_LOCKED_IN_USE makes that rare, not
-      # impossible — a duplicated draft, for instance), matching how turning
-      # regions off entirely already blanks region_country/region_label.
-      resp.region_postcode = @survey.capture_postcode? ? sanitize_postcode(postcode) : nil
+      resp.region_postcode = nil
     else
       resp.region_country  = nil
       resp.region_label    = nil
       resp.region_postcode = nil
     end
-  end
-
-  # Upcased, bounded, and stripped to a conservative charset — letters,
-  # digits, spaces and hyphens cover UK/US/CA/AU-style postcodes without
-  # opening the door to anything that could carry markup or break a CSV
-  # export. Untrusted input either way: the client packs whatever the
-  # respondent typed into the hidden field verbatim.
-  POSTCODE_CHARS = /[^A-Z0-9 \-]/
-  def sanitize_postcode(raw)
-    raw.to_s.strip.upcase.gsub(POSTCODE_CHARS, "").first(10).presence
   end
 
   # Denormalise the two set demographic answers that make useful filter

@@ -1995,12 +1995,6 @@ en:
         text: "Do any of these describe you?"
         description: "About how you think and process information — choose any that apply."
         options: ["ADHD", "Autism", "Dyslexia", "Dyspraxia", "Dyscalculia", "Tourette's", "Another form of neurodivergence", "None of these", "Prefer not to say"]
-    # The optional postcode field on the "Where do you live?" card
-    # (Survey#capture_postcode?) — not part of the cards/optional registries
-    # above since it isn't a question of its own, just an extra field on the
-    # location card.
-    postcode_placeholder: "Postcode (optional)"
-    postcode_note: "Only used to understand broad regional patterns — never shown individually."
   oops:
     private_link_title: "Oops — that's a private editor link"
     private_link_body: "This link opens the Verto editor, which only its creator can use — it isn't the public share link, so there's nothing to play here."

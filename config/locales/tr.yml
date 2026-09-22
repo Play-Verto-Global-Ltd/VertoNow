@@ -1693,8 +1693,6 @@ tr:
         text: "Bunlardan herhangi biri seni tanımlıyor mu?"
         description: "Düşünme ve bilgi işleme şeklinle ilgili — uyan hepsini seç."
         options: ["DEHB", "Otizm", "Disleksi", "Dispraksi", "Diskalkuli", "Tourette", "Başka bir nörofarklılık türü", "Hiçbiri", "Belirtmek istemiyorum"]
-    postcode_placeholder: "Posta kodu (isteğe bağlı)"
-    postcode_note: "Yalnızca genel bölgesel eğilimleri anlamak için kullanılır — asla ayrı ayrı gösterilmez."
   oops:
     private_link_title: "Hata — bu özel bir düzenleyici bağlantısı"
     private_link_body: "Bu bağlantı, yalnızca oluşturanın kullanabildiği Verto düzenleyicisini açar — herkese açık paylaşım bağlantısı değildir, bu yüzden burada oynanacak bir şey yok."

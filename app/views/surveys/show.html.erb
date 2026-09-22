@@ -2319,26 +2319,6 @@
               </div>
             <% end %>
           <% end %>
-          <%# Adds an optional typed postcode field to the "Where do you live?"
-              card, alongside the country/city it already resolves. Frozen once
-              live like audience_country above — toggling it mid-collection
-              would ask different respondents a different question, and turning
-              it off again wouldn't erase postcodes already collected
-              (SurveysController::SETTINGS_LOCKED_IN_USE). Raw exports only for
-              now — no segment pills or map drill-down, unlike
-              region_country/region_label, since a postcode is precise enough
-              that small-cell suppression would actually matter. %>
-          <%= form_with url: survey_settings_path(@survey), method: :post, local: true, style: "margin:10px 0 0;" do %>
-            <input type="hidden" name="capture_postcode" value="0" />
-            <label style="display:flex;align-items:flex-start;gap:10px;<%= live_locked ? "" : "cursor:pointer;" %>font-size: var(--text-base);color:rgba(255,255,255,0.78);line-height:1.4;">
-              <input type="checkbox" name="capture_postcode" value="1"
-                     <%= "checked" if @survey.capture_postcode? %>
-                     <%= "disabled" if live_locked %>
-                     onchange="this.form.requestSubmit()"
-                     style="width:14px;height:14px;accent-color:#01EACB;cursor:pointer;margin-top:1px;flex-shrink:0;" />
-              <span>Also ask for a postcode on the location question (raw exports only — not shown on the results map).</span>
-            </label>
-          <% end %>
         </details>
 
         <%= render "surveys/ask_verto_block" %>

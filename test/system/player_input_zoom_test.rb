@@ -14,9 +14,8 @@ require "application_system_test_case"
 # needs updating at all.
 #
 # Reading either rule alone gives the wrong answer about the other. The
-# respondent-code field (15px) and the postcode field (13px) look broken in
-# source and are fine in a browser; remove the blanket rule and both drop
-# straight through.
+# respondent-code field (15px) looks broken in source and is fine in a
+# browser; remove the blanket rule and it drops straight through.
 #
 # So this checks neither list. It walks the deck, collects every text control a
 # respondent can actually focus, and asserts the floor on the COMPUTED value —
@@ -53,9 +52,8 @@ class PlayerInputZoomTest < ApplicationSystemTestCase
     @survey = @org.surveys.create!(title: "Zoom", theme: "T", audience_age: "all",
                                    key_insight: "k", default_locale: "en", locales: [ "en" ],
                                    cards: CARDS)
-    # Both off by default, and both add a text input a respondent must type in.
-    @survey.update_columns(capture_postcode: true,
-                           respondent_code_enabled: true,
+    # Off by default, and adds a text input a respondent must type in.
+    @survey.update_columns(respondent_code_enabled: true,
                            publish_token: SecureRandom.hex(8),
                            published_at: Time.current)
   end
@@ -66,9 +64,9 @@ class PlayerInputZoomTest < ApplicationSystemTestCase
   end
 
   # Every text control currently in the DOM, with its computed size. Reads the
-  # whole overlay rather than the active card: the "+ Other" panel and the
-  # postcode field are hidden until opened, and a font-size does not need the
-  # element to be visible to be wrong.
+  # whole overlay rather than the active card: the "+ Other" panel is hidden
+  # until opened, and a font-size does not need the element to be visible to
+  # be wrong.
   def input_sizes
     page.evaluate_script(<<~JS)
       (() => {

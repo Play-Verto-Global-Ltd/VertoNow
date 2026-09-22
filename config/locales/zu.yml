@@ -1722,12 +1722,6 @@ zu:
         text: "Ikhona kulokhu okukuchazayo?"
         description: "Mayelana nendlela ocabanga futhi ucubungula ulwazi ngayo — khetha konke okufanele."
         options: ["I-ADHD", "Ubunsonge (Autism)", "I-Dyslexia", "I-Dyspraxia", "I-Dyscalculia", "I-Tourette's", "Olunye uhlobo lokungafani kobuchopho", "Akukho kulokhu", "Ngithanda ukungasho"]
-    # The optional postcode field on the "Where do you live?" card
-    # (Survey#capture_postcode?) — not part of the cards/optional registries
-    # above since it isn't a question of its own, just an extra field on the
-    # location card.
-    postcode_placeholder: "Ikhodi yeposi (akudingekile)"
-    postcode_note: "Isetshenziselwa kuphela ukuqonda amaphethini ezifunda ngokubanzi — ayikaze iboniswe ngokomuntu ngamunye."
   oops:
     private_link_title: "Yeka — leso yisixhumanisi somhleli esiyimfihlo"
     private_link_body: "Lesi sixhumanisi sivula umhleli we-Verto, osetshenziswa ngumdali wayo kuphela — akusiso isixhumanisi somphakathi sokwabelana, ngakho akukho okungadlalwa lapha."

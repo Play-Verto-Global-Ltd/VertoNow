@@ -1693,8 +1693,6 @@ de:
         text: "Trifft etwas davon auf dich zu?"
         description: "Es geht darum, wie du denkst und Informationen verarbeitest — wähle alles Zutreffende."
         options: ["ADHS", "Autismus", "Legasthenie", "Dyspraxie", "Dyskalkulie", "Tourette", "Eine andere Form von Neurodivergenz", "Nichts davon", "Möchte ich nicht angeben"]
-    postcode_placeholder: "Postleitzahl (optional)"
-    postcode_note: "Wird nur verwendet, um grobe regionale Muster zu verstehen — nie einzeln angezeigt."
   oops:
     private_link_title: "Ups — das ist ein privater Editor-Link"
     private_link_body: "Dieser Link öffnet den Verto-Editor, den nur die erstellende Person nutzen kann — es ist nicht der öffentliche Teilen-Link, hier gibt es also nichts zu spielen."

@@ -1693,8 +1693,6 @@ pt:
         text: "Alguma destas opções descreve você?"
         description: "Sobre como você pensa e processa informações — escolha todas que se aplicam."
         options: ["TDAH", "Autismo", "Dislexia", "Dispraxia", "Discalculia", "Tourette", "Outra forma de neurodivergência", "Nenhuma destas", "Prefiro não dizer"]
-    postcode_placeholder: "Código postal (opcional)"
-    postcode_note: "Usado apenas para entender padrões regionais amplos — nunca mostrado individualmente."
   oops:
     private_link_title: "Ops — este é um link privado do editor"
     private_link_body: "Este link abre o editor do Verto, que só o criador pode usar — não é o link público de partilha, por isso não há nada para jogar aqui."

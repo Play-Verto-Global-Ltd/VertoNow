@@ -12650,17 +12650,6 @@ body.generating-overlay-active .bottom-bar { display: none; }
   font-family: "ABeeZee", sans-serif; font-size: 10.5px; color: rgba(0,0,0,0.35);
   text-align: center; margin-top: 2px;
 }
-.location-postcode-wrap { margin-top: 8px; }
-.location-postcode-field {
-  width: 100%; font-family: "ABeeZee", sans-serif; font-size: 13px; color: #1C2034;
-  background: #f4f6f9; border: 1.5px solid rgba(0,0,0,0.12); border-radius: 10px;
-  padding: 9px 12px; outline: none; box-sizing: border-box;
-}
-.location-postcode-field:focus { border-color: #01EACB; }
-.location-postcode-note {
-  font-family: "ABeeZee", sans-serif; font-size: 10.5px; color: rgba(0,0,0,0.35);
-  text-align: center; margin-top: 4px;
-}
 
 /* ── Quiz mode ─────────────────────────────────────────────────────────────
    A quiz Verto scores graded answers. The running score sits in the footer,

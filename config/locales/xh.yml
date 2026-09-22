@@ -1726,12 +1726,6 @@ xh:
         text: "Ngaba ikho kwezi ekuchazayo?"
         description: "Malunga nendlela ocinga nokucubungula ulwazi ngayo — khetha konke okukufaneleyo."
         options: ["I-ADHD", "Ubunsokothi bengqondo (Autism)", "IDyslexia", "IDyspraxia", "IDyscalculia", "ITourette's", "Olunye uhlobo lobunzulu bengqondo", "Akukho nanye kwezi", "Ndikhetha ukungatsho"]
-    # Ibhokisi yekhowudi yeposi ekhethekileyo kwikhadi "Uhlala phi?"
-    # (Survey#capture_postcode?) — ayikho kuluhlu lwamakhadi/olungayomfuneko
-    # ngasentla ngoba ayingombuzo wodwa, yinkcukacha eyongezelelweyo kwikhadi
-    # lendawo.
-    postcode_placeholder: "Ikhowudi yeposi (olungayomfuneko)"
-    postcode_note: "Isetyenziselwa kuphela ukuqonda iindidi zommandla ngokubanzi — ayikaze iboniswe ngokobuqu."
   oops:
     private_link_title: "Yhini — elo likhonkco lomhleli olubucala"
     private_link_body: "Eli khonkco livula umhleli weVerto, osetyenziswa ngumdali wayo kuphela — asililo ikhonkco lokwabelana lasesidlangalaleni, ngoko akukho nto yakudlalwa apha."

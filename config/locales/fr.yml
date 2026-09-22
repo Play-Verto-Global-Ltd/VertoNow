@@ -1693,8 +1693,6 @@ fr:
         text: "Est-ce que l'une de ces propositions vous décrit ?"
         description: "Sur votre façon de penser et de traiter l'information — choisissez tout ce qui s'applique."
         options: ["TDAH", "Autisme", "Dyslexie", "Dyspraxie", "Dyscalculie", "Tourette", "Une autre forme de neurodivergence", "Aucune de ces réponses", "Je préfère ne pas répondre"]
-    postcode_placeholder: "Code postal (facultatif)"
-    postcode_note: "Utilisé uniquement pour comprendre les grandes tendances régionales — jamais affiché individuellement."
   oops:
     private_link_title: "Oups — ceci est un lien privé vers l'éditeur"
     private_link_body: "Ce lien ouvre l'éditeur du Verto, réservé à son créateur — ce n'est pas le lien public de partage, il n'y a donc rien à jouer ici."

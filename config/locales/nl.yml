@@ -1693,8 +1693,6 @@ nl:
         text: "Is een van deze op jou van toepassing?"
         description: "Over hoe je denkt en informatie verwerkt — kies alles wat van toepassing is."
         options: ["ADHD", "Autisme", "Dyslexie", "Dyspraxie", "Dyscalculie", "Tourette", "Een andere vorm van neurodivergentie", "Geen van deze", "Zeg ik liever niet"]
-    postcode_placeholder: "Postcode (optioneel)"
-    postcode_note: "Wordt alleen gebruikt om brede regionale patronen te begrijpen — nooit individueel getoond."
   oops:
     private_link_title: "Oeps — dit is een privé-editorlink"
     private_link_body: "Deze link opent de Verto-editor, die alleen de maker kan gebruiken — het is niet de openbare deellink, dus hier valt niets te spelen."

@@ -1724,12 +1724,6 @@ st:
         text: "Na ho na le tse ding tsena tse o hlalosang?"
         description: "Ka kamoo o nahanang le ho sebetsana le tlhaiso-leseling — kgetha tsohle tse sebetsang ho wena."
         options: ["ADHD", "Autism (Bosonyi)", "Dyslexia", "Dyspraxia", "Dyscalculia", "Tourette's", "Mofuta o mong wa kelello e fapaneng", "Ha ho le e nngwe ya tsena", "Ke kgetha ho se bue"]
-    # The optional postcode field on the "Where do you live?" card
-    # (Survey#capture_postcode?) — not part of the cards/optional registries
-    # above since it isn't a question of its own, just an extra field on the
-    # location card.
-    postcode_placeholder: "Khoutu ya Poso (ha ho hlokahale)"
-    postcode_note: "E sebediswa feela ho utlwisisa mekgwa e pharaletseng ya sebaka — ha e a bontshwa ka mong le mong."
   oops:
     private_link_title: "Tshwenyeho — eo ke kgokahano ya lekunutu ya mohlophisi"
     private_link_body: "Kgokahano ena e bula mohlophisi wa Verto, oo motheha wa yona feela a ka o sebedisang — ha se kgokahano ya setjhaba ya ho arolelana, ka hona ha ho letho leo o ka le bapalang mona."

@@ -1724,12 +1724,6 @@ tn:
         text: "A go na le tse di go tlhalosang mo go tse?"
         description: "Ka ga kafa o akanyang le go sekaseka tshedimosetso ka teng — tlhopha tsotlhe tse di go amang."
         options: ["ADHD", "Autism", "Dyslexia", "Dyspraxia", "Dyscalculia", "Tourette's", "Mofuta o mongwe wa pharologano ya boko", "Ga go na epe ya tse", "Ke rata go se bue"]
-    # The optional postcode field on the "Where do you live?" card
-    # (Survey#capture_postcode?) — not part of the cards/optional registries
-    # above since it isn't a question of its own, just an extra field on the
-    # location card.
-    postcode_placeholder: "Khoutu ya poso (ga se tlhokego)"
-    postcode_note: "E dirisediwa fela go tlhaloganya mekgwa e mentsi ya kgaolo — ga e ke e bontshiwa ka bongwe."
   oops:
     private_link_title: "Tshwarelo — e ke kgokaganyo ya sephiri ya sefetodi"
     private_link_body: "Kgokaganyo e e bula sefetodi sa Verto, se se dirisiwang ke motlhami wa yona fela — ga se kgokaganyo ya botlhe ya go abelana, ka jalo ga go na sepe sa go tshamekwa fano."

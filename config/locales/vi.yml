@@ -1692,8 +1692,6 @@ vi:
         text: "Có điều nào sau đây mô tả bạn không?"
         description: "Về cách bạn suy nghĩ và xử lý thông tin — chọn tất cả những mục phù hợp."
         options: ["ADHD", "Tự kỷ", "Chứng khó đọc", "Chứng khó vận động (dyspraxia)", "Chứng khó tính toán", "Hội chứng Tourette", "Một dạng khác biệt thần kinh khác", "Không có mục nào", "Không muốn trả lời"]
-    postcode_placeholder: "Mã bưu điện (không bắt buộc)"
-    postcode_note: "Chỉ dùng để hiểu các xu hướng khu vực chung — không bao giờ hiển thị riêng lẻ."
   oops:
     private_link_title: "Rất tiếc — đây là liên kết trình chỉnh sửa riêng tư"
     private_link_body: "Liên kết này mở trình chỉnh sửa Verto mà chỉ người tạo mới dùng được — đây không phải liên kết chia sẻ công khai, nên không có gì để tham gia ở đây."

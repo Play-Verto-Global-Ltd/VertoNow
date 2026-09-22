@@ -1692,8 +1692,6 @@ id:
         text: "Apakah ada yang menggambarkan diri Anda?"
         description: "Tentang cara Anda berpikir dan memproses informasi — pilih semua yang sesuai."
         options: ["ADHD", "Autisme", "Disleksia", "Dispraksia", "Diskalkulia", "Tourette", "Bentuk neurodivergensi lainnya", "Tidak ada yang sesuai", "Memilih untuk tidak menjawab"]
-    postcode_placeholder: "Kode pos (opsional)"
-    postcode_note: "Hanya digunakan untuk memahami pola regional secara umum — tidak pernah ditampilkan secara individual."
   oops:
     private_link_title: "Ups — ini tautan editor pribadi"
     private_link_body: "Tautan ini membuka editor Verto yang hanya bisa digunakan pembuatnya — ini bukan tautan berbagi publik, jadi tidak ada yang bisa dimainkan di sini."
