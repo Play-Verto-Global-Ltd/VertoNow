@@ -234,6 +234,21 @@ es:
     combination_suppressed_title: "Muy pocas respuestas para mostrar esta combinación"
     combination_suppressed_body: "Menos de %{count} personas cumplen todos los filtros que has elegido, y mostrar sus respuestas podría identificar a alguien. Quita un filtro para ampliar la vista."
     freeform_other_eyebrow: "Otro: respuestas escritas"
+    timeline_eyebrow: "A lo largo del tiempo"
+    timeline_open_hint: "Ver cómo cambió esta respuesta con el tiempo"
+    timeline_range_label: "Rango de fechas"
+    timeline_range_all: "Todo el tiempo"
+    timeline_range_90: "90 d"
+    timeline_range_30: "30 d"
+    timeline_range_7: "7 d"
+    timeline_range_custom: "Personalizado"
+    timeline_from: "Desde"
+    timeline_to: "Hasta"
+    timeline_peak: "Máximo"
+    timeline_mode_label: "Medida"
+    timeline_share: "Porcentaje"
+    timeline_count: "Recuento"
+    timeline_footnote: "El porcentaje es sobre las respuestas recibidas en cada periodo. Un periodo con menos de %{count} respuestas se deja en blanco."
   shared_results:
     title: Resultados
     read_only_badge: Solo lectura
@@ -703,6 +718,14 @@ es:
       compare_summarizing: 'Resumiendo…'
       compare_summarize_error: 'No se pudo resumir en este momento.'
       chat_error: "Lo sentimos, algo salió mal. Inténtalo de nuevo."
+      timeline_loading: "Cargando…"
+      timeline_error: "No se pudo cargar la evolución. Inténtalo de nuevo."
+      timeline_empty: "No hay respuestas en este periodo."
+      timeline_thin: "Menos de %{count} respuestas"
+      timeline_latest: "Último"
+      timeline_change: "vs. %{n} anteriores"
+      timeline_pts: "%{n} pts"
+      timeline_wc: "sem. del %{date}"
   unsubscribe:
     title: "Cancelar la suscripción a los correos de Playverto"
     body: "¿Dejar de enviar correos de campañas a %{email}?"

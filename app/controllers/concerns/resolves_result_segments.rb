@@ -261,9 +261,15 @@ module ResolvesResultSegments
   # aggregator counts each card off its own answers, so an unfinished response
   # simply contributes to the questions it did reach. (Completion is still
   # surfaced separately as the dashboard's completion rate.)
-  def resolve_result_segments(survey, segment_param, range_param = nil, links: true)
+  #
+  # `window` is a Date range a caller can narrow the base to on top of the
+  # named preset — the "over time" tab's custom From/To. Applied to the BASE,
+  # like the preset, so a segment's count and its small-cell check are made
+  # within the window too.
+  def resolve_result_segments(survey, segment_param, range_param = nil, links: true, window: nil)
     base     = survey.responses.where(answered: true).order(created_at: :desc)
     base     = apply_date_range(base, range_param)
+    base     = base.where(created_at: window.begin.beginning_of_day..window.end.end_of_day) if window
     segments = result_segments(survey, base, links: links)
     [ base, segments, select_result_segment(segments, base, segment_param) ]
   end

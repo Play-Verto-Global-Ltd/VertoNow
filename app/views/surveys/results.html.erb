@@ -8,8 +8,9 @@
 
 <%# Full-viewport app-shell — body stays overflow:hidden from fullscreen layout %>
 <div style="height:100%;background:#1C2034;display:flex;overflow:hidden;position:relative;"
-     data-controller="freeform-answers"
-     data-action="keydown.esc@window->freeform-answers#closeOnEsc">
+     data-controller="freeform-answers answer-timeline"
+     data-answer-timeline-range-value="<%= @date_range.presence || "all" %>"
+     data-action="keydown.esc@window->freeform-answers#closeOnEsc keydown.esc@window->answer-timeline#closeOnEsc">
 
   <%# ── Freeform answers panel — one shell for the whole page, opened by the
       "View all answers" button on any freeform result card (_result_cards).
@@ -466,6 +467,69 @@
 </div><%# end reading column %>
 </div><%# end results-body %>
     </div><%# end scrollable feed %>
+
+  <%# ── Answer over time ── the tab a result row opens (answer_timeline_controller,
+      SurveyTimelinesController). Docked in the stage's right margin beside the
+      feed, like the Ask panel below it and for the same reason: absolute
+      inside the stage, so it starts under the header whatever height the
+      header is, and holds still while the feed scrolls. Every answer to the
+      row's question is drawn, the clicked one emphasised; the legend moves
+      the emphasis, the range asks the server again. %>
+  <aside id="results-timeline" class="rc-timeline" hidden
+         data-answer-timeline-target="panel" aria-label="<%= t("results.timeline_eyebrow") %>">
+    <div class="rc-timeline-head">
+      <div style="min-width:0;flex:1;">
+        <div class="rc-timeline-eyebrow"><%= t("results.timeline_eyebrow") %></div>
+        <div class="rc-timeline-title" data-answer-timeline-target="label"></div>
+        <div class="rc-timeline-q" data-answer-timeline-target="question"></div>
+      </div>
+      <button type="button" class="rc-timeline-x" data-action="click->answer-timeline#close"
+              aria-label="<%= t("share_modal.close") %>">✕</button>
+    </div>
+    <div class="rc-timeline-seg" role="group" aria-label="<%= t("results.timeline_range_label") %>">
+      <% [ [ "all", "timeline_range_all" ], [ "90d", "timeline_range_90" ], [ "30d", "timeline_range_30" ],
+           [ "7d", "timeline_range_7" ], [ "custom", "timeline_range_custom" ] ].each do |id, key| %>
+        <button type="button" class="rc-timeline-segbtn" data-range="<%= id %>"
+                data-answer-timeline-target="rangeBtn" data-answer-timeline-range-param="<%= id %>"
+                data-action="click->answer-timeline#setRange"><%= t("results.#{key}") %></button>
+      <% end %>
+    </div>
+    <div class="rc-timeline-custom" hidden data-answer-timeline-target="custom">
+      <label><%= t("results.timeline_from") %>
+        <input type="date" data-answer-timeline-target="from" data-action="change->answer-timeline#applyCustom">
+      </label>
+      <label><%= t("results.timeline_to") %>
+        <input type="date" data-answer-timeline-target="to" data-action="change->answer-timeline#applyCustom">
+      </label>
+    </div>
+    <div class="rc-timeline-stats">
+      <div class="rc-timeline-stat">
+        <span class="rc-timeline-stat-l" data-answer-timeline-target="nowLabel"></span>
+        <span class="rc-timeline-stat-v" data-answer-timeline-target="now"></span>
+      </div>
+      <div class="rc-timeline-stat">
+        <span class="rc-timeline-stat-l" data-answer-timeline-target="changeLabel"></span>
+        <span class="rc-timeline-stat-v" data-answer-timeline-target="change"></span>
+      </div>
+      <div class="rc-timeline-stat">
+        <span class="rc-timeline-stat-l"><%= t("results.timeline_peak") %></span>
+        <span class="rc-timeline-stat-v" data-answer-timeline-target="peak"></span>
+        <span class="rc-timeline-stat-s" data-answer-timeline-target="peakWhen"></span>
+      </div>
+    </div>
+    <div class="rc-timeline-chart" data-answer-timeline-target="chart"></div>
+    <div class="rc-timeline-status" data-answer-timeline-target="status" aria-live="polite"></div>
+    <div class="rc-timeline-legend" data-answer-timeline-target="legend"></div>
+    <div class="rc-timeline-seg" role="group" aria-label="<%= t("results.timeline_mode_label") %>">
+      <button type="button" class="rc-timeline-segbtn is-on" data-mode="share"
+              data-answer-timeline-target="modeBtn" data-answer-timeline-mode-param="share"
+              data-action="click->answer-timeline#setMode"><%= t("results.timeline_share") %></button>
+      <button type="button" class="rc-timeline-segbtn" data-mode="count"
+              data-answer-timeline-target="modeBtn" data-answer-timeline-mode-param="count"
+              data-action="click->answer-timeline#setMode"><%= t("results.timeline_count") %></button>
+    </div>
+    <div class="rc-timeline-foot"><%= t("results.timeline_footnote", count: AnswerTimeline::MIN_PERIOD_ANSWERS) %></div>
+  </aside>
 
   <%# ── Ask Verto ── a floating CTA that opens the chat OVER the feed rather
       than beside it. It used to be a permanent 320px column, which charged

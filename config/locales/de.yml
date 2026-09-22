@@ -234,6 +234,21 @@ de:
     combination_suppressed_title: "Zu wenige Antworten, um diese Kombination anzuzeigen"
     combination_suppressed_body: "Weniger als %{count} Personen erfüllen alle gewählten Filter, und ihre Antworten zu zeigen könnte jemanden identifizierbar machen. Entferne einen Filter, um die Ansicht zu erweitern."
     freeform_other_eyebrow: "Sonstiges: eingetragene Antworten"
+    timeline_eyebrow: "Im Zeitverlauf"
+    timeline_open_hint: "Zeigen, wie sich diese Antwort über die Zeit verändert hat"
+    timeline_range_label: "Zeitraum"
+    timeline_range_all: "Gesamter Zeitraum"
+    timeline_range_90: "90 T"
+    timeline_range_30: "30 T"
+    timeline_range_7: "7 T"
+    timeline_range_custom: "Eigener"
+    timeline_from: "Von"
+    timeline_to: "Bis"
+    timeline_peak: "Höchstwert"
+    timeline_mode_label: "Maß"
+    timeline_share: "Anteil %"
+    timeline_count: "Anzahl"
+    timeline_footnote: "Der Anteil bezieht sich auf die Antworten, die im jeweiligen Zeitraum eingegangen sind. Ein Zeitraum mit weniger als %{count} Antworten bleibt leer."
   shared_results:
     title: Ergebnisse
     read_only_badge: Schreibgeschützt
@@ -703,6 +718,14 @@ de:
       compare_summarizing: 'Wird zusammengefasst…'
       compare_summarize_error: 'Konnte gerade nicht zusammengefasst werden.'
       chat_error: "Entschuldigung, etwas ist schiefgelaufen. Bitte versuchen Sie es noch einmal."
+      timeline_loading: "Wird geladen…"
+      timeline_error: "Der Verlauf konnte nicht geladen werden – bitte erneut versuchen."
+      timeline_empty: "Keine Antworten in diesem Zeitraum."
+      timeline_thin: "Weniger als %{count} Antworten"
+      timeline_latest: "Aktuell"
+      timeline_change: "vs. %{n} davor"
+      timeline_pts: "%{n} Pkt."
+      timeline_wc: "KW ab %{date}"
   unsubscribe:
     title: "Playverto-E-Mails abbestellen"
     body: "Keine Kampagnen-E-Mails mehr an %{email} senden?"

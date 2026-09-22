@@ -234,6 +234,21 @@ uk:
     combination_suppressed_title: "Замало відповідей, щоб показати цю комбінацію"
     combination_suppressed_body: "Менше ніж %{count} осіб відповідають усім обраним фільтрам, і показ їхніх відповідей може розкрити чиюсь особу. Приберіть один фільтр, щоб розширити вибірку."
     freeform_other_eyebrow: "Інше: вписані відповіді"
+    timeline_eyebrow: "У часі"
+    timeline_open_hint: "Показати, як ця відповідь змінювалася з часом"
+    timeline_range_label: "Період"
+    timeline_range_all: "За весь час"
+    timeline_range_90: "90 д"
+    timeline_range_30: "30 д"
+    timeline_range_7: "7 д"
+    timeline_range_custom: "Власний"
+    timeline_from: "З"
+    timeline_to: "По"
+    timeline_peak: "Пік"
+    timeline_mode_label: "Показник"
+    timeline_share: "Частка %"
+    timeline_count: "Кількість"
+    timeline_footnote: "Частка рахується від відповідей, що надійшли в кожному періоді. Період з менш ніж %{count} відповідями лишається порожнім."
   shared_results:
     title: Результати
     read_only_badge: Лише перегляд
@@ -703,6 +718,14 @@ uk:
       compare_summarizing: 'Узагальнюємо…'
       compare_summarize_error: 'Зараз не вдалося узагальнити.'
       chat_error: "Вибачте, щось пішло не так. Спробуйте ще раз."
+      timeline_loading: "Завантаження…"
+      timeline_error: "Не вдалося завантажити динаміку — спробуйте ще раз."
+      timeline_empty: "У цьому періоді немає відповідей."
+      timeline_thin: "Менше ніж %{count} відповідей"
+      timeline_latest: "Останній"
+      timeline_change: "до попередніх %{n}"
+      timeline_pts: "%{n} в.п."
+      timeline_wc: "тиж. з %{date}"
   unsubscribe:
     title: "Відписатися від листів Playverto"
     body: "Більше не надсилати листи кампаній на %{email}?"

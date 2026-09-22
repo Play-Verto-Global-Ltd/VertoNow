@@ -234,6 +234,21 @@ tr:
     combination_suppressed_title: "Bu kombinasyonu göstermek için çok az yanıt var"
     combination_suppressed_body: "Seçtiğiniz tüm filtrelere %{count} kişiden azı uyuyor ve yanıtlarını göstermek birini tanınır kılabilir. Görünümü genişletmek için bir filtreyi kaldırın."
     freeform_other_eyebrow: "Diğer: yazılan yanıtlar"
+    timeline_eyebrow: "Zaman içinde"
+    timeline_open_hint: "Bu yanıtın zaman içinde nasıl değiştiğini göster"
+    timeline_range_label: "Tarih aralığı"
+    timeline_range_all: "Tüm zamanlar"
+    timeline_range_90: "90 g"
+    timeline_range_30: "30 g"
+    timeline_range_7: "7 g"
+    timeline_range_custom: "Özel"
+    timeline_from: "Başlangıç"
+    timeline_to: "Bitiş"
+    timeline_peak: "Zirve"
+    timeline_mode_label: "Ölçü"
+    timeline_share: "Pay %"
+    timeline_count: "Sayı"
+    timeline_footnote: "Pay, her dönemde gelen yanıtlar üzerinden hesaplanır. %{count} yanıttan az olan bir dönem boş bırakılır."
   shared_results:
     title: Sonuçlar
     read_only_badge: Salt okunur
@@ -703,6 +718,14 @@ tr:
       compare_summarizing: 'Özetleniyor…'
       compare_summarize_error: 'Şu anda özetlenemedi.'
       chat_error: "Üzgünüz, bir şeyler ters gitti. Lütfen tekrar deneyin."
+      timeline_loading: "Yükleniyor…"
+      timeline_error: "Zaman çizelgesi yüklenemedi; lütfen tekrar deneyin."
+      timeline_empty: "Bu aralıkta yanıt yok."
+      timeline_thin: "%{count} yanıttan az"
+      timeline_latest: "Son"
+      timeline_change: "önceki %{n} ile"
+      timeline_pts: "%{n} puan"
+      timeline_wc: "%{date} haftası"
   unsubscribe:
     title: "Playverto e-postalarından çık"
     body: "%{email} adresine kampanya e-postaları gönderilmesin mi?"

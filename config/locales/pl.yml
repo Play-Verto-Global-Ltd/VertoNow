@@ -234,6 +234,21 @@ pl:
     combination_suppressed_title: "Za mało odpowiedzi, aby pokazać tę kombinację"
     combination_suppressed_body: "Mniej niż %{count} osób spełnia wszystkie wybrane filtry, a pokazanie ich odpowiedzi mogłoby kogoś zidentyfikować. Usuń jeden filtr, aby poszerzyć widok."
     freeform_other_eyebrow: "Inne: odpowiedzi wpisane"
+    timeline_eyebrow: "W czasie"
+    timeline_open_hint: "Pokaż, jak ta odpowiedź zmieniała się w czasie"
+    timeline_range_label: "Zakres dat"
+    timeline_range_all: "Cały okres"
+    timeline_range_90: "90 d"
+    timeline_range_30: "30 d"
+    timeline_range_7: "7 d"
+    timeline_range_custom: "Własny"
+    timeline_from: "Od"
+    timeline_to: "Do"
+    timeline_peak: "Szczyt"
+    timeline_mode_label: "Miara"
+    timeline_share: "Udział %"
+    timeline_count: "Liczba"
+    timeline_footnote: "Udział liczony jest z odpowiedzi, które wpłynęły w danym okresie. Okres z mniej niż %{count} odpowiedziami pozostaje pusty."
   shared_results:
     title: Wyniki
     read_only_badge: Tylko do odczytu
@@ -703,6 +718,14 @@ pl:
       compare_summarizing: 'Podsumowywanie…'
       compare_summarize_error: 'Nie udało się teraz podsumować.'
       chat_error: "Przepraszamy, coś poszło nie tak. Spróbuj ponownie."
+      timeline_loading: "Wczytywanie…"
+      timeline_error: "Nie udało się wczytać przebiegu — spróbuj ponownie."
+      timeline_empty: "Brak odpowiedzi w tym okresie."
+      timeline_thin: "Mniej niż %{count} odpowiedzi"
+      timeline_latest: "Ostatni"
+      timeline_change: "vs poprzednie %{n}"
+      timeline_pts: "%{n} pkt"
+      timeline_wc: "tydz. od %{date}"
   unsubscribe:
     title: "Wypisz się z e-maili Playverto"
     body: "Przestać wysyłać e-maile kampanii na adres %{email}?"

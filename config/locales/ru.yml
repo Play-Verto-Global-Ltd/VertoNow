@@ -234,6 +234,21 @@ ru:
     combination_suppressed_title: "Слишком мало ответов, чтобы показать эту комбинацию"
     combination_suppressed_body: "Менее %{count} человек соответствуют всем выбранным фильтрам, и показ их ответов может раскрыть чью-то личность. Уберите один фильтр, чтобы расширить выборку."
     freeform_other_eyebrow: "Другое: вписанные ответы"
+    timeline_eyebrow: "Во времени"
+    timeline_open_hint: "Показать, как этот ответ менялся со временем"
+    timeline_range_label: "Период"
+    timeline_range_all: "За всё время"
+    timeline_range_90: "90 д"
+    timeline_range_30: "30 д"
+    timeline_range_7: "7 д"
+    timeline_range_custom: "Свой"
+    timeline_from: "С"
+    timeline_to: "По"
+    timeline_peak: "Пик"
+    timeline_mode_label: "Показатель"
+    timeline_share: "Доля %"
+    timeline_count: "Количество"
+    timeline_footnote: "Доля считается от ответов, поступивших в каждый период. Период с менее чем %{count} ответами остаётся пустым."
   shared_results:
     title: Результаты
     read_only_badge: Только для чтения
@@ -703,6 +718,14 @@ ru:
       compare_summarizing: 'Обобщаем…'
       compare_summarize_error: 'Сейчас не удалось обобщить.'
       chat_error: "К сожалению, что-то пошло не так. Попробуйте ещё раз."
+      timeline_loading: "Загрузка…"
+      timeline_error: "Не удалось загрузить динамику — попробуйте ещё раз."
+      timeline_empty: "В этом периоде нет ответов."
+      timeline_thin: "Менее %{count} ответов"
+      timeline_latest: "Последний"
+      timeline_change: "к предыдущим %{n}"
+      timeline_pts: "%{n} п.п."
+      timeline_wc: "нед. с %{date}"
   unsubscribe:
     title: "Отписаться от писем Playverto"
     body: "Больше не отправлять письма кампаний на %{email}?"

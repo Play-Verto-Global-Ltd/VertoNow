@@ -43,7 +43,25 @@
      total_ans = result[:total]
      card_meta = card_type_meta(type)
      thumb     = result_card_thumb_style(card_data)
-     opt_thumbs = result_option_thumbs(card_data) %>
+     opt_thumbs = result_option_thumbs(card_data)
+     # On the owner's page, a row of a card with counted answers is a BUTTON
+     # that opens the "over time" tab on that answer (answer_timeline_controller
+     # + SurveyTimelinesController), carrying the card's endpoint with the
+     # page's segment already on it, the row's key and the words to show. The
+     # shared page, and a card with nothing to count, keep plain rows.
+     timeline = answers && AnswerTimeline.countable?(card_data)
+     row_tag  = ->(key, label, statement = nil, zero = false) do
+       classes = "rc-row#{' is-zero' if zero}"
+       if timeline
+         { tag: :button, type: "button", class: classes, title: t("results.timeline_open_hint"),
+           data: { action: "click->answer-timeline#open",
+                   answer_timeline_url_param: survey_results_timeline_path(answers[:survey], card_index: idx, segment: answers[:segment], statement: statement),
+                   answer_timeline_key_param: key.to_s, answer_timeline_label_param: label.to_s,
+                   answer_timeline_question_param: card_data["text"].to_s } }
+       else
+         { tag: :div, class: classes }
+       end
+     end %>
 
   <%# The id is the outline rail's anchor (surveys/_results_outline). Rendered
       here rather than added by JS so the rail's links work before any script
@@ -88,7 +106,8 @@
       <div class="rc-rows">
         <% counts.sort_by { |_, v| -v }.each do |label, count| %>
           <% pct = ((count / grand) * 100).round %>
-          <div class="rc-row <%= "is-zero" if count.to_i.zero? %>">
+          <% row = row_tag.call(label, label, nil, count.to_i.zero?) %>
+          <%= content_tag(row[:tag], row.except(:tag)) do %>
             <div class="rc-fill" style="width:<%= pct %>%;"></div>
             <div class="rc-rowin">
               <% if (style = opt_thumbs[label.to_s]) %>
@@ -98,7 +117,7 @@
               <span class="rc-pct"><%= pct %>%</span>
               <span class="rc-n"><%= count %></span>
             </div>
-          </div>
+          <% end %>
         <% end %>
       </div>
 
@@ -136,7 +155,8 @@
       <div class="rc-rows is-compact">
         <% n.times do |i| %>
           <% count = result[:counts][i].to_i; label = labels[i] || "Step #{i + 1}"; pct = ((count / grand) * 100).round %>
-          <div class="rc-row <%= "is-zero" if count.zero? %>">
+          <% row = row_tag.call(i, label, nil, count.zero?) %>
+          <%= content_tag(row[:tag], row.except(:tag)) do %>
             <div class="rc-fill" style="width:<%= pct %>%;"></div>
             <div class="rc-rowin">
               <% if (style = opt_thumbs[label.to_s]) %>
@@ -146,7 +166,7 @@
               <span class="rc-pct"><%= pct %>%</span>
               <span class="rc-n"><%= count %></span>
             </div>
-          </div>
+          <% end %>
         <% end %>
       </div>
 
@@ -164,14 +184,15 @@
           <%# Teal bars, gold stars. Amber at the alpha a row fill needs comes
               out olive over this navy — yellow over blue does — so the gold
               stays on the glyphs and the average, where it is opaque. %>
-          <div class="rc-row <%= "is-zero" if count.zero? %>">
+          <% row = row_tag.call(star, "★" * star, nil, count.zero?) %>
+          <%= content_tag(row[:tag], row.except(:tag)) do %>
             <div class="rc-fill" style="width:<%= pct %>%;"></div>
             <div class="rc-rowin">
               <span class="rc-label rc-stars-row"><%= "★" * star %></span>
               <span class="rc-pct"><%= pct %>%</span>
               <span class="rc-n"><%= count %></span>
             </div>
-          </div>
+          <% end %>
         <% end %>
       </div>
 
@@ -207,7 +228,8 @@
                 that isn't one would otherwise paint "…3D" and fall back to
                 nothing at all. %>
             <% tint = color.match?(/\A#[0-9a-fA-F]{6}\z/) ? "#{color}3D" : "rgba(1,234,203,0.22)" %>
-            <div class="rc-row <%= "is-zero" if count.zero? %>">
+            <% row = row_tag.call(response["key"], response["label"], label, count.zero?) %>
+            <%= content_tag(row[:tag], row.except(:tag)) do %>
               <div class="rc-fill" style="width:<%= pct %>%;background:<%= tint %>;"></div>
               <div class="rc-rowin">
                 <span class="rc-dot" style="background:<%= color %>;"></span>
@@ -215,7 +237,7 @@
                 <span class="rc-pct"><%= pct %>%</span>
                 <span class="rc-n"><%= count %></span>
               </div>
-            </div>
+            <% end %>
           <% end %>
         </div>
       <% end %>

@@ -133,6 +133,38 @@ class LocaleSpliceTest < ActiveSupport::TestCase
     assert_equal %w[player], path_for.call(%w[player])
   end
 
+  # A nested block that is the LAST under its parent is closed by a key
+  # indented LESS than itself — `js.ask` here, by the top-level `player:`. The
+  # range used to end only on a line indented exactly as far as the block, so
+  # it ran on into the next namespace and the splice landed there: eight
+  # six-space lines under a two-space key, which is not YAML, in 24 files
+  # (2026-09-22). The write-back check could not revert what it could not
+  # parse, so the file stayed broken — that half is guarded here too.
+  test "a nested block is closed by a shallower key, not just by its own sibling" do
+    path = write(FILE)
+
+    splice(path, { "js.ask.hint" => "Hint" })
+
+    data = YAML.load_file(path)["xx"]
+    assert_equal "Hint", data.dig("js", "ask", "hint")
+    assert_equal "Ask", data.dig("js", "ask", "title")
+    assert_equal({ "join_cta" => "Join" }, data["player"], "the top-level player block must be untouched")
+    assert_match(/^    ask:\n      title: "Ask"\n      hint: "Hint"\n  player:/, File.read(path),
+                 "the leaf lands inside js.ask, before the shallower key that closes it")
+  end
+
+  test "a splice that would not parse is reverted rather than left on disk" do
+    path = write(FILE)
+    original = File.read(path)
+
+    # A value the emitter cannot make safe inside a block is not a real case,
+    # so the parse failure is provoked the direct way: by handing the splicer
+    # a file whose end is mid-structure once anything is appended to it.
+    File.write(path, original + "  broken: [\n", encoding: "UTF-8")
+    assert_raises(RuntimeError) { splice(path, { "you.body" => "B" }) }
+    assert_equal original + "  broken: [\n", File.read(path), "reverted to exactly what it was given"
+  end
+
   # A block at the end of its parent, with a comment and a sibling after it —
   # the arrangement every real locale file has, and the one where a line-range
   # that runs on by one would splice a leaf into the wrong namespace.

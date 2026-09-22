@@ -234,6 +234,21 @@ id:
     combination_suppressed_title: "Terlalu sedikit tanggapan untuk menampilkan kombinasi ini"
     combination_suppressed_body: "Kurang dari %{count} orang cocok dengan semua filter yang Anda pilih, dan menampilkan jawaban mereka bisa mengungkap identitas seseorang. Hapus satu filter untuk memperluas tampilan."
     freeform_other_eyebrow: "Lainnya: jawaban yang ditulis"
+    timeline_eyebrow: "Seiring waktu"
+    timeline_open_hint: "Lihat bagaimana jawaban ini berubah seiring waktu"
+    timeline_range_label: "Rentang tanggal"
+    timeline_range_all: "Sepanjang waktu"
+    timeline_range_90: "90 h"
+    timeline_range_30: "30 h"
+    timeline_range_7: "7 h"
+    timeline_range_custom: "Kustom"
+    timeline_from: "Dari"
+    timeline_to: "Sampai"
+    timeline_peak: "Puncak"
+    timeline_mode_label: "Ukuran"
+    timeline_share: "Porsi %"
+    timeline_count: "Jumlah"
+    timeline_footnote: "Porsi dihitung dari jawaban yang masuk pada tiap periode. Periode dengan kurang dari %{count} jawaban dibiarkan kosong."
   shared_results:
     title: Hasil
     read_only_badge: Hanya baca
@@ -703,6 +718,14 @@ id:
       compare_summarizing: 'Meringkas…'
       compare_summarize_error: 'Tidak dapat meringkas saat ini.'
       chat_error: "Maaf, terjadi kesalahan. Silakan coba lagi."
+      timeline_loading: "Memuat…"
+      timeline_error: "Tidak dapat memuat garis waktu — coba lagi."
+      timeline_empty: "Tidak ada jawaban dalam rentang ini."
+      timeline_thin: "Kurang dari %{count} jawaban"
+      timeline_latest: "Terbaru"
+      timeline_change: "vs %{n} sebelumnya"
+      timeline_pts: "%{n} poin"
+      timeline_wc: "pekan %{date}"
   unsubscribe:
     title: "Berhenti berlangganan email Playverto"
     body: "Berhenti mengirim email kampanye ke %{email}?"

@@ -234,6 +234,21 @@ hi:
     combination_suppressed_title: "इस संयोजन को दिखाने के लिए बहुत कम जवाब हैं"
     combination_suppressed_body: "आपके चुने सभी फ़िल्टरों पर %{count} से कम लोग खरे उतरते हैं, और उनके जवाब दिखाने से किसी की पहचान हो सकती है। दायरा बढ़ाने के लिए एक फ़िल्टर हटाएँ।"
     freeform_other_eyebrow: "अन्य: लिखे गए जवाब"
+    timeline_eyebrow: "समय के साथ"
+    timeline_open_hint: "देखें कि यह जवाब समय के साथ कैसे बदला"
+    timeline_range_label: "तारीख़ सीमा"
+    timeline_range_all: "पूरा समय"
+    timeline_range_90: "90 दिन"
+    timeline_range_30: "30 दिन"
+    timeline_range_7: "7 दिन"
+    timeline_range_custom: "अपनी पसंद"
+    timeline_from: "से"
+    timeline_to: "तक"
+    timeline_peak: "शिखर"
+    timeline_mode_label: "माप"
+    timeline_share: "हिस्सा %"
+    timeline_count: "संख्या"
+    timeline_footnote: "हिस्सा हर अवधि में आए जवाबों के आधार पर है। %{count} से कम जवाबों वाली अवधि खाली छोड़ी जाती है।"
   shared_results:
     title: परिणाम
     read_only_badge: केवल पढ़ने के लिए
@@ -703,6 +718,14 @@ hi:
       compare_summarizing: 'सारांशित किया जा रहा है…'
       compare_summarize_error: 'अभी सारांशित नहीं किया जा सका.'
       chat_error: "क्षमा करें, कुछ गड़बड़ हो गई। कृपया फिर से कोशिश करें।"
+      timeline_loading: "लोड हो रहा है…"
+      timeline_error: "समय-रेखा लोड नहीं हो सकी — कृपया फिर कोशिश करें।"
+      timeline_empty: "इस अवधि में कोई जवाब नहीं।"
+      timeline_thin: "%{count} से कम जवाब"
+      timeline_latest: "नवीनतम"
+      timeline_change: "पिछले %{n} की तुलना"
+      timeline_pts: "%{n} अंक"
+      timeline_wc: "%{date} का सप्ताह"
   unsubscribe:
     title: "Playverto ईमेल से सदस्यता समाप्त करें"
     body: "%{email} पर अभियान ईमेल भेजना बंद करें?"

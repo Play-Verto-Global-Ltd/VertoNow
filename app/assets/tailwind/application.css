@@ -5433,6 +5433,17 @@ button.editor-leave-btn { cursor: pointer; }
 /* An answer nobody gave still holds its place — a scale with a gap in it is
    the finding, and dropping the row would quietly change the shape people
    read. Recessed, not removed. */
+/* A row that opens the "over time" tab is a real button (answer_timeline_
+   controller), so it needs the button chrome taken back off and a focus ring
+   a keyboard can see. The picked one wears the same teal ring the segment
+   pills wear when active. */
+button.rc-row {
+  display: block; width: 100%; padding: 0; border: 0; font: inherit; color: inherit;
+  text-align: start; cursor: pointer; appearance: none;
+}
+button.rc-row:hover { background: rgba(255,255,255,0.07); }
+button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
+.rc-row.is-picked { box-shadow: inset 0 0 0 1px rgba(1,234,203,0.7); background: rgba(1,234,203,0.08); }
 .rc-row.is-zero { background: rgba(255,255,255,0.02); }
 .rc-row.is-zero .rc-label { color: rgba(255,255,255,0.35); }
 .rc-row.is-zero .rc-pct   { color: rgba(255,255,255,0.35); }
@@ -5786,6 +5797,101 @@ button.editor-leave-btn { cursor: pointer; }
    gradient moves underneath: the ramp passes through #FFFA77, and no single
    glyph colour survives a moving rainbow. */
 .results-stage { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; }
+
+/* ── Answer over time ── the tab a result row opens (answer_timeline_controller).
+   Absolute inside the stage like the Ask panel, in the right margin the feed
+   leaves at desktop widths; under the Ask panel's z-index so that one opens
+   over it. Scrolls inside itself on a short window rather than clipping. */
+.rc-timeline {
+  position: absolute; z-index: 40;
+  inset-block: 14px 14px; inset-inline-end: 18px;
+  width: min(340px, calc(100vw - 36px)); box-sizing: border-box;
+  padding: 14px 14px 12px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+  background: #232A47; border: 1px solid rgba(1,234,203,0.35);
+  border-radius: 14px; box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+}
+.rc-timeline[hidden] { display: none; }
+.rc-timeline-head { display: flex; align-items: flex-start; gap: 10px; }
+.rc-timeline-eyebrow {
+  font-family: "Alata", sans-serif; font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #01EACB; margin-bottom: 3px;
+}
+.rc-timeline-title { font-family: "Alata", sans-serif; font-size: 18px; color: #fff; line-height: 1.2; overflow-wrap: anywhere; }
+.rc-timeline-q {
+  margin-top: 3px; font-family: "ABeeZee", sans-serif; font-size: 11px; color: rgba(255,255,255,0.45);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rc-timeline-x {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); font-size: 12px;
+}
+.rc-timeline-x:hover { color: #fff; background: rgba(255,255,255,0.12); }
+.rc-timeline-seg {
+  display: flex; gap: 2px; padding: 3px; border-radius: 100px; align-self: flex-start;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+}
+.rc-timeline-segbtn {
+  padding: 5px 10px; border-radius: 100px; border: none; cursor: pointer; white-space: nowrap;
+  background: transparent; color: rgba(255,255,255,0.5);
+  font-family: "ABeeZee", sans-serif; font-size: 11px; transition: background 0.15s, color 0.15s;
+}
+.rc-timeline-segbtn:hover { color: #fff; }
+.rc-timeline-segbtn.is-on { background: #01EACB; color: #10233A; }
+.rc-timeline-custom { display: flex; gap: 8px; }
+.rc-timeline-custom[hidden] { display: none; }
+.rc-timeline-custom label {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;
+  font-family: "Alata", sans-serif; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+.rc-timeline-custom input {
+  height: 30px; padding: 0 8px; border-radius: 8px; min-width: 0;
+  border: 1px solid rgba(255,255,255,0.14); background: rgba(20,23,38,0.6); color: #fff;
+  font-family: "ABeeZee", sans-serif; font-size: 12px; color-scheme: dark;
+}
+.rc-timeline-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.rc-timeline-stat {
+  min-width: 0; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,0.04);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.rc-timeline-stat-l {
+  font-family: "Alata", sans-serif; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rc-timeline-stat-v { font-family: "Alata", sans-serif; font-size: 18px; color: #fff; }
+.rc-timeline-stat-s { font-family: "ABeeZee", sans-serif; font-size: 10px; color: rgba(255,255,255,0.4); }
+.rc-timeline-chart { position: relative; width: 100%; height: 170px; transition: opacity 0.15s; }
+.rc-timeline-chart.is-stale { opacity: 0.5; }
+.rc-timeline-chart svg { display: block; }
+.rc-timeline-tip {
+  position: absolute; width: 160px; box-sizing: border-box; padding: 8px 10px; border-radius: 10px;
+  background: #1C2034; border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  display: flex; flex-direction: column; gap: 3px; pointer-events: none;
+  font-family: "ABeeZee", sans-serif; font-size: 10px; color: rgba(255,255,255,0.7);
+}
+.rc-timeline-tip[hidden] { display: none; }
+.rc-timeline-tip-title { font-family: "Alata", sans-serif; font-size: 11px; color: #fff; }
+.rc-timeline-tip-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.rc-timeline-tip-row.is-on { color: #fff; }
+.rc-timeline-tip-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rc-timeline-tip-row b { font-family: "Alata", sans-serif; font-weight: normal; color: #fff; }
+.rc-timeline-key { display: inline-block; flex-shrink: 0; width: 12px; height: 2px; border-radius: 1px; background: rgba(255,255,255,0.35); }
+.rc-timeline-key.is-on { background: #01EACB; }
+.rc-timeline-status { font-family: "ABeeZee", sans-serif; font-size: 11px; color: rgba(255,255,255,0.45); min-height: 1em; }
+.rc-timeline-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 10px; }
+.rc-timeline-lg {
+  display: flex; align-items: center; gap: 7px; min-width: 0; padding: 2px 4px; border-radius: 6px;
+  border: none; background: transparent; cursor: pointer; text-align: start;
+  font-family: "ABeeZee", sans-serif; font-size: 11px; color: rgba(255,255,255,0.55);
+}
+.rc-timeline-lg span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rc-timeline-lg:hover, .rc-timeline-lg.is-on { color: #fff; }
+.rc-timeline-lg:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
+.rc-timeline-foot { font-family: "ABeeZee", sans-serif; font-size: 10px; line-height: 1.5; color: rgba(255,255,255,0.35); }
+@media (prefers-reduced-motion: reduce) {
+  .rc-timeline-chart, .rc-timeline-segbtn { transition: none; }
+}
 
 .results-ask-fab {
   position: absolute; inset-inline-end: 22px; bottom: 22px; z-index: 40;

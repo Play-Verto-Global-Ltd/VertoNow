@@ -234,6 +234,21 @@ nl:
     combination_suppressed_title: "Te weinig antwoorden om deze combinatie te tonen"
     combination_suppressed_body: "Minder dan %{count} mensen voldoen aan alle gekozen filters, en hun antwoorden tonen zou iemand herkenbaar kunnen maken. Haal een filter weg om de weergave te verbreden."
     freeform_other_eyebrow: "Anders: ingevulde antwoorden"
+    timeline_eyebrow: "Door de tijd"
+    timeline_open_hint: "Laat zien hoe dit antwoord door de tijd veranderde"
+    timeline_range_label: "Periode"
+    timeline_range_all: "Hele periode"
+    timeline_range_90: "90 d"
+    timeline_range_30: "30 d"
+    timeline_range_7: "7 d"
+    timeline_range_custom: "Aangepast"
+    timeline_from: "Van"
+    timeline_to: "Tot"
+    timeline_peak: "Piek"
+    timeline_mode_label: "Maat"
+    timeline_share: "Aandeel %"
+    timeline_count: "Aantal"
+    timeline_footnote: "Het aandeel is berekend over de antwoorden die in elke periode binnenkwamen. Een periode met minder dan %{count} antwoorden blijft leeg."
   shared_results:
     title: Resultaten
     read_only_badge: Alleen-lezen
@@ -703,6 +718,14 @@ nl:
       compare_summarizing: 'Wordt samengevat…'
       compare_summarize_error: 'Kon nu niet worden samengevat.'
       chat_error: "Sorry, er ging iets mis. Probeer het opnieuw."
+      timeline_loading: "Laden…"
+      timeline_error: "Het verloop kon niet worden geladen. Probeer het opnieuw."
+      timeline_empty: "Geen antwoorden in deze periode."
+      timeline_thin: "Minder dan %{count} antwoorden"
+      timeline_latest: "Laatste"
+      timeline_change: "t.o.v. vorige %{n}"
+      timeline_pts: "%{n} pt"
+      timeline_wc: "wk v. %{date}"
   unsubscribe:
     title: "Afmelden voor Playverto-e-mails"
     body: "Geen campagne-e-mails meer sturen naar %{email}?"

@@ -234,6 +234,21 @@ vi:
     combination_suppressed_title: "Quá ít phản hồi để hiển thị tổ hợp này"
     combination_suppressed_body: "Chưa đến %{count} người khớp với mọi bộ lọc bạn đã chọn, và hiển thị câu trả lời của họ có thể làm lộ danh tính ai đó. Bỏ bớt một bộ lọc để mở rộng."
     freeform_other_eyebrow: "Khác: câu trả lời tự viết"
+    timeline_eyebrow: "Theo thời gian"
+    timeline_open_hint: "Xem câu trả lời này thay đổi thế nào theo thời gian"
+    timeline_range_label: "Khoảng thời gian"
+    timeline_range_all: "Toàn bộ"
+    timeline_range_90: "90 ng"
+    timeline_range_30: "30 ng"
+    timeline_range_7: "7 ng"
+    timeline_range_custom: "Tùy chọn"
+    timeline_from: "Từ"
+    timeline_to: "Đến"
+    timeline_peak: "Đỉnh"
+    timeline_mode_label: "Số đo"
+    timeline_share: "Tỷ lệ %"
+    timeline_count: "Số lượng"
+    timeline_footnote: "Tỷ lệ tính trên các câu trả lời đến trong mỗi kỳ. Kỳ có ít hơn %{count} câu trả lời sẽ để trống."
   shared_results:
     title: Kết quả
     read_only_badge: Chỉ xem
@@ -703,6 +718,14 @@ vi:
       compare_summarizing: 'Đang tóm tắt…'
       compare_summarize_error: 'Hiện không thể tóm tắt.'
       chat_error: "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại."
+      timeline_loading: "Đang tải…"
+      timeline_error: "Không tải được dòng thời gian — vui lòng thử lại."
+      timeline_empty: "Không có câu trả lời trong khoảng này."
+      timeline_thin: "Ít hơn %{count} câu trả lời"
+      timeline_latest: "Mới nhất"
+      timeline_change: "so với %{n} kỳ trước"
+      timeline_pts: "%{n} điểm"
+      timeline_wc: "tuần %{date}"
   unsubscribe:
     title: "Hủy đăng ký email Playverto"
     body: "Ngừng gửi email chiến dịch đến %{email}?"

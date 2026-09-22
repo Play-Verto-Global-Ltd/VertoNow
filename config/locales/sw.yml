@@ -234,6 +234,21 @@ sw:
     combination_suppressed_title: "Majibu ni machache mno kuonyesha mchanganyiko huu"
     combination_suppressed_body: "Chini ya watu %{count} wanalingana na vichujio vyote ulivyochagua, na kuonyesha majibu yao kunaweza kumtambulisha mtu. Ondoa kichujio kimoja ili kupanua mwonekano."
     freeform_other_eyebrow: "Nyingine: majibu yaliyoandikwa"
+    timeline_eyebrow: "Kwa muda"
+    timeline_open_hint: "Onyesha jinsi jibu hili lilivyobadilika kwa muda"
+    timeline_range_label: "Kipindi cha tarehe"
+    timeline_range_all: "Muda wote"
+    timeline_range_90: "siku 90"
+    timeline_range_30: "siku 30"
+    timeline_range_7: "siku 7"
+    timeline_range_custom: "Maalum"
+    timeline_from: "Kuanzia"
+    timeline_to: "Hadi"
+    timeline_peak: "Kilele"
+    timeline_mode_label: "Kipimo"
+    timeline_share: "Sehemu %"
+    timeline_count: "Idadi"
+    timeline_footnote: "Sehemu ni ya majibu yaliyofika katika kila kipindi. Kipindi chenye majibu chini ya %{count} huachwa wazi."
   shared_results:
     title: Matokeo
     read_only_badge: Kusoma tu
@@ -703,6 +718,14 @@ sw:
       compare_summarizing: 'Inafupisha…'
       compare_summarize_error: 'Imeshindwa kufupisha kwa sasa.'
       chat_error: "Samahani, hitilafu imetokea. Tafadhali jaribu tena."
+      timeline_loading: "Inapakia…"
+      timeline_error: "Imeshindwa kupakia mwenendo — tafadhali jaribu tena."
+      timeline_empty: "Hakuna majibu katika kipindi hiki."
+      timeline_thin: "Chini ya majibu %{count}"
+      timeline_latest: "Ya hivi punde"
+      timeline_change: "dhidi ya %{n} zilizopita"
+      timeline_pts: "pointi %{n}"
+      timeline_wc: "wiki ya %{date}"
   unsubscribe:
     title: "Jiondoe kwenye barua pepe za Playverto"
     body: "Kuacha kutuma barua pepe za kampeni kwa %{email}?"

@@ -408,7 +408,15 @@ def splice_into_locale!(path, code, additions)
   # leaf changed, none disappeared, nothing was reformatted into a different
   # type. A rewrite that silently ate `templates.*.cards` would have been
   # caught here rather than by a parity test three commits later.
-  after = YAML.load_file(path)[code] || {}
+  # A splice that lands where YAML cannot be is caught here too: without the
+  # rescue the parse error escaped BEFORE the revert, and the broken file was
+  # what the next test run found.
+  after = begin
+    YAML.load_file(path)[code] || {}
+  rescue Psych::SyntaxError => e
+    File.write(path, original, encoding: "UTF-8")
+    raise "splice into #{File.basename(path)} produced YAML that does not parse (#{e.message}) — reverted"
+  end
   wanted = deep_merge_flat(before, additions)
   unless after == wanted
     File.write(path, original, encoding: "UTF-8")
@@ -474,14 +482,22 @@ def block_line_range(lines, path)
     start = window.find { |i| lines[i].start_with?("#{pad}#{key}:") }
     return nil unless start
 
+    # What closes the block: a non-blank line indented as far as the block's
+    # own key OR LESS — its sibling, or an ancestor's. "Or less" is the part
+    # that was missing: the check matched exactly `pad`, so a block two levels
+    # deep that was not the last under its parent (`js.results`, followed by
+    # the top-level `unsubscribe:`) ran on past the shallower key and ended
+    # inside the NEXT namespace, and the splice landed there — as eight
+    # six-space lines under a two-space key, which is not YAML (2026-09-22).
+    closer = /\A {0,#{pad.size}}\S/
     finish = start
     ((start + 1)...lines.size).each do |i|
       line = lines[i]
       # A blank line inside a block belongs to it unless what follows has
       # closed the block — so look past the blank rather than stopping on it.
       next_real = lines[(i + 1)..]&.find { |l| l !~ /\A\s*\z/ }
-      break if line =~ /\A\s*\z/ && next_real.to_s =~ /\A#{pad}\S/
-      break if line =~ /\A#{pad}\S/
+      break if line =~ /\A\s*\z/ && next_real.to_s =~ closer
+      break if line =~ closer
 
       finish = i
     end

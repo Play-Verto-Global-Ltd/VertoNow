@@ -234,6 +234,21 @@ ar:
     combination_suppressed_title: "الردود قليلة جدًا لعرض هذه التركيبة"
     combination_suppressed_body: "أقل من %{count} أشخاص يطابقون كل المرشحات التي اخترتها، وعرض إجاباتهم قد يكشف هوية أحدهم. أزل مرشحًا لتوسيع العرض."
     freeform_other_eyebrow: "أخرى: إجابات مكتوبة"
+    timeline_eyebrow: "عبر الزمن"
+    timeline_open_hint: "عرض كيف تغيّرت هذه الإجابة مع الوقت"
+    timeline_range_label: "النطاق الزمني"
+    timeline_range_all: "كل الوقت"
+    timeline_range_90: "90 ي"
+    timeline_range_30: "30 ي"
+    timeline_range_7: "7 ي"
+    timeline_range_custom: "مخصص"
+    timeline_from: "من"
+    timeline_to: "إلى"
+    timeline_peak: "الذروة"
+    timeline_mode_label: "المقياس"
+    timeline_share: "النسبة %"
+    timeline_count: "العدد"
+    timeline_footnote: "النسبة محسوبة من الردود الواردة في كل فترة. الفترة التي تقل ردودها عن %{count} تُترك فارغة."
   shared_results:
     title: النتائج
     read_only_badge: للقراءة فقط
@@ -703,6 +718,14 @@ ar:
       compare_summarizing: 'جارٍ التلخيص…'
       compare_summarize_error: 'تعذّر التلخيص الآن.'
       chat_error: "عذرًا، حدث خطأ ما. حاول مرة أخرى."
+      timeline_loading: "جارٍ التحميل…"
+      timeline_error: "تعذّر تحميل المخطط الزمني، يرجى المحاولة مجددًا."
+      timeline_empty: "لا ردود في هذه الفترة."
+      timeline_thin: "أقل من %{count} ردود"
+      timeline_latest: "الأحدث"
+      timeline_change: "مقابل %{n} السابقة"
+      timeline_pts: "%{n} نقطة"
+      timeline_wc: "أسبوع %{date}"
   unsubscribe:
     title: "إلغاء الاشتراك في رسائل Playverto"
     body: "هل تريد إيقاف إرسال رسائل الحملات إلى %{email}؟"

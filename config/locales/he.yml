@@ -234,6 +234,21 @@ he:
     combination_suppressed_title: "מעט מדי תשובות כדי להציג שילוב זה"
     combination_suppressed_body: "פחות מ-%{count} אנשים תואמים את כל המסננים שבחרתם, והצגת תשובותיהם עלולה לזהות מישהו. הסירו מסנן כדי להרחיב את התצוגה."
     freeform_other_eyebrow: "אחר: תשובות שנכתבו"
+    timeline_eyebrow: "לאורך זמן"
+    timeline_open_hint: "הצגת השינוי בתשובה הזו לאורך זמן"
+    timeline_range_label: "טווח תאריכים"
+    timeline_range_all: "כל הזמן"
+    timeline_range_90: "90 י"
+    timeline_range_30: "30 י"
+    timeline_range_7: "7 י"
+    timeline_range_custom: "מותאם"
+    timeline_from: "מתאריך"
+    timeline_to: "עד תאריך"
+    timeline_peak: "שיא"
+    timeline_mode_label: "מדד"
+    timeline_share: "שיעור %"
+    timeline_count: "כמות"
+    timeline_footnote: "השיעור מחושב מהתשובות שהתקבלו בכל תקופה. תקופה עם פחות מ-%{count} תשובות נשארת ריקה."
   shared_results:
     title: תוצאות
     read_only_badge: לקריאה בלבד
@@ -703,6 +718,14 @@ he:
       compare_summarizing: 'מסכם…'
       compare_summarize_error: 'לא ניתן לסכם כרגע.'
       chat_error: "מצטערים, משהו השתבש. נסו שוב."
+      timeline_loading: "טוען…"
+      timeline_error: "לא ניתן לטעון את ציר הזמן — נסו שוב."
+      timeline_empty: "אין תשובות בטווח הזה."
+      timeline_thin: "פחות מ-%{count} תשובות"
+      timeline_latest: "אחרון"
+      timeline_change: "לעומת %{n} הקודמים"
+      timeline_pts: "%{n} נק׳"
+      timeline_wc: "שבוע %{date}"
   unsubscribe:
     title: "ביטול הרשמה להודעות Playverto"
     body: "להפסיק לשלוח הודעות קמפיין אל %{email}?"

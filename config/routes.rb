@@ -299,6 +299,9 @@ Rails.application.routes.draw do
   # Every answer to one freeform question, paged and searchable — the results
   # page's "View all answers" panel (SurveyTextAnswersController).
   get  "surveys/:id/results/answers",  to: "survey_text_answers#index",  as: :survey_results_answers
+  # One closed question's answers counted per period — the results page's
+  # "over time" tab (SurveyTimelinesController, answer_timeline_controller).
+  get  "surveys/:id/results/timeline", to: "survey_timelines#show",      as: :survey_results_timeline
   post "surveys/:survey_id/chat",     to: "survey_chats#create",    as: :survey_chat
   # The creator's Ask Verto opt-in. Its own route rather than a settings field:
   # offering another organisation's researchers access to what your respondents
