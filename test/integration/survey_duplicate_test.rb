@@ -155,6 +155,73 @@ class SurveyDuplicateTest < ActionDispatch::IntegrationTest
     assert copy.no_retests?
   end
 
+  # ── Languages a copy claims ────────────────────────────────────────────────
+
+  # The reported bug, from a live study. The Verto was a copy of a copy, its
+  # locales said English and Spanish, and the language switcher duly offered
+  # Spanish and turned every button and platform message Spanish — while every
+  # question stayed in English, because no card had ever been given a Spanish
+  # entry and duplicating enqueued nothing to give it one.
+  test "a copy is translated into the languages it claims but has no words for" do
+    original = @org.surveys.create!(title: "T", theme: "Theme", audience_age: "all", key_insight: "k",
+                                     default_locale: "en", locales: %w[en es fr], cards: CARDS.map(&:dup))
+
+    assert_enqueued_jobs 2, only: TranslateLocalesJob do
+      post duplicate_survey_path(original)
+    end
+
+    copy = @org.surveys.order(:id).last
+    assert_equal %w[es fr], copy.locales_awaiting_translation,
+                 "the copy offers both and can serve neither, so both are asked for"
+    # A row per language, so the Language check rail says what is happening
+    # rather than showing a bare 0/2 nobody can interpret.
+    assert_equal %w[es fr], SurveyTranslation.where(survey: copy).order(:locale).pluck(:locale)
+  end
+
+  # The common case, and the one that must stay free: the deck is copied
+  # verbatim with its i18n intact, so there is nothing to ask for and no Claude
+  # call to pay for.
+  test "a copy of an already translated Verto asks for nothing" do
+    translated = CARDS.map do |c|
+      c.merge("i18n" => { "es" => { "text" => "es:#{c['text']}", "title" => "es:#{c['title']}" }.compact })
+    end
+    original = @org.surveys.create!(title: "T", theme: "Theme", audience_age: "all", key_insight: "k",
+                                     default_locale: "en", locales: %w[en es], cards: translated)
+
+    assert_no_enqueued_jobs only: TranslateLocalesJob do
+      post duplicate_survey_path(original)
+    end
+
+    copy = @org.surveys.order(:id).last
+    assert_empty copy.locales_awaiting_translation
+    assert_equal "es:Like it?", copy.cards.last.dig("i18n", "es", "text"),
+                 "the copy carries the original's Spanish rather than re-earning it"
+  end
+
+  # Half-landed is still missing. A run that translated some cards and stopped
+  # leaves the rest reading in English, and a copy of that deck has to finish
+  # the job rather than inherit the gap.
+  test "a partly translated deck is finished off in the copy" do
+    half = CARDS.map(&:dup)
+    half[0] = half[0].merge("i18n" => { "es" => { "title" => "es:hi" } })
+    original = @org.surveys.create!(title: "T", theme: "Theme", audience_age: "all", key_insight: "k",
+                                     default_locale: "en", locales: %w[en es], cards: half)
+
+    assert_enqueued_jobs 1, only: TranslateLocalesJob do
+      post duplicate_survey_path(original)
+    end
+    assert_equal [ "es" ], @org.surveys.order(:id).last.locales_awaiting_translation
+  end
+
+  test "a single-language copy asks for nothing" do
+    original = @org.surveys.create!(title: "T", theme: "Theme", audience_age: "all", key_insight: "k",
+                                     default_locale: "en", locales: [ "en" ], cards: CARDS.map(&:dup))
+
+    assert_no_enqueued_jobs only: TranslateLocalesJob do
+      post duplicate_survey_path(original)
+    end
+  end
+
   test "results-report columns are not copied" do
     original = @org.surveys.create!(title: "T", theme: "Theme", audience_age: "all", key_insight: "k",
                                      default_locale: "en", locales: [ "en" ], cards: CARDS.map(&:dup),

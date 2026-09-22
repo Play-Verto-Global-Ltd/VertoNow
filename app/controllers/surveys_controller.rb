@@ -903,9 +903,18 @@ class SurveysController < ApplicationController
   # Copies a Verto — draft or live — into a brand-new draft under the same
   # organisation, then opens it in the editor. See Survey#duplicate! for what
   # is and isn't carried over.
+  # Any language the copy offers but has no words for is translated now. The
+  # deck itself is carried verbatim, i18n entries included, so a copy of a
+  # translated Verto asks for nothing and costs nothing; this only fires where
+  # the copy would otherwise have claimed a language it could not serve. The
+  # enqueue lives here rather than in duplicate! for the same reason it lives
+  # in update_languages and the Language check's own add: the model decides
+  # what is missing, the caller decides to spend a Claude call on it.
   def duplicate
     survey = Current.organisation.surveys.kept.find(params[:id])
-    redirect_to survey_path(survey.duplicate!)
+    copy   = survey.duplicate!
+    TranslateLocalesJob.enqueue_for(copy, copy.locales_awaiting_translation)
+    redirect_to survey_path(copy)
   end
 
   # Publish what this Verto changed, and tell the people who asked to hear.

@@ -305,6 +305,30 @@ class Survey < ApplicationRecord
     added
   end
 
+  # The languages this Verto OFFERS but cannot actually serve: the switcher
+  # lists them, the platform's own chrome translates, and then every card reads
+  # in the primary language because no entry was ever written for them.
+  #
+  # Adding a language is not the only way to end up here. A DUPLICATE inherits
+  # `locales` and whatever i18n the cards happened to carry, and enqueues
+  # nothing — so copying a Verto whose Spanish never landed produced a second
+  # Verto claiming Spanish just as falsely, with no run recorded anywhere to
+  # say so. Reported from a live study: the language switcher worked, the
+  # buttons turned Spanish, and every question stayed in English.
+  #
+  # The per-card test is TranslateLocalesJob's own, deliberately: "needs
+  # translating" has to mean the same thing to the code that asks for a run and
+  # the code that performs one, or one of them re-runs work the other thinks is
+  # finished. A locale the job would find nothing missing for is not returned
+  # here either.
+  def locales_awaiting_translation
+    deck = Array(cards)
+    return [] if deck.empty?
+
+    verto_locales.reject { |loc| loc == default_locale }
+                 .select { |loc| deck.any? { |c| c.is_a?(Hash) && c.dig("i18n", loc).blank? } }
+  end
+
   # ── Language check edits ───────────────────────────────────────────────────
   # Write one line's wording back into the deck, from the Language check screen.
   # This is the "and all edits appear in the Verto itself" half of that feature:
