@@ -229,6 +229,10 @@ tr:
     freeform_search_placeholder: "Yanıtlarda ara…"
     freeform_copy: "Tümünü kopyala"
     freeform_load_more: "Daha fazla yükle"
+    combination_or: "veya"
+    combination_hint: "Birleştirmek için birden fazla seçin: her satırdan biri görünümü daraltır, aynı satırdan ikisi genişletir."
+    combination_suppressed_title: "Bu kombinasyonu göstermek için çok az yanıt var"
+    combination_suppressed_body: "Seçtiğiniz tüm filtrelere %{count} kişiden azı uyuyor ve yanıtlarını göstermek birini tanınır kılabilir. Görünümü genişletmek için bir filtreyi kaldırın."
   shared_results:
     title: Sonuçlar
     read_only_badge: Salt okunur
@@ -253,6 +257,7 @@ tr:
     gone_body: Oluşturucusu bu Verto'yu kapattı veya kaldırdı.
     unavailable_title: Bu sonuç bağlantısı kullanılamıyor
     unavailable_body: Oluşturucusu tarafından duraklatılmış veya kapatılmış olabilir ya da adres yanlış yazılmış olabilir.
+    under_responses: "%{count} yanıttan az"
   player:
     compare_promise: "Bitir ve yanıtlarının herkesle nasıl karşılaştırıldığını gör."
     region_search_placeholder: "Şehrinizi veya bölgenizi arayın…"

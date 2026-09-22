@@ -239,6 +239,10 @@ st:
     freeform_search_placeholder: "Batla dikarabo…"
     freeform_copy: "Kopitsa tsohle"
     freeform_load_more: "Jarisa tse ding"
+    combination_or: "kapa"
+    combination_hint: "Kgetha tse fetang e le nngwe ho di kopanya: e le nngwe moleng o mong le o mong e fokotsa pono, tse pedi moleng o le mong di a e atolosa."
+    combination_suppressed_title: "Dikarabo di fokola haholo ho bontsha kopano ena"
+    combination_suppressed_body: "Batho ba ka tlase ho %{count} ba lumellana le difilthara tsohle tseo u di kgethileng, mme ho bontsha dikarabo tsa bona ho ka senola hore na ke mang. Tlosa filthara e le nngwe ho atolosa pono."
   shared_results:
     title: "Diphetho"
     read_only_badge: "Ho Bala Feela"
@@ -263,6 +267,7 @@ st:
     gone_body: "Motheha wa yona o koetse kapa o tlositse Verto ena."
     unavailable_title: "Kgokahano ena ya diphetho ha e fumanehe"
     unavailable_body: "E ka be e emisitswe kapa e timilwe ke motheha wayo, kapa aterese e ngotswe hampe."
+    under_responses: "Dikarabo tse ka tlase ho %{count}"
   player:
     compare_promise: "Qeta ho bona kamoo dikarabo tsa hao di tshwanang le tsa ba bang."
     region_search_placeholder: "Batla toropo kapa sebaka sa hao…"

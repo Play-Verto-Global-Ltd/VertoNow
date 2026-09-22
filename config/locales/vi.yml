@@ -229,6 +229,10 @@ vi:
     freeform_search_placeholder: "Tìm trong câu trả lời…"
     freeform_copy: "Sao chép tất cả"
     freeform_load_more: "Tải thêm"
+    combination_or: "hoặc"
+    combination_hint: "Chọn nhiều hơn một để kết hợp: mỗi hàng một mục sẽ thu hẹp, hai mục cùng hàng sẽ mở rộng."
+    combination_suppressed_title: "Quá ít phản hồi để hiển thị tổ hợp này"
+    combination_suppressed_body: "Chưa đến %{count} người khớp với mọi bộ lọc bạn đã chọn, và hiển thị câu trả lời của họ có thể làm lộ danh tính ai đó. Bỏ bớt một bộ lọc để mở rộng."
   shared_results:
     title: Kết quả
     read_only_badge: Chỉ xem
@@ -253,6 +257,7 @@ vi:
     gone_body: Người tạo đã đóng hoặc xóa Verto này.
     unavailable_title: Liên kết kết quả này không khả dụng
     unavailable_body: Liên kết có thể đã bị người tạo tạm dừng hoặc tắt, hoặc địa chỉ đã bị gõ sai.
+    under_responses: "Chưa đến %{count} phản hồi"
   player:
     compare_promise: "Hoàn thành để xem câu trả lời của bạn so với mọi người như thế nào."
     region_search_placeholder: "Tìm thành phố hoặc khu vực của bạn…"

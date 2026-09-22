@@ -58,6 +58,46 @@ class ResultsHelperTest < ActionView::TestCase
     assert_equal drawn.uniq, drawn
   end
 
+  # The picker's rows and the combination grammar (OR within a row, AND
+  # across) are one table — every kind the resolver can mint has a row here,
+  # so nothing it mints can compose under one rule and be drawn under another.
+  test "every kind the resolver mints has a row in the picker" do
+    minted = ResolvesResultSegments::SEGMENT_KINDS.values.uniq
+    assert_equal minted.sort, SEGMENT_GROUPS.map { |g| g[:key] }.sort
+  end
+
+  # ── segment_toggle_param ────────────────────────────────────────────────────
+  # Every pill is a toggle against the active selection; the param it builds
+  # is the resolver's canonical form, so a click lands on the URL the server
+  # would have written itself.
+
+  SEGMENTS = %w[overall region_AT region_DE gender_male age_25-34].map { |id| { id: id, label: id, count: 1 } }.freeze
+
+  test "from Overall a pill selects just itself" do
+    assert_equal "region_AT", segment_toggle_param(SEGMENTS, SEGMENTS.first, "region_AT")
+  end
+
+  test "from a single segment a pill of another kind adds itself, in picker order" do
+    active = SEGMENTS.find { |s| s[:id] == "gender_male" }
+    assert_equal "region_AT,gender_male", segment_toggle_param(SEGMENTS, active, "region_AT")
+  end
+
+  test "a selected part's pill removes it, and the last one out is Overall" do
+    combo = { id: "region_AT,gender_male", parts: [ SEGMENTS[1], SEGMENTS[3] ], combination: true }
+    assert_equal "gender_male", segment_toggle_param(SEGMENTS, combo, "region_AT")
+
+    single = SEGMENTS.find { |s| s[:id] == "region_AT" }
+    assert_nil segment_toggle_param(SEGMENTS, single, "region_AT")
+  end
+
+  test "segment_selected? reads the parts of a combination and the id of a single" do
+    combo = { id: "region_AT,gender_male", parts: [ SEGMENTS[1], SEGMENTS[3] ], combination: true }
+    assert segment_selected?(combo, "gender_male")
+    refute segment_selected?(combo, "region_DE")
+    assert segment_selected?(SEGMENTS[1], "region_AT")
+    refute segment_selected?(SEGMENTS.first, "overall"), "Overall is the absence of a selection, never a selected part"
+  end
+
   # ── result_option_thumbs ────────────────────────────────────────────────────
   # The index-to-label hop is the whole point of this helper, and it is the
   # part that silently mis-renders rather than failing: counts come back keyed

@@ -1,6 +1,64 @@
 module ResolvesResultSegments
   extend ActiveSupport::Concern
 
+  # ── Kinds ───────────────────────────────────────────────────────────────────
+  # What kind of thing a segment is, read off the id prefix it is minted with
+  # below. The kind decides two things: how the picker groups the pills
+  # (ResultsHelper adds the colour and the order), and what picking two of
+  # them MEANS. Two of one kind are alternatives — a respondent has one country
+  # and one gender — so "Austria, Germany" can only mean Austria OR Germany.
+  # Two of different kinds are both true of one respondent, so "Austria, Male"
+  # is Austrian men. OR within a kind, AND across kinds: the grammar every
+  # faceted filter uses, and the only one under which no combination is
+  # trivially empty.
+  SEGMENT_KINDS = {
+    "direct"    => "links",
+    "share_"    => "links",
+    "link_"     => "links",
+    "wave_"     => "waves",
+    "region_"   => "places",
+    "gender_"   => "gender",
+    "age_"      => "age",
+    "heritage_" => "heritage",
+    "neuro_"    => "neuro"
+  }.freeze
+
+  # The kinds that slice by WHO someone is rather than how or when they
+  # arrived. One of these on its own is only ever offered above the small-cell
+  # threshold; a combination that includes one is held to the same rule,
+  # because intersecting two safe slices is exactly how a cell gets small —
+  # Austria is 144 people and women over 65 are 20, and Austrian women over
+  # 65 may be two.
+  IDENTITY_KINDS = %w[places gender age heritage neuro].freeze
+
+  # ?segment=region_AT,gender_male — one param, comma-joined, so a single id
+  # (every link the product ever minted) is the one-part case of the same
+  # thing, and every consumer that passes `segment: active[:id]` along
+  # (exports, the answers panel, the Sheets round trip) carries a combination
+  # without knowing it is one. No id can contain a comma: they are ids,
+  # positions, country codes and parameterized labels.
+  SEGMENT_SEPARATOR = ","
+
+  def self.kind_of(id)
+    id = id.to_s
+    SEGMENT_KINDS.each { |prefix, kind| return kind if id.start_with?(prefix) }
+    id # an unknown kind is its own kind: never merged with anything
+  end
+
+  # The canonical ?segment= value for a set of ids: in the order the segments
+  # are offered, once each, Overall dropped (it is the absence of a filter),
+  # nil for none — so the three clicks that build one combination in any order
+  # land on one URL rather than six.
+  def self.segment_param(segments, ids)
+    order  = segments.map { |s| s[:id].to_s } - [ "overall" ]
+    picked = Array(ids).map(&:to_s) & order
+    picked.sort_by { |id| order.index(id) }.join(SEGMENT_SEPARATOR).presence
+  end
+
+  def self.split_segment_param(param)
+    param.to_s.split(SEGMENT_SEPARATOR).map(&:strip).reject(&:empty?).uniq
+  end
+
   private
 
   # Response segments for the results filter: always "Overall", plus a
@@ -207,8 +265,75 @@ module ResolvesResultSegments
     base     = survey.responses.where(answered: true).order(created_at: :desc)
     base     = apply_date_range(base, range_param)
     segments = result_segments(survey, base, links: links)
-    active   = segments.find { |s| s[:id] == segment_param } || segments.first
-    [ base, segments, active ]
+    [ base, segments, select_result_segment(segments, base, segment_param) ]
+  end
+
+  # The segment ?segment= asks for. One id is that segment; several, comma
+  # joined in any order, are their combination; none — or only ids this base
+  # doesn't offer (a slice that fell under the small-cell threshold in a
+  # narrower date window, a link's id on the public page) — is Overall.
+  # Unknown ids are dropped rather than failing the whole request, so a
+  # combination link keeps working when one of its parts is suppressed in
+  # the window it was opened in; the page then names what it is showing.
+  def select_result_segment(segments, base, segment_param)
+    ids   = ResolvesResultSegments.split_segment_param(segment_param)
+    parts = segments.select { |s| ids.include?(s[:id]) }
+    parts = parts.reject { |s| s[:id] == "overall" } if parts.size > 1
+
+    case parts.size
+    when 0 then segments.first
+    when 1 then parts.first
+    else combine_result_segments(parts, base)
+    end
+  end
+
+  # A combination is a segment like any other — id, label, scope, count — so
+  # every consumer (the page, the exports, the answers panel) filters by it
+  # without knowing it is several. Its id is the canonical joined form, which
+  # is also what every toggle link on the page is built from
+  # (ResultsHelper#segment_toggle_param), so the URL a click produces is the
+  # URL the server would have written.
+  #
+  # The scope is the parts' own scopes composed, not re-derived: each is
+  # `base.where(...)` (see result_segments), so `or` within a kind and `and`
+  # across kinds is a flat WHERE that reads the same on SQLite and Postgres.
+  # Relation#and rather than #merge — merge drops an earlier condition on a
+  # column the later relation also names, which is right for chaining a
+  # default scope and wrong for an intersection.
+  def combine_result_segments(parts, base)
+    by_kind = parts.group_by { |s| ResolvesResultSegments.kind_of(s[:id]) }
+    scope   = by_kind.values.map { |same| same.map { |s| s[:scope] }.reduce(:or) }.reduce(:and)
+    count   = scope.reorder(nil).count
+
+    # Small-cell suppression, the combination's way: the count AND the rows
+    # go, not just the breakdown. "3 responses" above an empty feed is still
+    # the disclosure — that exactly three Austrian women over 65 answered —
+    # and a scope of none keeps every consumer downstream honest by
+    # construction rather than by each of them remembering to check.
+    suppressed = by_kind.keys.intersect?(IDENTITY_KINDS) && count < MIN_DEMOGRAPHIC_SAMPLE
+
+    {
+      id:          parts.map { |s| s[:id] }.join(SEGMENT_SEPARATOR),
+      label:       combination_label(by_kind),
+      scope:       suppressed ? base.none : scope,
+      count:       suppressed ? 0 : count,
+      parts:       parts,
+      combination: true,
+      suppressed:  suppressed
+    }
+  end
+
+  # "🌍 Austria or Germany · 👤 Male · 🎂 25–34": each kind's alternatives
+  # joined with "or", the kinds joined with a middle dot — the sentence the
+  # scope above is. A kind's emoji is said once per run, not once per pill.
+  EMOJI_PREFIX = /\A\p{Emoji_Presentation}\uFE0F?\s+/
+
+  def combination_label(by_kind)
+    joiner = " #{I18n.t("results.combination_or", default: "or")} "
+    by_kind.values.map do |same|
+      labels = same.map { |s| s[:label].to_s }
+      [ labels.first, *labels.drop(1).map { |l| l.sub(EMOJI_PREFIX, "") } ].join(joiner)
+    end.join(" · ")
   end
 
   # Named windows rather than free date pickers: these are the questions a

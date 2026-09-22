@@ -229,6 +229,10 @@ pt:
     freeform_search_placeholder: "Pesquisar respostas…"
     freeform_copy: "Copiar tudo"
     freeform_load_more: "Carregar mais"
+    combination_or: "ou"
+    combination_hint: "Escolha mais de um para combiná-los: um de cada linha restringe a visualização, dois da mesma linha a ampliam."
+    combination_suppressed_title: "Respostas insuficientes para mostrar esta combinação"
+    combination_suppressed_body: "Menos de %{count} pessoas correspondem a todos os filtros escolhidos, e mostrar as suas respostas poderia identificar alguém. Remova um filtro para ampliar a visualização."
   shared_results:
     title: Resultados
     read_only_badge: Somente leitura
@@ -253,6 +257,7 @@ pt:
     gone_body: O criador encerrou ou removeu este Verto.
     unavailable_title: Esta ligação de resultados não está disponível
     unavailable_body: Pode ter sido pausada ou desativada pelo criador, ou o endereço foi escrito incorretamente.
+    under_responses: "Menos de %{count} respostas"
   player:
     compare_promise: "Termine para ver como as suas respostas se comparam com as dos outros."
     region_search_placeholder: "Pesquise a sua cidade ou região…"

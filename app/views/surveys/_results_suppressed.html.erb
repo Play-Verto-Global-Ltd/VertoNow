@@ -1,0 +1,11 @@
+<%# What the feed shows in place of the cards when the selected combination
+    of segments is under the small-cell threshold — see
+    ResolvesResultSegments#combine_result_segments, which has already
+    emptied the scope and zeroed the count by the time this renders, so the
+    only thing left to do here is say why there is nothing to see and what
+    to do about it. Rendered by the owner's results page and the public
+    shared one alike: the rule is the same on both, and so is the notice. %>
+<div class="rc-card rc-suppressed" role="status">
+  <div class="rc-suppressed-title">🔒 <%= t("results.combination_suppressed_title") %></div>
+  <div class="rc-suppressed-body"><%= t("results.combination_suppressed_body", count: ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE) %></div>
+</div>

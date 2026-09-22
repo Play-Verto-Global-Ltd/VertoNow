@@ -229,6 +229,10 @@ de:
     freeform_search_placeholder: "Antworten durchsuchen…"
     freeform_copy: "Alle kopieren"
     freeform_load_more: "Mehr laden"
+    combination_or: "oder"
+    combination_hint: "Wähle mehrere aus, um sie zu kombinieren: eines pro Zeile grenzt die Ansicht ein, zwei aus derselben Zeile erweitern sie."
+    combination_suppressed_title: "Zu wenige Antworten, um diese Kombination anzuzeigen"
+    combination_suppressed_body: "Weniger als %{count} Personen erfüllen alle gewählten Filter, und ihre Antworten zu zeigen könnte jemanden identifizierbar machen. Entferne einen Filter, um die Ansicht zu erweitern."
   shared_results:
     title: Ergebnisse
     read_only_badge: Schreibgeschützt
@@ -253,6 +257,7 @@ de:
     gone_body: Der Ersteller hat dieses Verto geschlossen oder entfernt.
     unavailable_title: Dieser Ergebnislink ist nicht verfügbar
     unavailable_body: Er wurde möglicherweise vom Ersteller pausiert oder deaktiviert, oder die Adresse wurde falsch eingegeben.
+    under_responses: "Weniger als %{count} Antworten"
   player:
     compare_promise: "Mach bis zum Ende weiter und sieh, wie deine Antworten im Vergleich zu allen anderen abschneiden."
     region_search_placeholder: "Suche nach deiner Stadt oder Region…"

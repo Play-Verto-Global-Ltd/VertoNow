@@ -229,6 +229,10 @@ id:
     freeform_search_placeholder: "Cari jawaban…"
     freeform_copy: "Salin semua"
     freeform_load_more: "Muat lebih banyak"
+    combination_or: "atau"
+    combination_hint: "Pilih lebih dari satu untuk menggabungkannya: satu dari tiap baris mempersempit tampilan, dua dari baris yang sama memperluasnya."
+    combination_suppressed_title: "Terlalu sedikit tanggapan untuk menampilkan kombinasi ini"
+    combination_suppressed_body: "Kurang dari %{count} orang cocok dengan semua filter yang Anda pilih, dan menampilkan jawaban mereka bisa mengungkap identitas seseorang. Hapus satu filter untuk memperluas tampilan."
   shared_results:
     title: Hasil
     read_only_badge: Hanya baca
@@ -253,6 +257,7 @@ id:
     gone_body: Kreator telah menutup atau menghapusnya.
     unavailable_title: Tautan hasil ini tidak tersedia
     unavailable_body: Mungkin telah dijeda atau dimatikan oleh kreator, atau alamatnya salah ketik.
+    under_responses: "Kurang dari %{count} tanggapan"
   player:
     compare_promise: "Selesaikan untuk melihat perbandingan jawabanmu dengan semua orang."
     region_search_placeholder: "Cari kota atau wilayahmu…"

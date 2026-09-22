@@ -229,6 +229,10 @@ it:
     freeform_search_placeholder: "Cerca tra le risposte…"
     freeform_copy: "Copia tutto"
     freeform_load_more: "Carica altre"
+    combination_or: "o"
+    combination_hint: "Scegline più di uno per combinarli: uno per riga restringe la vista, due della stessa riga la ampliano."
+    combination_suppressed_title: "Troppe poche risposte per mostrare questa combinazione"
+    combination_suppressed_body: "Meno di %{count} persone corrispondono a tutti i filtri scelti, e mostrare le loro risposte potrebbe identificare qualcuno. Togli un filtro per ampliare la vista."
   shared_results:
     title: Risultati
     read_only_badge: Sola lettura
@@ -253,6 +257,7 @@ it:
     gone_body: Il creatore lo ha chiuso o rimosso.
     unavailable_title: Questo link ai risultati non è disponibile
     unavailable_body: Potrebbe essere stato messo in pausa o disattivato dal creatore, oppure l'indirizzo è stato digitato in modo errato.
+    under_responses: "Meno di %{count} risposte"
   player:
     compare_promise: "Arriva alla fine per vedere come si confrontano le tue risposte con quelle degli altri."
     region_search_placeholder: "Cerca la tua città o regione…"

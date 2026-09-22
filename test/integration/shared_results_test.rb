@@ -232,6 +232,43 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Combinations ride the same seam, so the public page gets them with the same
+  # small-cell rule — a stranger with the token can combine slices, and the
+  # cell they land on is withheld under the line exactly as it is for the
+  # owner (results_combinations_test.rb has the rule itself).
+  test "segments combine on the shared page, and a small cell is withheld" do
+    seed = ->(n, country, gender) do
+      n.times do
+        @survey.responses.create!(session_token: SecureRandom.uuid, status: "completed",
+                                  region_country: country, demographic_gender: gender,
+                                  answers: { "1" => { "value" => "Blue" } })
+      end
+    end
+    seed.call(MIN, "GB", "Female")
+    seed.call(MIN, "GB", "Male")
+    seed.call(1, "FR", "Male")
+    seed.call(MIN - 1, "FR", "Female")
+    token = enable_share!
+    delete session_path
+
+    get shared_results_path(token, segment: "region_GB,gender_female")
+    assert_response :success
+    assert_match "#{MIN} responses", response.body
+    # The date-window chips are seg-pills too; a selected PART's pill is the
+    # one whose href leads to the selection without it.
+    assert_select "a.seg-pill[aria-current='true'][href*='segment=']", 2
+    # A pill of a third slice ADDS itself; a selected part's pill removes it.
+    assert_select "a.seg-pill[href*='segment=region_GB%2Cgender_female%2Cgender_male']"
+    assert_select "a.seg-pill[href='#{shared_results_path(token, segment: 'gender_female')}']"
+
+    get shared_results_path(token, segment: "region_FR,gender_male")
+    assert_response :success
+    assert_select ".rc-suppressed", 1
+    assert_select ".rc-card", 1
+    assert_match "Fewer than #{MIN} responses", response.body
+    assert_no_match(/\b1 response\b/, response.body, "the number itself is what is withheld")
+  end
+
   # Waves ride the exact same ResolvesResultSegments seam as region/demographic
   # segments (see resolves_result_segments.rb) — this is that seam's one
   # cross-feature check, proving a shared-results viewer sees wave pills too,

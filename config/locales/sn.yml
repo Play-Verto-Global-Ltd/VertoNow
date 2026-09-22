@@ -231,6 +231,10 @@ sn:
     freeform_search_placeholder: "Tsvaga mhinduro…"
     freeform_copy: "Kopa zvose"
     freeform_load_more: "Rodha dzimwe"
+    combination_or: "kana"
+    combination_hint: "Sarudza zvinopfuura chimwe kuti uzvibatanidze: chimwe kubva mumutsara wega wega chinodzikisa maonero, zviviri kubva mumutsara mumwe zvinoawedzera."
+    combination_suppressed_title: "Mhinduro dzishoma zvakanyanya kuti muratidzwe musanganiswa uyu"
+    combination_suppressed_body: "Vanhu vasingasviki %{count} ndivo vanoenderana nezvisefo zvose zvawasarudza, uye kuratidza mhinduro dzavo kungazivisa kuti ndiani. Bvisa chisefo chimwe kuti uwedzere maonero."
   shared_results:
     title: "Mhedzisiro"
     read_only_badge: "Kungoverenga"
@@ -255,6 +259,7 @@ sn:
     gone_body: "Mugadziri wayo avhara kana kubvisa Verto iyi."
     unavailable_title: "Rinki iyi yeMhedzisiro Haiwanikwi"
     unavailable_body: "Ingangove yakamiswa kana kudzimwa nemugadziri wayo, kana kuti aderesi yakanyorwa zvisirizvo."
+    under_responses: "Mhinduro dzisingasviki %{count}"
   player:
     compare_promise: "Pedzisa kuti uone kuti mhinduro dzako dzakaenzana sei nedzevamwe."
     region_search_placeholder: "Tsvaga guta rako kana dunhu rako…"

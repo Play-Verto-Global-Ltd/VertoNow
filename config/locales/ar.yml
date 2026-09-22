@@ -229,6 +229,10 @@ ar:
     freeform_search_placeholder: "ابحث في الإجابات…"
     freeform_copy: "نسخ الكل"
     freeform_load_more: "تحميل المزيد"
+    combination_or: "أو"
+    combination_hint: "اختر أكثر من واحد لدمجها: واحد من كل صف يضيّق العرض، واثنان من الصف نفسه يوسّعانه."
+    combination_suppressed_title: "الردود قليلة جدًا لعرض هذه التركيبة"
+    combination_suppressed_body: "أقل من %{count} أشخاص يطابقون كل المرشحات التي اخترتها، وعرض إجاباتهم قد يكشف هوية أحدهم. أزل مرشحًا لتوسيع العرض."
   shared_results:
     title: النتائج
     read_only_badge: للقراءة فقط
@@ -253,6 +257,7 @@ ar:
     gone_body: قام منشئها بإغلاقها أو إزالتها.
     unavailable_title: رابط النتائج هذا غير متاح
     unavailable_body: ربما تم إيقافه مؤقتًا أو تعطيله من قِبل منشئه، أو أن العنوان كُتب بشكل خاطئ.
+    under_responses: "أقل من %{count} ردود"
   player:
     compare_promise: "أكمل لترى كيف تُقارن إجاباتك بإجابات الآخرين."
     region_search_placeholder: "ابحث عن مدينتك أو منطقتك…"

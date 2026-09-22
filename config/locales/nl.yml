@@ -229,6 +229,10 @@ nl:
     freeform_search_placeholder: "Antwoorden doorzoeken…"
     freeform_copy: "Alles kopiëren"
     freeform_load_more: "Meer laden"
+    combination_or: "of"
+    combination_hint: "Kies er meer dan één om ze te combineren: één per rij verfijnt de weergave, twee uit dezelfde rij verbreden die."
+    combination_suppressed_title: "Te weinig antwoorden om deze combinatie te tonen"
+    combination_suppressed_body: "Minder dan %{count} mensen voldoen aan alle gekozen filters, en hun antwoorden tonen zou iemand herkenbaar kunnen maken. Haal een filter weg om de weergave te verbreden."
   shared_results:
     title: Resultaten
     read_only_badge: Alleen-lezen
@@ -253,6 +257,7 @@ nl:
     gone_body: De maker heeft dit Verto gesloten of verwijderd.
     unavailable_title: Deze resultatenlink is niet beschikbaar
     unavailable_body: Deze is mogelijk gepauzeerd of uitgeschakeld door de maker, of het adres is verkeerd getypt.
+    under_responses: "Minder dan %{count} antwoorden"
   player:
     compare_promise: "Maak het af om te zien hoe jouw antwoorden zich verhouden tot die van anderen."
     region_search_placeholder: "Zoek je stad of regio…"

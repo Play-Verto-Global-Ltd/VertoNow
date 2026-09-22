@@ -237,6 +237,10 @@ zu:
     freeform_search_placeholder: "Sesha izimpendulo…"
     freeform_copy: "Kopisha konke"
     freeform_load_more: "Layisha okwengeziwe"
+    combination_or: "noma"
+    combination_hint: "Khetha okungaphezu kokukodwa ukuze ukuhlanganise: okukodwa kumugqa ngamunye kunciphisa umbono, okubili kumugqa ofanayo kuyawandisa."
+    combination_suppressed_title: "Izimpendulo zimbalwa kakhulu ukuba kuboniswe le nhlanganisela"
+    combination_suppressed_body: "Bangaphansi kuka-%{count} abantu abahambisana nazo zonke izihlungi ozikhethile, futhi ukubonisa izimpendulo zabo kungaveza ukuthi ngubani. Susa isihlungi esisodwa ukuze wandise umbono."
   shared_results:
     title: "Imiphumela"
     read_only_badge: "Ukufunda kuphela"
@@ -261,6 +265,7 @@ zu:
     gone_body: "Umdali wayo uyivalile noma wayisusa le-Verto."
     unavailable_title: "Lesi sixhumanisi semiphumela asitholakali"
     unavailable_body: "Mhlawumbe simiswe noma savalwa umdali waso, noma ikheli lifakwe kabi."
+    under_responses: "Izimpendulo ezingaphansi kuka-%{count}"
   player:
     compare_promise: "Qeda ukuze ubone ukuthi izimpendulo zakho ziqhathaniswa kanjani nezabanye."
     region_search_placeholder: "Sesha idolobha noma isifunda sakho…"

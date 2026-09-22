@@ -229,6 +229,10 @@ ko:
     freeform_search_placeholder: "답변 검색…"
     freeform_copy: "모두 복사"
     freeform_load_more: "더 불러오기"
+    combination_or: "또는"
+    combination_hint: "여러 개를 선택하면 조합됩니다. 각 행에서 하나씩 고르면 범위가 좁아지고, 같은 행에서 두 개를 고르면 넓어집니다."
+    combination_suppressed_title: "응답이 너무 적어 이 조합을 표시할 수 없습니다"
+    combination_suppressed_body: "선택한 모든 필터에 해당하는 사람이 %{count}명 미만이어서, 응답을 표시하면 개인이 식별될 수 있습니다. 필터를 하나 제거해 범위를 넓혀 보세요."
   shared_results:
     title: 결과
     read_only_badge: 읽기 전용
@@ -253,6 +257,7 @@ ko:
     gone_body: 제작자가 이 Verto를 닫거나 삭제했습니다.
     unavailable_title: 이 결과 링크를 사용할 수 없습니다
     unavailable_body: 제작자가 일시 중지했거나 껐을 수 있으며, 주소가 잘못 입력되었을 수도 있습니다.
+    under_responses: "%{count}건 미만의 응답"
   player:
     compare_promise: "끝까지 완료하면 내 답변을 다른 사람들과 비교해 볼 수 있어요."
     region_search_placeholder: "도시 또는 지역을 검색하세요…"

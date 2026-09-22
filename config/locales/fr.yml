@@ -229,6 +229,10 @@ fr:
     freeform_search_placeholder: "Rechercher dans les réponses…"
     freeform_copy: "Tout copier"
     freeform_load_more: "Charger plus"
+    combination_or: "ou"
+    combination_hint: "Choisissez-en plusieurs pour les combiner : un par ligne restreint la vue, deux sur la même ligne l'élargissent."
+    combination_suppressed_title: "Trop peu de réponses pour afficher cette combinaison"
+    combination_suppressed_body: "Moins de %{count} personnes correspondent à tous les filtres choisis, et afficher leurs réponses pourrait permettre d'identifier quelqu'un. Retirez un filtre pour élargir la vue."
   shared_results:
     title: Résultats
     read_only_badge: Lecture seule
@@ -253,6 +257,7 @@ fr:
     gone_body: Son créateur l'a fermé ou supprimé.
     unavailable_title: Ce lien de résultats n'est pas disponible
     unavailable_body: Il a peut-être été mis en pause ou désactivé par son créateur, ou l'adresse comporte une erreur.
+    under_responses: "Moins de %{count} réponses"
   player:
     compare_promise: "Allez jusqu'au bout pour comparer vos réponses à celles des autres."
     region_search_placeholder: "Recherchez votre ville ou région…"

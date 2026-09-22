@@ -6,20 +6,23 @@ module ResultsHelper
   # nothing but the emoji tells you that "Spain" and "Male" are answers to
   # different questions.
   #
-  # So they are grouped by the id prefix ResolvesResultSegments mints, and each
-  # group carries an accent. The accent says KIND; teal stays reserved for
-  # "this one is active", as it is everywhere else in the product.
+  # So they are grouped by the KIND ResolvesResultSegments reads off the id
+  # prefix it mints (SEGMENT_KINDS — one table, because the same grouping
+  # decides what picking two pills means: alternatives within a row, both at
+  # once across rows), and each group carries an accent. The accent says
+  # KIND; teal stays reserved for "this one is active", as it is everywhere
+  # else in the product.
   #
   # Order is deliberate: how they reached the Verto, then when, then where, then
   # who — narrowing from the study's own structure down to the person.
   SEGMENT_GROUPS = [
-    { key: "links",    accent: "#8B85FF", prefixes: %w[direct share_ link_] },
-    { key: "waves",    accent: "#FF9F45", prefixes: %w[wave_] },
-    { key: "places",   accent: "#0CA7FF", prefixes: %w[region_] },
-    { key: "gender",   accent: "#FF1E6F", prefixes: %w[gender_] },
-    { key: "age",      accent: "#FFC24B", prefixes: %w[age_] },
-    { key: "heritage", accent: "#615BF5", prefixes: %w[heritage_] },
-    { key: "neuro",    accent: "#00C2A8", prefixes: %w[neuro_] }
+    { key: "links",    accent: "#8B85FF" },
+    { key: "waves",    accent: "#FF9F45" },
+    { key: "places",   accent: "#0CA7FF" },
+    { key: "gender",   accent: "#FF1E6F" },
+    { key: "age",      accent: "#FFC24B" },
+    { key: "heritage", accent: "#615BF5" },
+    { key: "neuro",    accent: "#00C2A8" }
   ].freeze
 
   # [{ key:, accent:, segments: [...] }, ...] for everything except "overall",
@@ -31,7 +34,7 @@ module ResultsHelper
     rest = segments.reject { |s| s[:id].to_s == "overall" }
 
     grouped = SEGMENT_GROUPS.filter_map do |group|
-      matched = rest.select { |s| group[:prefixes].any? { |p| s[:id].to_s.start_with?(p) } }
+      matched = rest.select { |s| ResolvesResultSegments.kind_of(s[:id]) == group[:key] }
       next if matched.empty?
       { key: group[:key], accent: group[:accent], segments: matched }
     end
@@ -40,6 +43,28 @@ module ResultsHelper
     others = rest - known
     grouped << { key: "other", accent: "rgba(255,255,255,0.45)", segments: others } if others.any?
     grouped
+  end
+
+  # The ids the active segment is made of: each part's for a combination, its
+  # own for a single segment, none for Overall.
+  def segment_part_ids(active)
+    return [] if active.nil? || active[:id].to_s == "overall"
+
+    Array(active[:parts]).map { |s| s[:id].to_s }.presence || [ active[:id].to_s ]
+  end
+
+  def segment_selected?(active, id)
+    segment_part_ids(active).include?(id.to_s)
+  end
+
+  # Where a pill leads: this segment ADDED to what is selected, or REMOVED
+  # from it when it already is — and nil once nothing is left, which is
+  # Overall. Every pill is a toggle, so a combination is built by clicking
+  # its parts and taken apart the same way, with no separate "apply".
+  def segment_toggle_param(segments, active, id)
+    ids = segment_part_ids(active)
+    ids = ids.include?(id.to_s) ? ids - [ id.to_s ] : ids + [ id.to_s ]
+    ResolvesResultSegments.segment_param(segments, ids)
   end
 
   # { option label => the inline style that paints its thumbnail }, for the

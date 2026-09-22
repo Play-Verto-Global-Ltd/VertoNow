@@ -38,8 +38,17 @@
       broadcast carrying whole-Verto totals would contradict. %>
   <% if @active_segment && @active_segment[:id] != "overall" %>
     <div class="rh-count">
-      <span class="rh-count-num"><%= @total %></span>
-      <span class="rh-count-word">response<%= @total == 1 ? "" : "s" %></span>
+      <% if @active_segment[:suppressed] %>
+        <%# A combination under the small-cell threshold: the number itself is
+            the disclosure (see ResolvesResultSegments#combine_result_segments),
+            so the tally says only that it is under the line. The feed below
+            says why. %>
+        <span class="rh-count-num rh-count-num--under" title="<%= t("results.combination_suppressed_title") %>">&lt;<%= ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE %></span>
+        <span class="rh-count-word">responses</span>
+      <% else %>
+        <span class="rh-count-num"><%= @total %></span>
+        <span class="rh-count-word">response<%= @total == 1 ? "" : "s" %></span>
+      <% end %>
     </div>
   <% else %>
     <%# The toggle lives OUTSIDE #results-live — that node is replaced
@@ -369,7 +378,15 @@
       toolbar that wraps to three rows is not a toolbar. A <details>, like
       the Download and Share menus above it — the browser already owns
       open/close, Escape and click-through, and none of it costs a
-      controller. %>
+      controller.
+
+      Every pill is a TOGGLE: it adds its segment to what is selected, or
+      takes it out again, and the selection is what the page counts
+      (ResolvesResultSegments#combine_result_segments — alternatives within a
+      row, both at once across rows). So "Austrian men aged 25–34" is three
+      clicks with no apply step, each one a full visit like any filter here.
+      The one thing that costs is the panel closing on each of those visits,
+      which is what segment_picker_controller puts back. %>
   <% if @segments.size > 1 %>
     <% active_is_overall = @active_segment[:id].to_s == "overall" %>
     <%# The reset, as its own chip. Folds away condensed, where the picker
@@ -379,7 +396,8 @@
       Overall<span class="seg-pill-count"><%= @overall_total %></span>
     <% end %>
 
-    <details class="results-export-menu rh-segments" name="results-header-menu">
+    <details class="results-export-menu rh-segments" name="results-header-menu"
+             data-controller="segment-picker" data-action="click->segment-picker#remember">
       <summary class="rh-pill rh-pill--picker">
         <%# The active segment, not the word "Segments", once one is chosen:
             the control's job is to say what you are looking at. %>
@@ -390,7 +408,10 @@
           <span class="rh-picker-wide">Segments</span>
           <span class="rh-picker-mini rh-picker-active">Overall</span>
         <% else %>
-          <span class="rh-picker-active"><%= @active_segment[:label] %></span>
+          <%# A combination's label is a sentence ("🌍 Austria · 👤 Male ·
+              🎂 25–34"), so it is clipped rather than allowed to push the
+              actions off the row; the title carries the whole of it. %>
+          <span class="rh-picker-active rh-picker-label" title="<%= @active_segment[:label] %>"><%= @active_segment[:label] %></span>
         <% end %>
         <%# "12" is how many segments are on offer, which reads as a count of
             the thing named the moment the label becomes "Overall". %>
@@ -412,23 +433,40 @@
             <% end %>
           </div>
         </div>
-        <% results_segment_groups(@segments).each do |group| %>
+        <% groups = results_segment_groups(@segments) %>
+        <% groups.each do |group| %>
           <div class="rh-group">
             <span class="rh-group-label" style="color:<%= group[:accent] %>;"><%= group[:key] %></span>
             <div class="rh-group-rail">
               <% group[:segments].each do |seg| %>
-                <%= link_to survey_results_path(@survey, segment: seg[:id], range: @date_range),
+                <%= link_to survey_results_path(@survey, segment: segment_toggle_param(@segments, @active_segment, seg[:id]), range: @date_range),
                       class: "seg-pill rh-seg", style: "--seg-accent:#{group[:accent]}",
-                      aria: { current: (seg[:id] == @active_segment[:id]).to_s } do %>
+                      aria: { current: segment_selected?(@active_segment, seg[:id]).to_s } do %>
                   <span class="rh-seg-dot"></span><%= seg[:label] %><span class="seg-pill-count"><%= seg[:count] %></span>
                 <% end %>
               <% end %>
             </div>
           </div>
         <% end %>
+        <%# How the rows compose, said once, where the second click happens.
+            Only worth a line when there is more than one row to combine. %>
+        <% if groups.size > 1 %>
+          <div class="rh-group-hint"><%= t("results.combination_hint") %></div>
+        <% end %>
       </div>
     </details>
   <% end %>
 </div><%# end results-header-filters %>
+
+<%# Why the tally says "<5": said HERE, in the pinned header, because the
+    card that says it in the feed (surveys/_results_suppressed) sits under
+    the map, the summary and the leaderboard — a whole screen below the
+    number it explains. Folds away condensed, where the tally still says it. %>
+<% if @active_segment && @active_segment[:suppressed] %>
+  <div class="rh-notice" role="status">
+    🔒 <strong><%= t("results.combination_suppressed_title") %>.</strong>
+    <%= t("results.combination_suppressed_body", count: ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE) %>
+  </div>
+<% end %>
 
 </div><%# end results-header %>

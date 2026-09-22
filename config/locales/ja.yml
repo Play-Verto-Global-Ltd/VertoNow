@@ -229,6 +229,10 @@ ja:
     freeform_search_placeholder: "回答を検索…"
     freeform_copy: "すべてコピー"
     freeform_load_more: "さらに読み込む"
+    combination_or: "または"
+    combination_hint: "複数選ぶと組み合わせられます。各行から1つずつ選ぶと絞り込まれ、同じ行から2つ選ぶと広がります。"
+    combination_suppressed_title: "回答が少なすぎるため、この組み合わせは表示できません"
+    combination_suppressed_body: "選択したすべてのフィルターに該当する人が%{count}人未満のため、回答を表示すると個人が特定されるおそれがあります。フィルターを1つ外して範囲を広げてください。"
   shared_results:
     title: 結果
     read_only_badge: 読み取り専用
@@ -253,6 +257,7 @@ ja:
     gone_body: 作成者がこのVertoを終了または削除しました。
     unavailable_title: この結果リンクは利用できません
     unavailable_body: 作成者によって一時停止または無効化されたか、URLの入力が間違っている可能性があります。
+    under_responses: "%{count}件未満の回答"
   player:
     compare_promise: "最後まで答えると、自分の回答をみんなと比べられます。"
     region_search_placeholder: "都市または地域を検索…"

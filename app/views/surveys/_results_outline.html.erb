@@ -18,7 +18,13 @@
     Locals:
       aggregated — AggregatesSurveyResults#aggregate_results output, the same
                    list _result_cards draws, so index N here is card N there.
+      suppressed — true when the selected combination of segments is under
+                   the small-cell threshold (ResolvesResultSegments): the
+                   counts are then of an emptied scope, and "0" beside every
+                   question would be a claim that nobody answered. A dash
+                   says "withheld" instead. Defaults to false.
 %>
+<% suppressed = local_assigns.fetch(:suppressed, false) %>
 <nav class="results-outline" aria-label="<%= t("results.outline_label", default: "Questions") %>"
      data-results-outline-target="outline">
   <div class="results-outline-head"><%= pluralize(aggregated.size, "question") %></div>
@@ -35,7 +41,7 @@
         <span class="ro-dot" style="background:<%= accent %>;" aria-hidden="true"></span>
         <span class="ro-num"><%= idx + 1 %></span>
         <span class="ro-type"><%= meta[:badge] %></span>
-        <span class="ro-n" data-results-outline-target="count"><%= result[:total] %></span>
+        <span class="ro-n" data-results-outline-target="count"><%= suppressed ? "–" : result[:total] %></span>
       </a>
     <% end %>
   </div>

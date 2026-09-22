@@ -28,6 +28,12 @@
           someone opens a segment=wave_2-style link. %>
       <% if @active_segment[:id] == "overall" %>
         <%= t("shared_results.total_responses", count: @overall_total) %>
+      <% elsif @active_segment[:suppressed] %>
+        <%# Under the small-cell line the number itself is what is withheld
+            (ResolvesResultSegments#combine_result_segments); the notice
+            below the pills says why. %>
+        <%= t("shared_results.under_responses", count: ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE) %>
+        <span style="color:rgba(255,255,255,0.25);"><%= t("shared_results.of_overall", count: @overall_total) %></span>
       <% else %>
         <%= t("shared_results.total_responses", count: @total) %>
         <span style="color:rgba(255,255,255,0.25);"><%= t("shared_results.of_overall", count: @overall_total) %></span>
@@ -86,13 +92,18 @@
 
     <%# Segment pills — partner shares, regions, demographics; identical
         source (ResolvesResultSegments) so small-cell suppression matches the
-        owner's page exactly. %>
+        owner's page exactly. Toggles, as on the owner's page: a pill adds
+        itself to the selection or leaves it, and Overall is the reset. %>
     <% if @segments.size > 1 %>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 0 16px;">
         <span style="font-family:'Alata',sans-serif;font-size: var(--text-2xs);letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-right:2px;"><%= t("shared_results.view") %></span>
         <% @segments.each do |seg| %>
-          <%= link_to shared_results_path(@survey.results_share_token, segment: seg[:id], range: @date_range),
-                class: "seg-pill", aria: { current: (seg[:id] == @active_segment[:id]).to_s } do %>
+          <% overall = seg[:id] == "overall" %>
+          <%= link_to shared_results_path(@survey.results_share_token,
+                        segment: (overall ? nil : segment_toggle_param(@segments, @active_segment, seg[:id])),
+                        range: @date_range),
+                class: "seg-pill",
+                aria: { current: (overall ? @active_segment[:id] == "overall" : segment_selected?(@active_segment, seg[:id])).to_s } do %>
             <%= seg[:label] %><span class="seg-pill-count"><%= seg[:count] %></span>
           <% end %>
         <% end %>
@@ -104,7 +115,11 @@
     <%# Same 22px between cards as the owner's feed (#results-feed) — the two
         surfaces render the same cards and should read at the same rhythm. %>
     <div style="display:flex;flex-direction:column;gap:22px;">
-      <%= render "surveys/result_cards", aggregated: @aggregated, total: @total, shared: true %>
+      <% if @active_segment[:suppressed] %>
+        <%= render "surveys/results_suppressed" %>
+      <% else %>
+        <%= render "surveys/result_cards", aggregated: @aggregated, total: @total, shared: true %>
+      <% end %>
     </div>
 
     <%# Report — read-only, cached-only. Never offered if the owner hasn't

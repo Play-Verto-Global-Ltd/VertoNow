@@ -5379,6 +5379,15 @@ button.editor-leave-btn { cursor: pointer; }
   font-family: "ABeeZee", sans-serif; font-size: var(--text-base);
   color: rgba(255,255,255,0.3); font-style: italic;
 }
+/* In place of the cards when a combination of segments is under the
+   small-cell threshold (surveys/_results_suppressed). A card of the feed's
+   own shape, so it sits where the numbers would, saying why they are not. */
+.rc-suppressed { gap: 6px; border-color: rgba(255,204,0,0.22); background: rgba(255,204,0,0.05); }
+.rc-suppressed-title { font-family: "Alata", sans-serif; font-size: var(--text-md); color: #FFCC00; }
+.rc-suppressed-body {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); line-height: 1.6;
+  color: rgba(255,255,255,0.6); max-width: 60ch;
+}
 
 .rc-rows { display: flex; flex-direction: column; gap: 5px; }
 .rc-row { position: relative; border-radius: 9px; overflow: hidden; background: rgba(255,255,255,0.04); }
@@ -5698,6 +5707,34 @@ button.editor-leave-btn { cursor: pointer; }
 }
 .rh-pill--picker { color: rgba(255,255,255,0.6); }
 .rh-picker-active { color: #01EACB; }
+/* A combination's label is a sentence ("🌍 Austria · 👤 Male · 🎂 25–34"):
+   clipped at a width that still reads, rather than pushing the actions off
+   the row. The title attribute carries the whole of it. */
+.rh-picker-label {
+  display: inline-block; max-width: 38ch; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom;
+}
+.results-header.is-condensed .rh-picker-label { max-width: 28ch; }
+/* The tally when a combination is under the small-cell line: the same
+   figure, dimmed, because "<5" is a statement about what is withheld rather
+   than a count. */
+.rh-count-num--under { color: rgba(255,255,255,0.45); }
+/* How the rows compose, under the rails, in the panel's own quiet voice. */
+.rh-group-hint {
+  font-family: "ABeeZee", sans-serif; font-size: 11px; line-height: 1.4;
+  color: rgba(255,255,255,0.38); padding-top: 2px;
+}
+/* The header's own line under the filters when a combination is withheld —
+   the same amber as the feed's card, one row, gone when the header condenses
+   (the "<5" tally stays). */
+.rh-notice {
+  flex: 1 0 100%; margin-top: 10px; padding: 8px 12px; border-radius: 10px;
+  background: rgba(255,204,0,0.07); border: 1px solid rgba(255,204,0,0.2);
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-xs); line-height: 1.5;
+  color: rgba(255,255,255,0.62);
+}
+.rh-notice strong { color: #FFCC00; font-weight: normal; }
+.results-header.is-condensed .rh-notice { display: none; }
 .rh-picker-n {
   font-family: "Alata", sans-serif; font-size: 10px;
   color: rgba(255,255,255,0.35); font-variant-numeric: tabular-nums;

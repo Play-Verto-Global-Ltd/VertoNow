@@ -210,7 +210,7 @@
     what makes the two bleed into one another rather than stacking. %>
 <div class="results-body">
 
-<%= render "surveys/results_outline", aggregated: @aggregated %>
+<%= render "surveys/results_outline", aggregated: @aggregated, suppressed: @active_segment[:suppressed] %>
 
 <div class="results-feed-col">
 
@@ -449,9 +449,16 @@
 
 
         <%# ── Per-question cards ── extracted to a partial so the public
-            shared-results page can reuse it (see _result_cards.html.erb). %>
-        <%= render "surveys/result_cards", aggregated: @aggregated, total: @total,
-              answers: { survey: @survey, segment: @active_segment[:id], range: @date_range } %>
+            shared-results page can reuse it (see _result_cards.html.erb).
+            A combination under the small-cell threshold gets the notice
+            instead: its cards would all say "No responses yet", which is
+            not what happened. %>
+        <% if @active_segment[:suppressed] %>
+          <%= render "surveys/results_suppressed" %>
+        <% else %>
+          <%= render "surveys/result_cards", aggregated: @aggregated, total: @total,
+                answers: { survey: @survey, segment: @active_segment[:id], range: @date_range } %>
+        <% end %>
 
         <% end %><%# end results-feed turbo-frame %>
 

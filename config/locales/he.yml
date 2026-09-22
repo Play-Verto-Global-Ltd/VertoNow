@@ -229,6 +229,10 @@ he:
     freeform_search_placeholder: "חיפוש בתשובות…"
     freeform_copy: "העתק הכול"
     freeform_load_more: "טען עוד"
+    combination_or: "או"
+    combination_hint: "בחרו יותר מאחד כדי לשלב ביניהם: אחד מכל שורה מצמצם את התצוגה, שניים מאותה שורה מרחיבים אותה."
+    combination_suppressed_title: "מעט מדי תשובות כדי להציג שילוב זה"
+    combination_suppressed_body: "פחות מ-%{count} אנשים תואמים את כל המסננים שבחרתם, והצגת תשובותיהם עלולה לזהות מישהו. הסירו מסנן כדי להרחיב את התצוגה."
   shared_results:
     title: תוצאות
     read_only_badge: לקריאה בלבד
@@ -253,6 +257,7 @@ he:
     gone_body: היוצר שלה סגר או הסיר אותה.
     unavailable_title: קישור התוצאות הזה אינו זמין
     unavailable_body: ייתכן שהיוצר השהה או כיבה אותו, או שהכתובת הוקלדה בטעות.
+    under_responses: "פחות מ-%{count} תשובות"
   player:
     compare_promise: "סיימו כדי לראות איך התשובות שלכם בהשוואה לכולם."
     region_search_placeholder: "חפשו את העיר או האזור שלכם…"

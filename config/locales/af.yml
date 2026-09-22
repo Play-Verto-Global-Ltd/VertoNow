@@ -230,6 +230,10 @@ af:
     freeform_search_placeholder: "Soek antwoorde…"
     freeform_copy: "Kopieer alles"
     freeform_load_more: "Laai meer"
+    combination_or: "of"
+    combination_hint: "Kies meer as een om hulle te kombineer: een uit elke ry vernou die aansig, twee uit dieselfde ry verbreed dit."
+    combination_suppressed_title: "Te min antwoorde om hierdie kombinasie te wys"
+    combination_suppressed_body: "Minder as %{count} mense pas by al die filters wat jy gekies het, en om hul antwoorde te wys kan iemand identifiseer. Haal 'n filter af om die aansig te verbreed."
   shared_results:
     title: "Resultate"
     read_only_badge: "Leesalleen"
@@ -254,6 +258,7 @@ af:
     gone_body: "Die skepper daarvan het hierdie Verto gesluit of verwyder."
     unavailable_title: "Hierdie resultateskakel is nie beskikbaar nie"
     unavailable_body: "Dit is dalk deur die skepper gepouseer of afgeskakel, of die adres is verkeerd getik."
+    under_responses: "Minder as %{count} antwoorde"
   player:
     compare_promise: "Voltooi om te sien hoe jou antwoorde met almal anders s'n vergelyk."
     region_search_placeholder: "Soek na jou stad of streek…"

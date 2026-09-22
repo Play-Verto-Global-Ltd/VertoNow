@@ -229,6 +229,10 @@ pl:
     freeform_search_placeholder: "Szukaj w odpowiedziach…"
     freeform_copy: "Kopiuj wszystko"
     freeform_load_more: "Wczytaj więcej"
+    combination_or: "lub"
+    combination_hint: "Wybierz więcej niż jeden, aby je połączyć: jeden z każdego wiersza zawęża widok, dwa z tego samego wiersza go poszerzają."
+    combination_suppressed_title: "Za mało odpowiedzi, aby pokazać tę kombinację"
+    combination_suppressed_body: "Mniej niż %{count} osób spełnia wszystkie wybrane filtry, a pokazanie ich odpowiedzi mogłoby kogoś zidentyfikować. Usuń jeden filtr, aby poszerzyć widok."
   shared_results:
     title: Wyniki
     read_only_badge: Tylko do odczytu
@@ -253,6 +257,7 @@ pl:
     gone_body: Twórca zamknął lub usunął to Verto.
     unavailable_title: Ten link do wyników jest niedostępny
     unavailable_body: Mógł zostać wstrzymany lub wyłączony przez twórcę, albo adres został błędnie wpisany.
+    under_responses: "Mniej niż %{count} odpowiedzi"
   player:
     compare_promise: "Dokończ, aby zobaczyć, jak twoje odpowiedzi wypadają na tle innych."
     region_search_placeholder: "Wyszukaj swoje miasto lub region…"

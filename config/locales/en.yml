@@ -239,6 +239,10 @@ en:
     freeform_search_placeholder: "Search answers…"
     freeform_copy: "Copy all"
     freeform_load_more: "Load more"
+    combination_or: "or"
+    combination_hint: "Pick more than one to combine them: one from each row narrows the view, two from the same row widens it."
+    combination_suppressed_title: "Too few responses to show this combination"
+    combination_suppressed_body: "Fewer than %{count} people match every filter you have picked, and showing their answers could identify someone. Take a filter off to widen the view."
   shared_results:
     title: "Results"
     read_only_badge: "Read-only"
@@ -246,6 +250,7 @@ en:
       one: "%{count} response"
       other: "%{count} responses"
     of_overall: "of %{count} overall"
+    under_responses: "Fewer than %{count} responses"
     published_on: "Published %{date}"
     ai_summary: "AI summary"
     regions_title: "Where responses came from"

@@ -229,6 +229,10 @@ sw:
     freeform_search_placeholder: "Tafuta majibu…"
     freeform_copy: "Nakili yote"
     freeform_load_more: "Pakia zaidi"
+    combination_or: "au"
+    combination_hint: "Chagua zaidi ya kimoja ili kuviunganisha: kimoja kutoka kila safu hupunguza mwonekano, viwili kutoka safu moja huupanua."
+    combination_suppressed_title: "Majibu ni machache mno kuonyesha mchanganyiko huu"
+    combination_suppressed_body: "Chini ya watu %{count} wanalingana na vichujio vyote ulivyochagua, na kuonyesha majibu yao kunaweza kumtambulisha mtu. Ondoa kichujio kimoja ili kupanua mwonekano."
   shared_results:
     title: Matokeo
     read_only_badge: Kusoma tu
@@ -253,6 +257,7 @@ sw:
     gone_body: Muundaji wake amefunga au kuondoa Verto hii.
     unavailable_title: Kiungo hiki cha matokeo hakipatikani
     unavailable_body: Huenda kimesitishwa au kuzimwa na muundaji wake, au anwani iliandikwa vibaya.
+    under_responses: "Chini ya majibu %{count}"
   player:
     compare_promise: "Maliza ili uone jinsi majibu yako yanavyolinganishwa na ya wengine."
     region_search_placeholder: "Tafuta jiji au eneo lako…"

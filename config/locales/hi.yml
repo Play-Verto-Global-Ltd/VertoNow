@@ -229,6 +229,10 @@ hi:
     freeform_search_placeholder: "उत्तर खोजें…"
     freeform_copy: "सभी कॉपी करें"
     freeform_load_more: "और लोड करें"
+    combination_or: "या"
+    combination_hint: "एक से ज़्यादा चुनकर उन्हें मिलाएँ: हर पंक्ति से एक चुनने पर दायरा सिमटता है, एक ही पंक्ति से दो चुनने पर बढ़ता है।"
+    combination_suppressed_title: "इस संयोजन को दिखाने के लिए बहुत कम जवाब हैं"
+    combination_suppressed_body: "आपके चुने सभी फ़िल्टरों पर %{count} से कम लोग खरे उतरते हैं, और उनके जवाब दिखाने से किसी की पहचान हो सकती है। दायरा बढ़ाने के लिए एक फ़िल्टर हटाएँ।"
   shared_results:
     title: परिणाम
     read_only_badge: केवल पढ़ने के लिए
@@ -253,6 +257,7 @@ hi:
     gone_body: इसके निर्माता ने इसे बंद या हटा दिया है।
     unavailable_title: यह परिणाम लिंक उपलब्ध नहीं है
     unavailable_body: हो सकता है इसे निर्माता ने रोक दिया हो या बंद कर दिया हो, या पता गलत टाइप किया गया हो।
+    under_responses: "%{count} से कम जवाब"
   player:
     compare_promise: "पूरा करें और देखें कि आपके जवाब बाकी सबसे कैसे तुलना करते हैं।"
     region_search_placeholder: "अपना शहर या क्षेत्र खोजें…"

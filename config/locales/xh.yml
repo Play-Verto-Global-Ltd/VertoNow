@@ -238,6 +238,10 @@ xh:
     freeform_search_placeholder: "Khangela iimpendulo…"
     freeform_copy: "Kopa zonke"
     freeform_load_more: "Layisha ezingakumbi"
+    combination_or: "okanye"
+    combination_hint: "Khetha ngaphezu kwesinye ukuze uzidibanise: esinye kumgca ngamnye sinciphisa umbono, ezimbini kumgca omnye ziyawandisa."
+    combination_suppressed_title: "Iimpendulo zimbalwa kakhulu ukuba kuboniswe olu dibaniso"
+    combination_suppressed_body: "Bangaphantsi kuka-%{count} abantu abahambelana nazo zonke izihluzi ozikhethileyo, kwaye ukubonisa iimpendulo zabo kungachaza ukuba ngubani. Susa isihluzi esinye ukuze wandise umbono."
   shared_results:
     title: "Iziphumo"
     read_only_badge: "Ukufunda kuphela"
@@ -262,6 +266,7 @@ xh:
     gone_body: "Umdali wayo uyivalile okanye wayisusa le Verto."
     unavailable_title: "Eli khonkco leziphumo alifumaneki"
     unavailable_body: "Kusenokwenzeka limisiwe okanye licinyiwe ngumdali walo, okanye idilesi ibhalwe kakubi."
+    under_responses: "Iimpendulo ezingaphantsi kuka-%{count}"
   player:
     compare_promise: "Gqiba ukuze ubone indlela iimpendulo zakho ezithelekiswa nezabo bonke."
     region_search_placeholder: "Khangela isixeko okanye ummandla wakho…"
