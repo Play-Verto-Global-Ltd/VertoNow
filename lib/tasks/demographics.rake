@@ -1,4 +1,17 @@
 namespace :demographics do
+  # A Verto named the way a person would paste it: its publish token, a whole
+  # /play/ URL, a published slug, or a named share link's slug. Shared by the
+  # one-off tasks below that each rewrite one live Verto's card in place.
+  find_verto = lambda do
+    token = ENV["TOKEN"].to_s.strip.sub(%r{\A.*/play/}, "").sub(%r{[/?#].*\z}, "")
+    abort "TOKEN=<publish token or /play/ URL> is required" if token.blank?
+
+    Survey.find_by(publish_token: token) ||
+      Survey.where.not(publish_token: nil).find_by(slug: token) ||
+      SurveyLink.find_by(slug: token)&.survey ||
+      abort("No Verto found for #{token.inspect}")
+  end
+
   desc "Swap a Verto's retired birth-date card for the age-band slider, in place (TOKEN=..., APPLY=1 to write)"
   # For a live Verto that still carries the month/year card. Only the CARD
   # changes: it is replaced at the SAME index, in one write, so every stored
@@ -13,13 +26,7 @@ namespace :demographics do
   #
   # Dry run unless APPLY=1.
   task swap_age_card: :environment do
-    token = ENV["TOKEN"].to_s.strip.sub(%r{\A.*/play/}, "").sub(%r{[/?#].*\z}, "")
-    abort "TOKEN=<publish token or /play/ URL> is required" if token.blank?
-
-    survey = Survey.find_by(publish_token: token) ||
-             Survey.where.not(publish_token: nil).find_by(slug: token) ||
-             SurveyLink.find_by(slug: token)&.survey
-    abort "No Verto found for #{token.inspect}" unless survey
+    survey = find_verto.call
 
     cards = Array(survey.cards).map { |c| c.is_a?(Hash) ? c.dup : c }
     idx   = cards.find_index { |c| c.is_a?(Hash) && c["demographic"] && c["input"] == "month" }
@@ -56,6 +63,92 @@ namespace :demographics do
     # would run the deck normalisers, and a locked deck is never re-sanitised.
     survey.update_columns(cards: cards, updated_at: Time.current)
     puts "Swapped."
+  end
+
+  desc "Narrow a Verto's location-card search, in place (TOKEN=..., PLACES=country, COUNTRIES=KE,GB, CLEAR=1, APPLY=1 to write)"
+  # The editor's "Search for" block (LocationScope) as a command, for a live
+  # Verto nobody at hand can open in the editor. PLACES is any of the six
+  # levels (country alone is countries only), COUNTRIES narrows to ISO codes,
+  # CLEAR=1 takes the narrowing off. Cities are editor-only: each one needs
+  # its boundary box from the geocoder, which a command line doesn't have.
+  #
+  # Only the three narrowing keys on the one card change. Nothing moves, so
+  # every stored answer stays keyed to the question it was given on, and old
+  # "GB|London" answers keep reading and counting as they did.
+  #
+  # CARD=n (as printed, 1-based) picks among several location cards; otherwise
+  # it is the demographic one, or the only one. Dry run unless APPLY=1.
+  task location_scope: :environment do
+    survey = find_verto.call
+    cards  = Array(survey.cards).map { |c| c.is_a?(Hash) ? c.deep_dup : c }
+
+    location = cards.each_index.select { |i| LocationScope.location_card?(cards[i]) }
+    abort "“#{survey.title}” has no location card — nothing to do." if location.empty?
+
+    idx =
+      if ENV["CARD"].present?
+        n = Integer(ENV["CARD"], exception: false)
+        abort "CARD=#{ENV["CARD"]} is not a location card. Location cards: #{location.map { |i| i + 1 }.join(", ")}" unless n && location.include?(n - 1)
+        n - 1
+      else
+        demographic = location.select { |i| cards[i]["demographic"] }
+        pick = demographic.size == 1 ? demographic : location
+        if pick.size > 1
+          abort "“#{survey.title}” has #{pick.size} location cards — choose one with CARD=: " +
+                pick.map { |i| "#{i + 1} (“#{cards[i]['text']}”)" }.join(", ")
+        end
+        pick.first
+      end
+
+    listed = ->(var) { ENV[var].to_s.split(/[\s,]+/).reject(&:blank?) }
+    places    = listed.("PLACES").map(&:downcase)
+    countries = listed.("COUNTRIES").map(&:upcase)
+    clear     = ENV["CLEAR"] == "1"
+
+    # Refused rather than dropped: the sanitiser would quietly discard a typo,
+    # and "countrys" silently becoming "any place" is the opposite of the ask.
+    bad_places = places - LocationScope::PLACE_TYPES
+    abort "Unknown PLACES #{bad_places.join(", ")} — use any of #{LocationScope::PLACE_TYPES.join(", ")}" if bad_places.any?
+    bad_countries = countries.reject { |c| WorldRegions.valid?(c) }
+    abort "Unknown COUNTRIES #{bad_countries.join(", ")} — use ISO codes such as KE, GB, US" if bad_countries.any?
+    abort "Give PLACES and/or COUNTRIES, or CLEAR=1 to remove the narrowing" if !clear && places.empty? && countries.empty?
+
+    old  = cards[idx]
+    card = old.dup
+    if clear
+      %w[location_places location_countries location_cities].each { |k| card.delete(k) }
+    else
+      card["location_places"]    = places    if places.any?
+      card["location_countries"] = countries if countries.any?
+    end
+    LocationScope.sanitize_card!(card)
+    cards[idx] = card
+
+    describe = lambda do |c|
+      scope = LocationScope.for_card(c)
+      [ scope[:places].any? ? scope[:places].join(" + ") : "any place",
+        scope[:countries].any? ? "in #{scope[:countries].join(", ")}" : nil,
+        scope[:cities].any? ? "in cities #{scope[:cities].map { |x| x['name'] }.join(", ")}" : nil ].compact.join(", ")
+    end
+
+    puts "Verto:     “#{survey.title}” (id #{survey.id}, #{survey.responses.count} responses)"
+    puts "Card #{idx + 1}:    “#{old['text']}”"
+    puts "Search:    #{describe.(old)}  →  #{describe.(card)}"
+    puts "Unchanged: every card position, every stored answer"
+
+    if card == old
+      puts "Already set that way — nothing to do."
+      next
+    end
+    unless ENV["APPLY"] == "1"
+      puts "[DRY RUN] nothing written — re-run with APPLY=1 to apply."
+      next
+    end
+
+    # update_columns, as swap_age_card: the card list is written exactly as
+    # built above, and a locked deck is never re-run through the normalisers.
+    survey.update_columns(cards: cards, updated_at: Time.current)
+    puts "Applied."
   end
 
   desc "Backfill demographic_gender / demographic_birth_year from stored answers (DRY_RUN=1 to preview)"
