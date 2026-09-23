@@ -54,11 +54,29 @@ class LanguageCheckSystemTest < ApplicationSystemTestCase
     # slid into that point: the click does nothing and the assertion below sees
     # the editor's own path. Settle the box first, the idiom this base class
     # carries for exactly "CLICKS something that arrived by animation".
-    entry = find("a.lc-editor-entry", match: :first)
-    settle_box(entry)
-    entry.click
+    #
+    # Settling was not enough on its own: CI still saw the editor's path once
+    # (run 837, 2026-09-23) with the box settled, which means something else
+    # can take that first click — a late reflow after the settle, or a layer
+    # passing over it. So the link's destination is asserted directly (the
+    # thing this test is about), and the click is repeated until the page has
+    # actually navigated. A click that lands is idempotent here; one that is
+    # swallowed is retried rather than failing a test that is not about it.
+    target = survey_language_check_path(@survey)
+    entry  = find("a.lc-editor-entry", match: :first)
+    assert_equal target, URI(entry[:href]).path
+    navigated = wait_until(timeout: 10, interval: 0.5) do
+      next true if page.current_path == target
 
-    assert_current_path survey_language_check_path(@survey)
+      settle_box(entry)
+      entry.click
+      page.has_current_path?(target, wait: 2)
+    rescue Capybara::ElementNotFound, Ferrum::NodeNotFoundError
+      page.current_path == target
+    end
+    assert navigated, "the Language panel's entry never reached #{target} (still on #{page.current_path})"
+
+    assert_current_path target
     assert_text "Favourite colour?"
     assert_text "¿Color favorito?"
   end
