@@ -162,6 +162,7 @@ pl:
     nps_low_placeholder: "Najniższy oznacza…"
     nps_high_placeholder: "Najwyższy oznacza…"
     body_placeholder: "Dodaj tekst główny (opcjonalnie)"
+    checkpoint_body_placeholder: "Wyjaśnij w jednym lub dwóch zdaniach, co oznaczają te punkty"
     location_places_label: "Szukaj"
     location_place:
       country: "Kraj"

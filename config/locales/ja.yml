@@ -162,6 +162,7 @@ ja:
     nps_low_placeholder: "最低は…という意味"
     nps_high_placeholder: "最高は…という意味"
     body_placeholder: "本文を追加（任意）"
+    checkpoint_body_placeholder: "このポイントが何を表すのか、1〜2文で説明しましょう"
     location_places_label: "検索対象"
     location_place:
       country: "国"

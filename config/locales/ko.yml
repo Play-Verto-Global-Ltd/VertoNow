@@ -162,6 +162,7 @@ ko:
     nps_low_placeholder: "가장 낮은 값의 의미…"
     nps_high_placeholder: "가장 높은 값의 의미…"
     body_placeholder: "본문 추가 (선택 사항)"
+    checkpoint_body_placeholder: "이 점수가 무엇을 뜻하는지 한두 문장으로 설명하세요"
     location_places_label: "검색 대상"
     location_place:
       country: "국가"

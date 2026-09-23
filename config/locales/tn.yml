@@ -172,6 +172,7 @@ tn:
     nps_low_placeholder: "Se se kwa tlase go gotlhe se kaya…"
     nps_high_placeholder: "Se se kwa godimo go gotlhe se kaya…"
     body_placeholder: "Tsenya mokwalo o oketsegileng (ga go patelesege)"
+    checkpoint_body_placeholder: "Tlhalosa gore dintlha tse di kaya eng, ka polelo e le nngwe kgotsa tse pedi"
     location_places_label: "Batla"
     location_place:
       country: "Naga"

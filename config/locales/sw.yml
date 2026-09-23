@@ -162,6 +162,7 @@ sw:
     nps_low_placeholder: "Ya chini kabisa inamaanisha…"
     nps_high_placeholder: "Ya juu kabisa inamaanisha…"
     body_placeholder: "Ongeza maandishi ya ziada (si lazima)"
+    checkpoint_body_placeholder: "Eleza maana ya pointi hizi, kwa sentensi moja au mbili"
     location_places_label: "Tafuta"
     location_place:
       country: "Nchi"

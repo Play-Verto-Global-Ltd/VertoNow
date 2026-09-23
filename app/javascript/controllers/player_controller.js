@@ -112,6 +112,9 @@ export default class extends Controller {
     // player key and sends the gate's details with the ordinary saves.
     contact: { type: Boolean, default: false },
     tokenTypes: { type: Array, default: [] },
+    // The creator's sentence above the final tally, blank when they wrote
+    // none. Plain text, not rich: it is a setting, not card copy.
+    tokensResultNote: { type: String, default: "" },
     // Show each answer's own award as the respondent leaves the card, on top of
     // the running total (see _revealTokenEarn).
     tokenReveal: { type: Boolean, default: false },
@@ -3419,7 +3422,14 @@ export default class extends Controller {
   _renderTokenScore() {
     if (!this.hasTokenScoreTarget || !this.tokenTypesValue.length) return
     this.tokenScoreTarget.classList.remove("hidden")
+    // The creator's own sentence, above the label, where the mid-deck
+    // checkpoint puts its card copy. Four totals and no words is what got
+    // reported; a house default would be worse than nothing, because only the
+    // creator knows what their tokens are counting — so an unset note renders
+    // no pill at all rather than a sentence about points in general.
+    const note = this.tokensResultNoteValue.trim()
     this.tokenScoreTarget.innerHTML =
+      (note ? `<div class="token-result-note">${this._esc(note)}</div>` : "") +
       `<div class="token-result-label">${this._esc(t("player.tokens_result_label"))}</div>` +
       this.tokenTypesValue.map(tt => `
         <div class="token-result-row">

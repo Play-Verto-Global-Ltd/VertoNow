@@ -172,6 +172,7 @@ st:
     nps_low_placeholder: "E tlase ka ho fetisisa e bolela…"
     nps_high_placeholder: "E hodimo ka ho fetisisa e bolela…"
     body_placeholder: "Kenya sengoloa se eketsehileng (ha se tlamo)"
+    checkpoint_body_placeholder: "Hlalosa hore lintlha tsena li bolela'ng, ka polelo e le 'ngoe kapa tse peli"
     location_places_label: "Batla"
     location_place:
       country: "Naha"

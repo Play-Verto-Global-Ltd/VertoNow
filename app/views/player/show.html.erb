@@ -175,6 +175,12 @@
      data-player-recall-url-value="<%= recall_url %>"
      data-player-tokenisation-value="<%= token_mode %>"
      data-player-token-types-value="<%= @survey.token_types.to_json %>"
+     <%# The creator's sentence above the final tally. Carried as a value
+         rather than server-rendered beside .token-result-card, because that
+         card is built by _renderTokenScore and is skipped entirely on a Verto
+         with no token types — a sibling would be a note explaining totals that
+         never arrive. Empty when unset, which is how the render decides. %>
+     data-player-tokens-result-note-value="<%= @survey.token_result_note_text %>"
      data-player-token-reveal-value="<%= @survey.token_reveal_enabled? %>"
      data-player-token-back-nav-value="<%= @survey.token_back_nav_enabled? %>"
      data-player-leaderboard-value="<%= leaderboard_mode %>"

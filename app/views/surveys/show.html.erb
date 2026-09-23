@@ -1522,6 +1522,32 @@
                 <div class="note-limit-hint" data-note-limit-target="hint" hidden><%= t("editor.note_limit_split_hint", n: Survey::RECOMMENDED_NOTE) %></div>
               </div>
 
+              <%# The same box for the FINAL tally. Its mid-deck twin is not here
+                  and deliberately so: a Points Checkpoint explains itself with
+                  its own body copy, on the card, because cards are the only
+                  thing SurveyTranslator walks. The final tally is painted onto
+                  the end screen from the submit response and has no card, so
+                  this is a setting — and settings copy is shown verbatim to
+                  every respondent whatever language they answer in. Said here,
+                  where the typing happens, and only to the Vertos it can bite. %>
+              <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.7);margin:10px 0 5px;">Points note on the final score:</div>
+              <div data-controller="note-limit"
+                   data-note-limit-recommended-value="<%= Survey::RECOMMENDED_NOTE %>"
+                   data-note-limit-max-value="<%= Survey::MAX_NOTE %>">
+                <input type="text" name="token_result_note" maxlength="<%= Survey::MAX_NOTE %>"
+                       value="<%= @survey.token_result_note_text %>"
+                       placeholder="Say what the totals mean — blank shows the numbers alone"
+                       data-note-limit-target="input"
+                       data-action="input->note-limit#update"
+                       onchange="this.form.requestSubmit()"
+                       style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);outline:none;" />
+                <div class="note-limit-count" data-note-limit-target="count"></div>
+                <div class="note-limit-hint" data-note-limit-target="hint" hidden><%= t("editor.note_limit_split_hint", n: Survey::RECOMMENDED_NOTE) %></div>
+              </div>
+              <% if @survey.secondary_locales.any? %>
+                <div class="card-flag-note">Shown in <%= SupportedLocales.english_name(@survey.default_locale) %> to every respondent — these three notes are settings, and only card text is translated. A Points Checkpoint card's own body copy IS translated, so put per-checkpoint wording there.</div>
+              <% end %>
+
               <% if @survey.leaderboard_enabled? %>
                 <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.7);margin:10px 0 5px;">Leaderboard teaser on the intro:</div>
                 <div data-controller="note-limit"

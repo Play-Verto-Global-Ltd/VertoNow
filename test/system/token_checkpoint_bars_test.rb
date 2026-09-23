@@ -22,17 +22,22 @@ class TokenCheckpointBarsTest < ApplicationSystemTestCase
     @org = Organisation.create!(name: "O", slug: "tcb-#{SecureRandom.hex(3)}")
   end
 
-  # `tokens` maps each option to what picking it is worth.
-  def deck!(tokens)
+  # `tokens` maps each option to what picking it is worth. `note` is the
+  # checkpoint card's own body copy and `result_note` the Verto-level line
+  # above the final tally — the two halves of the explainer, stored apart
+  # because only the card's is something SurveyTranslator can translate.
+  def deck!(tokens, note: nil, result_note: nil)
     @survey = @org.surveys.create!(
       title: "T", theme: "T", audience_age: "all", key_insight: "x",
       default_locale: "en", locales: [ "en" ],
       cards: [
         { "type" => "multiple_choice", "cid" => "q1", "text" => "First pick",
           "options" => tokens.keys, "tokens" => tokens },
-        { "type" => "token_checkpoint", "cid" => "cp", "text" => "Here is how it adds up" }
+        { "type" => "token_checkpoint", "cid" => "cp", "text" => "Here is how it adds up",
+          "description" => note }.compact
       ],
       tokenisation_enabled: true, token_types: TYPES, token_amounts_shown: true,
+      token_result_note: result_note,
       publish_token: SecureRandom.urlsafe_base64(18), published_at: Time.current
     )
   end
@@ -63,7 +68,7 @@ class TokenCheckpointBarsTest < ApplicationSystemTestCase
   end
 
   test "the leading token fills the bar and the rest are drawn against it" do
-    deck!("Both" => { "gold" => 10, "lives" => 5 })
+    deck!({ "Both" => { "gold" => 10, "lives" => 5 } })
     reach_checkpoint!("Both")
 
     track = page.evaluate_script(<<~JS)
@@ -76,7 +81,7 @@ class TokenCheckpointBarsTest < ApplicationSystemTestCase
   end
 
   test "a token you can lose is drawn as a loss, by how much was lost" do
-    deck!("Costly" => { "gold" => 4, "lives" => -2 })
+    deck!({ "Costly" => { "gold" => 4, "lives" => -2 } })
     reach_checkpoint!("Costly")
 
     assert_selector ".token-checkpoint-fill.is-loss", count: 1
@@ -86,7 +91,7 @@ class TokenCheckpointBarsTest < ApplicationSystemTestCase
   end
 
   test "everything at zero draws empty tracks rather than dividing by zero" do
-    deck!("Nothing" => {})
+    deck!({ "Nothing" => {} })
     reach_checkpoint!("Nothing")
 
     assert_selector ".token-checkpoint-track", count: 2, visible: :all
@@ -98,7 +103,7 @@ class TokenCheckpointBarsTest < ApplicationSystemTestCase
   # card, backwards included. Rebuilding it unconditionally replayed the fill
   # transition, so stepping back over the card made the bars twitch.
   test "stepping back onto the checkpoint does not redraw the bars" do
-    deck!("Both" => { "gold" => 10, "lives" => 5 })
+    deck!({ "Both" => { "gold" => 10, "lives" => 5 } })
     reach_checkpoint!("Both")
     before = fill_widths
     stamp  = page.evaluate_script("document.querySelector('.preview-card.active .token-checkpoint-body').dataset.totals")
@@ -120,8 +125,95 @@ class TokenCheckpointBarsTest < ApplicationSystemTestCase
   end
 
   test "the bars are decorative — the number beside them is the announcement" do
-    deck!("Both" => { "gold" => 10, "lives" => 5 })
+    deck!({ "Both" => { "gold" => 10, "lives" => 5 } })
     reach_checkpoint!("Both")
     assert_selector ".token-checkpoint-track[aria-hidden='true']", count: 2, visible: :all
+  end
+
+  # ── The words beside the numbers ──────────────────────────────────────────
+  #
+  # "The scores seem to be just numbers, so I wonder if we should consider
+  # whether they need a bit more context or explanation." Both halves are
+  # creator copy and both render as a pill; neither has a default, because what
+  # a token is counting is the creator's to say and a house sentence about
+  # points in general would be worse than the bare numbers it replaced.
+
+  test "the checkpoint's explainer is a pill, above the first bar" do
+    deck!({ "Both" => { "gold" => 10, "lives" => 5 } },
+          note: "These are trade-offs, not a score. Nobody gets both going up at once.")
+    reach_checkpoint!("Both")
+
+    settle_box(find(".preview-card.active .q-subtitle"))
+    pill = page.evaluate_script(<<~JS)
+      (() => {
+        const card = document.querySelector(".preview-card.active")
+        const sub  = card.querySelector(".q-subtitle")
+        const row  = card.querySelector(".token-checkpoint-row")
+        const cs   = getComputedStyle(sub)
+        const s = sub.getBoundingClientRect(), r = row.getBoundingClientRect()
+        return {
+          clearOfBars: Math.round(r.top - s.bottom),
+          radius:      parseFloat(cs.borderRadius),
+          tinted:      cs.backgroundColor !== "rgba(0, 0, 0, 0)",
+          bordered:    parseFloat(cs.borderTopWidth) > 0,
+          narrower:    s.width < card.getBoundingClientRect().width
+        }
+      })()
+    JS
+
+    assert_text "These are trade-offs, not a score. Nobody gets both going up at once."
+    assert_operator pill["clearOfBars"], :>, 0,
+                    "the explainer is not above the bars. It explains them — under them it is a " \
+                    "footnote to a thing already read"
+    assert_operator pill["radius"], :>=, 20,
+                    "drawn as a plain subtitle, not a pill. The pill is what makes it read as a " \
+                    "note about the scores rather than as more card copy"
+    assert pill["tinted"], "no tint behind it — the pill shares the bars' amber so the card reads as one thing"
+    assert pill["bordered"], "no border — same reason"
+    assert pill["narrower"], "the pill ran the full width of the card, which is a paragraph, not a pill"
+  end
+
+  test "a checkpoint with nothing to say draws no empty pill" do
+    deck!({ "Both" => { "gold" => 10, "lives" => 5 } })
+    reach_checkpoint!("Both")
+
+    assert page.has_no_selector?(".preview-card.active .q-subtitle"),
+           "an explainer the creator never wrote was drawn anyway. Blank means the card is " \
+           "exactly what it was before this existed"
+  end
+
+  test "the final tally carries the creator's sentence above it" do
+    deck!({ "Both" => { "gold" => 10, "lives" => 5 } },
+          result_note: "Your totals are the trade-offs you made, not how well you did.")
+    reach_checkpoint!("Both")
+    find(".preview-btn-finish").click
+
+    assert_selector ".token-result-card", wait: 10
+    assert_selector ".token-result-note",
+                    text: "Your totals are the trade-offs you made, not how well you did."
+
+    order = page.evaluate_script(<<~JS)
+      (() => {
+        const card  = document.querySelector(".token-result-card")
+        const note  = card.querySelector(".token-result-note")
+        const label = card.querySelector(".token-result-label")
+        return Math.round(label.getBoundingClientRect().top - note.getBoundingClientRect().bottom)
+      })()
+    JS
+
+    assert_operator order, :>, 0,
+                    "the sentence landed below YOU COLLECTED. It is the frame for the numbers, " \
+                    "so it has to be read before them"
+  end
+
+  test "no sentence, and the tally is exactly the numbers it always was" do
+    deck!({ "Both" => { "gold" => 10, "lives" => 5 } })
+    reach_checkpoint!("Both")
+    find(".preview-btn-finish").click
+
+    assert_selector ".token-result-card", wait: 10
+    assert page.has_no_selector?(".token-result-note"),
+           "an empty pill on the end screen. _renderTokenScore must draw nothing at all when the " \
+           "creator wrote nothing"
   end
 end

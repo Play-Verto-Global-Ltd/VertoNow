@@ -163,6 +163,7 @@ af:
     nps_low_placeholder: "Laagste beteken…"
     nps_high_placeholder: "Hoogste beteken…"
     body_placeholder: "Voeg bykomende teks by (opsioneel)"
+    checkpoint_body_placeholder: "Sê wat hierdie punte beteken, in 'n sin of twee"
     location_places_label: "Soek na"
     location_place:
       country: "Land"

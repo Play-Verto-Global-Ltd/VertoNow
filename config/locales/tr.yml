@@ -162,6 +162,7 @@ tr:
     nps_low_placeholder: "En düşük şu demek…"
     nps_high_placeholder: "En yüksek şu demek…"
     body_placeholder: "Açıklama metni ekleyin (isteğe bağlı)"
+    checkpoint_body_placeholder: "Bu puanların ne anlama geldiğini bir iki cümleyle anlatın"
     location_places_label: "Ara"
     location_place:
       country: "Ülke"

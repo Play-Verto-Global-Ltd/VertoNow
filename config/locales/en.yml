@@ -44,6 +44,7 @@ en:
     nps_low_placeholder: "Lowest means…"
     nps_high_placeholder: "Highest means…"
     body_placeholder: "Add body copy (optional)"
+    checkpoint_body_placeholder: "Say what these points mean, in a sentence or two"
     tap_scale:
       "no": "No"
       "yes": "Yes"

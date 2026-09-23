@@ -170,6 +170,7 @@ zu:
     nps_low_placeholder: "Okuphansi kusho…"
     nps_high_placeholder: "Okuphezulu kusho…"
     body_placeholder: "Engeza umbhalo omfushane (akuphoqelekile)"
+    checkpoint_body_placeholder: "Chaza ukuthi la maphuzu asho ukuthini, ngomusho owodwa noma emibili"
     location_places_label: "Sesha"
     location_place:
       country: "Izwe"

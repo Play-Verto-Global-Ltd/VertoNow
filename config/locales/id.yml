@@ -162,6 +162,7 @@ id:
     nps_low_placeholder: "Terendah berarti…"
     nps_high_placeholder: "Tertinggi berarti…"
     body_placeholder: "Tambahkan teks isi (opsional)"
+    checkpoint_body_placeholder: "Jelaskan arti poin-poin ini, dalam satu atau dua kalimat"
     location_places_label: "Cari"
     location_place:
       country: "Negara"

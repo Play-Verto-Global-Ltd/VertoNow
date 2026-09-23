@@ -162,6 +162,7 @@ uk:
     nps_low_placeholder: "Мінімум означає…"
     nps_high_placeholder: "Максимум означає…"
     body_placeholder: "Додайте основний текст (необов'язково)"
+    checkpoint_body_placeholder: "Поясніть, що означають ці бали, одним-двома реченнями"
     location_places_label: "Шукати"
     location_place:
       country: "Країна"

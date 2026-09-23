@@ -162,6 +162,7 @@ hi:
     nps_low_placeholder: "सबसे कम का अर्थ…"
     nps_high_placeholder: "सबसे अधिक का अर्थ…"
     body_placeholder: "मुख्य पाठ जोड़ें (वैकल्पिक)"
+    checkpoint_body_placeholder: "बताएं कि इन अंकों का क्या मतलब है, एक-दो वाक्यों में"
     location_places_label: "इसके लिए खोजें"
     location_place:
       country: "देश"

@@ -162,6 +162,7 @@ ru:
     nps_low_placeholder: "Минимум означает…"
     nps_high_placeholder: "Максимум означает…"
     body_placeholder: "Добавьте основной текст (необязательно)"
+    checkpoint_body_placeholder: "Объясните, что означают эти баллы, в одном-двух предложениях"
     location_places_label: "Искать"
     location_place:
       country: "Страна"

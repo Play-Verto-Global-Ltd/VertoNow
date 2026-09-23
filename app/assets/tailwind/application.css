@@ -12869,6 +12869,31 @@ body.generating-overlay-active .bottom-bar { display: none; }
   border: 1px solid rgba(245,158,11,0.4);
   display: flex; flex-direction: column; align-items: stretch; gap: 8px;
 }
+/* The creator's sentence above the final tally — the end-screen half of the
+   explainer the Points Checkpoint carries as card copy. Rendered only when
+   they wrote one (_renderTokenScore), because a house sentence about points in
+   general is worse than none: what a token counts is the creator's to say.
+
+   A pale pill, not the amber the label and the border use. This card is dark
+   (#272D4A under a 10% amber wash) and the amber is already doing the chrome;
+   prose in it would read as a second heading. rgba(255,255,255,0.86) over the
+   pill measures 7.1:1 there, well clear of the 4.5:1 this screen holds itself
+   to (end_screen_contrast_test), which the amber would only just have made. */
+.token-result-note {
+  align-self: center;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 7px 14px;
+  border-radius: 100px;
+  background: rgba(245,158,11,0.14);
+  border: 1px solid rgba(245,158,11,0.35);
+  font-family: "ABeeZee", sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.86);
+  text-align: center;
+}
 .token-result-label {
   font-family: "Alata", sans-serif; font-size: 11px; letter-spacing: 0.14em;
   text-transform: uppercase; color: #F59E0B; text-align: center;
@@ -13175,6 +13200,46 @@ body.generating-overlay-active .bottom-bar { display: none; }
 .join-alt-link { color: var(--brand-primary, #01EACB); text-decoration: underline; }
 
 /* Points Checkpoint card body (player) — populated client-side. */
+/* The words beside the scores — the checkpoint card's own body copy, drawn as
+   the amber pill the points intro's note already is rather than as a grey
+   subtitle. "The scores seem to be just numbers, so I wonder if they need a bit
+   more context", from a creator running a study whose whole point is what those
+   numbers measure.
+
+   Same tokens as .welcome-intake-tokens-note, which are also .token-checkpoint
+   -row's — #B45309 on rgba(245,158,11,0.08) inside a rgba(245,158,11,0.3)
+   border — so the sentence and the bars under it read as one card rather than
+   as a note that wandered in. The amber measures 4.7:1 on that near-white pill
+   (leaderboard_contrast_test); brand primary does NOT, which is why this does
+   not follow the palette.
+
+   Matched through :has() on the card rather than [data-card-type], because the
+   editor's Preview clones .split-card ALONE into a bare wrapper
+   (preview_verto#_syncPreviewCards) — the type attribute lives on the row
+   outside it and does not come with the clone, so an attribute selector styles
+   the editor and the player and silently skips the one surface a creator
+   checks their copy in. The two inner classes are the player's body and the
+   editor's placeholder, one of which is always there.
+
+   .q-header is in the selector to beat .preview-overlay .q-subtitle (0,2,0) in
+   the phone block, which would otherwise tie and win on source order. */
+.split-card:has(.token-checkpoint-body, .token-checkpoint-placeholder) .q-header .q-subtitle {
+  align-self: center;
+  width: fit-content;
+  max-width: 90%;
+  box-sizing: border-box;
+  margin-top: 2px;
+  padding: 8px 16px;
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 100px;
+  background: rgba(245,158,11,0.08);
+  font-family: "ABeeZee", sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #B45309;
+  text-align: center;
+}
+
 .token-checkpoint-body { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
 /* A column now: the numbers on top, a bar under them. Four totals within a few
    points of each other are a table you have to read; as bars, which one is

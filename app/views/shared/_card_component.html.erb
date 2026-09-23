@@ -254,18 +254,24 @@
     <div class="q-title" <%= ce_attr %> <%= "data-rich-text".html_safe if editable %>><%= rich_card_text(card, display, "text") %></div>
 
     <%# The body copy under the heading, at .q-subtitle's smaller size.
-        Rendered for a welcome card in the EDITOR even when there is none yet:
-        the node IS the field (the serialiser reads this element — see
-        survey-editor#_readCard), so a front card that had only a heading gave
-        a creator nowhere to type body copy, and every line they wrote ended up
-        in the heading at heading size. "I would also consider here the main
-        header in current font size, and the remainder body copy in a smaller
-        font, as per enterprise, fully editable as all text is in the editor."
+        Rendered in the EDITOR even when there is none yet, for the types in
+        CardTypes::BODY_COPY_PROMPTED_TYPES: the node IS the field (the
+        serialiser reads this element — see survey-editor#_readCard), so a card
+        that had only a heading gave a creator nowhere to type body copy, and
+        every line they wrote ended up in the heading at heading size. "I would
+        also consider here the main header in current font size, and the
+        remainder body copy in a smaller font, as per enterprise, fully
+        editable as all text is in the editor."
         Empty and contenteditable it shows a placeholder; empty and not (the
         player, and the preview overlay, which strips contenteditable) it is
-        display: none, so nothing changes for a card without body copy. %>
-    <% if display["description"].present? || (editable && type == "welcome_card") %>
-      <div class="q-subtitle" <%= ce_attr %> <%= "data-rich-text".html_safe if editable %><% if editable %> data-placeholder="<%= t("card.body_placeholder", default: "Add body copy (optional)") %>"<% end %>><%= rich_card_text(card, display, "description") %></div>
+        display: none, so nothing changes for a card without body copy.
+
+        On a Points Checkpoint the same node is the explainer beside the
+        scores, and CSS draws it as the amber pill the points intro's note
+        already uses — so the placeholder is its own, naming what the copy is
+        for rather than offering generic "body copy". %>
+    <% if display["description"].present? || (editable && CardTypes.body_copy_prompted?(type)) %>
+      <div class="q-subtitle" <%= ce_attr %> <%= "data-rich-text".html_safe if editable %><% if editable %> data-placeholder="<%= t(CardTypes.body_copy_placeholder_key(type)) %>"<% end %>><%= rich_card_text(card, display, "description") %></div>
     <% end %>
   </div>
 

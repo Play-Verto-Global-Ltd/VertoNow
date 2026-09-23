@@ -259,4 +259,30 @@ class SurveyDuplicateTest < ActionDispatch::IntegrationTest
     assert_match duplicate_survey_path(draft), response.body
     assert_match duplicate_survey_path(live), response.body
   end
+
+  # tokens_note and leaderboard_note were left out of the duplicate snapshot
+  # once already, and it only showed up when a third note was added beside
+  # them — a follow-up Verto is usually made by copying the first, which is
+  # exactly when losing a creator's own copy shows. Assert the SET, so the
+  # fourth one cannot be forgotten quietly either.
+  test "a copy keeps every one of the creator's points notes" do
+    original = @org.surveys.create!(
+      title: "N", theme: "N", audience_age: "all", key_insight: "k",
+      default_locale: "en", locales: [ "en" ], cards: CARDS.map(&:dup),
+      tokenisation_enabled: true, leaderboard_enabled: true,
+      token_types: [ { "id" => "steps", "icon" => "🥾", "name" => "Steps" } ],
+      tokens_note:       "Every step up the mountain earns points.",
+      leaderboard_note:  "The fastest climbers make the summit board.",
+      token_result_note: "Your totals are the trade-offs you made, not a score."
+    )
+
+    post duplicate_survey_path(original)
+    copy = @org.surveys.order(:id).last
+
+    %i[tokens_note leaderboard_note token_result_note].each do |note|
+      assert_equal original.public_send(note), copy.public_send(note),
+                   "#{note} did not survive the copy — Survey#duplicate! builds from an explicit " \
+                   "attribute list, so a column left off it is silently dropped back to the default"
+    end
+  end
 end

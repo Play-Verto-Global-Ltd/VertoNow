@@ -162,6 +162,7 @@ ar:
     nps_low_placeholder: "الأدنى يعني…"
     nps_high_placeholder: "الأعلى يعني…"
     body_placeholder: "أضف نصًا توضيحيًا (اختياري)"
+    checkpoint_body_placeholder: "اشرح ما تعنيه هذه النقاط، في جملة أو جملتين"
     location_places_label: "البحث عن"
     location_place:
       country: "دولة"

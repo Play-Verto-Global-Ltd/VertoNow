@@ -2624,6 +2624,7 @@ class Survey < ApplicationRecord
       # creator's own copy shows.
       tokens_note:             tokens_note,
       leaderboard_note:        leaderboard_note,
+      token_result_note:       token_result_note,
       join_prompt_enabled:     join_prompt_enabled,
       # The PROMISE carries: a wave 2 made by duplicating wave 1 is asking the
       # same people about the same decision, so "the council decides in
@@ -2753,6 +2754,17 @@ class Survey < ApplicationRecord
 
   def leaderboard_note_text
     leaderboard_note.presence || I18n.t("player.leaderboard_teaser")
+  end
+
+  # The sentence above the FINAL tally, and the one note here with no locale
+  # default behind it: blank means the end screen says nothing extra, rather
+  # than saying a house sentence about points whose meaning only the creator
+  # knows. The mid-deck Points Checkpoint answers the same need through its
+  # card's own `description` — which SurveyTranslator walks, so it reaches the
+  # Verto's other languages — but the final tally is drawn onto the end screen
+  # from the submit response and has no card to carry one.
+  def token_result_note_text
+    token_result_note.presence
   end
 
   # ── What a respondent is offered after they finish ────────────────────────

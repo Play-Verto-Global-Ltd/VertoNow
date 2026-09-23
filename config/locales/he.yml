@@ -162,6 +162,7 @@ he:
     nps_low_placeholder: "הנמוך ביותר פירושו…"
     nps_high_placeholder: "הגבוה ביותר פירושו…"
     body_placeholder: "הוסיפו טקסט מלווה (אופציונלי)"
+    checkpoint_body_placeholder: "הסבירו מה משמעות הנקודות האלה, במשפט או שניים"
     location_places_label: "חיפוש לפי"
     location_place:
       country: "מדינה"

@@ -162,6 +162,7 @@ nl:
     nps_low_placeholder: "Laagste betekent…"
     nps_high_placeholder: "Hoogste betekent…"
     body_placeholder: "Voeg bodytekst toe (optioneel)"
+    checkpoint_body_placeholder: "Leg in een of twee zinnen uit wat deze punten betekenen"
     location_places_label: "Zoeken naar"
     location_place:
       country: "Land"

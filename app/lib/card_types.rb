@@ -123,6 +123,40 @@ module CardTypes
     !NON_QUESTION_TYPES.include?(type.to_s)
   end
 
+  # Types whose body copy the editor offers UNPROMPTED — an empty, placeholder
+  # -bearing .q-subtitle on a card that has none yet (see
+  # shared/_card_component). Everywhere else the subtitle appears only once
+  # there is something in it, because a generated question card almost always
+  # arrives with one and an empty invitation on every card in the deck is
+  # noise.
+  #
+  # These two are the cards where the copy is the POINT and nothing writes it
+  # for the creator. A welcome card given only a heading left its author
+  # nowhere to type, so every line they wrote went into the heading at heading
+  # size. A Points Checkpoint is four amber bars and no sentence saying what
+  # they mean — "the scores seem to be just numbers, so I wonder if they need a
+  # bit more context", from a study measuring what those numbers are supposed
+  # to measure.
+  #
+  # Deliberately the card's own `description` rather than a setting: cards are
+  # the only thing SurveyTranslator walks (it takes text, description, options,
+  # the modal pair and the NPS anchors), so copy that lives here is translated
+  # into the Verto's other languages and copy that lives on the survey is shown
+  # in English to everyone. A checkpoint note had to reach Spanish.
+  BODY_COPY_PROMPTED_TYPES = %w[welcome_card token_checkpoint].freeze
+
+  def body_copy_prompted?(type)
+    BODY_COPY_PROMPTED_TYPES.include?(type.to_s)
+  end
+
+  # What the empty subtitle invites. Generic everywhere ("Add body copy") except
+  # on the checkpoint, where the slot has a job — a creator who reads "body
+  # copy" on a card with no body has no reason to think it is where the points
+  # get explained.
+  def body_copy_placeholder_key(type)
+    type.to_s == "token_checkpoint" ? "card.checkpoint_body_placeholder" : "card.body_placeholder"
+  end
+
   # The three types whose ANSWER takes the whole phone screen, so the phone
   # draws them no hero strip at all: a tap matrix (its stack cannot shrink), an
   # NPS container (nor can its scale), a prioritise list (its rows are drag

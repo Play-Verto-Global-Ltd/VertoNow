@@ -162,6 +162,7 @@ vi:
     nps_low_placeholder: "Thấp nhất nghĩa là…"
     nps_high_placeholder: "Cao nhất nghĩa là…"
     body_placeholder: "Thêm nội dung mô tả (không bắt buộc)"
+    checkpoint_body_placeholder: "Giải thích những điểm này có ý nghĩa gì, trong một hai câu"
     location_places_label: "Tìm theo"
     location_place:
       country: "Quốc gia"

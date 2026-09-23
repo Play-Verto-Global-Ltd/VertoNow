@@ -171,6 +171,7 @@ xh:
     nps_low_placeholder: "Esezantsi sithetha…"
     nps_high_placeholder: "Esiphezulu sithetha…"
     body_placeholder: "Yongeza umbhalo owongezelelekileyo (akunyanzelekile)"
+    checkpoint_body_placeholder: "Chaza ukuba la manqaku athetha ntoni, ngesivakalisi esinye okanye ezibini"
     location_places_label: "Khangela"
     location_place:
       country: "Ilizwe"

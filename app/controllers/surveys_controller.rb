@@ -1025,6 +1025,11 @@ class SurveysController < ApplicationController
     if params.key?(:leaderboard_note)
       attrs[:leaderboard_note] = params[:leaderboard_note].to_s.strip.first(Survey::MAX_NOTE).presence
     end
+    # The same line for the FINAL tally. Blank clears it outright rather than
+    # falling back to house copy — there is none (Survey#token_result_note_text).
+    if params.key?(:token_result_note)
+      attrs[:token_result_note] = params[:token_result_note].to_s.strip.first(Survey::MAX_NOTE).presence
+    end
     # The end-of-Verto ask. Presentation copy, same trust level as
     # tokens_note; blank restores the locale default.
     if params.key?(:join_title)
