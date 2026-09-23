@@ -330,6 +330,17 @@ module NpsHelper
     (longest > SLIDER_AXIS_LABEL_THRESHOLD || labels.size > SLIDER_AXIS_COUNT_THRESHOLD) ? "vertical" : "horizontal"
   end
 
+  # Whether a vertical Range card lists its first option at the TOP rather than
+  # the bottom. Only the age card: a list of age bands reads youngest first,
+  # down the page, while a scale ("not at all" … "very") reads as a gauge
+  # filling upward. Display only — the stored answer is still the option's
+  # index, so the age sync's band mapping is untouched. Derived from the card
+  # rather than stored on it, so Vertos already carrying the age card get it
+  # without a data change.
+  def slider_top_down?(card)
+    card.is_a?(Hash) && card["type"].to_s == "range" && DemographicQuestions.key_for(card) == "age"
+  end
+
   # [[category, [[label, slug], …]], …] for the range card's grouped <optgroup>
   # theme picker.
   def range_theme_groups

@@ -2958,10 +2958,30 @@
   padding: 0 8px;
   height: 100%;
 }
+/* The end stops sit AT the ends of the track, so a thumb parked on the first
+   or last one used to hang half of itself past the pill, and whatever clipped
+   the card cut it off. The track box — which is what the dots, the thumb and
+   the drag math all measure — is therefore inset by half a thumb at each end,
+   and the pill the respondent sees is drawn by ::before across the full
+   height. The ends of the scale land inside the pill; nothing measures
+   differently. */
+.slider-wrap[data-slider-axis-value="vertical"] {
+  --slider-end-inset: 28px; /* half of .slider-thumb's 56px */
+}
 .slider-wrap[data-slider-axis-value="vertical"] .slider-track {
   width: 48px;
-  height: 100%;
+  height: calc(100% - 2 * var(--slider-end-inset));
+  margin: var(--slider-end-inset) 0;
+  background: none;
+  box-shadow: none;
+}
+.slider-wrap[data-slider-axis-value="vertical"] .slider-track::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--slider-end-inset)) 0;
+  border-radius: 999px;
   background: linear-gradient(0deg, #d0e8ff 0%, #01EACB 43%, #ffd88a 100%);
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.12);
 }
 .slider-wrap[data-slider-axis-value="vertical"] .s-dot {
   top: auto; left: 50%;
@@ -2985,6 +3005,19 @@
      line as it started (measured: 112.8px of word in 112.6px of column, then
      110.6 in 110.4). Fixed by the panel, the fit converges in one pass. */
   flex: 1 1 0; min-width: 0;
+}
+/* Top-down (the age card — NpsHelper#slider_top_down?): the first option at
+   the top. Dots and thumb are placed by `top`, so they centre upward rather
+   than downward, and the gradient turns with the list. */
+.slider-wrap[data-slider-axis-value="vertical"][data-slider-top-down-value="true"] .slider-labels {
+  flex-direction: column;
+}
+.slider-wrap[data-slider-axis-value="vertical"][data-slider-top-down-value="true"] .s-dot,
+.slider-wrap[data-slider-axis-value="vertical"][data-slider-top-down-value="true"] .slider-thumb {
+  transform: translate(-50%, -50%);
+}
+.slider-wrap[data-slider-axis-value="vertical"][data-slider-top-down-value="true"] .slider-track::before {
+  background: linear-gradient(180deg, #d0e8ff 0%, #01EACB 43%, #ffd88a 100%);
 }
 .slider-wrap[data-slider-axis-value="vertical"] .slider-label-text,
 .slider-wrap[data-slider-axis-value="vertical"] .slider-label-text:first-child,

@@ -153,6 +153,15 @@ class NpsHelperTest < ActionView::TestCase
                  NpsHelper.range_themes_for("Food and nutrition")
   end
 
+  # ── slider_top_down? ─────────────────────────────────────────────────────
+  test "slider_top_down? is the age card only, keyed or keyless" do
+    assert slider_top_down?(DemographicQuestions.cards.first)
+    assert slider_top_down?(DemographicQuestions.core_card("age"))
+    refute slider_top_down?({ "type" => "range", "options" => %w[A B C] })
+    refute slider_top_down?({ "type" => "open_ended", "input" => "month", "demographic" => true })
+    refute slider_top_down?(nil)
+  end
+
   # ── resolved_slider_axis ─────────────────────────────────────────────────
 
   test "resolved_slider_axis honors an explicit horizontal/vertical override" do

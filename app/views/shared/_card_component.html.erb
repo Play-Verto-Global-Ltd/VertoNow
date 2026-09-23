@@ -767,6 +767,8 @@
       <% axis = resolved_slider_axis(card) %>
       <% stored_axis = card["slider_axis"].to_s.presence || "auto" %>
       <% next_axis = { "auto" => "horizontal", "horizontal" => "vertical", "vertical" => "auto" }[stored_axis] %>
+      <% top_down = slider_top_down?(card) %>
+      <% v_edge = top_down ? "top" : "bottom" %>
       <%# Keyboard + screen-reader access, matching the NPS slider's existing
           pattern (P2-4). Without it the range card is drag-only: pointerdown
           is the sole way to answer. Editor excluded — the labels underneath
@@ -780,6 +782,7 @@
                floor — an explicit horizontal is the creator's call and is
                left alone. %>
            data-slider-auto-value="<%= stored_axis == "auto" %>"
+           data-slider-top-down-value="<%= top_down %>"
            <%= editable ? "".html_safe : tag.attributes(
                  tabindex: 0, role: "slider",
                  "aria-valuemin": 0, "aria-valuemax": n - 1,
@@ -792,10 +795,10 @@
             <% n.times do |i| %>
               <% pos = (i.to_f / (n - 1) * 100).round(2) %>
               <div class="s-dot" data-slider-target="dot"
-                   style="<%= axis == "vertical" ? "bottom:#{pos}%" : "left:#{pos}%" %>"></div>
+                   style="<%= axis == "vertical" ? "#{v_edge}:#{pos}%" : "left:#{pos}%" %>"></div>
             <% end %>
             <div class="slider-thumb" data-slider-target="thumb"
-                 style="<%= axis == "vertical" ? "bottom:50%;" : "left:50%;" %>">
+                 style="<%= axis == "vertical" ? "#{v_edge}:50%;" : "left:50%;" %>">
               <div class="s-line"></div><div class="s-line"></div><div class="s-line"></div>
             </div>
           </div>

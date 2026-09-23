@@ -55,7 +55,11 @@ export default class extends Controller {
     // Whether the card's stored slider_axis is "auto" — i.e. whether this
     // controller is allowed to turn the scale vertical on its own. A creator
     // who picked horizontal from the toggle keeps horizontal.
-    auto:  { type: Boolean, default: false }
+    auto:  { type: Boolean, default: false },
+    // A vertical scale that lists its first option at the TOP (the age card —
+    // NpsHelper#slider_top_down?). Only the drawing flips: index 0 is still
+    // the first option, so what gets stored is unchanged.
+    topDown: { type: Boolean, default: false }
   }
 
   connect() {
@@ -86,9 +90,14 @@ export default class extends Controller {
   // Without this the range card is drag-only — pointerdown is the sole way to
   // answer it, which locks out anyone not using a pointer.
   key(event) {
-    const up   = [ "ArrowUp", "ArrowRight" ].includes(event.key)
-    const down = [ "ArrowDown", "ArrowLeft" ].includes(event.key)
+    let up   = [ "ArrowUp", "ArrowRight" ].includes(event.key)
+    let down = [ "ArrowDown", "ArrowLeft" ].includes(event.key)
     if (!up && !down) return
+    // On a top-down scale the next option is BELOW, so the vertical arrows
+    // follow the thumb rather than the index.
+    if (this._topDown && [ "ArrowUp", "ArrowDown" ].includes(event.key)) {
+      [ up, down ] = [ down, up ]
+    }
     if (event.target.isContentEditable) return
     event.preventDefault()
 
@@ -136,7 +145,7 @@ export default class extends Controller {
   updateFromEvent(event) {
     const rect = this.trackTarget.getBoundingClientRect()
     const raw  = this.axisValue === "vertical"
-      ? (rect.bottom - event.clientY) / rect.height
+      ? (this._topDown ? event.clientY - rect.top : rect.bottom - event.clientY) / rect.height
       : (event.clientX - rect.left) / rect.width
     const ratio = Math.max(0, Math.min(1, raw))
     const n     = Math.max(2, this.stepsValue)
@@ -168,13 +177,7 @@ export default class extends Controller {
     const pct   = `${(ratio * 100).toFixed(2)}%`
 
     if (this.hasThumbTarget) {
-      if (this.axisValue === "vertical") {
-        this.thumbTarget.style.bottom = pct
-        this.thumbTarget.style.left   = ""
-      } else {
-        this.thumbTarget.style.left   = pct
-        this.thumbTarget.style.bottom = ""
-      }
+      this._place(this.thumbTarget, pct)
     }
 
     // The dots are positioned inline by whoever built the markup (the ERB
@@ -182,14 +185,7 @@ export default class extends Controller {
     // them: an inline `left:75%` left behind would beat the stylesheet's
     // `left:50%` centring and strand the dot off the vertical track.
     this.dotTargets.forEach((dot, i) => {
-      const at = `${(i / (n - 1) * 100).toFixed(2)}%`
-      if (this.axisValue === "vertical") {
-        dot.style.bottom = at
-        dot.style.left   = ""
-      } else {
-        dot.style.left   = at
-        dot.style.bottom = ""
-      }
+      this._place(dot, `${(i / (n - 1) * 100).toFixed(2)}%`)
       dot.classList.toggle("active", i === this.indexValue)
     })
 
@@ -206,6 +202,17 @@ export default class extends Controller {
       const label = this.labelTargets[this.indexValue]
       if (label) this.element.setAttribute("aria-valuetext", label.textContent.trim())
     }
+  }
+
+  // Top-down only means anything on a vertical scale; a horizontal one reads
+  // left to right whatever the card is.
+  get _topDown() { return this.topDownValue && this.axisValue === "vertical" }
+
+  // Put a dot or the thumb `at` along the scale, clearing the offsets the
+  // other layouts use so an inline one left behind can't win.
+  _place(el, at) {
+    const edge = this.axisValue !== "vertical" ? "left" : (this._topDown ? "top" : "bottom")
+    for (const side of [ "left", "top", "bottom" ]) el.style[side] = side === edge ? at : ""
   }
 
   // ── Fitting the scale words ─────────────────────────────────────────────
