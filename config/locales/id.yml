@@ -1330,6 +1330,12 @@ id:
     share_image_card: "Kartu %{number}"
     share_image_backdrop: "Latar belakang"
     share_image_empty: "Verto ini belum punya gambar sendiri. Tambahkan satu ke kartu dan gambar itu akan muncul di sini."
+    header_background: "Latar belakang header"
+    header_background_title: "Warna atau gambar di belakang animasi kartu ini — header di ponsel"
+    mobile_background: "Latar belakang seluler"
+    mobile_background_title: "Warna, gambar, atau GIF di belakang pertanyaan dan jawaban kartu ini di ponsel"
+    mobile_bg_hint: "Di belakang pertanyaan dan jawaban di ponsel — di bawah header jika kartu ini memilikinya. Warna, gambar, atau GIF. Tidak pernah mengubah header itu sendiri."
+    mobile_bg_clear: "Hapus latar belakang"
   dashboard_card:
     publish_warning: "Terbitkan “%{title}”? Setelah live, pertanyaannya terkunci dan tidak bisa diedit — pastikan semuanya sudah persis seperti yang kamu mau."
     preview: "Pratinjau"

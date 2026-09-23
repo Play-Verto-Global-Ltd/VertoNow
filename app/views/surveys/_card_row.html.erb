@@ -62,6 +62,11 @@
      <% if card['option_focals'].present? %>data-card-option-focals="<%= Array(card['option_focals']).to_json %>"<% end %>
      <% if card['option_styles'].present? %>data-card-option-styles="<%= Array(card['option_styles']).to_json %>"<% end %>
      <% if card_media_bg(card).present? %>data-card-media-bg="<%= card_media_bg(card).to_json %>"<% end %>
+     <%# The mobile background — a separate value from the header backdrop
+         above, on every type, and the editor's serialiser reads it back off
+         here (a full-screen type's legacy media_bg has already been folded in
+         by card_mobile_bg, so the next save carries it under its own key). %>
+     <% if card_mobile_bg(card).present? %>data-card-mobile-bg="<%= card_mobile_bg(card).to_json %>"<% end %>
      <%# Where the card's photo or video sits in the frames that crop it. Both
          axes always present so the editor's live drag has something to rewrite;
          50 means centre and the serialiser sends nothing. %>
@@ -267,6 +272,11 @@
       <%= render "shared/card_modal", card: card, mode: :editor,
             display_locale: default_locale %>
     </div><%# /split-card %>
+    <%# The panel's design CTAs, stood beside the phone in the device frames
+        (hidden everywhere else) — see the partial. A sibling of .split-card
+        rather than anything inside it, because the frame IS .split-card and
+        the point is to be outside it. %>
+    <%= render "surveys/card_media_dock" %>
   </div><%# /card-col %>
 
   <%# Allow-Other / Required moved to the Answer Type tab's Card settings —

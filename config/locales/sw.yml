@@ -1330,6 +1330,12 @@ sw:
     share_image_card: "Kadi %{number}"
     share_image_backdrop: "Mandharinyuma"
     share_image_empty: "Verto hii bado haina picha zake. Ongeza moja kwenye kadi nayo itaonekana hapa."
+    header_background: "Mandharinyuma ya kichwa"
+    header_background_title: "Rangi au picha nyuma ya uhuishaji wa kadi hii — kichwa kwenye simu"
+    mobile_background: "Mandharinyuma ya simu"
+    mobile_background_title: "Rangi, picha au GIF nyuma ya swali na majibu ya kadi hii kwenye simu"
+    mobile_bg_hint: "Nyuma ya swali na majibu kwenye simu — chini ya kichwa ikiwa kadi hii ina kichwa. Rangi, picha au GIF. Haibadilishi kichwa chenyewe kamwe."
+    mobile_bg_clear: "Ondoa mandharinyuma"
   dashboard_card:
     publish_warning: "Chapisha “%{title}”? Ikiwa hewani, maswali yake yatafungwa na hayawezi kuhaririwa — hakikisha kila kitu kiko sawasawa unavyotaka."
     preview: "Hakiki"

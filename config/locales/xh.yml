@@ -1350,6 +1350,12 @@ xh:
     share_image_card: "Ikhadi %{number}"
     share_image_backdrop: "Umva"
     share_image_empty: "Le Verto ayikabi nayo imifanekiso yayo. Yongeza omnye kwikhadi uze ubonakale apha."
+    header_background: "Umva wesihloko"
+    header_background_title: "Umbala okanye umfanekiso emva kwe-animation yeli khadi — isihloko kwifowuni"
+    mobile_background: "Umva wefowuni"
+    mobile_background_title: "Umbala, umfanekiso okanye i-GIF emva kombuzo neempendulo zeli khadi kwifowuni"
+    mobile_bg_hint: "Emva kombuzo neempendulo kwifowuni — ngezantsi kwesihloko xa eli khadi linaso. Umbala, umfanekiso okanye i-GIF. Ayisitshintshi isihloko ngokwaso."
+    mobile_bg_clear: "Susa umva"
   dashboard_card:
     publish_warning: "Papasha “%{title}”? Xa isisebenza, imibuzo yayo icinyiwe kwaye ayinakuhlelwa — qiniseka ukuba yonke into ifundeka ngokuchanekileyo ngendlela oyifunayo."
     preview: "Jonga kuqala"

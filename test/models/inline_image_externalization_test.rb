@@ -47,6 +47,23 @@ class InlineImageExternalizationTest < ActiveSupport::TestCase
     assert_equal "https://images.pexels.com/photos/1/x.jpg", images[1], "a remote URL is left alone"
   end
 
+  # The editor persists an upload before applying it to either backdrop, so
+  # base64 only lands here when that call failed — and then it has to go the
+  # way every other inline picture goes, or a 3MB GIF rides in the column.
+  test "a card's header backdrop and mobile background are externalised too" do
+    s = survey
+    s.update!(cards: [ { "type" => "range", "cid" => "c_r", "text" => "Q",
+                         "options" => %w[a b c d e],
+                         "media_bg"  => { "color" => "#123456", "image" => DATA_URL },
+                         "mobile_bg" => { "image" => DATA_URL } } ])
+
+    card = s.reload.cards.first
+    assert_match STORED, card["media_bg"]["image"]
+    assert_equal "#123456", card["media_bg"]["color"], "the rest of the backdrop is untouched"
+    assert_match STORED, card["mobile_bg"]["image"]
+    assert_not_includes s.cards.to_json, "data:image/"
+  end
+
   test "the background and the consent image are externalised" do
     s = survey
     s.update!(background_image: DATA_URL, consent_image: DATA_URL)

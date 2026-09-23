@@ -1330,6 +1330,12 @@ es:
     share_image_card: "Tarjeta %{number}"
     share_image_backdrop: "Fondo"
     share_image_empty: "Este Verto aún no tiene imágenes propias. Añade una a una tarjeta y aparecerá aquí."
+    header_background: "Fondo del encabezado"
+    header_background_title: "Color o imagen detrás de la animación de esta tarjeta: el encabezado en móviles"
+    mobile_background: "Fondo móvil"
+    mobile_background_title: "Color, imagen o GIF detrás de la pregunta y las respuestas de esta tarjeta en móviles"
+    mobile_bg_hint: "Detrás de la pregunta y las respuestas en móviles, debajo del encabezado cuando esta tarjeta tiene uno. Un color, una imagen o un GIF. Nunca cambia el encabezado."
+    mobile_bg_clear: "Quitar el fondo"
   dashboard_card:
     publish_warning: "¿Publicar “%{title}”? Una vez en vivo, sus preguntas quedan bloqueadas y no se pueden editar — asegúrate de que todo esté exactamente como quieres."
     preview: "Vista previa"

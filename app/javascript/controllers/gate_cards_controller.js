@@ -363,6 +363,9 @@ export default class extends Controller {
       // reaction still carries a photograph, and it is a photograph of this
       // Verto — the fall-through reaches these too (Survey#first_card_image).
       this._jsonish(card.dataset.cardMediaBg, bg => push(bg?.image, label))
+      // …and the mobile background, which is a photograph of this Verto too
+      // (Survey#first_card_image reaches it the same way).
+      this._jsonish(card.dataset.cardMobileBg, bg => push(bg?.image, label))
       // A tap card's statement pictures. "Any card image" means these as well:
       // they are often the strongest pictures in a deck, and the derivation
       // this panel overrides could never reach them at all.

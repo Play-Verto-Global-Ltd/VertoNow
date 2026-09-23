@@ -35,7 +35,8 @@ class PlayerAssetUrlsTest < ActiveSupport::TestCase
     lottie = "/rails/active_storage/blobs/redirect/#{@blob.signed_id}/anim.json"
     card = { "type" => "range", "text" => "hi", "image" => @redirect_path, "video_poster" => @proxy_path,
              "images" => [ @redirect_path, "https://images.pexels.com/x.jpg", nil ],
-             "media_bg" => { "color" => "#fff", "image" => @redirect_path }, "lottie" => lottie }
+             "media_bg" => { "color" => "#fff", "image" => @redirect_path },
+             "mobile_bg" => { "image" => @proxy_path, "ink" => "dark" }, "lottie" => lottie }
 
     on_bucket do
       out = PlayerAssetUrls.direct_card(card)
@@ -48,6 +49,8 @@ class PlayerAssetUrlsTest < ActiveSupport::TestCase
       assert_nil out["images"][2]
       assert_match OWN_URL, out["media_bg"]["image"]
       assert_equal "#fff", out["media_bg"]["color"]
+      assert_match OWN_URL, out["mobile_bg"]["image"], "the mobile background is a picture the phone fetches too"
+      assert_equal "dark", out["mobile_bg"]["ink"]
       assert_equal lottie, out["lottie"], "lottie JSON stays same-origin — a cross-origin fetch() would need CORS"
       assert_equal "hi", out["text"]
       assert_equal @redirect_path, card["image"], "the model's own hash is untouched"

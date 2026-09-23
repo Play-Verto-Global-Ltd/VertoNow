@@ -65,6 +65,7 @@ const SAVE_WARNING_KEYS = {
   // server's list, would otherwise outrank `image` and suppress the naming
   // path for a card that lost both (see _saveWarningMessage).
   media_bg: "editor.save_warning",
+  mobile_bg: "editor.save_warning",
   duplicate_welcome: "editor.save_warning_duplicate",
   duplicate_respondent_code: "editor.save_warning_duplicate",
   duplicate_points_intro: "editor.save_warning_duplicate",
@@ -75,7 +76,7 @@ const SAVE_WARNING_KEYS = {
 // The codes whose drop is a picture ON A CARD — the ones `warning_details`
 // (cid per drop, and the statement index for a tap card) can point at, so the
 // sentence can name the card and the page can stop showing the picture.
-const CARD_IMAGE_CODES = [ "image", "option_images", "media_bg" ]
+const CARD_IMAGE_CODES = [ "image", "option_images", "media_bg", "mobile_bg" ]
 
 // Token-award rows are keyed by canonical option label, so the types whose
 // labels are edited live in the card need their rows rebuilt as options change
@@ -2750,18 +2751,29 @@ export default class extends Controller {
       // warning either: "the background image I add to a range question
       // doesn't save, I have to re-add every time I load the editor".
       // Four places, one rule. Change one and change all four.
-      // …and the three types whose answer takes the whole phone screen, which
-      // carry a MOBILE background whatever else they hold. Missing them here
-      // reproduced the exact bug the paragraph above describes, on the newest
-      // types rather than on range: the backdrop painted live, autosave left it
-      // out, the server dropped nothing so warned about nothing, and it was
-      // gone on the next reload.
-      const takesBackdrop = type === "range" || !!lottie || isFullScreenAnswer(type) ||
-                            (!video && !image)
+      // Never on the three types whose answer takes the whole phone screen:
+      // the phone draws them no header, so there is nothing for a header
+      // backdrop to be behind. Their phone design is the mobile background,
+      // just below, which every type carries.
+      const takesBackdrop = !isFullScreenAnswer(type) &&
+                            (type === "range" || !!lottie || (!video && !image))
       if (takesBackdrop && card.dataset.cardMediaBg) {
         try {
           const bg = JSON.parse(card.dataset.cardMediaBg)
           if (bg && (bg.color || bg.image)) out.media_bg = bg
+        } catch (_) { /* malformed — let the server default apply */ }
+      }
+      // The MOBILE BACKGROUND — the colour or picture behind the question and
+      // answers on a phone. Its own field, on every type, with no rule about
+      // what the card's panel holds: a picture in the header says nothing
+      // about what sits below it. Leaving it out of the serialiser is the
+      // bug the paragraph above describes — painted live, gone on reload — so
+      // it rides on the row exactly as media_bg does (data-card-mobile-bg,
+      // written by _card_row.html.erb and media_picker#_writeBg).
+      if (card.dataset.cardMobileBg) {
+        try {
+          const bg = JSON.parse(card.dataset.cardMobileBg)
+          if (bg && (bg.color || bg.image)) out.mobile_bg = bg
         } catch (_) { /* malformed — let the server default apply */ }
       }
       if (card.dataset.cardAllowOther === "true") out.allow_other = true
@@ -4117,6 +4129,12 @@ export default class extends Controller {
       if (d.code === "media_bg") {
         const kept = picker._readAnimBg(card)
         picker._writeAnimBg({ color: kept.color }, card, { notify: false })
+      }
+      // The mobile background's picture, the same way — its own slot, so the
+      // header's backdrop is not touched by a drop that was not about it.
+      if (d.code === "mobile_bg") {
+        const kept = picker._readMobileBg(card)
+        picker._writeMobileBg({ color: kept.color }, card, { notify: false })
       }
     })
   }

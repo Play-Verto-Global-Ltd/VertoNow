@@ -320,6 +320,10 @@ export default class extends Controller {
       // panel, and its own :not(:has(…)) collapse only fires when every child is
       // hidden rather than gone; removing it outright says what is meant.
       ".split-left-cta-row, " +
+      // …and the device frame's stand-in for it beside the phone. It sits
+      // outside .split-card, so it only reaches a clone that starts at the
+      // wrap — belt and braces, for the same reason as the row itself.
+      ".card-media-dock, " +
       // The creator's "Answer length" select under an open-ended card. Worse
       // than chrome: its <select> carries change->survey-editor#markDirty, so
       // changing it while "previewing as a respondent" autosaved a new character

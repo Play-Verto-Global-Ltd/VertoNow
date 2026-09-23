@@ -54,7 +54,7 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
   end
 
   def set_backdrop_colour(cid, hex)
-    within(range_card(cid)) { find(".add-bg-fab").click }
+    within(range_card(cid)) { find(".header-bg-fab").click }
     assert_selector "[data-media-picker-target='animBgSection']", visible: true
     evaluate_script(<<~JS)
       (() => {
@@ -75,7 +75,7 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
 
   def open_range_background_settings
     open_editor
-    within(range_card) { find(".add-bg-fab").click }
+    within(range_card) { find(".header-bg-fab").click }
   end
 
   # ── The reported bug ───────────────────────────────────────────────────
@@ -121,7 +121,7 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
                  "the next autosave dropped the backdrop the one before it had stored"
   end
 
-  test "the range card's panel offers both a Change animation and a Background CTA" do
+  test "the range card's panel offers a Change animation, a Header background and a Mobile background CTA" do
     sign_in_as(@user)
     visit survey_path(@survey)
     dismiss_cookie_banner
@@ -129,7 +129,9 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
 
     within(range_card) do
       assert_selector ".add-animation-fab", text: "Change animation"
-      assert_selector ".add-bg-fab", text: "Background"
+      assert_selector ".header-bg-fab", text: "Header background"
+      # …and the other design every card has: what sits below the header.
+      assert_selector ".card-bg-fab", text: "Mobile background"
     end
   end
 
@@ -197,7 +199,8 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
 
     within(lottie_card) do
       assert_selector ".add-media-fab", text: "Change media"
-      assert_selector ".add-bg-fab",    text: "Background"
+      assert_selector ".header-bg-fab", text: "Header background"
+      assert_selector ".card-bg-fab",   text: "Mobile background"
     end
   end
 
@@ -206,15 +209,16 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
     visit survey_path(@survey)
     dismiss_cookie_banner
     assert_text "When were you born?"
-    within(lottie_card) { find(".add-bg-fab").click }
+    within(lottie_card) { find(".header-bg-fab").click }
 
     assert_selector ".media-modal-backdrop", visible: true
     assert_selector "[data-media-picker-target='animBgSection']", visible: true
   end
 
-  # Scoped to lotties on purpose: a photo or a video is opaque, so a background
-  # behind one is a control that does nothing.
-  test "a plain image card is not given a Background CTA" do
+  # Scoped to lotties on purpose: a photo or a video is opaque, so a HEADER
+  # background behind one is a control that does nothing. The MOBILE background
+  # is another matter — it is below the header — and is offered regardless.
+  test "a plain image card is not given a Header background CTA, but keeps Mobile background" do
     @survey.update_columns(cards: @survey.cards + [
       { "type" => "rating", "cid" => "img1", "text" => "Rate it", "image" => "/nope.jpg",
         "options" => [ "Poor", "Great" ] }
@@ -229,7 +233,9 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
       # By its label, the way this file's own lottie test identifies it — the
       # .add-bg-fab CLASS is shared styling that "Adjust crop" (a control a
       # photo card is SUPPOSED to have) borrows too.
-      assert_no_selector ".add-bg-fab", text: "Background"
+      assert_no_selector ".header-bg-fab"
+      assert_no_selector ".add-bg-fab", text: "Header background"
+      assert_selector ".card-bg-fab", text: "Mobile background"
     end
   end
 
@@ -254,10 +260,12 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
       })()
     JS
 
-    assert_equal 2, boxes&.size, "expected two CTAs in the row, got #{boxes.inspect}"
-    assert_operator boxes[0]["right"], :<=, boxes[1]["left"] + 1,
-                    "the CTAs overlap (#{boxes.inspect}) — one is still absolutely positioned " \
-                    "inside the row, so it is painted on top of the other."
+    assert_equal 3, boxes&.size, "expected three CTAs in the row, got #{boxes.inspect}"
+    boxes.each_cons(2) do |a, b|
+      assert_operator a["right"], :<=, b["left"] + 1,
+                      "the CTAs overlap (#{boxes.inspect}) — one is still absolutely positioned " \
+                      "inside the row, so it is painted on top of the other."
+    end
   end
 
   # ── A card with NO media ──────────────────────────────────────────────────
@@ -285,18 +293,19 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
     assert_text "Pick a lane"
   end
 
-  test "a card with no media offers Background alongside Add design" do
+  test "a card with no media offers Header background alongside Add design" do
     open_bare_editor
 
     within(bare_card) do
       assert_selector ".split-left-design-prompt"
-      assert_selector ".add-bg-fab", text: "Background"
+      assert_selector ".header-bg-fab", text: "Header background"
+      assert_selector ".card-bg-fab", text: "Mobile background"
     end
   end
 
   test "the bare card's Background CTA opens the card background settings" do
     open_bare_editor
-    within(bare_card) { find(".add-bg-fab").click }
+    within(bare_card) { find(".header-bg-fab").click }
 
     assert_selector ".media-modal-backdrop", visible: true
     assert_selector "[data-media-picker-target='animBgSection']", visible: true
@@ -319,7 +328,8 @@ class RangeCardBackgroundTest < ApplicationSystemTestCase
                  "a bare card already has a hero strip in the phone frame — the live player " \
                  "gives it none, so this preview is wrong before the backdrop is even set"
 
-    within(bare_card) { find(".add-bg-fab").click }
+    # In the phone frame the panel's pills live in the dock beside the phone.
+    within(bare_card) { find(".dock-header-bg").click }
     evaluate_script(<<~JS)
       (() => {
         const el = document.querySelector("[data-media-picker-target='animBgColor']")

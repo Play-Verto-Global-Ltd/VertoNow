@@ -1330,6 +1330,12 @@ de:
     share_image_card: "Karte %{number}"
     share_image_backdrop: "Hintergrund"
     share_image_empty: "Dieses Verto hat noch keine eigenen Bilder. Füge eines zu einer Karte hinzu, dann erscheint es hier."
+    header_background: "Kopfzeilen-Hintergrund"
+    header_background_title: "Farbe oder Bild hinter der Animation dieser Karte — auf Telefonen die Kopfzeile"
+    mobile_background: "Mobiler Hintergrund"
+    mobile_background_title: "Farbe, Bild oder GIF hinter Frage und Antworten dieser Karte auf Telefonen"
+    mobile_bg_hint: "Hinter Frage und Antworten auf Telefonen — unterhalb der Kopfzeile, wenn diese Karte eine hat. Eine Farbe, ein Bild oder ein GIF. Die Kopfzeile selbst bleibt unverändert."
+    mobile_bg_clear: "Hintergrund entfernen"
   dashboard_card:
     publish_warning: "„%{title}“ veröffentlichen? Sobald es live ist, sind die Fragen gesperrt und können nicht bearbeitet werden — prüfe, ob alles genau so ist, wie du es willst."
     preview: "Vorschau"

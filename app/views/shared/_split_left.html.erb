@@ -24,7 +24,7 @@
   is_nps     = card["type"].to_s == "nps"
 %>
 
-<%# The card backdrop (card["media_bg"]) paints wherever the panel is not
+<%# The HEADER backdrop (card["media_bg"]) paints wherever the panel is not
     already covered by an opaque medium: behind an animation, and — since a
     creator asked to be able to design the phone view of an ordinary card — on a
     card carrying no media at all, where the panel IS the design. A photo or a
@@ -36,9 +36,13 @@
     no hero strip at all (.split-left is display: contents, see the mobile block
     in application.css), so a backdrop with nothing to paint on would be a
     control that silently did nothing on the one surface it was asked for.
-    .has-media-bg is what earns that card its strip back. %>
+    .has-media-bg is what earns that card its strip back.
+
+    This panel never carries the MOBILE BACKGROUND (card["mobile_bg"]) — that is
+    .split-right's, in shared/_card_component: the area behind the question and
+    answers, which starts where this header ends. Two fields, two elements. %>
 <% has_media_bg = card_media_bg(card).present? %>
-<div class="split-left<%= " has-asset-breathe" if animate_asset %><%= " has-media-bg" if has_media_bg %><%= card_bg_ink_class(card) %>" style="<%= card_media_bg_style(card) %>">
+<div class="split-left<%= " has-asset-breathe" if animate_asset %><%= " has-media-bg" if has_media_bg %>" style="<%= card_media_bg_style(card) %>">
   <% if card["type"].to_s == "range" %>
     <%# Range: the LEFT panel plays a Lottie animation that swaps to match the
         slider position. The lottie-player controller listens for the
@@ -106,7 +110,15 @@
   <%# Editor: prompt the creator to add design (an image). The button stays in
       the DOM for every editor-mode card — including NPS — so type-switching
       in the editor (e.g. range → NPS → range) finds it ready to reappear.
-      CSS hides it while a Lottie is mounted (.split-left:has(.nps-lottie) …). %>
+      CSS hides it while a Lottie is mounted (.split-left:has(.nps-lottie) …).
+
+      Every branch below ends its row with the SAME control, the Mobile
+      background pill (shared/_mobile_background_cta): the area behind the
+      question and answers on a phone is a design every card has, whatever
+      this panel holds. The pills before it are this panel's — the header's —
+      and each says so in its label, because the two used to share the one
+      word "Background" and a creator could not tell which of the two screens'
+      designs they were about to change. %>
   <% if editable %>
     <% if is_range %>
       <%# Range cards play a Lottie instead of an image — give the animation its
@@ -114,16 +126,17 @@
           the panel like every other asset's. A distinct class so the
           .split-left:has(.nps-lottie) rule that hides the image chrome leaves
           this one visible. A second CTA opens the ordinary media picker for
-          this card's background (media-picker#open already shows that section
-          for a range card — _cardTakesBackground just checks the card type —
-          the only gap was nothing on this panel ever calling it). %>
+          the colour or image BEHIND the animation — the header's backdrop
+          (media-picker#open already shows that section for a range card —
+          _cardTakesBackground just checks the card type). %>
       <div class="split-left-cta-row">
         <%= render "shared/change_animation_cta", action: "open" %>
-        <button type="button" class="add-bg-fab"
+        <button type="button" class="add-bg-fab header-bg-fab"
                 data-action="click->media-picker#open"
-                title="<%= t("editor.change_background_title", default: "Customise this card's background colour or image") %>">
-          <span><%= t("editor.change_background", default: "Background") %></span>
+                title="<%= t("editor.header_background_title", default: "Colour or image behind this card's animation — the header on a phone") %>">
+          <span><%= t("editor.header_background", default: "Header background") %></span>
         </button>
+        <%= render "shared/mobile_background_cta" %>
       </div>
     <% elsif has_lottie %>
       <%# A Lottie is the one medium that can be TRANSPARENT, so what sits
@@ -134,8 +147,8 @@
           returns true for any card carrying a lottie, not just for range, so
           the background section has been in that modal all along with nothing
           on this panel calling it.
-          The one branch that gets no Background CTA is the next one down: a
-          photo or a video is opaque, so a backdrop behind one is a control
+          The one branch that gets no header-backdrop CTA is the next one down:
+          a photo or a video is opaque, so a backdrop behind one is a control
           that does nothing. See ApplicationHelper#card_takes_backdrop?. %>
       <div class="split-left-cta-row">
         <%= render "shared/change_animation_cta", action: "openShapes" if is_nps %>
@@ -145,11 +158,12 @@
           <span class="add-media-fab-plus">＋</span>
           <span><%= t("editor.change_media") %></span>
         </button>
-        <button type="button" class="add-bg-fab"
+        <button type="button" class="add-bg-fab header-bg-fab"
                 data-action="click->media-picker#openCardBackground"
-                title="<%= t("editor.change_background_title", default: "Customise this card's background colour or image") %>">
-          <span><%= t("editor.change_background", default: "Background") %></span>
+                title="<%= t("editor.header_background_title", default: "Colour or image behind this card's animation — the header on a phone") %>">
+          <span><%= t("editor.header_background", default: "Header background") %></span>
         </button>
+        <%= render "shared/mobile_background_cta" %>
       </div>
     <% elsif has_media %>
       <%# A card with media gets a second control: reframe what is already
@@ -177,21 +191,13 @@
                 title="<%= t("editor.reposition_title", default: "Reframe this card's media — drag to reposition, or crop and zoom a photo") %>">
           <span><%= t("editor.reposition", default: "Reposition") %></span>
         </button>
-        <%# …and on the three types whose answer takes the whole phone screen,
-            Background as well — even though this card already carries a photo.
-            Everywhere else that combination is a control that does nothing,
-            because the photo covers the panel the backdrop would paint on. Not
-            here: the phone draws these no hero at all, so the two are not two
-            layers of one screen but one design each for two screens, and this
-            is the only way to give the phone one. card_takes_backdrop? is the
-            single statement of that rule. %>
-        <% if card_takes_backdrop?(card) %>
-          <button type="button" class="add-bg-fab card-bg-fab"
-                  data-action="click->media-picker#openCardBackground"
-                  title="<%= t("editor.change_background_title", default: "Customise this card's background colour or image") %>">
-            <span><%= t("editor.change_background", default: "Background") %></span>
-          </button>
-        <% end %>
+        <%# No header-backdrop pill here — a photo or a video covers the panel
+            a backdrop would paint on. The mobile background is another matter:
+            it is BELOW the header, and a picture in the header says nothing
+            about it. This branch used to offer it only to the three full-screen
+            types and every other type with a picture had no way to design its
+            phone view at all. %>
+        <%= render "shared/mobile_background_cta" %>
       </div>
     <% else %>
       <button type="button" class="split-left-design-prompt"
@@ -205,30 +211,32 @@
           render — media_picker#_syncAdjustFab reveals it, the same
           stays-in-the-DOM contract as the design prompt above.
 
-          Background is NOT hidden. A card with no media is the one card whose
-          panel is nothing but a colour, and until now it was the one card that
-          could not choose it: the CTA existed only for range and Lottie cards,
-          on the reasoning that a photo or a video is opaque so a backdrop
-          behind one does nothing. True — and it left the case where the
-          backdrop is the whole design with no control at all, which is what
-          "users should be able to add background colours/images to the mobile
-          view" is about. On a phone this panel IS the card's top half
-          (.split-left.has-media-bg, see the mobile block in application.css).
-          media_picker#_syncAdjustFab hides it again if media does arrive, where
-          it would once more be a control that does nothing. %>
+          Header background is offered because a card with no media is the one
+          card whose panel is nothing but a colour, and on a phone setting one
+          earns the card a header strip to paint it on (.split-left.has-media-bg,
+          see the mobile block in application.css). media_picker#_syncAdjustFab
+          hides it again if media does arrive, where it would be a control that
+          does nothing. Not on the three full-screen types: the phone draws
+          them no header whatever they carry, so there is nothing for a header
+          backdrop to be behind — card_takes_backdrop? is that rule. %>
       <div class="split-left-cta-row">
         <%= render "shared/change_animation_cta", action: "openShapes" if is_nps %>
-        <button type="button" class="add-bg-fab card-bg-fab"
-                data-action="click->media-picker#openCardBackground"
-                title="<%= t("editor.change_background_title", default: "Customise this card's background colour or image") %>">
-          <span><%= t("editor.change_background", default: "Background") %></span>
-        </button>
+        <% if card_takes_backdrop?(card) %>
+          <%# .bare-bg-fab is what media_picker#_syncAdjustFab toggles: this is
+              the one header-backdrop pill that has to go when media lands. %>
+          <button type="button" class="add-bg-fab header-bg-fab bare-bg-fab"
+                  data-action="click->media-picker#openCardBackground"
+                  title="<%= t("editor.header_background_title", default: "Colour or image behind this card's animation — the header on a phone") %>">
+            <span><%= t("editor.header_background", default: "Header background") %></span>
+          </button>
+        <% end %>
         <button type="button" class="add-bg-fab media-adjust-fab"
                 data-action="click->media-picker#openAdjust"
                 title="<%= t("editor.reposition_title", default: "Reframe this card's media — drag to reposition, or crop and zoom a photo") %>"
                 hidden>
           <span><%= t("editor.reposition", default: "Reposition") %></span>
         </button>
+        <%= render "shared/mobile_background_cta" %>
       </div>
     <% end %>
   <% end %>

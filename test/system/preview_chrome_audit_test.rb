@@ -79,8 +79,8 @@ class PreviewChromeAuditTest < ApplicationSystemTestCase
 
     # .add-bg-fab is the class both "Background" and "Reposition" carry; the row
     # is the box they sat in, absolutely positioned over the panel.
-    [ ".add-bg-fab", ".card-bg-fab", ".media-adjust-fab",
-      ".split-left-cta-row", ".tap-card-adjust-btn" ].each do |sel|
+    [ ".add-bg-fab", ".card-bg-fab", ".header-bg-fab", ".media-adjust-fab",
+      ".split-left-cta-row", ".card-media-dock", ".tap-card-adjust-btn" ].each do |sel|
       assert page.has_no_css?(".preview-overlay #{sel}", visible: :all),
              "#{sel} reached the preview clone — `media-picker` is bound on the editor root, so " \
              "this one is live: it opens the creator's media modal from inside a respondent view"

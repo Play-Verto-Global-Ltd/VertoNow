@@ -5,12 +5,12 @@
 // prioritise list's rows are drag targets, so one below the fold cannot even be
 // scrolled to. The phone therefore draws all three no hero strip at all.
 //
-// Which makes them exactly the cards that can carry a MOBILE BACKGROUND: on
-// every other type the phone shows the card's own picture, so a backdrop behind
-// it would be a control that does nothing; on these three there is no hero to
-// be behind, and the backdrop is the only design a phone can carry. The editor
-// decides whether to offer the control from this list, and the server decides
-// whether to store what it sets from the Ruby one — so they have to agree, and
+// Which makes them exactly the cards that take NO HEADER BACKDROP (card.media_bg):
+// there is no header for one to be behind. Every type takes a MOBILE
+// BACKGROUND (card.mobile_bg) — behind the question and answers — and on these
+// three that is the whole card. The editor decides whether to offer the header
+// control from this list, and the server decides whether to store what it sets
+// from the Ruby one — so they have to agree, and
 // test/lib/js_constant_parity_test.rb asserts they do.
 export const FULL_SCREEN_ANSWER_TYPES = [ "tap_card", "nps", "prioritise" ]
 

@@ -1330,6 +1330,12 @@ he:
     share_image_card: "כרטיס %{number}"
     share_image_backdrop: "רקע"
     share_image_empty: "ל-Verto הזה אין עדיין תמונות משלו. הוסיפו תמונה לכרטיס והיא תופיע כאן."
+    header_background: "רקע הכותרת"
+    header_background_title: "צבע או תמונה מאחורי האנימציה של הכרטיס — הכותרת בטלפון"
+    mobile_background: "רקע לנייד"
+    mobile_background_title: "צבע, תמונה או GIF מאחורי השאלה והתשובות של הכרטיס בטלפון"
+    mobile_bg_hint: "מאחורי השאלה והתשובות בטלפון — מתחת לכותרת כשלכרטיס יש כזו. צבע, תמונה או GIF. לעולם לא משנה את הכותרת עצמה."
+    mobile_bg_clear: "הסרת הרקע"
   dashboard_card:
     publish_warning: "לפרסם את “%{title}”? לאחר הפרסום השאלות נעולות ולא ניתנות לעריכה — ודאו שהכול בדיוק כפי שאתם רוצים."
     preview: "תצוגה מקדימה"

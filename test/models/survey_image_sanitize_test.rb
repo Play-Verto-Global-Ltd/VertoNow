@@ -487,6 +487,84 @@ class SurveyImageSanitizeTest < ActiveSupport::TestCase
     assert_empty details
   end
 
+  # The header backdrop is behind the header, and the three full-screen types
+  # have no header on a phone — so on them it is dropped (and a legacy one
+  # moved, next block). The media_bg branch's "bare card" rule does not reach
+  # them.
+  test "media_bg is dropped on a full-screen type even when the card is bare" do
+    cards = [ { "type" => "nps", "text" => "Q", "media_bg" => { "color" => "#123456" } },
+              { "type" => "nps", "text" => "Q", "mobile_bg" => { "color" => "#654321" },
+                "media_bg" => { "color" => "#123456" } } ]
+    out = Survey.sanitize_cards_images!(cards)
+
+    assert_equal({ "color" => "#123456", "ink" => "light" }, out[0]["mobile_bg"],
+                 "a legacy media_bg on a full-screen type IS its mobile background — moved, not lost")
+    refute out[0].key?("media_bg")
+    assert_equal "#654321", out[1]["mobile_bg"]["color"], "a mobile_bg already set wins over the legacy value"
+    refute out[1].key?("media_bg")
+  end
+
+  # ── mobile_bg — the MOBILE BACKGROUND ──────────────────────────────────
+  # The colour or image behind the question and answers on a phone: every
+  # type takes one, whatever its panel holds, because it paints a different
+  # element (the answer panel) from the one the header's rules are about.
+
+  test "mobile_bg is kept on every type, with or without a header picture" do
+    cards = [
+      { "type" => "multiple_choice", "text" => "Q", "options" => %w[a b], "image" => ASSET_PATH,
+        "mobile_bg" => { "color" => "#FF00AA", "image" => PEXELS_URL } },
+      { "type" => "range", "text" => "Q", "options" => %w[a b c d e],
+        "mobile_bg" => { "image" => ASSET_PATH } },
+      { "type" => "open_ended", "text" => "Q", "video" => "https://videos.pexels.com/video-files/1/1.mp4",
+        "mobile_bg" => { "color" => "#111111" } },
+      { "type" => "tap_card", "text" => "Q", "options" => %w[a b], "image" => ASSET_PATH,
+        "mobile_bg" => { "color" => "#ffffff" } }
+    ]
+    out = Survey.sanitize_cards_images!(cards)
+
+    assert_equal({ "color" => "#ff00aa", "image" => PEXELS_URL }, out[0]["mobile_bg"],
+                 "a photo in the header does not refuse a background below it")
+    assert_equal ASSET_PATH, out[0]["image"], "…and the header picture is untouched"
+    assert_equal({ "image" => ASSET_PATH }, out[1]["mobile_bg"])
+    assert_equal({ "color" => "#111111", "ink" => "light" }, out[2]["mobile_bg"])
+    assert_equal({ "color" => "#ffffff", "ink" => "dark" }, out[3]["mobile_bg"])
+  end
+
+  test "mobile_bg keeps the ink the editor measured against a picture" do
+    cards = [ { "type" => "yes_no", "text" => "Q", "options" => %w[Yes No],
+                "mobile_bg" => { "image" => ASSET_PATH, "ink" => "DARK" } } ]
+    assert_equal "dark", Survey.sanitize_cards_images!(cards).first["mobile_bg"]["ink"]
+  end
+
+  test "mobile_bg drops junk, an ink on its own, and a non-hash" do
+    cards = [
+      { "type" => "yes_no", "text" => "Q", "options" => %w[Yes No],
+        "mobile_bg" => { "color" => "red", "image" => "https://evil.com/x.png", "ink" => "dark", "x" => 1 } },
+      { "type" => "yes_no", "text" => "Q", "options" => %w[Yes No], "mobile_bg" => { "ink" => "dark" } },
+      { "type" => "yes_no", "text" => "Q", "options" => %w[Yes No], "mobile_bg" => "#ffffff" }
+    ]
+    out = Survey.sanitize_cards_images!(cards)
+    out.each { |c| refute c.key?("mobile_bg"), "nothing valid survived, so the key should go" }
+  end
+
+  test "a GIF data URL is a mobile background, kept as a GIF" do
+    gif = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+    cards = [ { "type" => "rating", "text" => "Q", "options" => %w[a b], "mobile_bg" => { "image" => gif } } ]
+    assert_equal gif, Survey.sanitize_cards_images!(cards).first["mobile_bg"]["image"]
+  end
+
+  test "a rejected mobile background image is reported under its own code" do
+    warnings, details = [], []
+    cards = [ { "type" => "rating", "cid" => "m1", "text" => "Q", "options" => %w[a b],
+                "mobile_bg" => { "color" => "#abcdef", "image" => "https://evil.com/x.png" } } ]
+    out = Survey.sanitize_cards_images!(cards, warnings: warnings, details: details).first
+
+    assert_equal({ "color" => "#abcdef", "ink" => "dark" }, out["mobile_bg"])
+    assert_includes warnings, "mobile_bg"
+    assert_equal "m1", details.find { |d| d["code"] == "mobile_bg" }["cid"]
+    refute_includes warnings, "media_bg", "the header's code must not fire for the phone's drop"
+  end
+
   # ── NPS anchor lines (nps_low_label / nps_high_label) ──────────────────
   # The two captions beside a liquid scale's ends: "We need a short line of text
   # to the left of 0 and to the left of 10... having these editable per NPS

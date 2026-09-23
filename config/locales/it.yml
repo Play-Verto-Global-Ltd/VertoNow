@@ -1330,6 +1330,12 @@ it:
     share_image_card: "Scheda %{number}"
     share_image_backdrop: "Sfondo"
     share_image_empty: "Questo Verto non ha ancora immagini proprie. Aggiungine una a una scheda e comparirà qui."
+    header_background: "Sfondo dell'intestazione"
+    header_background_title: "Colore o immagine dietro l'animazione di questa scheda — l'intestazione su smartphone"
+    mobile_background: "Sfondo mobile"
+    mobile_background_title: "Colore, immagine o GIF dietro la domanda e le risposte di questa scheda su smartphone"
+    mobile_bg_hint: "Dietro la domanda e le risposte su smartphone — sotto l'intestazione quando questa scheda ne ha una. Un colore, un'immagine o una GIF. Non modifica mai l'intestazione."
+    mobile_bg_clear: "Rimuovi sfondo"
   dashboard_card:
     publish_warning: "Pubblicare “%{title}”? Una volta live, le domande saranno bloccate e non modificabili — assicurati che tutto sia esattamente come vuoi."
     preview: "Anteprima"

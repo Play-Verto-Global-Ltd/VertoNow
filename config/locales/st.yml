@@ -1350,6 +1350,12 @@ st:
     share_image_card: "Karete %{number}"
     share_image_backdrop: "Bokamorao"
     share_image_empty: "Verto ena ha e e-so be le ditshwantsho tsa yona. Kenya se seng karetheng mme se tla hlaha mona."
+    header_background: "Semelo sa hlooho"
+    header_background_title: "Mmala kapa setshwantsho ka morao ho animation ya karete ena — hlooho fonong"
+    mobile_background: "Semelo sa fono"
+    mobile_background_title: "Mmala, setshwantsho kapa GIF ka morao ho potso le dikarabo tsa karete ena fonong"
+    mobile_bg_hint: "Ka morao ho potso le dikarabo fonong — ka tlasa hlooho ha karete ena e na le yona. Mmala, setshwantsho kapa GIF. Ha e fetole hlooho ka boyona."
+    mobile_bg_clear: "Tlosa semelo"
   dashboard_card:
     publish_warning: "Phatlalatsa “%{title}”? Hang ha e phela, dipotso tsa yona di notlelehile mme ha di sa ka di fetolwa — netefatsa hore tsohle di ngotswe kamoo o li batlang kateng."
     preview: "Pontsho"

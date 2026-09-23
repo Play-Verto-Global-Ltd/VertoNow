@@ -165,12 +165,13 @@ module CardTypes
   # hero_promise_test.
   #
   # Named here because it now decides something beyond layout: these are
-  # exactly the cards on which a creator may set a MOBILE BACKGROUND. On every
-  # other type the phone shows the card's own picture as a hero, so a backdrop
-  # behind it would be a control that does nothing; on these three there is no
-  # hero to be behind, and the backdrop is the only design the phone can carry.
-  # Mirrored by media_picker#_cardTakesBackground and by the :has() lists in
-  # the stylesheet's two phone blocks.
+  # exactly the cards that take NO HEADER BACKDROP (card.media_bg) — there is
+  # no header for one to be behind. Every type takes a MOBILE BACKGROUND
+  # (card.mobile_bg), behind the question and answers; on these three that is
+  # the whole card, and before mobile_bg existed their media_bg was where it
+  # lived (Survey.sanitize_cards_images! moves it). Mirrored by
+  # media_picker#_cardTakesBackground and by the :has() lists in the
+  # stylesheet's two phone blocks.
   FULL_SCREEN_ANSWER_TYPES = %w[tap_card nps prioritise].freeze
 
   def full_screen_answer?(type)

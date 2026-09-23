@@ -1330,6 +1330,12 @@ ko:
     share_image_card: "카드 %{number}"
     share_image_backdrop: "배경"
     share_image_empty: "이 Verto에는 아직 자체 이미지가 없습니다. 카드에 이미지를 추가하면 여기에 표시됩니다."
+    header_background: "헤더 배경"
+    header_background_title: "이 카드 애니메이션 뒤의 색상 또는 이미지 — 휴대폰에서는 헤더입니다"
+    mobile_background: "모바일 배경"
+    mobile_background_title: "휴대폰에서 이 카드의 질문과 답변 뒤에 표시되는 색상, 이미지 또는 GIF"
+    mobile_bg_hint: "휴대폰에서 질문과 답변 뒤에 표시됩니다. 이 카드에 헤더가 있으면 그 아래에 표시됩니다. 색상, 이미지 또는 GIF. 헤더 자체는 바뀌지 않습니다."
+    mobile_bg_clear: "배경 제거"
   dashboard_card:
     publish_warning: "“%{title}”을(를) 게시할까요? 라이브가 되면 질문이 잠겨 수정할 수 없어요 — 모든 내용이 원하는 대로인지 확인하세요."
     preview: "미리보기"

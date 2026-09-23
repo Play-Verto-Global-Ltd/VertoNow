@@ -197,7 +197,15 @@
     TapScales.for_card(card, locale: locale, default_locale: default_locale) : []
 %>
 
-<div class="split-right<%= ' split-right--book' if Survey::PAGED_TYPES.include?(type) %>">
+<%# The MOBILE BACKGROUND rides on this panel, and only as custom properties
+    (card_mobile_bg_style): nothing but the two phone blocks in application.css
+    reads --mobile-bg-*, so on a desktop or a tablet the attribute is inert.
+    This panel rather than .split-left because it is the one that holds the
+    question and answers — below the header on a card that has one, the whole
+    card on one that has none. The header is another element's business
+    entirely (shared/_split_left), which is what keeps the two independent. %>
+<div class="split-right<%= ' split-right--book' if Survey::PAGED_TYPES.include?(type) %><%= card_mobile_bg_classes(card) %>"
+     style="<%= card_mobile_bg_style(card) %>">
 
   <%# Re-open the intro modal, on a card that has one: the modal interrupts
       once and never again (going back and forward lands on a shut one), so

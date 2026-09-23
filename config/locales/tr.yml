@@ -1330,6 +1330,12 @@ tr:
     share_image_card: "%{number}. kart"
     share_image_backdrop: "Arka plan"
     share_image_empty: "Bu Verto'nun henüz kendine ait görseli yok. Bir karta görsel ekleyin, burada görünsün."
+    header_background: "Başlık arka planı"
+    header_background_title: "Bu kartın animasyonunun arkasındaki renk veya görsel — telefonda başlık"
+    mobile_background: "Mobil arka plan"
+    mobile_background_title: "Telefonda bu kartın sorusu ve cevaplarının arkasındaki renk, görsel veya GIF"
+    mobile_bg_hint: "Telefonda sorunun ve cevapların arkasında — bu kartta başlık varsa onun altında. Bir renk, bir görsel veya bir GIF. Başlığın kendisini asla değiştirmez."
+    mobile_bg_clear: "Arka planı kaldır"
   dashboard_card:
     publish_warning: "“%{title}” yayınlansın mı? Yayına girdikten sonra soruları kilitlenir ve düzenlenemez — her şeyin tam istediğin gibi olduğundan emin ol."
     preview: "Önizleme"

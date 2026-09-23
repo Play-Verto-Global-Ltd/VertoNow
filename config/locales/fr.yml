@@ -1330,6 +1330,12 @@ fr:
     share_image_card: "Carte %{number}"
     share_image_backdrop: "Arrière-plan"
     share_image_empty: "Ce Verto n'a pas encore d'images à lui. Ajoutez-en une à une carte et elle apparaîtra ici."
+    header_background: "Arrière-plan de l'en-tête"
+    header_background_title: "Couleur ou image derrière l'animation de cette carte — l'en-tête sur mobile"
+    mobile_background: "Arrière-plan mobile"
+    mobile_background_title: "Couleur, image ou GIF derrière la question et les réponses de cette carte sur mobile"
+    mobile_bg_hint: "Derrière la question et les réponses sur mobile — sous l'en-tête quand cette carte en a un. Une couleur, une image ou un GIF. Ne modifie jamais l'en-tête."
+    mobile_bg_clear: "Retirer l'arrière-plan"
   dashboard_card:
     publish_warning: "Publier « %{title} » ? Une fois en ligne, ses questions sont verrouillées et ne peuvent plus être modifiées — vérifiez que tout est exactement comme vous le voulez."
     preview: "Aperçu"

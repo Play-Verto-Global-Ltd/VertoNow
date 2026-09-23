@@ -1,0 +1,17 @@
+<%# The "Mobile background" CTA — on EVERY editor card, whatever its panel
+    holds, because every card has a question and answers on a phone and that
+    is what this designs: the area behind them, below the header where the
+    card has one (shared/_card_component paints it on .split-right).
+
+    One partial rather than a button per media branch of _split_left so the
+    four branches cannot drift — the same class (.card-bg-fab, which the
+    device frame's dock and the preview's chrome audit both key on), the same
+    action (media-picker#openMobileBackground, which aims the picker at
+    card.mobile_bg and nothing else) and the same words on every type. It is
+    never hidden when media lands, unlike the header backdrop's pill: a
+    picture in the header says nothing about what sits below it. %>
+<button type="button" class="add-bg-fab card-bg-fab"
+        data-action="click->media-picker#openMobileBackground"
+        title="<%= t("editor.mobile_background_title", default: "Colour, image or GIF behind this card's question and answers on a phone") %>">
+  <span><%= t("editor.mobile_background", default: "Mobile background") %></span>
+</button>

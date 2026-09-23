@@ -1348,6 +1348,12 @@ zu:
     share_image_card: "Ikhadi %{number}"
     share_image_backdrop: "Ingemuva"
     share_image_empty: "Le Verto ayikabi nazithombe zayo. Engeza esisodwa ekhadini bese sivela lapha."
+    header_background: "Isizinda sesihloko"
+    header_background_title: "Umbala noma isithombe ngemuva kwe-animation yaleli khadi — isihloko efonini"
+    mobile_background: "Isizinda sefoni"
+    mobile_background_title: "Umbala, isithombe noma i-GIF ngemuva kombuzo nezimpendulo zaleli khadi efonini"
+    mobile_bg_hint: "Ngemuva kombuzo nezimpendulo efonini — ngaphansi kwesihloko uma leli khadi linaso. Umbala, isithombe noma i-GIF. Akusishintshi isihloko uqobo."
+    mobile_bg_clear: "Susa isizinda"
   dashboard_card:
     publish_warning: "Shicilela “%{title}”? Uma isikhundleni, imibuzo yayo izovalwa futhi ngeke ihlelwe — qiniseka ukuthi konke kufundeka ngendlela oyifunayo."
     preview: "Buka kuqala"

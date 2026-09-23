@@ -1330,6 +1330,12 @@ nl:
     share_image_card: "Kaart %{number}"
     share_image_backdrop: "Achtergrond"
     share_image_empty: "Deze Verto heeft nog geen eigen afbeeldingen. Voeg er een toe aan een kaart en hij verschijnt hier."
+    header_background: "Achtergrond van de header"
+    header_background_title: "Kleur of afbeelding achter de animatie van deze kaart — de header op een telefoon"
+    mobile_background: "Mobiele achtergrond"
+    mobile_background_title: "Kleur, afbeelding of GIF achter de vraag en antwoorden van deze kaart op een telefoon"
+    mobile_bg_hint: "Achter de vraag en antwoorden op een telefoon — onder de header als deze kaart er een heeft. Een kleur, een afbeelding of een GIF. De header zelf verandert nooit."
+    mobile_bg_clear: "Achtergrond verwijderen"
   dashboard_card:
     publish_warning: "“%{title}” publiceren? Zodra hij live is, zijn de vragen vergrendeld en niet meer te bewerken — controleer of alles precies klopt."
     preview: "Voorbeeld"

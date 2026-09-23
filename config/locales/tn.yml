@@ -1350,6 +1350,12 @@ tn:
     share_image_card: "Karata %{number}"
     share_image_backdrop: "Bokamorago"
     share_image_empty: "Verto eno ga e ise e nne le ditshwantsho tsa yona. Tsenya se sengwe mo karateng mme se tla bonala fa."
+    header_background: "Bokamorago jwa tlhogo"
+    header_background_title: "Mmala kgotsa setshwantsho kwa morago ga animation ya karata eno — tlhogo mo founong"
+    mobile_background: "Bokamorago jwa founo"
+    mobile_background_title: "Mmala, setshwantsho kgotsa GIF kwa morago ga potso le dikarabo tsa karata eno mo founong"
+    mobile_bg_hint: "Kwa morago ga potso le dikarabo mo founong — kwa tlase ga tlhogo fa karata eno e na le yone. Mmala, setshwantsho kgotsa GIF. Ga e fetole tlhogo ka boyone."
+    mobile_bg_clear: "Tlosa bokamorago"
   dashboard_card:
     publish_warning: "Phasaladitsa “%{title}”? E fa e sena go tsena mo tirisong, dipotso tsa yona di tla tswalwa mme di ka se baakanngwe — netefatsa gore sengwe le sengwe se balega jaaka o batla."
     preview: "Leba"

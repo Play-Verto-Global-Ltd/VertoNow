@@ -14,7 +14,8 @@
       <div class="media-modal-title"
            data-media-picker-target="modalTitle"
            data-default-label="Add media"
-           data-background-label="<%= t("editor.change_background", default: "Background") %>"
+           data-background-label="<%= t("editor.header_background", default: "Header background") %>"
+           data-mobile-background-label="<%= t("editor.mobile_background", default: "Mobile background") %>"
            data-reposition-label="<%= t("editor.reposition", default: "Reposition") %>"
            data-crop-label="<%= t("editor.reposition_crop", default: "Crop & zoom") %>">Add media</div>
       <button type="button" class="media-modal-close"
@@ -49,7 +50,10 @@
             </svg>
           </span>
           <div>Click to choose an image, or drag &amp; drop</div>
-          <div class="media-upload-hint">PNG, JPG, WebP or SVG — large images are resized automatically</div>
+          <%# GIF is on the list and it is kept as a GIF: media-picker#_readFile
+              stores the original bytes rather than re-encoding through a
+              canvas, which would keep one frame and freeze the animation. %>
+          <div class="media-upload-hint">PNG, JPG, GIF, WebP or SVG — large images are resized automatically, GIFs keep their animation</div>
           <input type="file" accept="image/*" hidden
                  data-media-picker-target="fileInput"
                  data-action="change->media-picker#fileChosen" />
@@ -245,16 +249,28 @@
         </div>
         <div class="media-lottie-hint"><%= t("editor.focal_note", default: "Only affects the header on phones — the full image is kept, so you can change this any time.") %></div>
       </div>
-      <%# Card backdrop. Shown wherever the panel is not already covered edge to
-          edge: behind an animation (a pasted Lottie, or a range card's reaction
-          set), and on a card carrying no media at all — where the backdrop IS
-          the design, and on a phone is the card's whole top half. Behind a
-          photo or a video there is nothing to see, so the section stays hidden
-          rather than offering a control that does nothing.
-          media-picker toggles it in _syncAnimationBg, off the same rule
-          ApplicationHelper#card_takes_backdrop? states server-side. %>
+      <%# The backdrop settings — ONE section for two slots, and which slot it
+          is aimed at is the modal's state (media-picker#_bgSlot), never the
+          card's type:
+            "panel"  — the HEADER backdrop, card.media_bg: behind an animation
+                       (a pasted Lottie, or a range card's reaction set), or a
+                       card carrying no media at all, where the backdrop IS the
+                       panel's design and on a phone earns it a header strip.
+                       Behind a photo or a video there is nothing to see, so
+                       for that slot the section stays hidden rather than
+                       offering a control that does nothing — media-picker
+                       toggles it in _syncAnimationBg, off the same rule
+                       ApplicationHelper#card_takes_backdrop? states.
+            "mobile" — the MOBILE BACKGROUND, card.mobile_bg: behind the
+                       question and answers on a phone, on every type.
+          The label and hint swap with the slot (data-*-label / data-*-hint),
+          so the creator is always told which of the two designs the colour
+          they are about to pick belongs to. %>
       <div class="media-animbg-section" data-media-picker-target="animBgSection" hidden>
-        <div class="media-lottie-label"><%= t("editor.card_bg", default: "Card background") %></div>
+        <div class="media-lottie-label"
+             data-media-picker-target="animBgLabel"
+             data-panel-label="<%= t("editor.card_bg", default: "Card background") %>"
+             data-mobile-label="<%= t("editor.mobile_background", default: "Mobile background") %>"><%= t("editor.card_bg", default: "Card background") %></div>
         <div class="media-animbg-row">
           <input type="color" class="media-animbg-color"
                  data-media-picker-target="animBgColor"
@@ -264,9 +280,14 @@
                   data-action="click->media-picker#openAnimBgImage"><%= t("editor.animation_bg_image", default: "Use an image") %></button>
           <button type="button" class="media-animbg-btn is-clear"
                   data-media-picker-target="animBgClear"
+                  data-panel-label="<%= t("editor.animation_bg_clear", default: "Reset to brand colour") %>"
+                  data-mobile-label="<%= t("editor.mobile_bg_clear", default: "Remove background") %>"
                   data-action="click->media-picker#clearAnimBg"><%= t("editor.animation_bg_clear", default: "Reset to brand colour") %></button>
         </div>
-        <div class="media-lottie-hint"><%= t("editor.card_bg_hint", default: "Sits behind this card's panel — an animation, or nothing at all — and on a phone it is the card's whole top half. Without one the card uses your brand's panel colour.") %></div>
+        <div class="media-lottie-hint"
+             data-media-picker-target="animBgHint"
+             data-panel-hint="<%= t("editor.card_bg_hint", default: "Sits behind this card's panel — an animation, or nothing at all — and on a phone it is the card's whole top half. Without one the card uses your brand's panel colour.") %>"
+             data-mobile-hint="<%= t("editor.mobile_bg_hint", default: "Behind the question and answers on a phone — below the header where this card has one. A colour, an image or a GIF. It never changes the header itself.") %>"><%= t("editor.card_bg_hint", default: "Sits behind this card's panel — an animation, or nothing at all — and on a phone it is the card's whole top half. Without one the card uses your brand's panel colour.") %></div>
       </div>
       <%# Slow push-in/out loop on the card's own photo or Lottie — never
           video (its own motion is enough) or range (already animates via

@@ -5,19 +5,20 @@ require "application_system_test_case"
 # etc — we need to allow creators to add that background and it not affect
 # anything on the desktop or tablet side."
 #
-# Three types drop their hero strip on a phone because their ANSWER needs the
-# whole card: a tap matrix, an NPS container, a prioritise list
-# (CardTypes::FULL_SCREEN_ANSWER_TYPES, and hero_promise_test holds the reason
-# per type). That made them the only cards a creator could not design for a
-# phone at all — every other type shows its own picture there as a hero, and a
-# backdrop was refused on anything carrying a picture on the grounds that the
-# picture covers it. True of the desktop panel. Not true of a phone, which
-# draws these no picture at all.
+# …and then: "every answer type consistently supports editing its Mobile
+# Background — the area behind the question and answer content: below the
+# mobile header where the answer type has one, the full background where it
+# does not."
 #
-# So the backdrop is now allowed on exactly those three whatever else they
-# carry, and it is a PHONE layer: it reaches the browser as --card-bg-* custom
-# properties that only the phone blocks read, which is what keeps the desktop
-# and tablet layouts out of it while both go on carrying the same attribute.
+# So the mobile background is card.mobile_bg, on every type, painted on the
+# answer panel (.split-right): on the three full-screen types
+# (CardTypes::FULL_SCREEN_ANSWER_TYPES) that panel is the whole card, because
+# the phone draws them no header; on every other type it starts where the
+# header ends. It is a PHONE layer: it reaches the browser as --mobile-bg-*
+# custom properties that only the phone blocks read, which is what keeps the
+# desktop and tablet layouts out of it while both go on carrying the same
+# attribute. The three full-screen types used to keep it in media_bg, and a
+# deck saved then still renders from there — the ink tests below use that.
 class MobileBackgroundTest < ApplicationSystemTestCase
   PHONE   = [ 390, 844 ].freeze
   DESKTOP = [ 1280, 900 ].freeze
@@ -50,16 +51,16 @@ class MobileBackgroundTest < ApplicationSystemTestCase
         { "type" => "welcome_card", "title" => "Hello" },
         { "type" => "tap_card", "cid" => "t1", "text" => "What is your call?",
           "options" => [ "Ticket prices", "Kick-off times" ],
-          "image" => HERO, "media_bg" => { "image" => BG } },
+          "image" => HERO, "mobile_bg" => { "image" => BG } },
         { "type" => "nps", "cid" => "n1", "text" => "How likely?",
-          "image" => HERO, "media_bg" => { "image" => BG } },
+          "image" => HERO, "mobile_bg" => { "image" => BG } },
         { "type" => "prioritise", "cid" => "p1", "text" => "In order, please.",
           "options" => [ "Cheaper", "Closer", "Friendlier" ],
-          "image" => HERO, "media_bg" => { "image" => BG } },
-        # The control: an ordinary card, which shows its picture as a hero on a
-        # phone and must go on refusing a backdrop behind it.
+          "image" => HERO, "mobile_bg" => { "image" => BG } },
+        # An ordinary card, which shows its picture as a hero on a phone — the
+        # background goes BELOW that header, and the header is untouched.
         { "type" => "open_ended", "cid" => "o1", "text" => "Tell us more.",
-          "image" => HERO, "media_bg" => { "image" => BG } }
+          "image" => HERO, "mobile_bg" => { "image" => BG } }
       ]
     )
     survey.update_columns(publish_token: (live ? SecureRandom.hex(8) : nil),
@@ -67,26 +68,29 @@ class MobileBackgroundTest < ApplicationSystemTestCase
     survey
   end
 
-  # What the card's panel is actually painting, and with which picture.
+  # What the card is actually painting, and where. The mobile background is
+  # the answer panel's; the header is .split-left's and must not change.
   def panel(cid)
     page.evaluate_script(<<~JS)
       (() => {
         const c  = document.querySelector("[data-card-cid='#{cid}']") ||
                    document.querySelector(".preview-card.active")
         const sl = c.querySelector(".split-left")
+        const sr = c.querySelector(".split-right")
         const sc = c.querySelector(".split-card")
-        const cs = getComputedStyle(sl)
-        const r  = sl.getBoundingClientRect()
+        const r  = sr.getBoundingClientRect()
         const img = c.querySelector(".split-left-img")
+        const slCs = getComputedStyle(sl)
         return {
-          display: cs.display,
-          position: cs.position,
-          // clientHeight/Width, not the card's own rect: `inset: 0` resolves
-          // against the containing block's PADDING box, and the editor gives
-          // .split-card a border — so the backdrop is legitimately a border's
-          // width shorter than the card measures.
+          leftDisplay: slCs.display,
+          // clientHeight/Width, not the card's own rect: the editor gives
+          // .split-card a border, so the panel is legitimately a border's
+          // width short of what the card measures.
           covers: r.height >= sc.clientHeight - 2 && r.width >= sc.clientWidth - 2,
-          painted: cs.backgroundImage,
+          panelTop: Math.round(r.top - sc.getBoundingClientRect().top),
+          headerBottom: slCs.display === "contents" ? 0 : Math.round(sl.getBoundingClientRect().bottom - sc.getBoundingClientRect().top),
+          painted: getComputedStyle(sr).backgroundImage,
+          headerPainted: slCs.backgroundImage,
           heroShown: img ? getComputedStyle(img).display !== "none" : false,
           heroUrl: img ? getComputedStyle(img).backgroundImage : ""
         }
@@ -113,10 +117,9 @@ class MobileBackgroundTest < ApplicationSystemTestCase
       open_editor(build(live: false), device: "mobile")
       p = panel(cid)
 
-      assert_equal "absolute", p["position"],
-                   "the panel is not a backdrop — a hero strip in the flow takes height the " \
-                   "answer on these three types cannot spare"
-      assert p["covers"], "the backdrop does not cover the card"
+      assert_equal "contents", p["leftDisplay"],
+                   "a hero strip in the flow takes height the answer on these three types cannot spare"
+      assert p["covers"], "the background does not cover the card"
       assert_includes p["painted"], BG,
                       "the card is painting #{p['painted']} — not the background the creator set"
       assert_not p["heroShown"],
@@ -125,19 +128,38 @@ class MobileBackgroundTest < ApplicationSystemTestCase
     end
   end
 
+  # The case the old rule had no answer for: a type with a header. The
+  # background is the area BELOW it — "if the answer type has a mobile header,
+  # the Mobile Background is the area below the mobile header".
+  test "an ordinary card paints its mobile background below its header, and the header keeps its picture" do
+    open_editor(build(live: false), device: "mobile")
+    p = panel("o1")
+
+    assert p["heroShown"], "the header lost its picture — the mobile background must never touch it"
+    assert_includes p["heroUrl"], HERO
+    assert_includes p["painted"], BG, "the panel is not painting the mobile background"
+    assert_not_includes p["headerPainted"], BG, "the mobile background is painting on the HEADER"
+    # The panel rides up over the header's bottom edge by the lip (22px); it
+    # must not start above that, or it is not "below the header".
+    assert_operator p["panelTop"], :>=, p["headerBottom"] - 24,
+                    "the panel starts #{p['panelTop']}px down but the header ends at " \
+                    "#{p['headerBottom']}px — the background is over the header, not below it"
+    assert_operator p["headerBottom"], :>, 100, "the header has collapsed"
+  end
+
   # ── Desktop and tablet do not ───────────────────────────────────────────
 
   test "the desktop editor shows the card's own picture and never the mobile background" do
     open_editor(build(live: false))
-    p = panel("t1")
+    %w[t1 o1].each do |cid|
+      p = panel(cid)
 
-    assert_not_equal "absolute", p["position"],
-                     "the desktop panel became a full-card backdrop"
-    assert_not_includes p["painted"], BG,
-                        "the mobile background is painting on the desktop panel — the one thing " \
-                        "this must not do"
-    assert p["heroShown"], "the desktop panel stopped drawing the card's own picture"
-    assert_includes p["heroUrl"], HERO
+      assert_not_includes p["painted"], BG,
+                          "the mobile background is painting on the desktop panel of #{cid} — the " \
+                          "one thing this must not do"
+      assert p["heroShown"], "the desktop panel stopped drawing #{cid}'s own picture"
+      assert_includes p["heroUrl"], HERO
+    end
   end
 
   test "the tablet frame shows no mobile background either" do
@@ -173,38 +195,59 @@ class MobileBackgroundTest < ApplicationSystemTestCase
     assert_includes p["heroUrl"], HERO
   end
 
-  # THE BUG THIS FILE EXISTS FOR, SECOND TIME: "the pill shows but doesn't
-  # work, it's changing the left hand card image not the background". The
-  # control was offered and stored nothing, because it opened #open — the
-  # card's OWN media picker, with the backdrop folded into a section below it.
-  # Pick a photo, press Apply, and the card's hero changed under a heading that
-  # said Background.
-  test "Background stores a background, and leaves the card's own picture alone" do
+  test "a respondent on a phone sees an ordinary card's background below its header" do
+    survey = build
+    page.driver.browser.resize(width: PHONE[0], height: PHONE[1])
+    visit "/play/#{survey.publish_token}"
+    dismiss_cookie_banner
+    agree_to_consent_gate
+    4.times { click_button "Next"; sleep 0.3 }
+    assert_text "Tell us more."
+
+    p = panel("o1")
+    assert p["heroShown"]
+    assert_includes p["heroUrl"], HERO
+    assert_includes p["painted"], BG
+    assert_not_includes p["headerPainted"], BG
+  end
+
+  # THE BUG THIS FILE EXISTS FOR, THIRD TIME: "uploading a Mobile Background
+  # may incorrectly replace/change the main asset used in the mobile header".
+  # The control is aimed at card.mobile_bg and nothing else; the header's
+  # picture, and the header's own backdrop, are not read or written by it.
+  test "Mobile background stores a mobile background, and leaves the header alone" do
     survey = build(live: false)
     open_editor(survey, device: "mobile")
-    before = evaluate_script(%(document.querySelector("[data-card-cid='t1']").dataset.cardImage))
+    before = evaluate_script(%(document.querySelector("[data-card-cid='o1']").dataset.cardImage))
 
-    within("[data-card-cid='t1']") { find(".card-bg-fab").click }
+    # In the phone frame the panel's pills live in the dock beside the phone.
+    within("[data-card-cid='o1']") { find(".dock-mobile-bg").click }
     # Open ON the background: the colour and Remove controls are what tell a
-    # creator which slot they are filling, and #open buried them in a section
-    # under the card's own media tabs.
+    # creator which slot they are filling.
     assert_selector "[data-media-picker-target='animBgSection']", visible: true
+    assert_selector ".media-modal-title", text: "Mobile background"
 
-    tile = all("[data-media-picker-target='libraryItem']").find { |t| t[:"data-url"].present? }
-    assert tile, "the background picker offered nothing to pick"
-    picked = tile[:"data-url"]
-    tile.click
+    # A tile from the static Verto library, re-found just before the click:
+    # the recommended strip beside it renders asynchronously and replaces its
+    # nodes, which makes a handle taken earlier obsolete.
+    picked = all("[data-media-picker-target='libraryItem'][data-url*='verto-library']")
+               .map { |t| t[:"data-url"] }.find { |u| u.present? && u != BG }
+    assert picked, "the background picker offered nothing to pick"
+    find("[data-media-picker-target='libraryItem'][data-url='#{picked}']", match: :first).click
     assert_selector "[data-media-picker-target='applyBtn']:not([disabled])"
     find("[data-media-picker-target='applyBtn']").click
     assert_no_selector ".media-modal-backdrop", visible: true
 
-    stored = evaluate_script(%(document.querySelector("[data-card-cid='t1']").dataset.cardMediaBg))
+    stored = evaluate_script(%(document.querySelector("[data-card-cid='o1']").dataset.cardMobileBg))
     assert_equal picked, JSON.parse(stored.presence || "{}")["image"],
-                 "Apply did not write the background"
-    assert_equal before, evaluate_script(%(document.querySelector("[data-card-cid='t1']").dataset.cardImage)),
-                 "Background rewrote the card's own picture — the whole of the report"
-    assert_includes panel("t1")["painted"], picked,
-                    "the card did not repaint with the background just chosen"
+                 "Apply did not write the mobile background"
+    assert_equal before, evaluate_script(%(document.querySelector("[data-card-cid='o1']").dataset.cardImage)),
+                 "Mobile background rewrote the card's own picture — the whole of the report"
+    assert_nil evaluate_script(%(document.querySelector("[data-card-cid='o1']").dataset.cardMediaBg)),
+               "Mobile background wrote the HEADER backdrop"
+    p = panel("o1")
+    assert_includes p["painted"], picked, "the panel did not repaint with the background just chosen"
+    assert_includes p["heroUrl"], HERO, "the header changed"
   end
 
   # "You need to be able to pick any media you wish as a mobile background."
@@ -213,7 +256,7 @@ class MobileBackgroundTest < ApplicationSystemTestCase
   # cut-down one.
   test "the background picker offers every source the card's own picture gets" do
     open_editor(build(live: false), device: "mobile")
-    within("[data-card-cid='t1']") { find(".card-bg-fab").click }
+    within("[data-card-cid='t1']") { find(".dock-mobile-bg").click }
 
     assert_selector ".media-modal-tabs", visible: true
     assert_selector "[data-media-picker-target='tab'][data-tab='library']", visible: true
@@ -231,14 +274,13 @@ class MobileBackgroundTest < ApplicationSystemTestCase
     open_editor(build(live: false), device: "mobile")
     layers = page.evaluate_script(<<~JS)
       (() => {
-        const sl = document.querySelector("[data-card-cid='t1'] .split-left")
-        const after = getComputedStyle(sl, "::after")
-        const before = getComputedStyle(sl, "::before")
+        const sr = document.querySelector("[data-card-cid='t1'] .split-right")
+        const after = getComputedStyle(sr, "::after")
+        const before = getComputedStyle(sr, "::before")
         const title = getComputedStyle(document.querySelector("[data-card-cid='t1'] .q-title"))
         return {
           after: after.content === "none" ? null : after.backgroundColor,
           before: before.content === "none" ? null : before.backgroundColor,
-          panel: getComputedStyle(document.querySelector("[data-card-cid='t1'] .split-right")).backgroundColor,
           shadow: title.textShadow
         }
       })()
@@ -249,8 +291,6 @@ class MobileBackgroundTest < ApplicationSystemTestCase
 
       flunk "a ::#{name} layer paints #{colour} over the creator's background"
     end
-    assert_includes [ "rgba(0, 0, 0, 0)", "transparent" ], layers["panel"],
-                    "the answer panel is tinting the background"
     assert_not_equal "none", layers["shadow"],
                      "the tint went and nothing replaced it — the question has no edge at all " \
                      "against a busy texture"
@@ -261,9 +301,12 @@ class MobileBackgroundTest < ApplicationSystemTestCase
   #
   # Driven from the stored `ink` rather than from a picture, because that is
   # what the renderer actually reads: the measurement happens once in the
-  # editor and everything downstream is this class.
+  # editor and everything downstream is this class. One of the two fixtures
+  # is a deck saved BEFORE mobile_bg existed (the value in media_bg), which
+  # has to go on rendering exactly as it did.
   { "dark" => "rgb(28, 32, 52)", "light" => "rgb(255, 255, 255)" }.each do |ink, expected|
     test "a background measured as #{ink} gives the card #{ink == 'dark' ? 'dark' : 'white'} ink" do
+      key = ink == "dark" ? "media_bg" : "mobile_bg"
       survey = @org.surveys.create!(
         title: "Ink", theme: "football", audience_age: "adults", key_insight: "k",
         default_locale: "en", locales: [ "en" ],
@@ -271,7 +314,7 @@ class MobileBackgroundTest < ApplicationSystemTestCase
           { "type" => "welcome_card", "title" => "Hello" },
           { "type" => "tap_card", "cid" => "t1", "text" => "What is your call?",
             "options" => [ "One", "Two" ],
-            "media_bg" => { "image" => BG, "ink" => ink } }
+            key => { "image" => BG, "ink" => ink } }
         ]
       )
       open_editor(survey, device: "mobile")
@@ -282,11 +325,13 @@ class MobileBackgroundTest < ApplicationSystemTestCase
           return {
             title: getComputedStyle(c.querySelector(".q-title")).color,
             panel: getComputedStyle(c.querySelector(".split-right")).color,
+            painted: getComputedStyle(c.querySelector(".split-right")).backgroundImage,
             shadow: getComputedStyle(c.querySelector(".q-title")).textShadow
           }
         })()
       JS
 
+      assert_includes colours["painted"], BG, "a background stored under #{key} is not painting"
       assert_equal expected, colours["title"],
                    "a #{ink} background put #{colours['title']} on the question"
       assert_equal expected, colours["panel"]
@@ -304,7 +349,7 @@ class MobileBackgroundTest < ApplicationSystemTestCase
       cards: [
         { "type" => "welcome_card", "title" => "Hello" },
         { "type" => "tap_card", "cid" => "t1", "text" => "What is your call?",
-          "options" => [ "One", "Two" ], "media_bg" => { "image" => BG } }
+          "options" => [ "One", "Two" ], "mobile_bg" => { "image" => BG } }
       ]
     )
     open_editor(survey, device: "mobile")
@@ -345,14 +390,16 @@ class MobileBackgroundTest < ApplicationSystemTestCase
     assert_equal "rgb(255, 255, 255)", row["bg"]
   end
 
-  test "the phone's Background control is offered on a card that already has a picture" do
+  test "the phone's Mobile background control is offered on a card that already has a picture" do
     open_editor(build(live: false), device: "mobile")
 
-    within("[data-card-cid='t1']") do
-      assert_selector ".card-bg-fab", text: "Background", visible: true
-      # …alongside, not instead of: the card's own picture is still the
-      # desktop panel's and still has its controls.
-      assert_selector ".add-media-fab", text: "Change media", visible: true
+    %w[t1 o1].each do |cid|
+      within("[data-card-cid='#{cid}']") do
+        assert_selector ".dock-mobile-bg", text: "Mobile background", visible: true
+        # …alongside, not instead of: the card's own picture is still the
+        # header's and still has its controls.
+        assert_selector ".dock-media", text: "Change media", visible: true
+      end
     end
   end
 end

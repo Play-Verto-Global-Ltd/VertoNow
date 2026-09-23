@@ -1338,6 +1338,12 @@ sn:
     share_image_card: "Kadhi %{number}"
     share_image_backdrop: "Bhekigirawundi"
     share_image_empty: "Verto ino haisati ine mifananidzo yayo. Wedzera mumwe pakadhi uye uchaonekwa pano."
+    header_background: "Kumashure kwemusoro"
+    header_background_title: "Ruvara kana mufananidzo kumashure kwe-animation yekadhi rino — musoro pafoni"
+    mobile_background: "Kumashure kwefoni"
+    mobile_background_title: "Ruvara, mufananidzo kana GIF kumashure kwemubvunzo nemhinduro dzekadhi rino pafoni"
+    mobile_bg_hint: "Kumashure kwemubvunzo nemhinduro pafoni — pazasi pemusoro kana kadhi rino riinawo. Ruvara, mufananidzo kana GIF. Hazvishanduri musoro pachawo."
+    mobile_bg_clear: "Bvisa kumashure"
   dashboard_card:
     publish_warning: "Buritsa “%{title}”? Kana yava pachena, mibvunzo yayo inokiiwa uye haigoni kugadziriswa — chenjerera kuti zvose zvinoverengeka sezvaunoda."
     preview: "Tarisa"

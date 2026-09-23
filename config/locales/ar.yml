@@ -1330,6 +1330,12 @@ ar:
     share_image_card: "البطاقة %{number}"
     share_image_backdrop: "الخلفية"
     share_image_empty: "لا يملك هذا الـ Verto صورًا خاصة به بعد. أضف صورة إلى بطاقة لتظهر هنا."
+    header_background: "خلفية الترويسة"
+    header_background_title: "لون أو صورة خلف الرسم المتحرك لهذه البطاقة — الترويسة على الهاتف"
+    mobile_background: "خلفية الجوال"
+    mobile_background_title: "لون أو صورة أو GIF خلف سؤال هذه البطاقة وإجاباتها على الهاتف"
+    mobile_bg_hint: "خلف السؤال والإجابات على الهاتف — أسفل الترويسة إن كانت لهذه البطاقة ترويسة. لون أو صورة أو GIF. لا يغيّر الترويسة نفسها أبدًا."
+    mobile_bg_clear: "إزالة الخلفية"
   dashboard_card:
     publish_warning: "نشر «%{title}»؟ بعد النشر تُقفل أسئلتها ولا يمكن تعديلها — تأكد أن كل شيء كما تريد تمامًا."
     preview: "معاينة"

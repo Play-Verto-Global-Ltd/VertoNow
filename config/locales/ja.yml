@@ -1330,6 +1330,12 @@ ja:
     share_image_card: "カード %{number}"
     share_image_backdrop: "背景"
     share_image_empty: "この Verto にはまだ独自の画像がありません。カードに画像を追加すると、ここに表示されます。"
+    header_background: "ヘッダーの背景"
+    header_background_title: "このカードのアニメーションの背後にある色や画像 — スマホではヘッダーになります"
+    mobile_background: "モバイルの背景"
+    mobile_background_title: "スマホでこのカードの質問と回答の背後に表示される色・画像・GIF"
+    mobile_bg_hint: "スマホで質問と回答の背後に表示されます。このカードにヘッダーがある場合はその下です。色、画像、GIFのいずれか。ヘッダー自体は変わりません。"
+    mobile_bg_clear: "背景を削除"
   dashboard_card:
     publish_warning: "「%{title}」を公開しますか？公開後は質問がロックされ編集できません — すべてが望みどおりか確認してください。"
     preview: "プレビュー"

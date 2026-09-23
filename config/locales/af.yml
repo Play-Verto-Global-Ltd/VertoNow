@@ -1335,6 +1335,12 @@ af:
     share_image_card: "Kaart %{number}"
     share_image_backdrop: "Agtergrond"
     share_image_empty: "Hierdie Verto het nog geen eie prente nie. Voeg een by 'n kaart en dit verskyn hier."
+    header_background: "Kopstuk-agtergrond"
+    header_background_title: "Kleur of beeld agter hierdie kaart se animasie — die kopstuk op 'n foon"
+    mobile_background: "Mobiele agtergrond"
+    mobile_background_title: "Kleur, beeld of GIF agter hierdie kaart se vraag en antwoorde op 'n foon"
+    mobile_bg_hint: "Agter die vraag en antwoorde op 'n foon — onder die kopstuk waar hierdie kaart een het. 'n Kleur, 'n beeld of 'n GIF. Dit verander nooit die kopstuk self nie."
+    mobile_bg_clear: "Verwyder agtergrond"
   dashboard_card:
     publish_warning: "Publiseer “%{title}”? Sodra dit regstreeks is, word sy vrae gesluit en kan nie gewysig word nie — maak seker alles lees presies soos jy dit wil hê."
     preview: "Voorskou"

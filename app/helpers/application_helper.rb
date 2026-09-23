@@ -450,7 +450,18 @@ module ApplicationHelper
     end
   end
 
-  # A card's animation backdrop, as an inline style for .split-left. An image
+  # ── The two backdrops a card carries ────────────────────────────────────
+  # media_bg is the HEADER backdrop: what sits behind the left panel's animation
+  # (or IS the panel, on a card with no media). On a desktop that panel is the
+  # card's left half; on a phone it is the header strip. mobile_bg is the
+  # MOBILE BACKGROUND: what sits behind the question and answers on a phone —
+  # below the header where the card has one, the whole card where it has none.
+  # They are separate stored values painted on separate elements, and neither
+  # helper ever reads the other's field, which is what "changing one must never
+  # change the other" comes down to. Survey.sanitize_cards_images! holds the
+  # same split on the way in.
+
+  # A card's header backdrop, as an inline style for .split-left. An image
   # wins over a colour when both are set (the colour still paints underneath,
   # so a transparent PNG sits on it rather than on the brand panel). "" when
   # the card hasn't set one, leaving the CSS default --brand-panel in charge.
@@ -463,31 +474,23 @@ module ApplicationHelper
     bg = card_media_bg(card)
     return "" if bg.blank?
 
-    # A mobile-only backdrop is handed over as custom properties instead of as
-    # a background, and that IS the mechanism that keeps desktop and tablet out
-    # of it: only the phone blocks read --card-bg-*, so the same inline
-    # attribute that paints the panel on a range card paints nothing at all
-    # here until a phone rule asks for it. No second attribute, no duplicated
-    # value, and no way for the two to disagree about what the creator picked.
-    prefix = card_bg_is_mobile_only?(card) ? "--card-bg-" : "background-"
-
     parts = []
-    parts << "#{prefix}color:#{bg['color']}" if bg["color"].present?
+    parts << "background-color:#{bg['color']}" if bg["color"].present?
     if (img = bg["image"]).present?
-      # Escaped for a single-quoted CSS url(), NOT URL-encoded: these URLs
-      # legitimately carry query strings (Pexels crops are
-      # ?auto=compress&cs=tinysrgb&w=720…) and percent-encoding the & and =
-      # would break the image. The value is already host-allowlisted by
-      # Survey.sanitize_image_url; this only stops a quote or backslash from
-      # closing the url() and escaping into the style attribute.
-      escaped = img.delete("\n\r").gsub(/["'\\]/) { |c| "\\" + c }
-      parts << "#{prefix}image:url('#{escaped}')"
-      # Only the plain form needs these: the phone rule that reads --card-bg-*
-      # states its own cover/centre, because a property is a value and not a
-      # whole background.
-      parts += [ "background-size:cover", "background-position:center" ] if prefix == "background-"
+      parts << "background-image:url('#{css_url_escape(img)}')"
+      parts += [ "background-size:cover", "background-position:center" ]
     end
     parts.join(";")
+  end
+
+  # Escaped for a single-quoted CSS url(), NOT URL-encoded: these URLs
+  # legitimately carry query strings (Pexels crops are
+  # ?auto=compress&cs=tinysrgb&w=720…) and percent-encoding the & and = would
+  # break the image. The value is already host-allowlisted by
+  # Survey.sanitize_image_url; this only stops a quote or backslash from
+  # closing the url() and escaping into the style attribute.
+  def css_url_escape(url)
+    url.to_s.delete("\n\r").gsub(/["'\\]/) { |c| "\\" + c }
   end
 
   # The same value as a JSON attribute, so the editor's serialiser can read the
@@ -499,42 +502,24 @@ module ApplicationHelper
     bg.blank? ? "" : bg.to_json
   end
 
-  # Whether a card's panel can show a backdrop at all: anything but an opaque
-  # medium. An animation (a range card's reaction set, a pasted Lottie) has
-  # transparency to see through, and a card with NO media is nothing BUT its
-  # backdrop — which is the case that had no control until a creator asked for
-  # one on the phone view. A photo or a video covers the panel edge to edge, so
-  # a backdrop behind one is a control that does nothing and is not offered.
+  # Whether a card's panel can show a header backdrop at all: anything but an
+  # opaque medium. An animation (a range card's reaction set, a pasted Lottie)
+  # has transparency to see through, and a card with NO media is nothing BUT
+  # its backdrop. A photo or a video covers the panel edge to edge, so a
+  # backdrop behind one is a control that does nothing and is not offered.
+  #
+  # The three full-screen types take none: the phone draws them no header at
+  # all (CardTypes::FULL_SCREEN_ANSWER_TYPES), so there is nothing for a header
+  # backdrop to be behind — their phone design is the mobile background, below.
   #
   # The single definition of that rule: Survey.sanitize_cards_images! refuses to
   # store a backdrop the same way, and media_picker#_cardTakesBackground is its
   # client-side twin. Change one and change all three.
   def card_takes_backdrop?(card)
     return false unless card.is_a?(Hash)
+    return false if CardTypes.full_screen_answer?(card["type"])
     return true if card["type"].to_s == "range" || card["lottie"].present?
-    # …and the three types whose answer takes the whole phone screen, whatever
-    # else they carry. "A photo covers the panel" is a statement about the
-    # DESKTOP panel: on a phone these draw no hero at all, so their picture is
-    # not in front of the backdrop, it is on another screen entirely. Without
-    # this a creator could design the phone view of every card except the ones
-    # that are nothing but phone.
-    return true if CardTypes.full_screen_answer?(card["type"])
     card["image"].blank? && card["video"].blank?
-  end
-
-  # Whether that backdrop is the card's MOBILE background — a phone-only layer
-  # the desktop and tablet layouts must not show, because the picture those
-  # layouts show is the card's own hero and the two are set separately and on
-  # purpose ("allow creators to add that background and it not affect anything
-  # on the desktop or tablet side").
-  #
-  # It is the same stored value either way (card.media_bg); what differs is
-  # where it is allowed to paint, which is why the style helper below emits it
-  # as custom properties for these types and as a plain background for the
-  # rest. A range or Lottie card's backdrop is NOT mobile-only: it sits behind
-  # a transparent animation on every screen, which is what it was built for.
-  def card_bg_is_mobile_only?(card)
-    card.is_a?(Hash) && CardTypes.full_screen_answer?(card["type"])
   end
 
   def card_media_bg(card)
@@ -544,23 +529,70 @@ module ApplicationHelper
     return nil unless bg.is_a?(Hash)
 
     kept = bg.slice("color", "image").compact_blank
+    kept.empty? ? nil : kept
+  end
+
+  # The card's MOBILE BACKGROUND — a phone-only layer painted on .split-right,
+  # the panel that holds the question and answers, so it starts below the
+  # header on a card that has one and fills the card on one that has none.
+  # The desktop and tablet layouts never read it ("allow creators to add that
+  # background and it not affect anything on the desktop or tablet side").
+  #
+  # Every type takes one. The three full-screen types used to keep theirs in
+  # media_bg — that was the working implementation this generalises — so a deck
+  # saved before mobile_bg existed is read from there until its next save moves
+  # it (Survey.sanitize_cards_images!). A mobile_bg the creator has set since
+  # always wins.
+  def card_mobile_bg(card)
+    return nil unless card.is_a?(Hash)
+
+    bg = card["mobile_bg"]
+    bg = card["media_bg"] if !bg.is_a?(Hash) && CardTypes.full_screen_answer?(card["type"])
+    return nil unless bg.is_a?(Hash)
+
+    kept = bg.slice("color", "image").compact_blank
     return nil if kept.empty?
 
-    # `ink` rides along but never keeps a backdrop alive on its own — it is a
-    # text colour, and a text colour with nothing behind it is not a backdrop.
+    # `ink` rides along but never keeps a background alive on its own — it is a
+    # text colour, and a text colour with nothing behind it is not a background.
     ink = Survey.sanitize_backdrop_ink(bg["ink"])
     ink.present? ? kept.merge("ink" => ink) : kept
   end
 
-  # The class that flips the card's words to dark ink on a light background.
-  # "The text colour goes white regardless of the background — we need it to
-  # react to the colour of the background." It reacts here, off a measurement
-  # taken when the creator picked (lib/backdrop_ink.js), rather than in the
-  # browser on every visit: a respondent's phone would have to decode the
-  # picture before it could colour the question, which is a flash of the wrong
-  # ink on the slowest connections, every time.
-  def card_bg_ink_class(card)
-    card_media_bg(card)&.dig("ink") == "dark" ? " bg-ink-dark" : ""
+  # The mobile background as custom properties on the panel, NOT as a
+  # background — and that is the mechanism that keeps desktop and tablet out of
+  # it: only the two phone blocks in application.css read --mobile-bg-*, so the
+  # same inline attribute paints nothing at all until a phone rule asks for it.
+  # No second attribute, no duplicated value, and no way for the two to disagree
+  # about what the creator picked.
+  def card_mobile_bg_style(card)
+    bg = card_mobile_bg(card)
+    return "" if bg.blank?
+
+    parts = []
+    parts << "--mobile-bg-color:#{bg['color']}" if bg["color"].present?
+    parts << "--mobile-bg-image:url('#{css_url_escape(bg['image'])}')" if bg["image"].present?
+    parts.join(";")
+  end
+
+  def card_mobile_bg_attr(card)
+    bg = card_mobile_bg(card)
+    bg.blank? ? "" : bg.to_json
+  end
+
+  # The classes the phone blocks key on: .has-mobile-bg is what paints the
+  # panel, and .bg-ink-dark flips the card's words to dark ink on a light
+  # background. "The text colour goes white regardless of the background — we
+  # need it to react to the colour of the background." It reacts here, off a
+  # measurement taken when the creator picked (lib/backdrop_ink.js), rather
+  # than in the browser on every visit: a respondent's phone would have to
+  # decode the picture before it could colour the question, which is a flash
+  # of the wrong ink on the slowest connections, every time.
+  def card_mobile_bg_classes(card)
+    bg = card_mobile_bg(card)
+    return "" if bg.blank?
+
+    bg["ink"] == "dark" ? " has-mobile-bg bg-ink-dark" : " has-mobile-bg"
   end
 
   # The tile's icon slot, in precedence order: the creator's explicit icon

@@ -1332,6 +1332,12 @@ pl:
     share_image_card: "Karta %{number}"
     share_image_backdrop: "Tło"
     share_image_empty: "To Verto nie ma jeszcze własnych obrazów. Dodaj jeden do karty, a pojawi się tutaj."
+    header_background: "Tło nagłówka"
+    header_background_title: "Kolor lub obraz za animacją tej karty — nagłówek na telefonie"
+    mobile_background: "Tło mobilne"
+    mobile_background_title: "Kolor, obraz lub GIF za pytaniem i odpowiedziami tej karty na telefonie"
+    mobile_bg_hint: "Za pytaniem i odpowiedziami na telefonie — pod nagłówkiem, jeśli ta karta go ma. Kolor, obraz lub GIF. Nigdy nie zmienia samego nagłówka."
+    mobile_bg_clear: "Usuń tło"
   dashboard_card:
     publish_warning: "Opublikować „%{title}”? Po publikacji pytania zostaną zablokowane i nie będzie można ich edytować — upewnij się, że wszystko wygląda dokładnie tak, jak chcesz."
     preview: "Podgląd"

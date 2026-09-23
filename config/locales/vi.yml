@@ -1330,6 +1330,12 @@ vi:
     share_image_card: "Thẻ %{number}"
     share_image_backdrop: "Nền"
     share_image_empty: "Verto này chưa có ảnh riêng. Thêm một ảnh vào thẻ và ảnh sẽ xuất hiện ở đây."
+    header_background: "Nền tiêu đề"
+    header_background_title: "Màu hoặc hình ảnh phía sau hoạt ảnh của thẻ này — phần tiêu đề trên điện thoại"
+    mobile_background: "Nền di động"
+    mobile_background_title: "Màu, hình ảnh hoặc GIF phía sau câu hỏi và câu trả lời của thẻ này trên điện thoại"
+    mobile_bg_hint: "Phía sau câu hỏi và câu trả lời trên điện thoại — bên dưới tiêu đề nếu thẻ này có tiêu đề. Một màu, một hình ảnh hoặc một GIF. Không bao giờ làm thay đổi tiêu đề."
+    mobile_bg_clear: "Xóa nền"
   dashboard_card:
     publish_warning: "Đăng “%{title}”? Khi đã hoạt động, các câu hỏi sẽ bị khóa và không thể chỉnh sửa — hãy chắc chắn mọi thứ đúng như bạn muốn."
     preview: "Xem trước"

@@ -973,6 +973,23 @@ class Survey < ApplicationRecord
     BACKDROP_INKS.include?(v) ? v : nil
   end
 
+  # The colour-and-image half of a backdrop — the shape media_bg (a card's
+  # header backdrop) and mobile_bg (its mobile background) share. Only a real
+  # hex and a real image URL survive; anything else in the hash (an ink, which
+  # the mobile branch decides for itself, or junk) is left behind. Hex is
+  # normalised the way option_styles does it. An image is any image
+  # sanitize_image_url takes, and that includes an animated GIF: a stored
+  # upload keeps its bytes (CardImageStore), so the animation survives.
+  def self.sanitize_backdrop_pair(bg)
+    out = {}
+    color = bg["color"].to_s
+    out["color"] = "#" + color.strip.delete_prefix("#").downcase if BrandPalette.valid_hex?(color)
+    if (img = sanitize_image_url(bg["image"])).present?
+      out["image"] = img
+    end
+    out
+  end
+
   def self.backdrop_ink_for_color(hex)
     return nil unless BrandPalette.valid_hex?(hex.to_s)
 
@@ -1455,49 +1472,46 @@ class Survey < ApplicationRecord
           c.delete(k)
         end
       end
-      # Card backdrop — the colour or image behind whatever the panel holds,
-      # overriding the Verto-wide --brand-panel for this one card. Meaningful
-      # wherever the panel is not already covered edge to edge: behind an
-      # animation, and on a card with NO media, where the backdrop IS the design
-      # (and, on a phone, is the card's whole top half — see .has-media-bg in
-      # the mobile block of application.css). A photo or a video covers the
-      # panel itself, so a backdrop is dropped there rather than kept as dead
-      # data that would surprise whoever removes the picture later.
-      # ApplicationHelper#card_takes_backdrop? states the same rule for
-      # rendering; media_picker#_cardTakesBackground for the editor.
-      # Same allowlist-or-drop shape as range_theme above.
+      # A card carries TWO backdrops, and they are different things:
+      #
+      #   media_bg  — the HEADER backdrop: the colour or image behind whatever
+      #               the left panel holds. On a desktop that panel is the
+      #               card's left half; on a phone it is the header strip. It
+      #               is meaningful wherever the panel is not already covered
+      #               edge to edge: behind an animation (a range card's reaction
+      #               set, a pasted Lottie), and on a card with NO media, where
+      #               it IS the panel's design and earns the phone a header
+      #               strip to paint it on (.has-media-bg in the mobile block).
+      #               A photo or a video covers the panel itself, so it is
+      #               dropped there rather than kept as dead data.
+      #   mobile_bg — the MOBILE BACKGROUND: the colour or image behind the
+      #               question and answers on a phone — below the header where
+      #               the card has one, the whole card where it has none. Every
+      #               type takes one, and it never touches the header: "the
+      #               Mobile Background and Mobile Header/Main Asset need to be
+      #               treated as completely separate properties/assets".
+      #
+      # ApplicationHelper#card_takes_backdrop? states the header rule for
+      # rendering; media_picker#_cardTakesBackground for the editor. Both
+      # branches are the same allowlist-or-drop shape as range_theme above.
+      #
+      # The three full-screen types (CardTypes::FULL_SCREEN_ANSWER_TYPES) draw no
+      # header on a phone, and before mobile_bg existed their media_bg WAS the
+      # mobile background — the one working implementation, now generalised.
+      # A deck saved then still carries it there, so it is moved into the field
+      # every type reads on the way through: a legacy value never wins over a
+      # mobile_bg the creator has since set, and a full-screen card keeps no
+      # media_bg at all afterwards, because it has no header for one to be
+      # behind. ApplicationHelper#card_mobile_bg reads the same fallback for a
+      # deck that has not been saved since.
+      full_screen = CardTypes.full_screen_answer?(c["type"])
+      if full_screen && c.key?("media_bg") && !c["mobile_bg"].is_a?(Hash)
+        c["mobile_bg"] = c.delete("media_bg")
+      end
+
       if c.key?("media_bg")
         bg  = c["media_bg"].is_a?(Hash) ? c["media_bg"] : {}
-        out = {}
-        color = bg["color"].to_s
-        out["color"] = "#" + color.strip.delete_prefix("#").downcase if BrandPalette.valid_hex?(color)
-        if (img = sanitize_image_url(bg["image"])).present?
-          out["image"] = img
-        end
-        # Which ink the card's words take over this backdrop. The editor
-        # measures the picture it has in front of it and sends the answer; a
-        # plain colour is measured here, so a deck that never went through the
-        # picker (an import, a seed, a paste) still gets readable text rather
-        # than white on whatever it happens to be. A stored `ink` wins: it was
-        # measured against the IMAGE, which is what a respondent sees, and the
-        # colour underneath is only what shows before it loads.
-        # …and only on the types that READ it. The ink is the colour of words
-        # drawn ON the backdrop, which happens on the three full-screen types
-        # and nowhere else: a range or Lottie card's backdrop sits behind an
-        # animation with the card's text on its own white panel, and a bare
-        # card's paints a hero strip with the text below it. Storing an ink for
-        # those is storing a decision nothing will ever ask for.
-        #
-        # Only ever alongside something to read it against, too — an `ink` on
-        # its own is a text colour for a backdrop that does not exist, and
-        # out.any? below would keep the card a backdrop made of nothing else.
-        if out.any? && CardTypes.full_screen_answer?(c["type"])
-          if (ink = sanitize_backdrop_ink(bg["ink"])).present?
-            out["ink"] = ink
-          elsif out["image"].blank? && (ink = backdrop_ink_for_color(out["color"]))
-            out["ink"] = ink
-          end
-        end
+        out = sanitize_backdrop_pair(bg)
         # Reads the card's OWN lottie / image / video values, which at this
         # point have not been through their own sanitisers yet — a card carrying
         # an off-allowlist animation would otherwise have its backdrop kept and
@@ -1506,15 +1520,7 @@ class Survey < ApplicationRecord
         # each the way that sanitiser will.
         animated = c["type"].to_s == "range" || sanitize_lottie_url(c["lottie"]).present?
         bare     = sanitize_image_url(c["image"]).blank? && sanitize_video_url(c["video"]).blank?
-        # …and the three types whose answer takes the whole phone screen, which
-        # keep a backdrop whatever else they carry. Their picture and their
-        # backdrop are different screens' designs, not two layers of one: the
-        # phone draws them no hero, so there is nothing for the backdrop to be
-        # hidden behind, and refusing to STORE one is what stopped a creator
-        # designing the phone view of exactly the cards that are only ever
-        # phone. See ApplicationHelper#card_takes_backdrop?.
-        full_screen = CardTypes.full_screen_answer?(c["type"])
-        if (animated || bare || full_screen) && out.any?
+        if (animated || bare) && !full_screen && out.any?
           c["media_bg"] = out
         else
           c.delete("media_bg")
@@ -1527,6 +1533,42 @@ class Survey < ApplicationRecord
         if bg["image"].present? && out["image"].blank?
           warnings << "media_bg" if warnings
           details << dropped_media_detail("media_bg", c, bg["image"]) if details
+        end
+      end
+
+      if c.key?("mobile_bg")
+        bg  = c["mobile_bg"].is_a?(Hash) ? c["mobile_bg"] : {}
+        out = sanitize_backdrop_pair(bg)
+        # Which ink the card's words take over this background. The editor
+        # measures the picture it has in front of it and sends the answer; a
+        # plain colour is measured here, so a deck that never went through the
+        # picker (an import, a seed, a paste) still gets readable text rather
+        # than white on whatever it happens to be. A stored `ink` wins: it was
+        # measured against the IMAGE, which is what a respondent sees, and the
+        # colour underneath is only what shows before it loads.
+        #
+        # Only ever alongside something to read it against — an `ink` on its
+        # own is a text colour for a background that does not exist, and
+        # out.any? below would keep the card a background made of nothing else.
+        if out.any?
+          if (ink = sanitize_backdrop_ink(bg["ink"])).present?
+            out["ink"] = ink
+          elsif out["image"].blank? && (ink = backdrop_ink_for_color(out["color"]))
+            out["ink"] = ink
+          end
+        end
+        # No type test: every card has a question and answers on a phone, so
+        # every card has somewhere for this to paint. What it carries in its
+        # header is irrelevant — the two are separate layers of separate
+        # things.
+        if out.any?
+          c["mobile_bg"] = out
+        else
+          c.delete("mobile_bg")
+        end
+        if bg["image"].present? && out["image"].blank?
+          warnings << "mobile_bg" if warnings
+          details << dropped_media_detail("mobile_bg", c, bg["image"]) if details
         end
       end
 
@@ -3052,7 +3094,8 @@ class Survey < ApplicationRecord
       next unless card.is_a?(Hash)
 
       candidate = card["image"].presence ||
-                  (card["media_bg"].is_a?(Hash) ? card["media_bg"]["image"].presence : nil)
+                  (card["media_bg"].is_a?(Hash) ? card["media_bg"]["image"].presence : nil) ||
+                  (card["mobile_bg"].is_a?(Hash) ? card["mobile_bg"]["image"].presence : nil)
       return candidate if shareable_image?(candidate)
     end
     nil
@@ -3645,6 +3688,17 @@ class Survey < ApplicationRecord
       images = Array(c["option_images"])
       if images.any? { |value| Survey::CardImageStore.data_url?(value) }
         c = c.merge("option_images" => images.map { |value| externalized_image_path(value) || value })
+        touched = true
+      end
+
+      # The two backdrops carry a picture each — the header's (media_bg) and
+      # the mobile background (mobile_bg) — and the editor persists an upload
+      # before it applies one, so base64 only reaches here when that storage
+      # call failed. Same door, same close: a GIF stored this way is still a
+      # GIF (CardImageStore keeps the bytes), so the animation survives.
+      PlayerAssetUrls::BACKDROP_KEYS.each do |key|
+        next unless c[key].is_a?(Hash) && (path = externalized_image_path(c[key]["image"]))
+        c = c.merge(key => c[key].merge("image" => path))
         touched = true
       end
 

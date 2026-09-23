@@ -18,7 +18,7 @@ export default class extends Controller {
     "mediaToggle", "mediaTab",
     "saveToLibrary", "brandGrid", "libraryFileInput", "brandStatus",
     "lottieSection", "lottieInput", "lottieError", "lottieBtn",
-    "animBgSection", "animBgColor", "animBgClear",
+    "animBgSection", "animBgColor", "animBgClear", "animBgLabel", "animBgHint",
     "animateAssetSection", "animateAssetToggle",
     "focalSection", "focalFrame", "focalImg",
     "cropStage", "cropFrame", "cropImg", "cropZoom",
@@ -95,6 +95,9 @@ export default class extends Controller {
                  || trigger?.closest(".survey-card-wrap")
     if (!card) return
     this._mode = "card"
+    // The backdrop section this modal shows (when it shows one) is the
+    // HEADER's: the card's own picture and what sits behind it are one panel.
+    this._bgSlot = "panel"
     this._activeCard = card
     this._pendingUrl = null
     this._pendingVideo = null
@@ -136,6 +139,9 @@ export default class extends Controller {
     this._syncAnimationBg()             // backdrop, only when the panel animates
     this._syncAnimateAsset()            // push in/out loop, photo or lottie only
     this._syncFocal()                   // mobile header position, images only
+    // A range card's "Add media" IS its header backdrop — the section is all
+    // that opens — so the head says so, the same as the pill that opened it.
+    this._setModalTitle(isRange ? "background" : "default")
 
     this.backdropTarget.hidden = false
     this._resetModalScroll()
@@ -179,21 +185,40 @@ export default class extends Controller {
     document.addEventListener("keydown", this._escListener)
   }
 
-  // The "Background" pill on a card's own panel. It opens the picker already
-  // AIMED at the backdrop, and that is the whole of this method: it used to
-  // share #open with "Change media", which opens the card's own media picker
-  // with the backdrop folded into a section below it. So the obvious thing to
-  // do in it — pick a photo, press Apply — filled the card's HERO, and the
-  // creator watched a control labelled Background change something else:
-  // "the pill shows but doesn't work, it's changing the left hand card image
-  // not the background". Reported against the mobile background, but the
-  // mis-aim was on every Background pill that isn't a range card's (range
+  // The "Header background" pill on a card's own panel. It opens the picker
+  // already AIMED at the backdrop, and that is the whole of this method: it
+  // used to share #open with "Change media", which opens the card's own media
+  // picker with the backdrop folded into a section below it. So the obvious
+  // thing to do in it — pick a photo, press Apply — filled the card's HERO,
+  // and the creator watched a control labelled Background change something
+  // else: "the pill shows but doesn't work, it's changing the left hand card
+  // image not the background". Reported against the mobile background, but
+  // the mis-aim was on every Background pill that isn't a range card's (range
   // hides the media tabs outright, which is why it never showed there).
   //
   // Same modal, same library, same Apply — `animBg` mode is what routes the
-  // pick to media_bg instead of to card.image, and the section stays open
-  // above it so a colour is one click away from a picture.
+  // pick to a backdrop instead of to card.image, and the section stays open
+  // above it so a colour is one click away from a picture. WHICH backdrop is
+  // this._bgSlot: "panel" here (card.media_bg, the header's), "mobile" from
+  // openMobileBackground below (card.mobile_bg). The two never share a
+  // writer, so neither can reach the other's field.
   openCardBackground(event) {
+    this._openBackdrop(event, "panel")
+  }
+
+  // The "Mobile background" pill — the same picker aimed at card.mobile_bg,
+  // the colour or picture behind the question and answers on a phone. On
+  // every type: what the header holds is irrelevant to what sits below it.
+  // Everything a card's own picture can be, this can be — the Verto library,
+  // the brand library, an upload (a GIF included: _readFile keeps its bytes),
+  // the stock search — and nothing the creator does here touches the header:
+  // "the Mobile Background and Mobile Header/Main Asset need to be treated as
+  // completely separate properties/assets".
+  openMobileBackground(event) {
+    this._openBackdrop(event, "mobile")
+  }
+
+  _openBackdrop(event, slot) {
     event?.preventDefault()
     event?.stopPropagation()
     const trigger = event?.currentTarget
@@ -202,6 +227,7 @@ export default class extends Controller {
     if (!card) return
     this._activeCard = card
     this._mode = "animBg"
+    this._bgSlot = slot
     this._pendingUrl = null
     this._pendingVideo = null
     this._pendingSource = null
@@ -234,7 +260,11 @@ export default class extends Controller {
     this._renderRecommended(this._parseUrls(card.dataset.cardRecommendedImages),
                             "Recommended for this card")
     this._seedSearch()
-    this._setModalTitle("background")
+    this._setModalTitle(slot === "mobile" ? "mobileBackground" : "background")
+    // The colour swatch and Remove come FIRST when the modal is aimed at a
+    // backdrop: they are the controls the pill promised ("change the colour"),
+    // and below the whole library they were a scroll away from being found.
+    this.modalTarget.classList.add("is-backdrop")
     this.backdropTarget.hidden = false
     this._resetModalScroll()
     document.addEventListener("keydown", this._escListener)
@@ -347,7 +377,9 @@ export default class extends Controller {
 
   close() {
     this.backdropTarget.hidden = true
+    this.modalTarget.classList.remove("is-backdrop")
     this._activeCard = null
+    this._bgSlot = null
     this._pendingUrl = null
     this._pendingVideo = null
     this._pendingSource = null
@@ -1638,15 +1670,17 @@ export default class extends Controller {
     }
     if (!this._activeCard) return
     if (this._mode === "animBg") {
-      // Behind the animation, not instead of it — the card's own lottie/range
-      // media is untouched.
+      // Behind the animation (or the answers), not instead of anything — the
+      // card's own lottie/range/photo media is untouched: the slot's writer
+      // never reads or writes card.image.
       if (this._pendingUrl) {
         const card = this._activeCard
+        const slot = this._bgSlot
         // The picture's own ink is unknown until it decodes, and the previous
         // backdrop's answer is about a different picture — so it goes, rather
         // than colouring this one until the measurement lands.
-        this._writeAnimBg({ ...this._readAnimBg(), image: this._pendingUrl, ink: null }, card)
-        this._measureBackdropInk(card, this._pendingUrl)
+        this._writeBg(slot, { ...this._readBg(slot), image: this._pendingUrl, ink: null }, card)
+        this._measureBackdropInk(slot, card, this._pendingUrl)
       }
       this.close()
       return
@@ -2117,20 +2151,20 @@ export default class extends Controller {
     const hasMedia = !!(card?.dataset.cardImage || card?.dataset.cardVideo)
     const fab = card?.querySelector(".media-adjust-fab")
     if (fab) fab.hidden = !hasMedia
-    // …and its opposite number on the no-media panel. "Background" is offered
-    // exactly where it does something (see ApplicationHelper#card_takes_backdrop?
-    // for the one statement of that rule): on a bare card the backdrop IS the
-    // design, and the moment a photo lands it is a control that changes nothing
-    // a respondent will ever see. Only the CTA that ships on the bare panel —
-    // range and Lottie cards have their own, and theirs stays whatever happens
-    // to the card's image, because an animation keeps its transparency.
-    // …except on the three types whose answer takes the whole phone screen,
-    // where a picture arriving says nothing about the backdrop: the picture is
-    // the desktop panel's and the backdrop is the phone's, so hiding the
-    // control the moment a hero lands is hiding the only way to design the
-    // phone. See CardTypes::FULL_SCREEN_ANSWER_TYPES.
-    const bg = card?.querySelector(".card-bg-fab")
-    if (bg) bg.hidden = hasMedia && !isFullScreenAnswer(card?.dataset.cardType)
+    // …and its opposite number on the no-media panel. "Header background" is
+    // offered exactly where it does something (see
+    // ApplicationHelper#card_takes_backdrop? for the one statement of that
+    // rule): on a bare card the backdrop IS the design, and the moment a photo
+    // lands it is a control that changes nothing a respondent will ever see.
+    // Only the CTA that ships on the bare panel — range and Lottie cards have
+    // their own, and theirs stays whatever happens to the card's image,
+    // because an animation keeps its transparency. And never on the three
+    // full-screen types, which the phone draws no header at all.
+    // The MOBILE background's pill (.card-bg-fab) is deliberately not touched
+    // here: what sits below the header does not stop existing because a
+    // picture arrived in it.
+    const bg = card?.querySelector(".bare-bg-fab")
+    if (bg) bg.hidden = hasMedia || isFullScreenAnswer(card?.dataset.cardType)
   }
 
   // The same rule for one tap statement's chip: it exists only where there is
@@ -2287,88 +2321,107 @@ export default class extends Controller {
   // media is nothing BUT its backdrop — which is the case that had no control
   // at all until a creator asked to design the phone view of an ordinary card.
   // Behind a photo or a video there is nothing to see, so nothing is offered.
+  // And never on the three full-screen types: the phone draws them no header
+  // at all, so there is nothing for a header backdrop to be behind — their
+  // phone design is the mobile background, which every type takes.
   get _cardTakesBackground() {
     const card = this._activeCard
     if (!card) return false
+    if (isFullScreenAnswer(card.dataset.cardType)) return false
     if (card.dataset.cardType === "range" || card.dataset.cardLottie) return true
-    // …and the three types whose answer takes the whole phone screen, whatever
-    // else they carry: their picture is the DESKTOP panel's and their backdrop
-    // is the phone's, so one is never in front of the other.
-    if (isFullScreenAnswer(card.dataset.cardType)) return true
     return !card.dataset.cardImage && !card.dataset.cardVideo
   }
 
-  // Both take the card explicitly (defaulting to the modal's own) so the
+  // ── The two backdrop slots ────────────────────────────────────────────
+  // A card carries two backdrops and they are different things:
+  //   panel  — the HEADER backdrop, card.media_bg: behind the left panel's
+  //            animation, or the panel itself on a card with no media. Painted
+  //            as a real background on .split-left, on every screen.
+  //   mobile — the MOBILE BACKGROUND, card.mobile_bg: behind the question and
+  //            answers on a phone. Handed to .split-right as --mobile-bg-*
+  //            custom properties, which only the two phone blocks in
+  //            application.css read — the same split ApplicationHelper
+  //            #card_mobile_bg_style makes server-side, and the reason the
+  //            desktop panel beside the creator does not change when they
+  //            design the phone.
+  // Each slot names its own dataset key, its own element and its own class,
+  // and the one writer below is parameterised by the slot rather than by the
+  // card's type. That is what makes "changing one must never change the
+  // other" true by construction: nothing in here can reach the other slot's
+  // field, and nothing reads card.image at all.
+  static BG_SLOTS = {
+    panel:  { key: "cardMediaBg",  target: ".split-left",  klass: "has-media-bg",  inked: false },
+    mobile: { key: "cardMobileBg", target: ".split-right", klass: "has-mobile-bg", inked: true }
+  }
+
+  // All take the card explicitly (defaulting to the modal's own) so the
   // editor's dropped-media cleanup can clear a backdrop off a card the picker
   // was never opened on — see survey-editor#_clearDroppedMedia.
-  _readAnimBg(card = this._activeCard) {
-    try { return JSON.parse(card?.dataset.cardMediaBg || "{}") || {} }
+  _readBg(slot, card = this._activeCard) {
+    const key = this.constructor.BG_SLOTS[slot].key
+    try { return JSON.parse(card?.dataset[key] || "{}") || {} }
     catch (_) { return {} }
   }
 
-  // One writer for the card row's dataset, the live panel style and the dirty
-  // flag, so the preview and what autosave will send can never disagree.
+  _readAnimBg(card = this._activeCard)   { return this._readBg("panel", card) }
+  _readMobileBg(card = this._activeCard) { return this._readBg("mobile", card) }
+
+  // One writer for the card row's dataset, the live style and the dirty flag,
+  // so the preview and what autosave will send can never disagree.
   // `notify: false` for the editor's dropped-media cleanup, which repaints a
   // card the server has already refused and must NOT schedule a save of its
   // own (see survey-editor#_clearDroppedMedia — the two image writers beside
   // it mark nothing dirty either).
-  _writeAnimBg(bg, card = this._activeCard, { notify = true } = {}) {
+  _writeBg(slot, bg, card = this._activeCard, { notify = true } = {}) {
     if (!card) return
+    const spec = this.constructor.BG_SLOTS[slot]
     const clean = {}
     if (bg?.color) clean.color = bg.color
     if (bg?.image) clean.image = bg.image
-    // Which ink the words take over this backdrop. Carried through so a colour
-    // measured here and a picture measured asynchronously below both survive
-    // the next write — a creator who sets a colour and then a picture must not
-    // have the picture's answer overwritten by the colour's.
-    // …and only on the types that read it: the ink colours words drawn ON the
-    // backdrop, which is the three full-screen types and nowhere else. The
-    // server drops it for anything else, so sending it would be the editor and
-    // the sanitiser disagreeing on every save about a value neither uses.
-    const inked = isFullScreenAnswer(card.dataset.cardType)
-    if (inked && bg?.ink) clean.ink = bg.ink
-    if (inked && !clean.image && clean.color) {
+    // Which ink the words take over this backdrop — only on the slot whose
+    // words are drawn ON it. The mobile background has the question and
+    // answers on it; the header backdrop sits behind an animation with the
+    // card's text on its own panel, and the server drops an ink for it, so
+    // sending one would be the editor and the sanitiser disagreeing on every
+    // save about a value neither uses. Carried through so a colour measured
+    // here and a picture measured asynchronously below both survive the next
+    // write — a creator who sets a colour and then a picture must not have
+    // the picture's answer overwritten by the colour's.
+    if (spec.inked && bg?.ink) clean.ink = bg.ink
+    if (spec.inked && !clean.image && clean.color) {
       // A colour needs no decoding, so it is decided on the spot.
       clean.ink = inkForColor(clean.color) || clean.ink
     }
 
-    if (Object.keys(clean).length) card.dataset.cardMediaBg = JSON.stringify(clean)
-    else delete card.dataset.cardMediaBg
-    this._paintBackdropInk(card, clean.ink)
+    if (Object.keys(clean).length) card.dataset[spec.key] = JSON.stringify(clean)
+    else delete card.dataset[spec.key]
 
-    const left = card.querySelector(".split-left")
-    if (left) {
-      // A MOBILE background is handed over as custom properties, which only the
-      // phone blocks read — the same split ApplicationHelper#card_media_bg_style
-      // makes server-side, and the reason the desktop panel beside the creator
-      // does not change when they design the phone. Painting it as a plain
-      // background here would put it straight onto that panel, live, which is
-      // the one thing this feature must not do.
-      const mobileOnly = isFullScreenAnswer(card.dataset.cardType)
+    const el = card.querySelector(spec.target)
+    if (el) {
       const url = clean.image ? `url('${String(clean.image).replace(/'/g, "\\'")}')` : ""
-      if (mobileOnly) {
-        left.style.backgroundColor = ""
-        left.style.backgroundImage = ""
-        left.style.backgroundSize     = ""
-        left.style.backgroundPosition = ""
-        clean.color ? left.style.setProperty("--card-bg-color", clean.color)
-                    : left.style.removeProperty("--card-bg-color")
-        url ? left.style.setProperty("--card-bg-image", url)
-            : left.style.removeProperty("--card-bg-image")
+      if (slot === "mobile") {
+        clean.color ? el.style.setProperty("--mobile-bg-color", clean.color)
+                    : el.style.removeProperty("--mobile-bg-color")
+        url ? el.style.setProperty("--mobile-bg-image", url)
+            : el.style.removeProperty("--mobile-bg-image")
+        // The class the stylesheet flips its ink tokens on, mirroring
+        // ApplicationHelper#card_mobile_bg_classes so the live editor and the
+        // next server render agree without one waiting for the other.
+        el.classList.toggle("bg-ink-dark", clean.ink === "dark")
       } else {
-        left.style.removeProperty("--card-bg-color")
-        left.style.removeProperty("--card-bg-image")
-        left.style.backgroundColor = clean.color || ""
-        left.style.backgroundImage = url
-        left.style.backgroundSize     = clean.image ? "cover" : ""
-        left.style.backgroundPosition = clean.image ? "center" : ""
+        el.style.backgroundColor = clean.color || ""
+        el.style.backgroundImage = url
+        el.style.backgroundSize     = clean.image ? "cover" : ""
+        el.style.backgroundPosition = clean.image ? "center" : ""
       }
-      // The class, not just the paint. On a phone a media-less card has no hero
-      // strip at all — .split-left is display: contents — and .has-media-bg is
-      // what gives it one, so without this the creator picks a colour, watches
-      // the desktop panel change, and sees nothing at all in the mobile frame
-      // they picked it for. Mirrors _split_left.html.erb.
-      left.classList.toggle("has-media-bg", Object.keys(clean).length > 0)
+      // The class, not just the paint. For the header: on a phone a media-less
+      // card has no hero strip at all — .split-left is display: contents — and
+      // .has-media-bg is what gives it one, so without this the creator picks
+      // a colour, watches the desktop panel change, and sees nothing at all in
+      // the mobile frame they picked it for. For the mobile background:
+      // .has-mobile-bg is the only thing that paints the panel. Mirrors
+      // _split_left.html.erb and _card_component.html.erb respectively.
+      el.classList.toggle(spec.klass, Object.keys(clean).length > 0)
     }
     if (!notify) return
     // _notifyDirty, not dispatch("changed"): the editor root listens for
@@ -2378,32 +2431,63 @@ export default class extends Controller {
     this._notifyDirty()
   }
 
-  // The default covers openCardBackground's mode as well as #open's, and that
+  _writeAnimBg(bg, card = this._activeCard, opts = {})   { return this._writeBg("panel", bg, card, opts) }
+  _writeMobileBg(bg, card = this._activeCard, opts = {}) { return this._writeBg("mobile", bg, card, opts) }
+
+  // The default covers _openBackdrop's mode as well as #open's, and that
   // matters beyond the first frame: setAnimBgColor and clearAnimBg both re-sync
   // after writing, so a default that only knew about "card" would fold the
   // section away the instant a creator picked a colour in a modal that opened
   // on it. (openAnimBgImage is the exception and hides the section itself — it
   // is a drill-down FROM it, and nothing re-syncs while it is open.)
+  //
+  // The section's words follow the slot: a creator has to be told whether the
+  // colour they are about to pick is the header's or the phone's.
   _syncAnimationBg(show = this._mode === "animBg" ||
                           (this._mode === "card" && this._cardTakesBackground)) {
     if (this.hasAnimBgSectionTarget) this.animBgSectionTarget.hidden = !show
     if (!show) return
-    const bg = this._readAnimBg()
-    if (this.hasAnimBgColorTarget && bg.color) this.animBgColorTarget.value = bg.color
+    const slot = this._bgSlot || "panel"
+    if (this.hasAnimBgLabelTarget) {
+      this.animBgLabelTarget.textContent = this.animBgLabelTarget.dataset[`${slot}Label`] ||
+                                           this.animBgLabelTarget.textContent
+    }
+    if (this.hasAnimBgHintTarget) {
+      this.animBgHintTarget.textContent = this.animBgHintTarget.dataset[`${slot}Hint`] ||
+                                          this.animBgHintTarget.textContent
+    }
+    if (this.hasAnimBgClearTarget) {
+      const label = this.animBgClearTarget.dataset[`${slot}Label`]
+      if (label) this.animBgClearTarget.textContent = label
+    }
+    const bg = this._readBg(slot)
+    // The swatch shows what the card has, or the slot's own default when it
+    // has nothing — never the colour left over from the last card opened.
+    if (this.hasAnimBgColorTarget) this.animBgColorTarget.value = bg.color || this._bgDefault(slot)
     if (this.hasAnimBgClearTarget) this.animBgClearTarget.hidden = !(bg.color || bg.image)
   }
 
+  // What each slot paints when nothing has been set: the brand panel behind
+  // the header, and the white card behind the answers.
+  _bgDefault(slot) {
+    return slot === "mobile" ? "#ffffff" : "#2E3564"
+  }
+
   setAnimBgColor(event) {
-    this._writeAnimBg({ ...this._readAnimBg(), color: event.target.value })
+    const slot = this._bgSlot || "panel"
+    this._writeBg(slot, { ...this._readBg(slot), color: event.target.value })
     this._syncAnimationBg()
   }
 
   // Reuse the library/upload picker for the backdrop image by flipping the
   // mode — applyImage routes back here rather than onto the card's own media,
-  // so the animation stays put and only what is behind it changes.
+  // so the animation stays put and only what is behind (or below) it changes.
+  // The slot is left exactly as the opener set it: this is a drill-down from
+  // the section, not a new aim.
   openAnimBgImage(event) {
     event?.preventDefault()
     this._mode = "animBg"
+    this._bgSlot = this._bgSlot || "panel"
     this._showMediaSwapUI(true)
     this.applyBtnTarget.hidden = false
     this._switchTabKey("library")
@@ -2411,13 +2495,7 @@ export default class extends Controller {
     this._showMediaToggle(false)
     this._showLottieSection(false)
     if (this.hasAnimBgSectionTarget) this.animBgSectionTarget.hidden = true
-  }
-
-  // The class the stylesheet flips its ink tokens on, mirroring
-  // ApplicationHelper#card_bg_ink_class so the live editor and the next server
-  // render agree without one waiting for the other.
-  _paintBackdropInk(card, ink) {
-    card?.querySelector(".split-left")?.classList.toggle("bg-ink-dark", ink === "dark")
+    this._setModalTitle(this._bgSlot === "mobile" ? "mobileBackground" : "background")
   }
 
   // A picture has to be decoded before it can be measured, so this lands after
@@ -2430,20 +2508,23 @@ export default class extends Controller {
   // would otherwise redo this on every visit, on the slowest connections,
   // forever. inkForImage resolves null when the pixels cannot be read (a
   // cross-origin picture with no CORS headers taints the canvas) and null
-  // leaves the ink alone rather than guessing.
-  async _measureBackdropInk(card, url) {
+  // leaves the ink alone rather than guessing. Only for the slot that carries
+  // an ink at all.
+  async _measureBackdropInk(slot, card, url) {
+    if (!this.constructor.BG_SLOTS[slot].inked) return
     const ink = await inkForImage(url)
     if (!ink) return
-    const bg = this._readAnimBg(card)
+    const bg = this._readBg(slot, card)
     if (bg.image !== url) return // the creator moved on; this answer is stale
 
-    this._writeAnimBg({ ...bg, ink }, card)
+    this._writeBg(slot, { ...bg, ink }, card)
   }
 
   clearAnimBg(event) {
     event?.preventDefault()
-    this._writeAnimBg({})
-    if (this.hasAnimBgColorTarget) this.animBgColorTarget.value = "#2E3564"
+    const slot = this._bgSlot || "panel"
+    this._writeBg(slot, {})
+    if (this.hasAnimBgColorTarget) this.animBgColorTarget.value = this._bgDefault(slot)
     this._syncAnimationBg()
   }
 

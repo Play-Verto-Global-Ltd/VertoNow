@@ -41,8 +41,11 @@ module PlayerAssetUrls
   end
 
   # A copy of the card with its image URLs made direct — `image`, `video_poster`,
-  # the per-option `images` array and the animation backdrop `media_bg.image`.
-  # Returns the card itself when there is nothing to do.
+  # the per-option `images` array, the header backdrop `media_bg.image` and the
+  # mobile background `mobile_bg.image`. Returns the card itself when there is
+  # nothing to do.
+  BACKDROP_KEYS = %w[media_bg mobile_bg].freeze
+
   def direct_card(card)
     return card unless active? && card.is_a?(Hash)
 
@@ -51,8 +54,9 @@ module PlayerAssetUrls
     if out["images"].is_a?(Array)
       out["images"] = out["images"].map { |url| url.is_a?(String) ? direct(url) : url }
     end
-    if out["media_bg"].is_a?(Hash) && out["media_bg"]["image"].is_a?(String)
-      out["media_bg"] = out["media_bg"].merge("image" => direct(out["media_bg"]["image"]))
+    BACKDROP_KEYS.each do |key|
+      next unless out[key].is_a?(Hash) && out[key]["image"].is_a?(String)
+      out[key] = out[key].merge("image" => direct(out[key]["image"]))
     end
     out
   end
