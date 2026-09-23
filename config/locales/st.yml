@@ -381,6 +381,7 @@ st:
       town: "Batla toropo ya hao…"
       village: "Batla motse wa hao…"
       district: "Batla setereke kapa karolo ya hao…"
+    join_fine_confirm: "O kena hang feela ha o qeta. Re tla romela lengolo-tsoibila le le leng ho netefatsa aterese, e le hore mokhatlo o o bolelle se etsahalang ka mor'a moo. Ha re ke re phatlalatsa letho, 'me o ka hlakola ak'haonte ka ho tobetsa hanngoe."
   # Placeholder CONTENT a new card of each type starts with — answer options,
   # scale labels, statements. Unlike UI chrome (which follows the viewer's
   # locale), these are resolved in the Verto's default locale, because they are
@@ -2199,6 +2200,11 @@ st:
     delete_body: "Sena se hlakola akhaonto ya hao le lenane la di-Verto tseo o di bolokileng. Dikarabo tsa hao di dula le mekgatlo e ileng ya botsa — di fanwe ntle le mabitso mme ha se tsa rona hore re di tlose."
     beta_tag: "Beta"
     beta_note: "O amohetswe akhaontong ya hao ya sebapadi. Ke mona moo dikarabo tsa hao di kgutlelang ho wena: diphetho tsa hao pela tsa batho bohle, le merero eo o thusitseng ho e sisinya. Re sa qala feela."
+    email_unconfirmed: "Ha e so netefatsoe"
+    confirm_title: "Netefatsa lengolo-tsoibila la hao"
+    confirm_body: "Ho fihlela o netefatsa %{email}, mekhatlo ea li-Vertos tseo o li bolokileng e ke ke ea o bolella se etsahalang ka mor'a moo."
+    confirm_blocked: "Mangolo-tsoibila a eang ho %{email} a khutlile kapa a tima, kahoo re ke ke ra e netefatsa. Ha ho letho le leng le fetohang ak'haonteng ea hao."
+    confirm_resend: "Nthomelle lehokela"
   player_notification_mailer:
     via: "%{org} · ka Playverto"
     why: "O fumana sena hobane o kopile ho utlwa ho mekgatlo eo o arabileng di-Verto tsa yona."
@@ -2351,3 +2357,28 @@ st:
     fine: "Ho Google re kopa lebitso la hao le aterese ea imeile feela, ha ho letho le leng. Ha re ke re phatlalatse letho, 'me u ka hlakola ak'haonte ka ho tobetsa hang."
     expired_title: "Seo se nkile nako e telele hanyenyane"
     expired_body: "Sehokelo sena se felile kapa se se se sebelisitsoe — se lula metsotso e seng mekae feela. Bapala Verto hape ho e boloka."
+  player_email_confirmation_mailer:
+    subject: "Netefatsa lengolo-tsoibila la hao bakeng sa Playverto"
+    subject_org: "Netefatsa lengolo-tsoibila la hao bakeng sa Verto ea %{org}"
+    heading: "Netefatsa lengolo-tsoibila la hao"
+    intro: "O entse ak'haonte ea Playverto. Netefatsa aterese ena e le hore mekhatlo ea li-Vertos tseo o li bolokileng e o bolelle se etsahalang ka mor'a moo."
+    intro_verto: "O entse ak'haonte ea Playverto qetellong ea %{verto}. Netefatsa aterese ena e le hore %{org} e o bolelle se etsahalang ka mor'a moo."
+    cta: "Netefatsa lengolo-tsoibila la ka"
+    fallback: "Konopo ha e sebetse? Kopitsa mme o kgomaretse sehokelo sena:"
+    signed_in: "O se o kene — sena se re lumella feela ho o romella litaba ka li-Vertos tseo o li bolokileng."
+    expiry: "Lehokela le fela nako ka mor'a matsatsi a %{days}."
+    ignore: "Haeba ha o a etsa ak'haonte ena, hlokomoloha lengolo-tsoibila lena 'me re ke ke ra hlola re o ngolla."
+    sent_by: "E rometswe ke Playverto lebitsong la %{org}."
+    delete: "Hlakola ak'haonte ena"
+  player_email_confirmation:
+    confirmed_title: "Aterese ea hao e netefalitsoe"
+    confirmed_body: "Mekhatlo ea li-Vertos tseo o li bolokileng joale e ka o bolella se etsahalang ka mor'a moo. O ka emisa mangolo-tsoibila ana neng kapa neng ak'haonteng ea hao."
+    already_title: "E se e netefalitsoe"
+    already_body: "Aterese ena e ile ea netefatsoa pele. Ha ho sa na letho leo o lokelang ho le etsa."
+    invalid_title: "Sehokelo seo se felile"
+    invalid_body: "Mahokela a netefatso a nka matsatsi a %{days}, 'me a emisa ho sebetsa haeba aterese ea ak'haonte e fetoha. Kena 'me o ka ithomella le lecha."
+    cta: "Bula di-Verto tsa ka"
+    resent: "Re rometse lehokela ho %{email}."
+    already_confirmed: "Aterese ea hao e se e netefalitsoe."
+    too_many: "Ke mangolo-tsoibila a mangata ka nako e khuts'oane. Ka kopo ema hanyane ebe o leka hape."
+    unavailable: "Hona joale re ke ke ra romela lengolo-tsoibila atereseng ena."

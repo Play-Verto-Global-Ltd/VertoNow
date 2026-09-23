@@ -1,0 +1,25 @@
+<%# Asking a respondent to confirm their address. Amber, not the alert pink:
+    the account works and nothing is blocked — the only thing waiting on this
+    is whether the organisations whose Vertos they kept may write to them.
+
+    Its own partial rather than shared/_email_confirmation_banner, which opens
+    on Current.user and so is invisible to a respondent by construction.
+
+    The button takes no address. It mails the account you are signed in to and
+    nothing else, which is what keeps it from being an oracle or a way to
+    write to a stranger (PlayerEmailConfirmationsController#create). :blocked
+    offers no button at all: the address is suppressed, so a link would not be
+    sent, and the page says so rather than pretending. %>
+<div class="you-confirm" role="status">
+  <div class="you-confirm-text">
+    <div class="you-confirm-title"><%= t("you.confirm_title") %></div>
+    <p class="you-confirm-body">
+      <%= state == :blocked ? t("you.confirm_blocked", email: player.email_address)
+                            : t("you.confirm_body", email: player.email_address) %>
+    </p>
+  </div>
+  <% if state == :pending %>
+    <%= button_to t("you.confirm_resend"), player_email_confirmations_path,
+          method: :post, class: "you-btn you-confirm-btn", form_class: "you-confirm-form" %>
+  <% end %>
+</div>

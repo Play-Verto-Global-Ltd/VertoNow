@@ -371,6 +371,7 @@ ko:
       town: "읍을 검색하세요…"
       village: "마을을 검색하세요…"
       district: "동네나 구를 검색하세요…"
+    join_fine_confirm: "마치는 순간 로그인됩니다. 주소를 확인하기 위해 이메일을 한 통만 보내 드립니다. 그러면 기관이 이후에 어떻게 되었는지 알려 드릴 수 있습니다. 저희는 아무것도 게시하지 않으며, 계정은 한 번의 탭으로 삭제할 수 있습니다."
   defaults:
     range: ["전혀 동의하지 않는다", "동의하지 않는다", "보통이다", "동의한다", "매우 동의한다"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2166,6 +2167,11 @@ ko:
     delete_body: "계정과 보관한 Vertos 목록을 삭제합니다. 답변은 질문한 단체에 남습니다. 익명으로 제공된 것이라 저희가 지울 수 있는 것이 아닙니다."
     beta_tag: "베타"
     beta_note: "플레이어 계정에 오신 것을 환영해요. 여기는 내 답변이 나에게 돌아오는 곳이에요. 모두의 결과 옆에 놓인 내 결과, 그리고 내가 움직이는 데 보탬이 된 이슈들. 이제 막 시작했어요."
+    email_unconfirmed: "확인되지 않음"
+    confirm_title: "이메일을 확인해 주세요"
+    confirm_body: "%{email}을(를) 확인하기 전까지는, 보관한 Vertos의 기관들이 이후 소식을 알려 드릴 수 없습니다."
+    confirm_blocked: "%{email}(으)로 보낸 이메일이 반송되었거나 수신이 중지되어 확인할 수 없습니다. 계정의 다른 부분은 바뀌지 않습니다."
+    confirm_resend: "링크 보내기"
   player_notification_mailer:
     via: "%{org} · Playverto를 통해"
     why: "답한 Vertos의 단체로부터 소식을 받기로 하셨기에 이 메일을 보냅니다."
@@ -2318,3 +2324,28 @@ ko:
     fine: "Google에는 이름과 이메일 주소만 요청하며 그 외에는 아무것도 요청하지 않습니다. 무엇도 게시하지 않으며, 계정은 한 번의 탭으로 삭제할 수 있습니다."
     expired_title: "시간이 조금 지났습니다"
     expired_body: "이 링크는 만료되었거나 이미 사용되었습니다 — 몇 분 동안만 유효합니다. Verto를 다시 플레이해 저장하세요."
+  player_email_confirmation_mailer:
+    subject: "Playverto 이메일을 확인해 주세요"
+    subject_org: "%{org}의 Verto를 위해 이메일을 확인해 주세요"
+    heading: "이메일을 확인해 주세요"
+    intro: "Playverto 계정을 만드셨습니다. 이 주소를 확인하면 보관한 Vertos의 기관들이 이후 소식을 알려 드릴 수 있습니다."
+    intro_verto: "%{verto}의 마지막에 Playverto 계정을 만드셨습니다. 이 주소를 확인하면 %{org}이(가) 이후 소식을 알려 드릴 수 있습니다."
+    cta: "이메일 확인하기"
+    fallback: "버튼이 작동하지 않나요? 이 링크를 복사해 붙여 넣으세요:"
+    signed_in: "이미 로그인되어 있습니다. 이 확인은 보관한 Vertos에 대한 소식을 보내 드릴 수 있게 할 뿐입니다."
+    expiry: "이 링크는 %{days}일 후에 만료됩니다."
+    ignore: "이 계정을 만들지 않으셨다면 이 이메일을 무시해 주세요. 다시 연락드리지 않겠습니다."
+    sent_by: "%{org}을(를) 대신해 Playverto가 보냈습니다."
+    delete: "이 계정 삭제"
+  player_email_confirmation:
+    confirmed_title: "주소가 확인되었습니다"
+    confirmed_body: "보관한 Vertos의 기관들이 이제 이후 소식을 알려 드릴 수 있습니다. 이 이메일은 언제든 계정에서 중지할 수 있습니다."
+    already_title: "이미 확인됨"
+    already_body: "이 주소는 이전에 이미 확인되었습니다. 더 할 일은 없습니다."
+    invalid_title: "이 링크는 만료되었습니다"
+    invalid_body: "확인 링크는 %{days}일 동안 유효하며, 계정 주소가 바뀌면 더 이상 작동하지 않습니다. 로그인하면 새 링크를 보낼 수 있습니다."
+    cta: "내 Vertos 열기"
+    resent: "%{email}(으)로 링크를 보냈습니다."
+    already_confirmed: "주소가 이미 확인되었습니다."
+    too_many: "짧은 시간에 이메일이 너무 많습니다. 잠시 후 다시 시도해 주세요."
+    unavailable: "지금은 이 주소로 이메일을 보낼 수 없습니다."

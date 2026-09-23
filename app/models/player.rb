@@ -45,6 +45,20 @@ class Player < ApplicationRecord
   validates :name, length: { maximum: MAX_NAME }, allow_nil: true
   normalizes :name, with: ->(n) { n.strip }
 
+  # The link in the confirmation mail (PlayerEmailConfirmationsController).
+  # Mirrors User's own purpose line for line, and is keyed on the address so
+  # that changing it invalidates any link still sitting in an inbox.
+  #
+  # A week, not the 20 minutes a PlayerSignInLink gets, because the two are
+  # different kinds of thing: a sign-in link is a bearer credential and is
+  # sized like one, while spending this token only sets a timestamp. It grants
+  # nothing, so it can be reusable, unstored and read whenever the person next
+  # opens their inbox.
+  CONFIRMATION_LIFETIME = 7.days
+  generates_token_for :email_confirmation, expires_in: CONFIRMATION_LIFETIME do
+    email_address
+  end
+
   def email_verified? = email_verified_at.present?
 
   # What the corner calls them. The address is the fallback rather than a

@@ -131,7 +131,10 @@
     </div>
 
     <p class="join-error hidden" role="alert" data-player-target="joinError"></p>
-    <p class="join-fine"><%= t("player.join_fine") %></p>
+    <%# Promises the confirmation mail only where one can be sent: on a deploy
+        with no working mail it would be a promise nothing keeps. A deploy-wide
+        fact, so it is safe inside the shared cached_play_page bytes. %>
+    <p class="join-fine"><%= t(MailConfigCheck.deliverable? ? "player.join_fine_confirm" : "player.join_fine") %></p>
     </div>
 
     <%# The door for somebody who already has an account.

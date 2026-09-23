@@ -371,6 +371,7 @@ de:
       town: "Suche deine Stadt…"
       village: "Suche dein Dorf…"
       district: "Suche deinen Stadtteil oder Bezirk…"
+    join_fine_confirm: "Sobald du fertig bist, bist du angemeldet. Wir schicken eine einzige E-Mail, um die Adresse zu bestätigen, damit die Organisation dir sagen kann, wie es weitergeht. Wir posten nie etwas, und du kannst das Konto mit einem Tipp löschen."
   defaults:
     range: ["Stimme überhaupt nicht zu", "Stimme nicht zu", "Neutral", "Stimme zu", "Stimme voll zu"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2168,6 +2169,11 @@ de:
     delete_body: "Das löscht dein Konto und die Liste der Vertos, die du behalten hast. Deine Antworten bleiben bei den Organisationen, die gefragt haben — sie wurden anonym gegeben und es steht uns nicht zu, sie zu entfernen."
     beta_tag: "Beta"
     beta_note: "Willkommen in deinem Spielerkonto. Hier kommen deine Antworten zu dir zurück: deine Ergebnisse neben denen aller anderen und die Anliegen, die du mit bewegt hast. Wir fangen gerade erst an."
+    email_unconfirmed: "Nicht bestätigt"
+    confirm_title: "Bestätige deine E-Mail"
+    confirm_body: "Bis du %{email} bestätigst, können dir die Organisationen hinter den Vertos, die du behalten hast, nicht sagen, wie es weitergeht."
+    confirm_blocked: "E-Mails an %{email} kamen zurück oder wurden abbestellt, daher können wir sie nicht bestätigen. Sonst ändert sich an deinem Konto nichts."
+    confirm_resend: "Link an mich senden"
   player_notification_mailer:
     via: "%{org} · über Playverto"
     why: "Du bekommst das, weil du von den Organisationen hören wolltest, deren Vertos du beantwortet hast."
@@ -2320,3 +2326,28 @@ de:
     fine: "Wir fragen Google nur nach deinem Namen und deiner E-Mail-Adresse, sonst nichts. Wir veröffentlichen nie etwas, und du kannst das Konto mit einem Tippen löschen."
     expired_title: "Das hat einen Moment zu lange gedauert"
     expired_body: "Dieser Link ist abgelaufen oder wurde schon benutzt — er gilt nur wenige Minuten. Spiel das Verto noch einmal, um es zu behalten."
+  player_email_confirmation_mailer:
+    subject: "Bestätige deine E-Mail für Playverto"
+    subject_org: "Bestätige deine E-Mail für das Verto von %{org}"
+    heading: "Bestätige deine E-Mail"
+    intro: "Du hast ein Playverto-Konto erstellt. Bestätige diese Adresse, und die Organisationen hinter den Vertos, die du behalten hast, können dir sagen, wie es weitergeht."
+    intro_verto: "Du hast am Ende von %{verto} ein Playverto-Konto erstellt. Bestätige diese Adresse, und %{org} kann dir sagen, wie es weitergeht."
+    cta: "E-Mail bestätigen"
+    fallback: "Button funktioniert nicht? Kopiere diesen Link:"
+    signed_in: "Du bist schon angemeldet – damit dürfen wir dir nur Neuigkeiten zu den Vertos schicken, die du behalten hast."
+    expiry: "Der Link läuft in %{days} Tagen ab."
+    ignore: "Wenn du dieses Konto nicht erstellt hast, ignoriere diese E-Mail – wir schreiben dir dann nicht wieder."
+    sent_by: "Gesendet von Playverto im Auftrag von %{org}."
+    delete: "Dieses Konto löschen"
+  player_email_confirmation:
+    confirmed_title: "Deine Adresse ist bestätigt"
+    confirmed_body: "Die Organisationen hinter den Vertos, die du behalten hast, können dir jetzt sagen, wie es weitergeht. Du kannst diese E-Mails jederzeit in deinem Konto abbestellen."
+    already_title: "Bereits bestätigt"
+    already_body: "Diese Adresse wurde schon früher bestätigt. Es ist nichts weiter zu tun."
+    invalid_title: "Dieser Link ist abgelaufen"
+    invalid_body: "Bestätigungslinks gelten %{days} Tage und funktionieren nicht mehr, wenn sich die Adresse des Kontos ändert. Melde dich an, dann kannst du dir einen neuen schicken."
+    cta: "Meine Vertos öffnen"
+    resent: "Wir haben einen Link an %{email} geschickt."
+    already_confirmed: "Deine Adresse ist bereits bestätigt."
+    too_many: "Das sind viele E-Mails in kurzer Zeit. Bitte warte eine Weile und versuche es dann erneut."
+    unavailable: "Wir können gerade keine E-Mail an diese Adresse senden."

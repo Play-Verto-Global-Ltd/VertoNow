@@ -373,6 +373,7 @@ sn:
       town: "Tsvaga taundi rako…"
       village: "Tsvaga musha wako…"
       district: "Tsvaga nharaunda kana dunhu rako…"
+    join_fine_confirm: "Unopinda pakarepo paunopedza. Tichatumira email imwe chete kusimbisa kero, kuti sangano rikwanise kukuudza zvinotevera. Hatimbotumira chinhu pachena, uye unogona kudzima account nekubaya kamwe chete."
   # Placeholder CONTENT a new card of each type starts with — answer options,
   # scale labels, statements. Positional; keep every array's length exact.
   defaults:
@@ -2176,6 +2177,11 @@ sn:
     delete_body: "Izvi zvinodzima akaundi yako nerondedzero yemaVerto awakachengeta. Mhinduro dzako dzinoramba dziri kumasangano akabvunza — dzakapiwa pasina mazita uye hadzisi dzedu kuti tidzibvise."
     beta_tag: "Beta"
     beta_note: "Wagamuchirwa muakaundi yako yemutambi. Apa ndipo panodzokera mhinduro dzako kwauri: mhedzisiro yako parutivi peyevamwe vese, uye nyaya dzawakabatsira kufambisa. Tichangotanga."
+    email_unconfirmed: "Hazvina kusimbiswa"
+    confirm_title: "Simbisa email yako"
+    confirm_body: "Kusvika wasimbisa %{email}, masangano eVertos awakachengeta haakwanise kukuudza zvinotevera."
+    confirm_blocked: "Maemail anoenda ku%{email} adzoka kana kudzimwa, saka hatikwanise kuisimbisa. Hapana chimwe chinoshanduka paaccount yako."
+    confirm_resend: "Nditumire link"
   player_notification_mailer:
     via: "%{org} · kuburikidza nePlayverto"
     why: "Uri kuwana izvi nekuti wakakumbira kunzwa kubva kumasangano awakapindura maVerto awo."
@@ -2328,3 +2334,28 @@ sn:
     fine: "KuGoogle tinokumbira zita rako nekero yako yeemail chete, hapana chimwe. Hatimbotumire chinhu, uye unogona kudzima akaundi nekudzvanya kamwe chete."
     expired_title: "Zvatora nguva yakareba zvishoma"
     expired_body: "Chinongedzo ichi chapera kana kuti chatoshandiswa — chinogara maminitsi mashoma chete. Tamba Verto zvakare kuti uichengete."
+  player_email_confirmation_mailer:
+    subject: "Simbisa email yako yePlayverto"
+    subject_org: "Simbisa email yako yeVerto ye%{org}"
+    heading: "Simbisa email yako"
+    intro: "Wakagadzira account yePlayverto. Simbisa kero iyi kuti masangano eVertos awakachengeta akwanise kukuudza zvinotevera."
+    intro_verto: "Wakagadzira account yePlayverto pakupera kwe%{verto}. Simbisa kero iyi kuti %{org} ikwanise kukuudza zvinotevera."
+    cta: "Simbisa email yangu"
+    fallback: "Bhatani harisi kushanda? Koperedza uye unamatire link iri:"
+    signed_in: "Watopinda kare — izvi zvinongotibvumira kukutumira nhau pamusoro peVertos awakachengeta."
+    expiry: "Link inopera mushure memazuva %{days}."
+    ignore: "Kana usina kugadzira account iyi, rega email iyi uye hatizokunyorerazve."
+    sent_by: "Yakatumirwa nePlayverto ichimiririra %{org}."
+    delete: "Dzima account iyi"
+  player_email_confirmation:
+    confirmed_title: "Kero yako yasimbiswa"
+    confirmed_body: "Masangano eVertos awakachengeta anogona zvino kukuudza zvinotevera. Unogona kumisa maemail aya chero nguva paaccount yako."
+    already_title: "Yakatosimbiswa"
+    already_body: "Kero iyi yakasimbiswa kare. Hapana chimwe chekuita."
+    invalid_title: "Iro link rapera"
+    invalid_body: "Malink ekusimbisa anogara mazuva %{days}, uye anorega kushanda kana kero yeaccount yachinja. Pinda ugozvitumira itsva."
+    cta: "Vhura maVerto angu"
+    resent: "Tatumira link ku%{email}."
+    already_confirmed: "Kero yako yakatosimbiswa."
+    too_many: "Maemail akawandisa munguva pfupi. Ndapota mira zvishoma wozoedza zvakare."
+    unavailable: "Parizvino hatikwanise kutumira email kukero iyi."

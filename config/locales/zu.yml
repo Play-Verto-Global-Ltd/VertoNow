@@ -379,6 +379,7 @@ zu:
       town: "Sesha idolobha lakho…"
       village: "Sesha isigodi sakho…"
       district: "Sesha indawo yakho noma isifunda sakho…"
+    join_fine_confirm: "Ungena ngokushesha nje uma uqeda. Sizothumela i-imeyili eyodwa ukuqinisekisa ikheli, ukuze inhlangano ikutshele ukuthi kwenzekeni ngokulandelayo. Asikaze sithumele lutho, futhi ungasusa i-akhawunti ngokuthinta okukodwa."
   # Placeholder CONTENT a new card of each type starts with — answer options,
   # scale labels, statements. Unlike UI chrome (which follows the viewer's
   # locale), these are resolved in the Verto's default locale, because they are
@@ -2197,6 +2198,11 @@ zu:
     delete_body: "Lokhu kususa i-akhawunti yakho nohlu lwama-Verto owagcinile. Izimpendulo zakho zihlala nezinhlangano ezibuzile — zanikezwa ngaphandle kwegama futhi akuwona umsebenzi wethu ukuzisusa."
     beta_tag: "Beta"
     beta_note: "Siyakwamukela ku-akhawunti yakho yomdlali. Yilapha izimpendulo zakho zibuyela khona kuwe: imiphumela yakho eceleni kwaleyo yawo wonke umuntu, nezindaba osize wazisusa. Sisaqala nje."
+    email_unconfirmed: "Akuqinisekisiwe"
+    confirm_title: "Qinisekisa i-imeyili yakho"
+    confirm_body: "Uze uqinisekise i-%{email}, izinhlangano zama-Vertos owagcinile azikwazi ukukutshela ukuthi kwenzekeni ngokulandelayo."
+    confirm_blocked: "Ama-imeyili aya ku-%{email} abuyile noma avaliwe, ngakho asikwazi ukuliqinisekisa. Akukho okunye okushintshayo ku-akhawunti yakho."
+    confirm_resend: "Ngithumelele isixhumanisi"
   player_notification_mailer:
     via: "%{org} · nge-Playverto"
     why: "Uthola lokhu ngoba ucele ukuzwa kuzinhlangano oziphendule ama-Verto azo."
@@ -2349,3 +2355,28 @@ zu:
     fine: "KuGoogle sicela igama lakho nekheli le-imeyili kuphela, akukho okunye. Asilokothi sithumele lutho, futhi ungayisusa i-akhawunti ngokuthinta kanye."
     expired_title: "Lokho kuthathe isikhathi eside kancane"
     expired_body: "Lolu xhumano luphelelwe yisikhathi noma selusetshenzisiwe — luhlala imizuzu embalwa nje. Dlala i-Verto futhi ukuze uyigcine."
+  player_email_confirmation_mailer:
+    subject: "Qinisekisa i-imeyili yakho ye-Playverto"
+    subject_org: "Qinisekisa i-imeyili yakho ye-Verto ka-%{org}"
+    heading: "Qinisekisa i-imeyili yakho"
+    intro: "Uvule i-akhawunti ye-Playverto. Qinisekisa leli kheli ukuze izinhlangano zama-Vertos owagcinile zikwazi ukukutshela ukuthi kwenzekeni ngokulandelayo."
+    intro_verto: "Uvule i-akhawunti ye-Playverto ekupheleni kwe-%{verto}. Qinisekisa leli kheli ukuze u-%{org} akwazi ukukutshela ukuthi kwenzekeni ngokulandelayo."
+    cta: "Qinisekisa i-imeyili yami"
+    fallback: "Inkinobho ayisebenzi? Kopisha bese unamathisela le linki:"
+    signed_in: "Usungenile kakade — lokhu kusivumela nje ukuthi sikuthumelele izindaba ngama-Vertos owagcinile."
+    expiry: "Isixhumanisi siphelelwa yisikhathi ezinsukwini ezingu-%{days}."
+    ignore: "Uma ungazange uvule le akhawunti, ungayinaki le imeyili futhi ngeke siphinde sikubhalele."
+    sent_by: "Ithunyelwe yi-Playverto egameni le-%{org}."
+    delete: "Susa le akhawunti"
+  player_email_confirmation:
+    confirmed_title: "Ikheli lakho liqinisekisiwe"
+    confirmed_body: "Izinhlangano zama-Vertos owagcinile manje zingakutshela ukuthi kwenzekeni ngokulandelayo. Ungamisa lawa ma-imeyili noma nini ku-akhawunti yakho."
+    already_title: "Sekuqinisekisiwe"
+    already_body: "Leli kheli laqinisekiswa ngaphambili. Akukho okunye okudingeka ukwenze."
+    invalid_title: "Leyo linki iphelelwe yisikhathi"
+    invalid_body: "Izixhumanisi zokuqinisekisa zihlala izinsuku ezingu-%{days}, futhi ziyeka ukusebenza uma ikheli le-akhawunti lishintsha. Ngena ukuze uzithumelele esisha."
+    cta: "Vula ama-Verto ami"
+    resent: "Sithumele isixhumanisi ku-%{email}."
+    already_confirmed: "Ikheli lakho selivele liqinisekisiwe."
+    too_many: "Lawo ngama-imeyili amaningi ngesikhathi esifushane. Sicela ulinde kancane bese uzama futhi."
+    unavailable: "Okwamanje asikwazi ukuthumela i-imeyili kuleli kheli."

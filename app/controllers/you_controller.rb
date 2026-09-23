@@ -54,6 +54,7 @@ class YouController < ApplicationController
     @tiles      = tiles_for(@rows)
     @next       = next_for(@rows)
     @impacts    = impacts_for(@rows)
+    @confirm    = confirmation_state
   end
 
   # ── Settings ──────────────────────────────────────────────────────────────
@@ -63,8 +64,10 @@ class YouController < ApplicationController
   end
 
   # The name only. The address is not editable here: it is the one thing the
-  # account is keyed on, and changing it would need the same proof-of-inbox
-  # the sign-in link gives — which is the thing this page cannot send.
+  # account is keyed on, and changing it would need proof of the new inbox.
+  # The address confirmation (PlayerEmailConfirmationsController) could now
+  # carry that proof, so this is a choice not yet made rather than a thing
+  # that cannot be built.
   def update_account
     name = params[:name].to_s.strip.first(Player::MAX_NAME + 1)
     if current_player.update(name: name.presence)
@@ -195,6 +198,23 @@ class YouController < ApplicationController
                                           .pluck(:organisation_id).to_set
     @has_password  = current_player.password_digest.present?
     @google        = current_player.player_identities.exists?(provider: GOOGLE_PROVIDER)
+    @confirm       = confirmation_state
+  end
+
+  # Whether to ask this person to confirm their address, and how:
+  #
+  #   nil      — nothing to ask: confirmed already, or this deployment has no
+  #              working mail, in which case a "send me the link" button would
+  #              be a button that silently does nothing.
+  #   :pending — unconfirmed and a link can be sent.
+  #   :blocked — the address is on the suppression list (it bounced, or they
+  #              turned mail off), so no link will be sent and the page says
+  #              why instead of offering one.
+  def confirmation_state
+    return nil if !player_signed_in? || current_player.email_verified?
+    return :blocked if PlayerEmailConfirmationsController.suppressed?(current_player)
+
+    MailConfigCheck.deliverable? ? :pending : nil
   end
 
   # The organisations whose mail the account can switch off: the ones it holds

@@ -26,7 +26,8 @@ class CreatePlayers < ActiveRecord::Migration[8.1]
 
       # Stamped when they first follow a link from their own inbox. Until
       # then the address is unproven, and nothing may be sent to it beyond
-      # the sign-in link itself.
+      # a link that proves it — the sign-in link, or (since 2026-09-23) the
+      # one address confirmation the password signup sends.
       t.datetime :email_verified_at
 
       t.timestamps

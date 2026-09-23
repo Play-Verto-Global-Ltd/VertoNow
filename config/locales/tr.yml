@@ -371,6 +371,7 @@ tr:
       town: "Kasabanı ara…"
       village: "Köyünü ara…"
       district: "Mahalleni veya ilçeni ara…"
+    join_fine_confirm: "Bitirdiğin anda oturumun açılır. Adresi doğrulamak için tek bir e-posta göndereceğiz; böylece kurum sana sonrasında ne olduğunu anlatabilir. Asla bir şey paylaşmayız ve hesabı tek dokunuşla silebilirsin."
   defaults:
     range: ["Kesinlikle katılmıyorum", "Katılmıyorum", "Kararsızım", "Katılıyorum", "Kesinlikle katılıyorum"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2168,6 +2169,11 @@ tr:
     delete_body: "Bu, hesabını ve sakladığın Vertos listesini siler. Yanıtların soran kuruluşlarda kalır — anonim olarak verildiler ve onları kaldırmak bize düşmez."
     beta_tag: "Beta"
     beta_note: "Oyuncu hesabına hoş geldin. Cevapların burada sana geri döner: sonuçların herkesinkinin yanında ve harekete geçmesine yardım ettiğin meseleler. Daha yeni başlıyoruz."
+    email_unconfirmed: "Doğrulanmadı"
+    confirm_title: "E-postanı doğrula"
+    confirm_body: "%{email} adresini doğrulayana kadar, sakladığın Vertos'ların kurumları sana sonrasında ne olduğunu anlatamaz."
+    confirm_blocked: "%{email} adresine giden e-postalar geri döndü ya da kapatıldı, bu yüzden doğrulayamıyoruz. Hesabında başka hiçbir şey değişmez."
+    confirm_resend: "Bağlantıyı bana gönder"
   player_notification_mailer:
     via: "%{org} · Playverto aracılığıyla"
     why: "Bunu alıyorsun çünkü Vertos'larını yanıtladığın kuruluşlardan haber almak istedin."
@@ -2320,3 +2326,28 @@ tr:
     fine: "Google'dan yalnızca adını ve e-posta adresini istiyoruz, başka bir şey değil. Asla bir şey paylaşmıyoruz ve hesabı tek dokunuşla silebilirsin."
     expired_title: "Bu biraz fazla uzun sürdü"
     expired_body: "Bu bağlantının süresi doldu ya da zaten kullanıldı — yalnızca birkaç dakika geçerli. Saklamak için Verto'yu tekrar oyna."
+  player_email_confirmation_mailer:
+    subject: "Playverto için e-postanı doğrula"
+    subject_org: "%{org} Verto'su için e-postanı doğrula"
+    heading: "E-postanı doğrula"
+    intro: "Bir Playverto hesabı oluşturdun. Bu adresi doğrula; sakladığın Vertos'ların kurumları sana sonrasında ne olduğunu anlatabilsin."
+    intro_verto: "%{verto} sonunda bir Playverto hesabı oluşturdun. Bu adresi doğrula; %{org} sana sonrasında ne olduğunu anlatabilsin."
+    cta: "E-postamı doğrula"
+    fallback: "Düğme çalışmıyor mu? Bu bağlantıyı kopyalayıp yapıştır:"
+    signed_in: "Zaten oturum açtın — bu yalnızca sakladığın Vertos'lar hakkında sana haber göndermemizi sağlar."
+    expiry: "Bağlantının süresi %{days} gün içinde dolar."
+    ignore: "Bu hesabı sen oluşturmadıysan bu e-postayı yok say; sana bir daha yazmayız."
+    sent_by: "%{org} adına Playverto tarafından gönderildi."
+    delete: "Bu hesabı sil"
+  player_email_confirmation:
+    confirmed_title: "Adresin doğrulandı"
+    confirmed_body: "Sakladığın Vertos'ların kurumları artık sana sonrasında ne olduğunu anlatabilir. Bu e-postaları istediğin zaman hesabından durdurabilirsin."
+    already_title: "Zaten doğrulandı"
+    already_body: "Bu adres daha önce doğrulanmış. Yapılacak başka bir şey yok."
+    invalid_title: "Bu bağlantının süresi doldu"
+    invalid_body: "Doğrulama bağlantıları %{days} gün geçerlidir ve hesabın adresi değişirse çalışmaz. Oturum aç, kendine yenisini gönderebilirsin."
+    cta: "Vertos'larımı aç"
+    resent: "%{email} adresine bir bağlantı gönderdik."
+    already_confirmed: "Adresin zaten doğrulandı."
+    too_many: "Kısa sürede çok fazla e-posta oldu. Biraz bekleyip yeniden dene."
+    unavailable: "Şu anda bu adrese e-posta gönderemiyoruz."

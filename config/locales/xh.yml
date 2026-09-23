@@ -380,6 +380,7 @@ xh:
       town: "Khangela idolophu yakho…"
       village: "Khangela ilali yakho…"
       district: "Khangela ummandla okanye isithili sakho…"
+    join_fine_confirm: "Ungena kwangoko xa ugqibile. Siza kuthumela i-imeyile enye ukuqinisekisa idilesi, ukuze umbutho ukuxelele okwenzekayo emva koko. Asizange sipapashe nto, kwaye ungayicima i-akhawunti ngokucofa kanye."
   # Umxholo wesikhundla iKHADI entsha yohlobo ngalunye eqala ngawo — iinketho
   # zempendulo, iileyibhile zomlinganiselo, iingxelo. Ngokungafaniyo
   # nolwakhiwo lwe-UI (olulandela ulwimi lomboni), ezi zisonjululwa kulwimi
@@ -2201,6 +2202,11 @@ xh:
     delete_body: "Oku kucima i-akhawunti yakho kunye noluhlu lwee-Verto ozigcinileyo. Iimpendulo zakho zihlala kwimibutho ebibuzile — zanikwa ngaphandle kwegama kwaye asizizo ezethu ukuba sizisuse."
     beta_tag: "Beta"
     beta_note: "Wamkelekile kwi-akhawunti yakho yomdlali. Apha kulapho iimpendulo zakho zibuyela khona kuwe: iziphumo zakho ecaleni kwezabo bonke abanye, nemicimbi oncede wayishukumisa. Sisaqalisa nje."
+    email_unconfirmed: "Ayiqinisekiswanga"
+    confirm_title: "Qinisekisa i-imeyile yakho"
+    confirm_body: "Ude uqinisekise i-%{email}, imibutho yee-Vertos ozigcinileyo ayinakukuxelela okwenzekayo emva koko."
+    confirm_blocked: "Ii-imeyile eziya ku-%{email} zibuyile okanye zicinyiwe, ngoko asinakuyiqinisekisa. Akukho nto enye itshintshayo kwi-akhawunti yakho."
+    confirm_resend: "Ndithumelele ikhonkco"
   player_notification_mailer:
     via: "%{org} · nge-Playverto"
     why: "Ufumana oku kuba ucele ukuva kwimibutho oyiphendulileyo ii-Verto zayo."
@@ -2353,3 +2359,28 @@ xh:
     fine: "KuGoogle sicela igama lakho nedilesi ye-imeyile kuphela, akukho nto yimbi. Asaze sithumele nto, kwaye unokuyicima i-akhawunti ngokucofa kanye."
     expired_title: "Oko kuthathe ixesha elide kancinci"
     expired_body: "Eli khonkco liphelelwe lixesha okanye sele lisetyenzisiwe — lihlala imizuzu embalwa kuphela. Dlala iVerto kwakhona ukuze uyigcine."
+  player_email_confirmation_mailer:
+    subject: "Qinisekisa i-imeyile yakho ye-Playverto"
+    subject_org: "Qinisekisa i-imeyile yakho ye-Verto ka-%{org}"
+    heading: "Qinisekisa i-imeyile yakho"
+    intro: "Wenze i-akhawunti ye-Playverto. Qinisekisa le dilesi ukuze imibutho yee-Vertos ozigcinileyo ikwazi ukukuxelela okwenzekayo emva koko."
+    intro_verto: "Wenze i-akhawunti ye-Playverto ekupheleni kwe-%{verto}. Qinisekisa le dilesi ukuze u-%{org} akwazi ukukuxelela okwenzekayo emva koko."
+    cta: "Qinisekisa i-imeyile yam"
+    fallback: "Iqhosha alisebenzi? Khuphela uze uncamathisele eli khonkco:"
+    signed_in: "Sele ungenile — oku kusivumela nje ukuba sikuthumelele iindaba malunga nee-Vertos ozigcinileyo."
+    expiry: "Ikhonkco liphelelwa lixesha kwiintsuku ezi-%{days}."
+    ignore: "Ukuba akuyenzanga le akhawunti, yityeshele le imeyile kwaye asisayi kuphinda sikubhalele."
+    sent_by: "Ithunyelwe yi-Playverto egameni le-%{org}."
+    delete: "Cima le akhawunti"
+  player_email_confirmation:
+    confirmed_title: "Idilesi yakho iqinisekisiwe"
+    confirmed_body: "Imibutho yee-Vertos ozigcinileyo ngoku ingakuxelela okwenzekayo emva koko. Ungazimisa ezi imeyile nangaliphi na ixesha kwi-akhawunti yakho."
+    already_title: "Sele iqinisekisiwe"
+    already_body: "Le dilesi yaqinisekiswa ngaphambili. Akukho nto yongezelelweyo yokwenza."
+    invalid_title: "Elo khonkco liphelelwe lixesha"
+    invalid_body: "Amakhonkco okuqinisekisa ahlala iintsuku ezi-%{days}, kwaye ayayeka ukusebenza xa idilesi ye-akhawunti itshintsha. Ngena ukuze uzithumelele elitsha."
+    cta: "Vula ii-Verto zam"
+    resent: "Sithumele ikhonkco ku-%{email}."
+    already_confirmed: "Idilesi yakho sele iqinisekisiwe."
+    too_many: "Zininzi kakhulu ii-imeyile ngexesha elifutshane. Nceda ulinde kancinci uze uzame kwakhona."
+    unavailable: "Okwangoku asinakuthumela i-imeyile kule dilesi."

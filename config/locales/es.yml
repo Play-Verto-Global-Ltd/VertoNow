@@ -371,6 +371,7 @@ es:
       town: "Busca tu pueblo…"
       village: "Busca tu aldea…"
       district: "Busca tu barrio o distrito…"
+    join_fine_confirm: "Tu sesión se inicia en cuanto terminas. Te enviaremos un solo correo para confirmar la dirección, para que la organización pueda contarte qué pasa después. Nunca publicamos nada y puedes borrar la cuenta con un toque."
   defaults:
     range: ["Totalmente en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Totalmente de acuerdo"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2168,6 +2169,11 @@ es:
     delete_body: "Esto elimina tu cuenta y la lista de Vertos que has guardado. Tus respuestas se quedan con las organizaciones que preguntaron: se dieron de forma anónima y no nos corresponde borrarlas."
     beta_tag: "Beta"
     beta_note: "Te damos la bienvenida a tu Cuenta de Jugador. Aquí es donde tus respuestas vuelven a ti: tus resultados junto a los de todos los demás, y las causas que ayudaste a mover. Esto no ha hecho más que empezar."
+    email_unconfirmed: "Sin confirmar"
+    confirm_title: "Confirma tu correo"
+    confirm_body: "Hasta que confirmes %{email}, las organizaciones de los Vertos que guardaste no pueden contarte qué pasa después."
+    confirm_blocked: "Los correos a %{email} han rebotado o se han desactivado, así que no podemos confirmarlo. Nada más cambia en tu cuenta."
+    confirm_resend: "Enviarme el enlace"
   player_notification_mailer:
     via: "%{org} · a través de Playverto"
     why: "Recibes esto porque pediste saber de las organizaciones cuyos Vertos has respondido."
@@ -2320,3 +2326,28 @@ es:
     fine: "A Google solo le pedimos tu nombre y tu correo, nada más. Nunca publicamos nada y puedes eliminar la cuenta con un toque."
     expired_title: "Ha pasado demasiado tiempo"
     expired_body: "Este enlace ha caducado o ya se ha usado: solo dura unos minutos. Vuelve a jugar el Verto para conservarlo."
+  player_email_confirmation_mailer:
+    subject: "Confirma tu correo para Playverto"
+    subject_org: "Confirma tu correo para el Verto de %{org}"
+    heading: "Confirma tu correo"
+    intro: "Creaste una cuenta de Playverto. Confirma esta dirección y las organizaciones de los Vertos que guardaste podrán contarte qué pasa después."
+    intro_verto: "Creaste una cuenta de Playverto al final de %{verto}. Confirma esta dirección y %{org} podrá contarte qué pasa después."
+    cta: "Confirmar mi correo"
+    fallback: "¿El botón no funciona? Copia y pega este enlace:"
+    signed_in: "Ya has iniciado sesión: esto solo nos permite enviarte novedades sobre los Vertos que guardaste."
+    expiry: "El enlace caduca en %{days} días."
+    ignore: "Si no creaste esta cuenta, ignora este correo y no volveremos a escribirte."
+    sent_by: "Enviado por Playverto en nombre de %{org}."
+    delete: "Borrar esta cuenta"
+  player_email_confirmation:
+    confirmed_title: "Tu dirección está confirmada"
+    confirmed_body: "Las organizaciones de los Vertos que guardaste ya pueden contarte qué pasa después. Puedes dejar de recibir estos correos cuando quieras desde tu cuenta."
+    already_title: "Ya confirmada"
+    already_body: "Esta dirección ya se confirmó antes. No hay nada más que hacer."
+    invalid_title: "Ese enlace ha caducado"
+    invalid_body: "Los enlaces de confirmación duran %{days} días y dejan de funcionar si cambia la dirección de la cuenta. Inicia sesión y podrás enviarte uno nuevo."
+    cta: "Abrir mis Vertos"
+    resent: "Hemos enviado un enlace a %{email}."
+    already_confirmed: "Tu dirección ya está confirmada."
+    too_many: "Son muchos correos en poco tiempo. Espera un rato y vuelve a intentarlo."
+    unavailable: "Ahora mismo no podemos enviar correos a esta dirección."

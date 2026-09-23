@@ -371,6 +371,7 @@ id:
       town: "Cari kota kecilmu…"
       village: "Cari desamu…"
       district: "Cari kelurahan atau distrikmu…"
+    join_fine_confirm: "Kamu sudah masuk begitu selesai. Kami akan mengirim satu email untuk mengonfirmasi alamatnya, agar organisasi bisa memberi tahu apa yang terjadi selanjutnya. Kami tidak pernah memposting apa pun, dan akun bisa dihapus dengan satu ketukan."
   defaults:
     range: ["Sangat tidak setuju", "Tidak setuju", "Netral", "Setuju", "Sangat setuju"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2167,6 +2168,11 @@ id:
     delete_body: "Ini menghapus akunmu dan daftar Vertos yang kamu simpan. Jawabanmu tetap pada organisasi yang bertanya — jawaban itu diberikan secara anonim dan bukan hak kami untuk menghapusnya."
     beta_tag: "Beta"
     beta_note: "Selamat datang di akun pemainmu. Di sinilah jawabanmu kembali kepadamu: hasilmu bersanding dengan hasil semua orang, dan isu-isu yang ikut kamu gerakkan. Kami baru saja memulai."
+    email_unconfirmed: "Belum dikonfirmasi"
+    confirm_title: "Konfirmasi email kamu"
+    confirm_body: "Sampai kamu mengonfirmasi %{email}, organisasi dari Vertos yang kamu simpan tidak bisa memberi tahu apa yang terjadi selanjutnya."
+    confirm_blocked: "Email ke %{email} terpental atau dimatikan, jadi kami tidak bisa mengonfirmasinya. Tidak ada hal lain yang berubah di akunmu."
+    confirm_resend: "Kirimi saya tautannya"
   player_notification_mailer:
     via: "%{org} · lewat Playverto"
     why: "Kamu menerima ini karena kamu minta mendengar dari organisasi yang Vertos-nya sudah kamu jawab."
@@ -2319,3 +2325,28 @@ id:
     fine: "Kami hanya meminta nama dan alamat email kamu dari Google, tidak lebih. Kami tidak pernah memposting apa pun, dan kamu bisa menghapus akun dengan satu ketukan."
     expired_title: "Itu makan waktu sedikit terlalu lama"
     expired_body: "Tautan ini sudah kedaluwarsa atau sudah dipakai — hanya berlaku beberapa menit. Mainkan Verto lagi untuk menyimpannya."
+  player_email_confirmation_mailer:
+    subject: "Konfirmasi email kamu untuk Playverto"
+    subject_org: "Konfirmasi email kamu untuk Verto dari %{org}"
+    heading: "Konfirmasi email kamu"
+    intro: "Kamu membuat akun Playverto. Konfirmasi alamat ini agar organisasi dari Vertos yang kamu simpan bisa memberi tahu apa yang terjadi selanjutnya."
+    intro_verto: "Kamu membuat akun Playverto di akhir %{verto}. Konfirmasi alamat ini agar %{org} bisa memberi tahu apa yang terjadi selanjutnya."
+    cta: "Konfirmasi email saya"
+    fallback: "Tombolnya tidak berfungsi? Salin dan tempel tautan ini:"
+    signed_in: "Kamu sudah masuk — ini hanya mengizinkan kami mengirim kabar tentang Vertos yang kamu simpan."
+    expiry: "Tautan ini kedaluwarsa dalam %{days} hari."
+    ignore: "Jika kamu tidak membuat akun ini, abaikan email ini dan kami tidak akan menulis lagi."
+    sent_by: "Dikirim oleh Playverto atas nama %{org}."
+    delete: "Hapus akun ini"
+  player_email_confirmation:
+    confirmed_title: "Alamatmu sudah dikonfirmasi"
+    confirmed_body: "Organisasi dari Vertos yang kamu simpan sekarang bisa memberi tahu apa yang terjadi selanjutnya. Kamu bisa menghentikan email ini kapan saja dari akunmu."
+    already_title: "Sudah dikonfirmasi"
+    already_body: "Alamat ini sudah dikonfirmasi sebelumnya. Tidak ada lagi yang perlu dilakukan."
+    invalid_title: "Tautan itu sudah kedaluwarsa"
+    invalid_body: "Tautan konfirmasi berlaku %{days} hari, dan berhenti berfungsi jika alamat akun berubah. Masuk untuk mengirim tautan baru ke dirimu sendiri."
+    cta: "Buka Vertos saya"
+    resent: "Kami telah mengirim tautan ke %{email}."
+    already_confirmed: "Alamatmu sudah dikonfirmasi."
+    too_many: "Terlalu banyak email dalam waktu singkat. Tunggu sebentar lalu coba lagi."
+    unavailable: "Saat ini kami tidak bisa mengirim email ke alamat ini."

@@ -119,6 +119,13 @@ Rails.application.routes.draw do
   # The two links at the foot of every mail a respondent gets. GET confirms,
   # POST acts — same split, same reason, as the sign-in link above and the
   # creator-facing unsubscribe at /e/u/:token.
+  # Proving the address, so the organisations a respondent kept Vertos from
+  # may write to them. One GET, not a GET/POST pair: the token grants nothing
+  # and is reusable, so a scanner following it spends nothing — see
+  # PlayerEmailConfirmationsController#show. The POST is the resend, from
+  # inside a signed-in account, and takes no address.
+  post   "you/confirm",        to: "player_email_confirmations#create", as: :player_email_confirmations
+  get    "you/confirm/:token", to: "player_email_confirmations#show",   as: :player_email_confirmation
   get    "you/stop/:token",    to: "player_unsubscribes#show",   as: :player_unsubscribe
   post   "you/stop/:token",    to: "player_unsubscribes#create"
   # The password form, for a respondent coming back on another device. Declared

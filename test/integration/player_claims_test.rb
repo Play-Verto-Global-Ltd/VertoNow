@@ -168,14 +168,19 @@ class PlayerClaimsTest < ActionDispatch::IntegrationTest
   # that way — "we made you an account" and "that is not your password" are
   # different outcomes and the person has to be told which — so that property
   # was given up on the owner's instruction (2026-09-10). What follows is the
-  # contract that replaced it. No mail is sent by this endpoint at all now.
+  # contract that replaced it. The one mail this endpoint sends is the address
+  # confirmation, and only when it has just created an account.
+  #
+  # assert_enqueued_emails, not a count of ActionMailer::Base.deliveries: the
+  # test queue adapter never performs a deliver_later, so a deliveries count
+  # would go on reading zero whatever this endpoint started sending.
 
-  test "a new address gets an account, a password and a link to spend" do
+  test "a new address gets an account, a password, a link to spend and one confirmation mail" do
     s = survey
     email = address
 
     assert_difference [ -> { Player.count }, -> { PlayerSignInLink.count } ], 1 do
-      assert_no_difference -> { ActionMailer::Base.deliveries.size } do
+      assert_enqueued_emails 1 do
         join(s, email: email)
       end
     end
@@ -197,7 +202,8 @@ class PlayerClaimsTest < ActionDispatch::IntegrationTest
     player = Player.find_by(email_address: email)
     assert_nil player.reload.email_verified_at,
                "a signup link proves somebody typed the address, not that they can read it"
-    assert_equal PlayerSignInLink::ORIGIN_SIGNUP, PlayerSignInLink.last.origin
+    assert_equal PlayerSignInLink::ORIGIN_SIGNUP,
+                 PlayerSignInLink.joins(:player).where(players: { email_address: email }).last.origin
   end
 
   test "an emailed link still verifies the address" do

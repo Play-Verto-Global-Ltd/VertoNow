@@ -371,6 +371,7 @@ nl:
       town: "Zoek je plaats…"
       village: "Zoek je dorp…"
       district: "Zoek je wijk of district…"
+    join_fine_confirm: "Je bent ingelogd zodra je klaar bent. We sturen één e-mail om het adres te bevestigen, zodat de organisatie je kan vertellen wat er daarna gebeurt. We plaatsen nooit iets en je kunt het account met één tik verwijderen."
   defaults:
     range: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2168,6 +2169,11 @@ nl:
     delete_body: "Hiermee verwijder je je account en de lijst met Vertos die je hebt bewaard. Je antwoorden blijven bij de organisaties die ze vroegen — ze zijn anoniem gegeven en het is niet aan ons om ze te verwijderen."
     beta_tag: "Bèta"
     beta_note: "Welkom bij je spelersaccount. Hier komen je antwoorden bij je terug: je resultaten naast die van alle anderen, en de doelen die jij mee in beweging hebt gebracht. We zijn nog maar net begonnen."
+    email_unconfirmed: "Niet bevestigd"
+    confirm_title: "Bevestig je e-mail"
+    confirm_body: "Tot je %{email} bevestigt, kunnen de organisaties van de Vertos die je hebt bewaard je niet vertellen wat er daarna gebeurt."
+    confirm_blocked: "E-mails naar %{email} zijn teruggekomen of uitgezet, dus we kunnen het niet bevestigen. Verder verandert er niets aan je account."
+    confirm_resend: "Stuur me de link"
   player_notification_mailer:
     via: "%{org} · via Playverto"
     why: "Je krijgt dit omdat je hebt gevraagd om te horen van organisaties waarvan je een Verto hebt beantwoord."
@@ -2320,3 +2326,28 @@ nl:
     fine: "We vragen Google alleen om je naam en e-mailadres, meer niet. We plaatsen nooit iets, en je kunt het account met één tik verwijderen."
     expired_title: "Dat duurde net iets te lang"
     expired_body: "Deze link is verlopen of al gebruikt — hij geldt maar een paar minuten. Speel de Verto opnieuw om hem te bewaren."
+  player_email_confirmation_mailer:
+    subject: "Bevestig je e-mail voor Playverto"
+    subject_org: "Bevestig je e-mail voor de Verto van %{org}"
+    heading: "Bevestig je e-mail"
+    intro: "Je hebt een Playverto-account aangemaakt. Bevestig dit adres en de organisaties van de Vertos die je hebt bewaard kunnen je vertellen wat er daarna gebeurt."
+    intro_verto: "Je hebt aan het eind van %{verto} een Playverto-account aangemaakt. Bevestig dit adres en %{org} kan je vertellen wat er daarna gebeurt."
+    cta: "Mijn e-mail bevestigen"
+    fallback: "Werkt de knop niet? Kopieer en plak deze link:"
+    signed_in: "Je bent al ingelogd — hiermee mogen we je alleen nieuws sturen over de Vertos die je hebt bewaard."
+    expiry: "De link verloopt over %{days} dagen."
+    ignore: "Heb je dit account niet aangemaakt? Negeer deze e-mail dan en we schrijven je niet meer."
+    sent_by: "Verzonden door Playverto namens %{org}."
+    delete: "Dit account verwijderen"
+  player_email_confirmation:
+    confirmed_title: "Je adres is bevestigd"
+    confirmed_body: "De organisaties van de Vertos die je hebt bewaard kunnen je nu vertellen wat er daarna gebeurt. Je kunt deze e-mails altijd stopzetten via je account."
+    already_title: "Al bevestigd"
+    already_body: "Dit adres is eerder al bevestigd. Je hoeft niets meer te doen."
+    invalid_title: "Die link is verlopen"
+    invalid_body: "Bevestigingslinks zijn %{days} dagen geldig en werken niet meer als het adres van het account verandert. Log in om jezelf een nieuwe te sturen."
+    cta: "Open mijn Vertos"
+    resent: "We hebben een link naar %{email} gestuurd."
+    already_confirmed: "Je adres is al bevestigd."
+    too_many: "Dat zijn veel e-mails in korte tijd. Wacht even en probeer het opnieuw."
+    unavailable: "We kunnen op dit moment geen e-mail naar dit adres sturen."

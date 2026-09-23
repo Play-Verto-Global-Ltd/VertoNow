@@ -15751,6 +15751,26 @@ body.generating-overlay-active .bottom-bar { display: none; }
 .you-flash.is-notice { background: rgba(1,234,203,0.1); border: 1px solid rgba(1,234,203,0.3); color: #fff; }
 .you-flash.is-alert { background: rgba(255,30,111,0.1); border: 1px solid rgba(255,30,111,0.32); color: #fff; }
 
+/* Confirm your email (you/_confirm_banner). Amber rather than the alert pink:
+   nothing is broken or blocked, the account simply cannot be written to yet.
+   Sits in .you-main on the dashboard and in the profile panel on /you/account,
+   so it carries its own spacing rather than borrowing either container's. */
+.you-confirm {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 14px 16px; border-radius: 14px;
+  background: rgba(255,184,0,0.08); border: 1px solid rgba(255,184,0,0.35);
+  color: #fff;
+}
+/* In .you-main the column's own gap spaces it; in the profile panel it follows
+   a form, which has no gap to lean on. */
+.you-panel .you-confirm { margin-top: 14px; }
+.you-confirm-text { flex: 1 1 260px; min-width: 0; }
+.you-confirm-title { font-family: "Alata", sans-serif; font-size: 14px; letter-spacing: .03em; color: #FFC53D; }
+.you-confirm-body { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.78); overflow-wrap: anywhere; }
+.you-confirm-form { margin: 0; flex: none; }
+.you-confirm .you-confirm-btn { margin-top: 0; padding: 9px 18px; font-size: 13px; border-color: rgba(255,184,0,0.55); color: #FFC53D; }
+.you-confirm .you-confirm-btn:hover { background: rgba(255,184,0,0.12); }
+
 /* ── The dashboard: tiles ──────────────────────────────────────────────────
    The creator's stat row (.dash-stat), one accent per tile. The collected
    tile is a link when there is anything in it, and the link is styled by
@@ -16005,6 +16025,7 @@ a.you-tile:focus-visible { outline: 2px solid #01EACB; outline-offset: 2px; }
   border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05);
 }
 .you-tag.is-teal { color: #01EACB; border-color: rgba(1,234,203,0.4); background: rgba(1,234,203,0.1); }
+.you-tag.is-amber { color: #FFC53D; border-color: rgba(255,184,0,0.45); background: rgba(255,184,0,0.1); }
 .you-tag-g {
   display: inline-flex; align-items: center; justify-content: center; flex: none;
   width: 12px; height: 12px; border-radius: 50%;

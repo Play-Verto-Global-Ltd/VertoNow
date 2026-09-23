@@ -96,14 +96,19 @@ class PlayerController < ApplicationController
   # limit alone never sees. #join_budget_ok? adds the two hourly budgets a
   # per-minute cap cannot express.
   #
-  # An earlier version of this comment justified all of that as protection for
-  # an inbox — join "SENDS MAIL to an address a stranger typed". It does not,
-  # and has not since the emailed-link era: #join mints a PlayerSignInLink with
-  # ORIGIN_SIGNUP and returns its path for an in-browser redirect, and
-  # PlayerSignInLink.mint! delivers nothing. What these caps actually bound is
-  # ACCOUNT CREATION. That is a real thing to bound and they stay — but it is
-  # also why the per-IP half of them can be scaled for a room full of people,
-  # which a mail-bomb guard could not be.
+  # What these caps bound is ACCOUNT CREATION. #join mints a PlayerSignInLink
+  # with ORIGIN_SIGNUP and returns its path for an in-browser redirect; the
+  # link itself is never mailed. That is why the per-IP half of these caps can
+  # be scaled for a room full of people.
+  #
+  # #join DOES send one mail — the address confirmation, on the branches that
+  # create an account (see #send_join_confirmation) — and that mail is NOT
+  # bounded by these caps. It has its own flat counter,
+  # MAX_JOIN_CONFIRMATIONS_PER_IP, precisely so that raising the lever below
+  # for an event never raises how many strangers one machine may write to.
+  # This comment has been wrong about mail here twice already; if #join ever
+  # sends anything else, the unscaled counter is the thing to extend, not
+  # these.
   #
   # PLAYER_JOIN_RATE_LIMIT_SCALE multiplies the PER-IP gates only: this one,
   # join_google_ip, and MAX_JOIN_ADDRESSES_PER_IP. The address-keyed limit
@@ -761,12 +766,15 @@ class PlayerController < ApplicationController
 
   # POST /play/:token/join
   #
-  # The respondent asks for an account at the end of a Verto. Nothing is
-  # recorded against the address here beyond a pending link: this action
+  # The respondent asks for an account at the end of a Verto. This action
   # resolves what the person is entitled to claim, parks that on a
-  # PlayerSignInLink, and mails the link. The claims themselves are written by
-  # PlayerSignInsController#create — only once someone has proved they can read
-  # the inbox.
+  # PlayerSignInLink and hands the link straight back; the claims themselves
+  # are written by PlayerSignInsController#create when the browser follows it.
+  #
+  # When it creates an account it also queues one mail: the address
+  # confirmation (PlayerEmailConfirmationsController). Nothing waits on it —
+  # the person is signed in either way — but until it is followed the address
+  # is unproven, and PlayerAudience will not write to it.
   #
   # It is cookie-free by construction and has to stay that way. `:join` is in
   # the null_session list above (player_controller.js sends no CSRF token on
@@ -818,13 +826,16 @@ class PlayerController < ApplicationController
     return render json: { ok: false, error: "too_many" }, status: :too_many_requests unless join_budget_ok?(email)
 
     player = Player.find_by(email_address: email)
+    created = false
 
     if player.nil?
       player = Player.create!(email_address: email, password: password)
+      created = true
     elsif player.adoptable?
       # A shell left behind by the emailed-link era, with nothing on it. Giving
       # it the password now is the same act as creating it would have been.
       player.update!(password: password)
+      created = true
     elsif player.password_digest.blank? && player.player_identities.exists?
       # Signed up with Google, now typing a password at the same address.
       # `authenticate` on a digest-less row is simply false, so without this
@@ -839,6 +850,7 @@ class PlayerController < ApplicationController
     remember_play_locale(player)
     _link, raw = PlayerSignInLink.mint!(player: player, claim_payload: join_claim_payload,
                                         origin: PlayerSignInLink::ORIGIN_SIGNUP)
+    send_join_confirmation(player) if created
 
     render json: { ok: true, next: player_sign_in_path(raw) }
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
@@ -1213,6 +1225,33 @@ class PlayerController < ApplicationController
 
     code_budget_ok?("join", join_budget_digest(email),
                     per_ip: MAX_JOIN_ADDRESSES_PER_IP, per_code: MAX_JOIN_PER_ADDRESS)
+  end
+
+  # How many confirmation mails one IP may cause from #join in an hour. Flat,
+  # and deliberately NOT multiplied by JOIN_RATE_LIMIT_SCALE: that lever exists
+  # so a room full of people can create accounts, and it was only ever safe to
+  # scale because #join sent no mail. Creating an account and writing to a
+  # stranger's inbox are different acts and want different bounds — with the
+  # lever at an event setting, the account caps would otherwise become the
+  # multiplier on how many strangers one machine may mail.
+  #
+  # What bounds it on the other side: the mail goes out on exactly two
+  # branches, a genuinely new Player and an adoptable shell being given a
+  # password. An existing account authenticating, a use_google answer and a
+  # wrong password send nothing. So an address can be mailed this way once,
+  # for an account that did not exist, and never again by the same route —
+  # first contact only, which is what makes a per-IP counter enough rather
+  # than a per-mailbox one.
+  #
+  # A respondent past the cap is not refused anything: the account is made
+  # and signed in as usual, and /you offers them the link to send themselves.
+  MAX_JOIN_CONFIRMATIONS_PER_IP = 30
+
+  def send_join_confirmation(player)
+    sent = Rails.cache.increment("join_confirm:ip:#{request.remote_ip}", 1, expires_in: 1.hour)
+    return if sent && sent > MAX_JOIN_CONFIRMATIONS_PER_IP
+
+    PlayerEmailConfirmationsController.deliver(player, survey: @survey)
   end
 
   # The budget counters are keyed on this, and cache keys are readable wherever

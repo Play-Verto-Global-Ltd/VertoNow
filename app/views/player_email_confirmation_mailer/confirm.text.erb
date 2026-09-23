@@ -1,0 +1,12 @@
+<%= t("player_email_confirmation_mailer.heading") %>
+
+<%= @survey && @org_name.present? ? t("player_email_confirmation_mailer.intro_verto", verto: @survey.theme.presence || @survey.title, org: @org_name) : t("player_email_confirmation_mailer.intro") %>
+
+<%= @url %>
+
+<%= t("player_email_confirmation_mailer.signed_in") %> <%= t("player_email_confirmation_mailer.expiry", days: @days) %>
+
+<%= t("player_email_confirmation_mailer.ignore") %>
+
+<%= t("player_email_confirmation_mailer.sent_by", org: @org_name.presence || "Playverto") %>
+<%= t("player_email_confirmation_mailer.delete") %>: <%= @delete_url %>

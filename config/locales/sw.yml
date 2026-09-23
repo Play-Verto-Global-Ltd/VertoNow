@@ -371,6 +371,7 @@ sw:
       town: "Tafuta mji wako…"
       village: "Tafuta kijiji chako…"
       district: "Tafuta mtaa au wilaya yako…"
+    join_fine_confirm: "Unaingia kwenye akaunti mara tu unapomaliza. Tutatuma barua pepe moja kuthibitisha anwani, ili shirika likueleze kitakachofuata. Hatuchapishi chochote kamwe, na unaweza kufuta akaunti kwa mguso mmoja."
   defaults:
     range: ["Sikubaliani kabisa", "Sikubaliani", "Sina upande", "Nakubaliana", "Nakubaliana kabisa"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2168,6 +2169,11 @@ sw:
     delete_body: "Hii inafuta akaunti yako na orodha ya Vertos ulizohifadhi. Majibu yako yanabaki na mashirika yaliyouliza — yalitolewa bila kutambulika na si haki yetu kuyaondoa."
     beta_tag: "Beta"
     beta_note: "Karibu kwenye akaunti yako ya mchezaji. Hapa ndipo majibu yako yanakurudia: matokeo yako kando ya ya kila mtu, na mambo uliyosaidia kuyasukuma mbele. Tumeanza tu."
+    email_unconfirmed: "Haijathibitishwa"
+    confirm_title: "Thibitisha barua pepe yako"
+    confirm_body: "Hadi uthibitishe %{email}, mashirika ya Vertos ulizohifadhi hayawezi kukueleza kitakachofuata."
+    confirm_blocked: "Barua pepe kwenda %{email} zimerudishwa au zimezimwa, kwa hiyo hatuwezi kuithibitisha. Hakuna kingine kinachobadilika kwenye akaunti yako."
+    confirm_resend: "Nitumie kiungo"
   player_notification_mailer:
     via: "%{org} · kupitia Playverto"
     why: "Unapata hii kwa sababu uliomba kusikia kutoka kwa mashirika ambayo umejibu Vertos zao."
@@ -2320,3 +2326,28 @@ sw:
     fine: "Kwa Google tunaomba jina lako na anwani yako ya barua pepe pekee, si zaidi. Hatuchapishi chochote kamwe, na unaweza kufuta akaunti kwa mguso mmoja."
     expired_title: "Hiyo ilichukua muda kidogo zaidi"
     expired_body: "Kiungo hiki kimeisha muda au kimeshatumika — hudumu dakika chache tu. Cheza Verto tena ili kuihifadhi."
+  player_email_confirmation_mailer:
+    subject: "Thibitisha barua pepe yako kwa Playverto"
+    subject_org: "Thibitisha barua pepe yako kwa Verto ya %{org}"
+    heading: "Thibitisha barua pepe yako"
+    intro: "Umefungua akaunti ya Playverto. Thibitisha anwani hii ili mashirika ya Vertos ulizohifadhi yaweze kukueleza kitakachofuata."
+    intro_verto: "Umefungua akaunti ya Playverto mwishoni mwa %{verto}. Thibitisha anwani hii ili %{org} iweze kukueleza kitakachofuata."
+    cta: "Thibitisha barua pepe yangu"
+    fallback: "Kitufe hakifanyi kazi? Nakili na ubandike kiungo hiki:"
+    signed_in: "Tayari umeingia — hii inaturuhusu tu kukutumia habari kuhusu Vertos ulizohifadhi."
+    expiry: "Kiungo kitaisha muda baada ya siku %{days}."
+    ignore: "Kama hukufungua akaunti hii, puuza barua pepe hii na hatutakuandikia tena."
+    sent_by: "Imetumwa na Playverto kwa niaba ya %{org}."
+    delete: "Futa akaunti hii"
+  player_email_confirmation:
+    confirmed_title: "Anwani yako imethibitishwa"
+    confirmed_body: "Mashirika ya Vertos ulizohifadhi sasa yanaweza kukueleza kitakachofuata. Unaweza kusimamisha barua pepe hizi wakati wowote kwenye akaunti yako."
+    already_title: "Tayari imethibitishwa"
+    already_body: "Anwani hii ilithibitishwa awali. Hakuna zaidi cha kufanya."
+    invalid_title: "Kiungo hicho kimeisha muda"
+    invalid_body: "Viungo vya uthibitisho hudumu siku %{days}, na huacha kufanya kazi anwani ya akaunti ikibadilika. Ingia ili ujitumie kiungo kipya."
+    cta: "Fungua Vertos zangu"
+    resent: "Tumetuma kiungo kwa %{email}."
+    already_confirmed: "Anwani yako tayari imethibitishwa."
+    too_many: "Hizo ni barua pepe nyingi kwa muda mfupi. Subiri kidogo kisha ujaribu tena."
+    unavailable: "Hatuwezi kutuma barua pepe kwa anwani hii kwa sasa."

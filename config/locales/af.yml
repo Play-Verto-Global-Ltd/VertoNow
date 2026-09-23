@@ -372,6 +372,7 @@ af:
       town: "Soek jou dorp…"
       village: "Soek jou gehug…"
       district: "Soek jou woonbuurt of distrik…"
+    join_fine_confirm: "Jy is aangemeld sodra jy klaar is. Ons stuur een e-pos om die adres te bevestig, sodat die organisasie jou kan vertel wat volgende gebeur. Ons plaas nooit iets nie, en jy kan die rekening met een tik uitvee."
   defaults:
     range: ["Stem heeltemal nie saam nie", "Stem nie saam nie", "Neutraal", "Stem saam", "Stem heeltemal saam"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2171,6 +2172,11 @@ af:
     delete_body: "Dit skrap jou rekening en die lys Vertos wat jy gehou het. Jou antwoorde bly by die organisasies wat gevra het — hulle is anoniem gegee en dit staan nie aan ons om hulle te verwyder nie."
     beta_tag: "Beta"
     beta_note: "Welkom by jou spelerrekening. Hier kom jou antwoorde terug na jou toe: jou resultate langs dié van almal anders, en die sake wat jy help roer het. Ons het pas begin."
+    email_unconfirmed: "Nie bevestig nie"
+    confirm_title: "Bevestig jou e-pos"
+    confirm_body: "Totdat jy %{email} bevestig, kan die organisasies van die Vertos wat jy gehou het jou nie vertel wat volgende gebeur nie."
+    confirm_blocked: "E-posse na %{email} het teruggebons of is afgeskakel, so ons kan dit nie bevestig nie. Niks anders aan jou rekening verander nie."
+    confirm_resend: "Stuur vir my die skakel"
   player_notification_mailer:
     via: "%{org} · via Playverto"
     why: "Jy kry dit omdat jy gevra het om te hoor van organisasies wie se Vertos jy beantwoord het."
@@ -2323,3 +2329,28 @@ af:
     fine: "Ons vra Google net jou naam en e-posadres, niks anders nie. Ons plaas nooit iets nie, en jy kan die rekening met een tik uitvee."
     expired_title: "Dit het 'n oomblik te lank geneem"
     expired_body: "Hierdie skakel het verval of is reeds gebruik — dit hou net 'n paar minute. Speel die Verto weer om dit te behou."
+  player_email_confirmation_mailer:
+    subject: "Bevestig jou e-pos vir Playverto"
+    subject_org: "Bevestig jou e-pos vir %{org} se Verto"
+    heading: "Bevestig jou e-pos"
+    intro: "Jy het 'n Playverto-rekening geskep. Bevestig hierdie adres en die organisasies van die Vertos wat jy gehou het kan jou vertel wat volgende gebeur."
+    intro_verto: "Jy het aan die einde van %{verto} 'n Playverto-rekening geskep. Bevestig hierdie adres en %{org} kan jou vertel wat volgende gebeur."
+    cta: "Bevestig my e-pos"
+    fallback: "Werk die knoppie nie? Kopieer en plak hierdie skakel:"
+    signed_in: "Jy is reeds aangemeld — dit laat ons net toe om vir jou nuus te stuur oor die Vertos wat jy gehou het."
+    expiry: "Die skakel verval oor %{days} dae."
+    ignore: "As jy nie hierdie rekening geskep het nie, ignoreer hierdie e-pos en ons skryf nie weer nie."
+    sent_by: "Gestuur deur Playverto namens %{org}."
+    delete: "Vee hierdie rekening uit"
+  player_email_confirmation:
+    confirmed_title: "Jou adres is bevestig"
+    confirmed_body: "Die organisasies van die Vertos wat jy gehou het, kan jou nou vertel wat volgende gebeur. Jy kan hierdie e-posse enige tyd in jou rekening stop."
+    already_title: "Reeds bevestig"
+    already_body: "Hierdie adres is vroeër al bevestig. Daar is niks meer om te doen nie."
+    invalid_title: "Daardie skakel het verval"
+    invalid_body: "Bevestigingskakels hou %{days} dae en werk nie meer as die rekening se adres verander nie. Meld aan en jy kan vir jouself 'n nuwe een stuur."
+    cta: "Maak my Vertos oop"
+    resent: "Ons het 'n skakel na %{email} gestuur."
+    already_confirmed: "Jou adres is reeds bevestig."
+    too_many: "Dis baie e-posse in 'n kort tyd. Wag 'n rukkie en probeer weer."
+    unavailable: "Ons kan nie nou e-pos na hierdie adres stuur nie."

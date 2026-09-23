@@ -37,6 +37,7 @@ class LocaleStructureParityTest < ActiveSupport::TestCase
                   you player_join player_sign_in player_session
                   player_sign_in_mailer
                   player_notification_mailer player_unsubscribe
+                  player_email_confirmation player_email_confirmation_mailer
                   language_check].freeze
 
   def locale_files

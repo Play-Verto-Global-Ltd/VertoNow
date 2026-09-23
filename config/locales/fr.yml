@@ -371,6 +371,7 @@ fr:
       town: "Recherchez votre commune…"
       village: "Recherchez votre village…"
       district: "Recherchez votre quartier ou arrondissement…"
+    join_fine_confirm: "Vous êtes connecté dès que vous avez terminé. Nous enverrons un seul e-mail pour confirmer l'adresse, afin que l'organisation puisse vous dire la suite. Nous ne publions jamais rien, et vous pouvez supprimer le compte en un geste."
   defaults:
     range: ["Pas du tout d'accord", "Pas d'accord", "Neutre", "D'accord", "Tout à fait d'accord"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2168,6 +2169,11 @@ fr:
     delete_body: "Ceci supprime votre compte et la liste des Vertos que vous avez conservés. Vos réponses restent auprès des organisations qui les ont demandées : elles ont été données anonymement et il ne nous appartient pas de les retirer."
     beta_tag: "Bêta"
     beta_note: "Bienvenue dans votre compte joueur. C'est ici que vos réponses vous reviennent : vos résultats à côté de ceux de tous les autres, et les causes que vous avez fait avancer. Ce n'est que le début."
+    email_unconfirmed: "Non confirmée"
+    confirm_title: "Confirmez votre e-mail"
+    confirm_body: "Tant que vous n'avez pas confirmé %{email}, les organisations des Vertos que vous avez gardés ne peuvent pas vous dire la suite."
+    confirm_blocked: "Les e-mails envoyés à %{email} ont été rejetés ou désactivés, nous ne pouvons donc pas la confirmer. Rien d'autre ne change pour votre compte."
+    confirm_resend: "M'envoyer le lien"
   player_notification_mailer:
     via: "%{org} · via Playverto"
     why: "Vous recevez ceci parce que vous avez demandé des nouvelles des organisations dont vous avez répondu aux Vertos."
@@ -2320,3 +2326,28 @@ fr:
     fine: "Nous demandons à Google votre nom et votre adresse e-mail, rien d'autre. Nous ne publions jamais rien et vous pouvez supprimer le compte en une touche."
     expired_title: "Cela a pris un peu trop de temps"
     expired_body: "Ce lien a expiré ou a déjà été utilisé — il ne dure que quelques minutes. Rejouez le Verto pour le conserver."
+  player_email_confirmation_mailer:
+    subject: "Confirmez votre e-mail pour Playverto"
+    subject_org: "Confirmez votre e-mail pour le Verto de %{org}"
+    heading: "Confirmez votre e-mail"
+    intro: "Vous avez créé un compte Playverto. Confirmez cette adresse et les organisations des Vertos que vous avez gardés pourront vous dire la suite."
+    intro_verto: "Vous avez créé un compte Playverto à la fin de %{verto}. Confirmez cette adresse et %{org} pourra vous dire la suite."
+    cta: "Confirmer mon e-mail"
+    fallback: "Le bouton ne fonctionne pas ? Copiez et collez ce lien :"
+    signed_in: "Vous êtes déjà connecté : ceci nous permet seulement de vous envoyer des nouvelles des Vertos que vous avez gardés."
+    expiry: "Le lien expire dans %{days} jours."
+    ignore: "Si vous n'avez pas créé ce compte, ignorez cet e-mail et nous ne vous écrirons plus."
+    sent_by: "Envoyé par Playverto pour le compte de %{org}."
+    delete: "Supprimer ce compte"
+  player_email_confirmation:
+    confirmed_title: "Votre adresse est confirmée"
+    confirmed_body: "Les organisations des Vertos que vous avez gardés peuvent désormais vous dire la suite. Vous pouvez arrêter ces e-mails à tout moment depuis votre compte."
+    already_title: "Déjà confirmée"
+    already_body: "Cette adresse a déjà été confirmée. Il n'y a rien d'autre à faire."
+    invalid_title: "Ce lien a expiré"
+    invalid_body: "Les liens de confirmation durent %{days} jours et cessent de fonctionner si l'adresse du compte change. Connectez-vous pour vous en envoyer un nouveau."
+    cta: "Ouvrir mes Vertos"
+    resent: "Nous avons envoyé un lien à %{email}."
+    already_confirmed: "Votre adresse est déjà confirmée."
+    too_many: "Cela fait beaucoup d'e-mails en peu de temps. Patientez un moment puis réessayez."
+    unavailable: "Nous ne pouvons pas envoyer d'e-mail à cette adresse pour le moment."

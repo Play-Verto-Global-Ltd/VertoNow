@@ -1,0 +1,81 @@
+<%# House chrome, as player_sign_in_mailer/sign_in.html.erb draws it: inline
+    styles and table layout for email clients. See PlayerEmailConfirmationMailer
+    for why the locale is applied explicitly. %>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#272D4A;margin:0;padding:0;width:100%;">
+  <tr>
+    <td align="center" style="padding:40px 16px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:520px;background:#1C2034;border-radius:16px;">
+
+        <tr>
+          <td align="center" style="padding:40px 32px 8px;">
+            <span style="font-family:'Alata','Helvetica Neue',Arial,sans-serif;font-size:30px;letter-spacing:1.5px;line-height:1;">
+              <span style="color:#F7F7F7;">play</span><span style="color:#FF1E6F;">verto</span>
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:24px 32px 12px;">
+            <h1 style="font-family:'Alata','Helvetica Neue',Arial,sans-serif;font-size:22px;color:#F7F7F7;margin:0;font-weight:400;letter-spacing:0.5px;">
+              <%= t("player_email_confirmation_mailer.heading") %>
+            </h1>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:0 40px 28px;">
+            <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.6;color:rgba(247,247,247,0.7);margin:0;">
+              <% if @survey && @org_name.present? %>
+                <%= t("player_email_confirmation_mailer.intro_verto", verto: @survey.theme.presence || @survey.title, org: @org_name) %>
+              <% else %>
+                <%= t("player_email_confirmation_mailer.intro") %>
+              <% end %>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:0 32px 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td align="center" bgcolor="#01EACB" style="background:#01EACB;border-radius:10px;">
+                  <%= link_to t("player_email_confirmation_mailer.cta"), @url,
+                        style: "display:inline-block;padding:14px 32px;font-family:'Alata','Helvetica Neue',Arial,sans-serif;font-size:15px;letter-spacing:0.5px;color:#1C2034;text-decoration:none;font-weight:400;" %>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:0 40px 24px;">
+            <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;line-height:1.5;color:rgba(247,247,247,0.42);margin:0;word-break:break-all;">
+              <%= t("player_email_confirmation_mailer.fallback") %><br><%= @url %>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 40px 8px;border-top:1px solid rgba(255,255,255,0.07);">
+            <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;line-height:1.6;color:rgba(247,247,247,0.6);margin:20px 0 0;">
+              <%= t("player_email_confirmation_mailer.signed_in") %>
+              <%= t("player_email_confirmation_mailer.expiry", days: @days) %>
+              <%= t("player_email_confirmation_mailer.ignore") %>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:20px 40px 32px;">
+            <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;line-height:1.6;color:rgba(247,247,247,0.35);margin:0;">
+              <%= t("player_email_confirmation_mailer.sent_by", org: @org_name.presence || "Playverto") %>
+              <%= link_to t("player_email_confirmation_mailer.delete"), @delete_url,
+                    style: "color:rgba(247,247,247,0.55);text-decoration:underline;" %>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>

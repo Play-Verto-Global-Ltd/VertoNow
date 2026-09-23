@@ -381,6 +381,7 @@ tn:
       town: "Batla toropo ya gago…"
       village: "Batla motse wa gago…"
       district: "Batla kgaolwana kgotsa setereke sa gago…"
+    join_fine_confirm: "O tsena ka bonako fela fa o fetsa. Re tla romela imeile e le nngwe go netefatsa aterese, gore setlamo se go bolelele se se diragalang morago. Ga re ke re phasalatsa sepe, mme o ka phimola akhaonto ka go tobetsa gangwe."
   # Placeholder CONTENT a new card of each type starts with — answer options,
   # scale labels, statements. Unlike UI chrome (which follows the viewer's
   # locale), these are resolved in the Verto's default locale, because they are
@@ -2199,6 +2200,11 @@ tn:
     delete_body: "Se se phimola akhaonto ya gago le lenaane la di-Verto tse o di bolokileng. Dikarabo tsa gago di sala le mekgatlho e e neng e botsa — di neetswe kwa ntle ga maina mme ga se tsa rona gore re di tlose."
     beta_tag: "Beta"
     beta_note: "O amogetswe mo akhaonteng ya gago ya motshameki. Ke fano fa dikarabo tsa gago di boelang kwa go wena: dipholo tsa gago fa thoko ga tsa batho botlhe, le merero e o thusitseng go e tshikinya. Re sa ntse re simolola."
+    email_unconfirmed: "Ga e ise e netefadiwe"
+    confirm_title: "Netefatsa imeile ya gago"
+    confirm_body: "Go fitlha o netefatsa %{email}, ditlamo tsa di-Vertos tse o di bolokileng ga di kgone go go bolelela se se diragalang morago."
+    confirm_blocked: "Diimeile tse di yang kwa %{email} di boetse kgotsa di timilwe, ka jalo ga re kgone go e netefatsa. Ga go sepe se sengwe se se fetogang mo akhaontong ya gago."
+    confirm_resend: "Nthomelela kgokagano"
   player_notification_mailer:
     via: "%{org} · ka Playverto"
     why: "O amogela seno ka gonne o kopile go utlwa go mekgatlho e o arabileng di-Verto tsa yona."
@@ -2351,3 +2357,28 @@ tn:
     fine: "Mo Google re kopa leina la gago le aterese ya imeile fela, ga go sepe se sengwe. Ga re ke re phasalatsa sepe, mme o ka phimola akhaonto ka go tobetsa gangwe fela."
     expired_title: "Seo se tsere nako e telele go se kae"
     expired_body: "Kgokagano e e feletswe ke nako kgotsa e setse e dirisitswe — e nna metsotso e se kae fela. Tshameka Verto gape go e boloka."
+  player_email_confirmation_mailer:
+    subject: "Netefatsa imeile ya gago ya Playverto"
+    subject_org: "Netefatsa imeile ya gago ya Verto ya %{org}"
+    heading: "Netefatsa imeile ya gago"
+    intro: "O dirile akhaonto ya Playverto. Netefatsa aterese e gore ditlamo tsa di-Vertos tse o di bolokileng di kgone go go bolelela se se diragalang morago."
+    intro_verto: "O dirile akhaonto ya Playverto kwa bofelong jwa %{verto}. Netefatsa aterese e gore %{org} e kgone go go bolelela se se diragalang morago."
+    cta: "Netefatsa imeile ya me"
+    fallback: "Konopo ga e dire? Kopa mme o kgomaretse kgolagano eno:"
+    signed_in: "O setse o tsene — se se re letla fela go go romelela dikgang ka di-Vertos tse o di bolokileng."
+    expiry: "Kgokagano e fela morago ga malatsi a le %{days}."
+    ignore: "Fa o sa dira akhaonto e, tlhokomologa imeile e mme ga re kitla re go kwalela gape."
+    sent_by: "E rometswe ke Playverto mo boemong jwa %{org}."
+    delete: "Phimola akhaonto e"
+  player_email_confirmation:
+    confirmed_title: "Aterese ya gago e netefaditswe"
+    confirmed_body: "Ditlamo tsa di-Vertos tse o di bolokileng jaanong di ka go bolelela se se diragalang morago. O ka emisa diimeile tse nako nngwe le nngwe mo akhaontong ya gago."
+    already_title: "E setse e netefaditswe"
+    already_body: "Aterese e e ne ya netefadiwa pele. Ga go sepe se sengwe se o tshwanetseng go se dira."
+    invalid_title: "Kgolagano eo e felile"
+    invalid_body: "Dikgokagano tsa netefatso di tsaya malatsi a le %{days}, mme di emisa go dira fa aterese ya akhaonto e fetoga. Tsena mme o ka ithomelela e ntšha."
+    cta: "Bula di-Verto tsa me"
+    resent: "Re rometse kgokagano kwa %{email}."
+    already_confirmed: "Aterese ya gago e setse e netefaditswe."
+    too_many: "Ke diimeile tse dintsi mo nakong e khutshwane. Tsweetswee ema sebakanyana o bo o leka gape."
+    unavailable: "Jaanong ga re kgone go romela imeile kwa aterese e."

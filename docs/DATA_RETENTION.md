@@ -229,7 +229,8 @@ Five properties this design is built on, all of them checkable in the code:
    `Survey#contact_form_excludes_neurodiversity` covers `join_prompt_enabled`
    exactly as it covers `contact_form_enabled`: a Verto may ask the
    neurodiversity question or ask for an address, never both.
-4. **Every credential is single-use, a digest, or somebody else's.** This
+4. **Every credential is single-use, a digest, or somebody else's — and the
+   one token that is none of those grants nothing.** This
    point used to read "there is no password and no sign-in form", and it has
    been wrong since 2026-09-10, when the card started taking a password on the
    owner's instruction; Google sign-in is the third way in. What is still true
@@ -245,6 +246,15 @@ Five properties this design is built on, all of them checkable in the code:
      which is what stops a new identity walking into an existing account by
      claiming its address — and is why an account made this way is verified
      without any mail having to arrive.
+
+   The address confirmation (2026-09-23) is the exception, and it is one on
+   purpose. A password signup never proves its address, so it is sent one
+   mail whose link stamps `email_verified_at`. That link is a
+   `generates_token_for` token: reusable for 7 days, never stored, keyed on
+   the address so changing it voids the link. It is none of the three kinds
+   above because it is not a credential — it signs nobody in and opens
+   nothing, and spending it only lets the organisations the person kept
+   Vertos from write to an address that has now shown it can read them.
 5. **`/you` is `no-store` and `noindex`,** and its cookie is separate from the
    creator's in every respect — different name, different table, different
    `Current` attribute.

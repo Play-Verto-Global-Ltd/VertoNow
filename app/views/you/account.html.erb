@@ -45,6 +45,8 @@
                 </svg>
                 <%= t("you.email_verified") %>
               </span>
+            <% elsif @confirm %>
+              <span class="you-tag is-amber"><%= t("you.email_unconfirmed") %></span>
             <% end %>
             <% if @google %>
               <span class="you-tag">
@@ -59,6 +61,9 @@
           <%= f.button t("you.save"), type: "submit", class: "you-btn you-btn-primary" %>
         </div>
       <% end %>
+      <%# Outside the form above: the resend is its own POST, and a form
+          cannot hold another one. %>
+      <%= render "you/confirm_banner", state: @confirm, player: @player if @confirm %>
     </section>
 
     <%# ── Sign in ──────────────────────────────────────────────────────── %>

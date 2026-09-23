@@ -21,10 +21,13 @@ class LocaleRespondentParityTest < ActiveSupport::TestCase
   # player_session is the password form a respondent comes back through. It
   # joined this list in the same commit that created it, rather than three
   # pushes later — which is the whole lesson of the note above.
+  # The two player_email_confirmation namespaces joined in the commit that
+  # created them, for the same reason.
   NAMESPACES = %w[you player_sign_in player_session player_sign_in_mailer
-                  player_notification_mailer player_unsubscribe].freeze
+                  player_notification_mailer player_unsubscribe
+                  player_email_confirmation player_email_confirmation_mailer].freeze
   JOIN_KEYS = %w[join_eyebrow join_title join_body join_cta
-                 join_email_placeholder join_fine join_embedded].freeze
+                 join_email_placeholder join_fine join_fine_confirm join_embedded].freeze
 
   # A floor, not an exact count — new copy should land without editing this
   # test. But every assertion below is a comparison against the English set, so

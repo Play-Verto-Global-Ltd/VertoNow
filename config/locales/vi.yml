@@ -371,6 +371,7 @@ vi:
       town: "Tìm thị trấn của bạn…"
       village: "Tìm làng của bạn…"
       district: "Tìm khu phố hoặc quận của bạn…"
+    join_fine_confirm: "Bạn được đăng nhập ngay khi hoàn tất. Chúng tôi sẽ gửi một email duy nhất để xác nhận địa chỉ, để tổ chức có thể cho bạn biết điều gì xảy ra tiếp theo. Chúng tôi không bao giờ đăng gì, và bạn có thể xóa tài khoản chỉ với một chạm."
   defaults:
     range: ["Hoàn toàn không đồng ý", "Không đồng ý", "Trung lập", "Đồng ý", "Hoàn toàn đồng ý"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -2167,6 +2168,11 @@ vi:
     delete_body: "Thao tác này xóa tài khoản của bạn và danh sách Vertos bạn đã giữ. Câu trả lời của bạn vẫn ở lại với các tổ chức đã hỏi — chúng được đưa ra ẩn danh và không thuộc quyền chúng tôi để xóa."
     beta_tag: "Beta"
     beta_note: "Chào mừng bạn đến với tài khoản người chơi của bạn. Đây là nơi câu trả lời của bạn quay lại với bạn: kết quả của bạn bên cạnh kết quả của mọi người, và những vấn đề bạn đã góp phần lay chuyển. Chúng tôi chỉ mới bắt đầu."
+    email_unconfirmed: "Chưa xác nhận"
+    confirm_title: "Xác nhận email của bạn"
+    confirm_body: "Cho đến khi bạn xác nhận %{email}, các tổ chức của những Vertos bạn đã lưu không thể cho bạn biết điều gì xảy ra tiếp theo."
+    confirm_blocked: "Email gửi tới %{email} đã bị trả lại hoặc bị tắt, nên chúng tôi không thể xác nhận. Không có gì khác trong tài khoản của bạn thay đổi."
+    confirm_resend: "Gửi liên kết cho tôi"
   player_notification_mailer:
     via: "%{org} · qua Playverto"
     why: "Bạn nhận được thư này vì bạn đã xin nghe tin từ các tổ chức có Vertos mà bạn đã trả lời."
@@ -2319,3 +2325,28 @@ vi:
     fine: "Chúng tôi chỉ hỏi Google tên và địa chỉ email của bạn, không gì khác. Chúng tôi không bao giờ đăng bất cứ thứ gì, và bạn có thể xoá tài khoản chỉ với một chạm."
     expired_title: "Việc đó mất hơi lâu"
     expired_body: "Liên kết này đã hết hạn hoặc đã được dùng — nó chỉ tồn tại vài phút. Chơi lại Verto để giữ nó."
+  player_email_confirmation_mailer:
+    subject: "Xác nhận email của bạn cho Playverto"
+    subject_org: "Xác nhận email của bạn cho Verto của %{org}"
+    heading: "Xác nhận email của bạn"
+    intro: "Bạn đã tạo tài khoản Playverto. Hãy xác nhận địa chỉ này để các tổ chức của những Vertos bạn đã lưu có thể cho bạn biết điều gì xảy ra tiếp theo."
+    intro_verto: "Bạn đã tạo tài khoản Playverto ở cuối %{verto}. Hãy xác nhận địa chỉ này để %{org} có thể cho bạn biết điều gì xảy ra tiếp theo."
+    cta: "Xác nhận email của tôi"
+    fallback: "Nút không hoạt động? Sao chép và dán liên kết này:"
+    signed_in: "Bạn đã đăng nhập rồi — việc này chỉ cho phép chúng tôi gửi tin tức về những Vertos bạn đã lưu."
+    expiry: "Liên kết hết hạn sau %{days} ngày."
+    ignore: "Nếu bạn không tạo tài khoản này, hãy bỏ qua email này và chúng tôi sẽ không viết thêm."
+    sent_by: "Gửi bởi Playverto thay mặt %{org}."
+    delete: "Xóa tài khoản này"
+  player_email_confirmation:
+    confirmed_title: "Địa chỉ của bạn đã được xác nhận"
+    confirmed_body: "Các tổ chức của những Vertos bạn đã lưu giờ có thể cho bạn biết điều gì xảy ra tiếp theo. Bạn có thể dừng các email này bất cứ lúc nào trong tài khoản."
+    already_title: "Đã xác nhận"
+    already_body: "Địa chỉ này đã được xác nhận trước đó. Không cần làm gì thêm."
+    invalid_title: "Liên kết đó đã hết hạn"
+    invalid_body: "Liên kết xác nhận có hiệu lực %{days} ngày và ngừng hoạt động nếu địa chỉ của tài khoản thay đổi. Hãy đăng nhập để tự gửi cho mình một liên kết mới."
+    cta: "Mở Vertos của tôi"
+    resent: "Chúng tôi đã gửi liên kết tới %{email}."
+    already_confirmed: "Địa chỉ của bạn đã được xác nhận."
+    too_many: "Quá nhiều email trong thời gian ngắn. Vui lòng đợi một lúc rồi thử lại."
+    unavailable: "Hiện chúng tôi không thể gửi email tới địa chỉ này."
