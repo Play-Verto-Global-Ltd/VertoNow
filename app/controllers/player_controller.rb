@@ -988,8 +988,14 @@ class PlayerController < ApplicationController
   def location_search
     return render json: { ok: false, error: "Survey not found" }, status: :not_found unless @survey
 
-    results = NominatimClient.search(query: params[:q].to_s).map do |place|
-      label = [ place[:city], place[:region] ].compact_blank.join(", ").first(60).presence
+    # The creator's narrowing (LocationScope) is read off the SAVED card the
+    # search is for, never taken from the request: the client only says which
+    # card it is. An index that isn't a location card searches unscoped, as
+    # every card did before scopes existed.
+    card  = Integer(params[:card].to_s, exception: false)&.then { |i| i >= 0 ? Array(@survey.cards)[i] : nil }
+    scope = LocationScope.for_card(card)
+    results = NominatimClient.search(query: params[:q].to_s, locale: I18n.locale.to_s, **scope).map do |place|
+      label = LocationScope.label_for(place, scope[:places])
       {
         display_name: place[:display_name],
         country_code: place[:country_code],

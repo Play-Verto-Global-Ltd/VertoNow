@@ -315,6 +315,9 @@ Rails.application.routes.draw do
   delete "surveys/bulk_destroy",        to: "surveys#bulk_destroy",        as: :bulk_destroy_surveys
   delete "surveys/:id/destroy_forever", to: "surveys#destroy_forever",     as: :destroy_forever_survey
   post   "surveys/:id/restore",          to: "surveys#restore",             as: :restore_survey
+  # The location card's "Limit to cities" picker in the editor (LocationScope).
+  get "location_cities", to: "location_cities#index", as: :location_cities
+
   resources :surveys, only: [ :show, :update, :destroy ] do
     # Named send links (SurveyLink). Nested because a link has no life of its
     # own — it's one of the addresses a particular Verto is reachable at.

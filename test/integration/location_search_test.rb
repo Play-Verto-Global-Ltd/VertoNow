@@ -27,6 +27,50 @@ class LocationSearchTest < ActionDispatch::IntegrationTest
     assert_equal "Austin, Texas, United States", r["display_name"]
   end
 
+  test "the search runs under the scope saved on the card, not one sent by the client" do
+    s = published_survey
+    s.update_columns(cards: s.cards + [ { "type" => "open_ended", "input" => "location", "text" => "Where?",
+                                          "location_places" => [ "district" ], "location_countries" => [ "GB" ] } ])
+    seen = nil
+    hackney = { display_name: "Hackney, London, England, United Kingdom", name: "Hackney", place_type: "borough",
+                city: "London", region: "England", country: "United Kingdom", country_code: "GB" }
+    stub_method(NominatimClient, :search, ->(**kw) { seen = kw; [ hackney ] }) do
+      get player_location_search_path(s.publish_token),
+          params: { q: "Hack", card: 1, location_places: [ "country" ], location_countries: [ "US" ] }
+    end
+    assert_response :success
+    assert_equal [ "district" ], seen[:places]
+    assert_equal [ "GB" ], seen[:countries]
+    assert_equal "en", seen[:locale]
+    assert_equal "Hackney, London", JSON.parse(response.body)["results"].first["label"]
+  end
+
+  test "a countries-only card labels the pick with nothing but its country" do
+    s = published_survey
+    s.update_columns(cards: s.cards + [ { "type" => "open_ended", "input" => "location", "text" => "Where?",
+                                          "location_places" => [ "country" ] } ])
+    kenya = { display_name: "Kenya", name: "Kenya", place_type: "country", country: "Kenya", country_code: "KE" }
+    stub_method(NominatimClient, :search, ->(**_kw) { [ kenya ] }) do
+      get player_location_search_path(s.publish_token), params: { q: "Ken", card: 1 }
+    end
+    r = JSON.parse(response.body)["results"].first
+    assert_equal "KE", r["country_code"]
+    assert_nil r["label"]
+  end
+
+  test "a card index that isn't a location card searches unscoped" do
+    s = published_survey
+    seen = nil
+    [ 0, 99, -1, "x" ].each do |card|
+      stub_method(NominatimClient, :search, ->(**kw) { seen = kw; [] }) do
+        get player_location_search_path(s.publish_token), params: { q: "Austin", card: card }
+      end
+      assert_response :success
+      assert_equal [], seen[:places], card.inspect
+      assert_equal [], seen[:cities], card.inspect
+    end
+  end
+
   test "the location scale leaves the cap unchanged at its default" do
     # PLAYER_LOCATION_RATE_LIMIT_SCALE is unset in test, which is the promise
     # the comment above the declaration makes: setting nothing changes nothing.
@@ -65,7 +109,7 @@ class LocationSearchTest < ActionDispatch::IntegrationTest
     end
 
     stub_method(Rails, :cache, ActiveSupport::Cache::MemoryStore.new) do
-      Rails.cache.write("geocode_search:v2:#{NominatimClient.send(:provider)}:austin:5", [ RESULT ])
+      Rails.cache.write(NominatimClient.send(:search_cache_key, "Austin", 5), [ RESULT ])
       stub_method(NominatimClient, :limiter, tripwire) do
         assert_equal [ RESULT ], NominatimClient.search(query: "Austin")
       end

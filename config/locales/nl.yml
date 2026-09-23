@@ -162,6 +162,21 @@ nl:
     nps_low_placeholder: "Laagste betekent…"
     nps_high_placeholder: "Hoogste betekent…"
     body_placeholder: "Voeg bodytekst toe (optioneel)"
+    location_places_label: "Zoeken naar"
+    location_place:
+      country: "Land"
+      region: "Regio / staat"
+      city: "Stad"
+      town: "Plaats"
+      village: "Dorp"
+      district: "Wijk"
+    location_places_note: "Niets geselecteerd betekent elke plek. Kies alleen Land om alleen landen te tonen."
+    location_countries_label: "Beperken tot landen"
+    location_countries_add: "Land toevoegen…"
+    location_cities_label: "Beperken tot steden"
+    location_cities_add: "Zoek een stad…"
+    location_cities_note: "Alleen plekken binnen deze steden worden aangeboden."
+    location_remove: "Verwijderen"
   ask_submission_mailer:
     confirmation_subject: "Je Verto-data is ingediend bij Ask Verto"
     confirmation_heading: "Ingediend voor beoordeling"
@@ -347,6 +362,14 @@ nl:
     join_have_account: "Heb je al een account?"
     join_sign_in: "Inloggen"
     org_logo: "Logo van %{org}"
+    location_search_placeholder:
+      any: "Zoek je plek…"
+      country: "Zoek je land…"
+      region: "Zoek je regio of staat…"
+      city: "Zoek je stad…"
+      town: "Zoek je plaats…"
+      village: "Zoek je dorp…"
+      district: "Zoek je wijk of district…"
   defaults:
     range: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

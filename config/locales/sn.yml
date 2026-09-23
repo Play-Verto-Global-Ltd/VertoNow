@@ -164,6 +164,21 @@ sn:
     nps_low_placeholder: "Yakaderera zvikuru inoreva…"
     nps_high_placeholder: "Yakakwirira zvikuru inoreva…"
     body_placeholder: "Wedzera mamwe mashoko (hazvisungirwi)"
+    location_places_label: "Tsvaga"
+    location_place:
+      country: "Nyika"
+      region: "Dunhu / purovhinzi"
+      city: "Guta"
+      town: "Taundi"
+      village: "Musha"
+      district: "Nharaunda"
+    location_places_note: "Kana pasina chasarudzwa, chero nzvimbo. Sarudza Nyika chete kuti pave nenyika chete."
+    location_countries_label: "Ganhurira kunyika"
+    location_countries_add: "Wedzera nyika…"
+    location_cities_label: "Ganhurira kumaguta"
+    location_cities_add: "Tsvaga guta…"
+    location_cities_note: "Nzvimbo dziri mukati memaguta aya chete ndidzo dzinopihwa."
+    location_remove: "Bvisa"
   ask_submission_mailer:
     confirmation_subject: "Dhata reVerto yako yatumirwa kuAsk Verto"
     confirmation_heading: "Yatumirwa Kuti Iongororwe"
@@ -349,6 +364,14 @@ sn:
     join_have_account: "Une akaundi kare here?"
     join_sign_in: "Pinda"
     org_logo: "Logo ye%{org}"
+    location_search_placeholder:
+      any: "Tsvaga nzvimbo yako…"
+      country: "Tsvaga nyika yako…"
+      region: "Tsvaga dunhu kana purovhinzi yako…"
+      city: "Tsvaga guta rako…"
+      town: "Tsvaga taundi rako…"
+      village: "Tsvaga musha wako…"
+      district: "Tsvaga nharaunda kana dunhu rako…"
   # Placeholder CONTENT a new card of each type starts with — answer options,
   # scale labels, statements. Positional; keep every array's length exact.
   defaults:

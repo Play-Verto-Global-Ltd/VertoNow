@@ -162,6 +162,21 @@ id:
     nps_low_placeholder: "Terendah berarti…"
     nps_high_placeholder: "Tertinggi berarti…"
     body_placeholder: "Tambahkan teks isi (opsional)"
+    location_places_label: "Cari"
+    location_place:
+      country: "Negara"
+      region: "Wilayah / provinsi"
+      city: "Kota"
+      town: "Kota kecil"
+      village: "Desa"
+      district: "Kelurahan"
+    location_places_note: "Tanpa pilihan berarti tempat apa pun. Pilih Negara saja untuk hanya negara."
+    location_countries_label: "Batasi ke negara"
+    location_countries_add: "Tambah negara…"
+    location_cities_label: "Batasi ke kota"
+    location_cities_add: "Cari kota…"
+    location_cities_note: "Hanya tempat di dalam kota-kota ini yang ditawarkan."
+    location_remove: "Hapus"
   ask_submission_mailer:
     confirmation_subject: "Data Verto Anda dikirim ke Ask Verto"
     confirmation_heading: "Dikirim untuk ditinjau"
@@ -347,6 +362,14 @@ id:
     join_have_account: "Sudah punya akun?"
     join_sign_in: "Masuk"
     org_logo: "Logo %{org}"
+    location_search_placeholder:
+      any: "Cari tempatmu…"
+      country: "Cari negaramu…"
+      region: "Cari wilayah atau provinsimu…"
+      city: "Cari kotamu…"
+      town: "Cari kota kecilmu…"
+      village: "Cari desamu…"
+      district: "Cari kelurahan atau distrikmu…"
   defaults:
     range: ["Sangat tidak setuju", "Tidak setuju", "Netral", "Setuju", "Sangat setuju"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

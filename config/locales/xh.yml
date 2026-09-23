@@ -171,6 +171,21 @@ xh:
     nps_low_placeholder: "Esezantsi sithetha…"
     nps_high_placeholder: "Esiphezulu sithetha…"
     body_placeholder: "Yongeza umbhalo owongezelelekileyo (akunyanzelekile)"
+    location_places_label: "Khangela"
+    location_place:
+      country: "Ilizwe"
+      region: "Ingingqi / iphondo"
+      city: "Isixeko"
+      town: "Idolophu"
+      village: "Ilali"
+      district: "Ummandla"
+    location_places_note: "Ukuba akukhethwanga nto, nayiphi na indawo. Khetha iLizwe lodwa ukuze kube ngamazwe kuphela."
+    location_countries_label: "Nciphisa kumazwe"
+    location_countries_add: "Yongeza ilizwe…"
+    location_cities_label: "Nciphisa kwizixeko"
+    location_cities_add: "Khangela isixeko…"
+    location_cities_note: "Kunikezelwa kuphela iindawo ezingaphakathi kwezi zixeko."
+    location_remove: "Susa"
   ask_submission_mailer:
     confirmation_subject: "Idatha yakho yeVerto ithunyelwe kwiAsk Verto"
     confirmation_heading: "Ithunyelwe ukuze ihlolwe"
@@ -356,6 +371,14 @@ xh:
     join_have_account: "Sele unayo i-akhawunti?"
     join_sign_in: "Ngena"
     org_logo: "Ilogo ka-%{org}"
+    location_search_placeholder:
+      any: "Khangela indawo yakho…"
+      country: "Khangela ilizwe lakho…"
+      region: "Khangela ingingqi okanye iphondo lakho…"
+      city: "Khangela isixeko sakho…"
+      town: "Khangela idolophu yakho…"
+      village: "Khangela ilali yakho…"
+      district: "Khangela ummandla okanye isithili sakho…"
   # Umxholo wesikhundla iKHADI entsha yohlobo ngalunye eqala ngawo — iinketho
   # zempendulo, iileyibhile zomlinganiselo, iingxelo. Ngokungafaniyo
   # nolwakhiwo lwe-UI (olulandela ulwimi lomboni), ezi zisonjululwa kulwimi

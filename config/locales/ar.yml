@@ -162,6 +162,21 @@ ar:
     nps_low_placeholder: "الأدنى يعني…"
     nps_high_placeholder: "الأعلى يعني…"
     body_placeholder: "أضف نصًا توضيحيًا (اختياري)"
+    location_places_label: "البحث عن"
+    location_place:
+      country: "دولة"
+      region: "منطقة / ولاية"
+      city: "مدينة"
+      town: "بلدة"
+      village: "قرية"
+      district: "حيّ"
+    location_places_note: "عدم الاختيار يعني أي مكان. اختر «دولة» وحدها لعرض الدول فقط."
+    location_countries_label: "حصر في دول"
+    location_countries_add: "إضافة دولة…"
+    location_cities_label: "حصر في مدن"
+    location_cities_add: "ابحث عن مدينة…"
+    location_cities_note: "تُعرض الأماكن داخل هذه المدن فقط."
+    location_remove: "إزالة"
   ask_submission_mailer:
     confirmation_subject: "تم تقديم بيانات Verto الخاصة بك إلى Ask Verto"
     confirmation_heading: "قُدّم للمراجعة"
@@ -347,6 +362,14 @@ ar:
     join_have_account: "هل لديك حساب بالفعل؟"
     join_sign_in: "تسجيل الدخول"
     org_logo: "شعار %{org}"
+    location_search_placeholder:
+      any: "ابحث عن مكانك…"
+      country: "ابحث عن دولتك…"
+      region: "ابحث عن منطقتك أو ولايتك…"
+      city: "ابحث عن مدينتك…"
+      town: "ابحث عن بلدتك…"
+      village: "ابحث عن قريتك…"
+      district: "ابحث عن حيّك أو منطقتك…"
   defaults:
     range: ["غير موافق بشدة", "غير موافق", "محايد", "موافق", "موافق بشدة"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

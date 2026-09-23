@@ -172,6 +172,21 @@ st:
     nps_low_placeholder: "E tlase ka ho fetisisa e bolela…"
     nps_high_placeholder: "E hodimo ka ho fetisisa e bolela…"
     body_placeholder: "Kenya sengoloa se eketsehileng (ha se tlamo)"
+    location_places_label: "Batla"
+    location_place:
+      country: "Naha"
+      region: "Sebaka / profensi"
+      city: "Toropo e kgolo"
+      town: "Toropo"
+      village: "Motse"
+      district: "Setereke"
+    location_places_note: "Ha ho sa kgethwa letho, ke sebaka sefe kapa sefe. Kgetha Naha feela bakeng sa dinaha feela."
+    location_countries_label: "Lekanyetsa ho dinaha"
+    location_countries_add: "Kenya naha…"
+    location_cities_label: "Lekanyetsa ho ditoropo"
+    location_cities_add: "Batla toropo…"
+    location_cities_note: "Ho fanwa feela ka dibaka tse ka hare ho ditoropo tsena."
+    location_remove: "Tlosa"
   ask_submission_mailer:
     confirmation_subject: "Datha ya hao ya Verto e rometswe ho Ask Verto"
     confirmation_heading: "E rometswe bakeng sa tlhahlobo"
@@ -357,6 +372,14 @@ st:
     join_have_account: "U se u na le ak'haonte?"
     join_sign_in: "Kena"
     org_logo: "Logo ea %{org}"
+    location_search_placeholder:
+      any: "Batla sebaka sa hao…"
+      country: "Batla naha ya hao…"
+      region: "Batla sebaka kapa profensi ya hao…"
+      city: "Batla toropo e kgolo ya hao…"
+      town: "Batla toropo ya hao…"
+      village: "Batla motse wa hao…"
+      district: "Batla setereke kapa karolo ya hao…"
   # Placeholder CONTENT a new card of each type starts with — answer options,
   # scale labels, statements. Unlike UI chrome (which follows the viewer's
   # locale), these are resolved in the Verto's default locale, because they are

@@ -162,6 +162,21 @@ tr:
     nps_low_placeholder: "En düşük şu demek…"
     nps_high_placeholder: "En yüksek şu demek…"
     body_placeholder: "Açıklama metni ekleyin (isteğe bağlı)"
+    location_places_label: "Ara"
+    location_place:
+      country: "Ülke"
+      region: "Bölge / eyalet"
+      city: "Şehir"
+      town: "Kasaba"
+      village: "Köy"
+      district: "Mahalle"
+    location_places_note: "Seçim yoksa her yer aranır. Yalnızca ülkeler için tek başına Ülke'yi seçin."
+    location_countries_label: "Ülkelerle sınırla"
+    location_countries_add: "Ülke ekle…"
+    location_cities_label: "Şehirlerle sınırla"
+    location_cities_add: "Şehir ara…"
+    location_cities_note: "Yalnızca bu şehirlerin içindeki yerler sunulur."
+    location_remove: "Kaldır"
   ask_submission_mailer:
     confirmation_subject: "Verto verin Ask Verto'ya gönderildi"
     confirmation_heading: "İncelemeye gönderildi"
@@ -347,6 +362,14 @@ tr:
     join_have_account: "Zaten hesabın var mı?"
     join_sign_in: "Giriş yap"
     org_logo: "%{org} logosu"
+    location_search_placeholder:
+      any: "Yerini ara…"
+      country: "Ülkeni ara…"
+      region: "Bölgeni veya eyaletini ara…"
+      city: "Şehrini ara…"
+      town: "Kasabanı ara…"
+      village: "Köyünü ara…"
+      district: "Mahalleni veya ilçeni ara…"
   defaults:
     range: ["Kesinlikle katılmıyorum", "Katılmıyorum", "Kararsızım", "Katılıyorum", "Kesinlikle katılıyorum"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

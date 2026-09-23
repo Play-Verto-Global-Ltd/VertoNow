@@ -4498,6 +4498,45 @@
 .response-scale-btn.is-active {
   background: #01EACB; border-color: #01EACB; color: #1C2034;
 }
+
+/* A location card's "Search for" block (location_scope_controller.js): the six
+   place levels as the same toggle buttons as the scales above, but wrapping
+   three to a row — six equal slices of the panel are too narrow to read — then
+   the countries and cities the search stays inside, as removable chips. */
+.location-scope { gap: 8px; }
+.location-scope-places { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.location-scope-places .response-scale-btn { padding: 6px 4px; font-size: 12px; }
+.location-scope .card-flag-note { margin: 0; }
+.location-scope .card-flag-note[hidden] { display: none; }
+.location-scope-cities { display: flex; flex-direction: column; gap: 7px; }
+.location-scope-cities[hidden] { display: none; }
+.location-scope-chips { display: flex; flex-wrap: wrap; gap: 5px; list-style: none; margin: 0; padding: 0; }
+.location-scope-chips:empty { display: none; }
+.location-scope-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 4px 3px 10px; border-radius: 100px;
+  background: rgba(1,234,203,0.14); border: 1px solid rgba(1,234,203,0.4);
+  color: #fff; font-family: "ABeeZee", sans-serif; font-size: 12px;
+}
+.location-scope-chip-remove {
+  width: 20px; height: 20px; border-radius: 50%; border: none; cursor: pointer;
+  background: transparent; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1;
+}
+.location-scope-chip-remove:hover { background: rgba(255,255,255,0.14); color: #fff; }
+.location-scope-select, .location-scope-input {
+  width: 100%; box-sizing: border-box; padding: 7px 10px; border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06);
+  color: #fff; font-family: "ABeeZee", sans-serif; font-size: 13px; outline: none;
+}
+.location-scope-select option { color: #1C2034; }
+.location-scope-select:focus, .location-scope-input:focus { border-color: #01EACB; }
+.location-scope-input::placeholder { color: rgba(255,255,255,0.5); }
+.location-scope-city-search { position: relative; }
+.location-scope-results {
+  list-style: none; margin: 4px 0 0; padding: 6px; max-height: 220px; overflow-y: auto;
+  background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+.location-scope-results[hidden] { display: none; }
 .card-flag input:focus-visible + .card-flag-track { outline: 2px solid #01EACB; outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   .card-flag-track, .card-flag-track::after { transition: none; }

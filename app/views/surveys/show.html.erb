@@ -1178,6 +1178,57 @@
                  data-survey-editor-target="maxChoicesPicker"
                  aria-label="<%= t("card.max_choices_label") %>"></div>
           </div>
+
+          <%# Location cards only: what the respondent's place search offers
+              (LocationScope). Any mix of the six levels, none meaning any
+              place; then optionally which countries, and which cities in
+              them, it stays inside. Country alone is "countries only", and a
+              country can't be inside a city, so the city limit hides for it.
+              Writes the selected card's data attributes like every switch in
+              this block; survey-editor#serialize reads them back. The
+              placeholders ride here so the card's search box can reword
+              itself as levels are ticked, without a reload. %>
+          <div class="card-flag-scale location-scope" data-survey-editor-target="locationScope" hidden
+               data-controller="location-scope"
+               data-location-scope-cities-url-value="<%= location_cities_path %>"
+               data-location-scope-placeholders-value="<%= ([ [ "none", t("player.region_search_placeholder") ], [ "any", t("player.location_search_placeholder.any") ] ] + LocationScope::PLACE_TYPES.map { |p| [ p, t("player.location_search_placeholder.#{p}") ] }).to_h.to_json %>"
+               data-action="location-scope:changed->survey-editor#markDirty">
+            <span class="card-flag-label"><%= t("card.location_places_label") %></span>
+            <div class="location-scope-places" role="group" aria-label="<%= t("card.location_places_label") %>">
+              <% LocationScope::PLACE_TYPES.each do |place| %>
+                <button type="button" class="response-scale-btn" aria-pressed="false"
+                        data-location-scope-target="place" data-place="<%= place %>"
+                        data-action="click->location-scope#togglePlace"><%= t("card.location_place.#{place}") %></button>
+              <% end %>
+            </div>
+            <div class="card-flag-note" data-location-scope-target="placesNote"><%= t("card.location_places_note") %></div>
+
+            <span class="card-flag-label"><%= t("card.location_countries_label") %></span>
+            <ul class="location-scope-chips" data-location-scope-target="countryChips"></ul>
+            <select class="location-scope-select" data-location-scope-target="countrySelect"
+                    aria-label="<%= t("card.location_countries_label") %>"
+                    data-action="change->location-scope#addCountry">
+              <option value=""><%= t("card.location_countries_add") %></option>
+              <% WorldRegions.options.each do |name, code| %>
+                <option value="<%= code %>"><%= name %></option>
+              <% end %>
+            </select>
+
+            <div class="location-scope-cities" data-location-scope-target="citiesSection">
+              <span class="card-flag-label"><%= t("card.location_cities_label") %></span>
+              <ul class="location-scope-chips" data-location-scope-target="cityChips"></ul>
+              <div class="location-scope-city-search">
+                <input type="text" autocomplete="off" maxlength="80" class="location-scope-input"
+                       placeholder="<%= t("card.location_cities_add") %>"
+                       aria-label="<%= t("card.location_cities_label") %>"
+                       data-location-scope-target="cityInput"
+                       data-action="input->location-scope#searchCities keydown->location-scope#cityKeydown">
+                <ul class="location-scope-results" data-location-scope-target="cityResults" hidden></ul>
+              </div>
+              <div class="card-flag-note"><%= t("card.location_cities_note") %></div>
+            </div>
+            <template data-location-scope-target="removeLabel"><%= t("card.location_remove") %></template>
+          </div>
         </div>
 
         <%# Respondent-code card only. It cannot live in .card-flags above:

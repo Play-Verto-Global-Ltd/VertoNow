@@ -162,6 +162,21 @@ ko:
     nps_low_placeholder: "가장 낮은 값의 의미…"
     nps_high_placeholder: "가장 높은 값의 의미…"
     body_placeholder: "본문 추가 (선택 사항)"
+    location_places_label: "검색 대상"
+    location_place:
+      country: "국가"
+      region: "지역 / 주"
+      city: "시"
+      town: "읍"
+      village: "마을"
+      district: "동네"
+    location_places_note: "선택하지 않으면 모든 장소가 대상입니다. 국가만 선택하면 국가만 표시됩니다."
+    location_countries_label: "국가로 제한"
+    location_countries_add: "국가 추가…"
+    location_cities_label: "도시로 제한"
+    location_cities_add: "도시 검색…"
+    location_cities_note: "이 도시 안의 장소만 표시됩니다."
+    location_remove: "삭제"
   ask_submission_mailer:
     confirmation_subject: "Verto 데이터가 Ask Verto에 제출되었습니다"
     confirmation_heading: "검토 요청 제출됨"
@@ -347,6 +362,14 @@ ko:
     join_have_account: "이미 계정이 있으신가요?"
     join_sign_in: "로그인"
     org_logo: "%{org} 로고"
+    location_search_placeholder:
+      any: "장소를 검색하세요…"
+      country: "국가를 검색하세요…"
+      region: "지역 또는 주를 검색하세요…"
+      city: "도시를 검색하세요…"
+      town: "읍을 검색하세요…"
+      village: "마을을 검색하세요…"
+      district: "동네나 구를 검색하세요…"
   defaults:
     range: ["전혀 동의하지 않는다", "동의하지 않는다", "보통이다", "동의한다", "매우 동의한다"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

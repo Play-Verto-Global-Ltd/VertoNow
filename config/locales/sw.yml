@@ -162,6 +162,21 @@ sw:
     nps_low_placeholder: "Ya chini kabisa inamaanisha…"
     nps_high_placeholder: "Ya juu kabisa inamaanisha…"
     body_placeholder: "Ongeza maandishi ya ziada (si lazima)"
+    location_places_label: "Tafuta"
+    location_place:
+      country: "Nchi"
+      region: "Mkoa / jimbo"
+      city: "Jiji"
+      town: "Mji"
+      village: "Kijiji"
+      district: "Mtaa"
+    location_places_note: "Bila kuchagua ni mahali popote. Chagua Nchi pekee ili kuonyesha nchi tu."
+    location_countries_label: "Weka kikomo kwa nchi"
+    location_countries_add: "Ongeza nchi…"
+    location_cities_label: "Weka kikomo kwa majiji"
+    location_cities_add: "Tafuta jiji…"
+    location_cities_note: "Maeneo yaliyo ndani ya majiji haya pekee ndiyo yanaonyeshwa."
+    location_remove: "Ondoa"
   ask_submission_mailer:
     confirmation_subject: "Data yako ya Verto imewasilishwa kwa Ask Verto"
     confirmation_heading: "Imewasilishwa kwa ukaguzi"
@@ -347,6 +362,14 @@ sw:
     join_have_account: "Tayari una akaunti?"
     join_sign_in: "Ingia"
     org_logo: "Nembo ya %{org}"
+    location_search_placeholder:
+      any: "Tafuta mahali pako…"
+      country: "Tafuta nchi yako…"
+      region: "Tafuta mkoa au jimbo lako…"
+      city: "Tafuta jiji lako…"
+      town: "Tafuta mji wako…"
+      village: "Tafuta kijiji chako…"
+      district: "Tafuta mtaa au wilaya yako…"
   defaults:
     range: ["Sikubaliani kabisa", "Sikubaliani", "Sina upande", "Nakubaliana", "Nakubaliana kabisa"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

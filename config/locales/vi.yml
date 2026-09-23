@@ -162,6 +162,21 @@ vi:
     nps_low_placeholder: "Thấp nhất nghĩa là…"
     nps_high_placeholder: "Cao nhất nghĩa là…"
     body_placeholder: "Thêm nội dung mô tả (không bắt buộc)"
+    location_places_label: "Tìm theo"
+    location_place:
+      country: "Quốc gia"
+      region: "Vùng / tỉnh"
+      city: "Thành phố"
+      town: "Thị trấn"
+      village: "Làng"
+      district: "Khu phố"
+    location_places_note: "Không chọn nghĩa là mọi nơi. Chỉ chọn Quốc gia để chỉ hiện quốc gia."
+    location_countries_label: "Giới hạn theo quốc gia"
+    location_countries_add: "Thêm quốc gia…"
+    location_cities_label: "Giới hạn theo thành phố"
+    location_cities_add: "Tìm thành phố…"
+    location_cities_note: "Chỉ hiện những nơi trong các thành phố này."
+    location_remove: "Xóa"
   ask_submission_mailer:
     confirmation_subject: "Dữ liệu Verto của bạn đã được gửi tới Ask Verto"
     confirmation_heading: "Đã gửi để duyệt"
@@ -347,6 +362,14 @@ vi:
     join_have_account: "Bạn đã có tài khoản?"
     join_sign_in: "Đăng nhập"
     org_logo: "Logo của %{org}"
+    location_search_placeholder:
+      any: "Tìm nơi của bạn…"
+      country: "Tìm quốc gia của bạn…"
+      region: "Tìm vùng hoặc tỉnh của bạn…"
+      city: "Tìm thành phố của bạn…"
+      town: "Tìm thị trấn của bạn…"
+      village: "Tìm làng của bạn…"
+      district: "Tìm khu phố hoặc quận của bạn…"
   defaults:
     range: ["Hoàn toàn không đồng ý", "Không đồng ý", "Trung lập", "Đồng ý", "Hoàn toàn đồng ý"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

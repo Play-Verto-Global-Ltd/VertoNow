@@ -172,6 +172,21 @@ tn:
     nps_low_placeholder: "Se se kwa tlase go gotlhe se kaya…"
     nps_high_placeholder: "Se se kwa godimo go gotlhe se kaya…"
     body_placeholder: "Tsenya mokwalo o oketsegileng (ga go patelesege)"
+    location_places_label: "Batla"
+    location_place:
+      country: "Naga"
+      region: "Kgaolo / porofense"
+      city: "Toropo e kgolo"
+      town: "Toropo"
+      village: "Motse"
+      district: "Kgaolwana"
+    location_places_note: "Fa go sa tlhophiwa sepe, ke lefelo lefe kapa lefe. Tlhopha Naga fela go bona dinaga fela."
+    location_countries_label: "Lekanyetsa mo dinageng"
+    location_countries_add: "Tsenya naga…"
+    location_cities_label: "Lekanyetsa mo ditoropong"
+    location_cities_add: "Batla toropo…"
+    location_cities_note: "Go neelwa fela mafelo a a mo teng ga ditoropo tseno."
+    location_remove: "Tlosa"
   ask_submission_mailer:
     confirmation_subject: "Data ya gago ya Verto e rometswe go Ask Verto"
     confirmation_heading: "E rometswe go sekasekwa"
@@ -357,6 +372,14 @@ tn:
     join_have_account: "A o setse o na le akhaonto?"
     join_sign_in: "Tsena"
     org_logo: "Logo ya %{org}"
+    location_search_placeholder:
+      any: "Batla lefelo la gago…"
+      country: "Batla naga ya gago…"
+      region: "Batla kgaolo kgotsa porofense ya gago…"
+      city: "Batla toropo e kgolo ya gago…"
+      town: "Batla toropo ya gago…"
+      village: "Batla motse wa gago…"
+      district: "Batla kgaolwana kgotsa setereke sa gago…"
   # Placeholder CONTENT a new card of each type starts with — answer options,
   # scale labels, statements. Unlike UI chrome (which follows the viewer's
   # locale), these are resolved in the Verto's default locale, because they are

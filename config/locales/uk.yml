@@ -162,6 +162,21 @@ uk:
     nps_low_placeholder: "Мінімум означає…"
     nps_high_placeholder: "Максимум означає…"
     body_placeholder: "Додайте основний текст (необов'язково)"
+    location_places_label: "Шукати"
+    location_place:
+      country: "Країна"
+      region: "Регіон / штат"
+      city: "Місто"
+      town: "Містечко"
+      village: "Село"
+      district: "Район"
+    location_places_note: "Якщо нічого не вибрано — будь-яке місце. Виберіть лише «Країна», щоб пропонувати тільки країни."
+    location_countries_label: "Обмежити країнами"
+    location_countries_add: "Додати країну…"
+    location_cities_label: "Обмежити містами"
+    location_cities_add: "Знайти місто…"
+    location_cities_note: "Пропонуються лише місця в цих містах."
+    location_remove: "Видалити"
   ask_submission_mailer:
     confirmation_subject: "Ваші дані Verto надіслано в Ask Verto"
     confirmation_heading: "Надіслано на перевірку"
@@ -347,6 +362,14 @@ uk:
     join_have_account: "Уже маєте обліковий запис?"
     join_sign_in: "Увійти"
     org_logo: "Логотип %{org}"
+    location_search_placeholder:
+      any: "Знайдіть своє місце…"
+      country: "Знайдіть свою країну…"
+      region: "Знайдіть свій регіон або штат…"
+      city: "Знайдіть своє місто…"
+      town: "Знайдіть своє містечко…"
+      village: "Знайдіть своє село…"
+      district: "Знайдіть свій район або округ…"
   defaults:
     range: ["Цілком не погоджуюсь", "Не погоджуюсь", "Нейтрально", "Погоджуюсь", "Цілком погоджуюсь"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

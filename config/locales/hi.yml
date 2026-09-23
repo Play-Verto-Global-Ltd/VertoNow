@@ -162,6 +162,21 @@ hi:
     nps_low_placeholder: "सबसे कम का अर्थ…"
     nps_high_placeholder: "सबसे अधिक का अर्थ…"
     body_placeholder: "मुख्य पाठ जोड़ें (वैकल्पिक)"
+    location_places_label: "इसके लिए खोजें"
+    location_place:
+      country: "देश"
+      region: "क्षेत्र / राज्य"
+      city: "शहर"
+      town: "कस्बा"
+      village: "गाँव"
+      district: "मोहल्ला"
+    location_places_note: "कुछ न चुनने पर कोई भी जगह। सिर्फ़ देशों के लिए केवल देश चुनें।"
+    location_countries_label: "देशों तक सीमित करें"
+    location_countries_add: "देश जोड़ें…"
+    location_cities_label: "शहरों तक सीमित करें"
+    location_cities_add: "शहर खोजें…"
+    location_cities_note: "केवल इन शहरों के भीतर की जगहें दिखाई जाती हैं।"
+    location_remove: "हटाएँ"
   ask_submission_mailer:
     confirmation_subject: "आपका Verto डेटा Ask Verto को सबमिट हुआ"
     confirmation_heading: "समीक्षा के लिए भेजा गया"
@@ -347,6 +362,14 @@ hi:
     join_have_account: "पहले से खाता है?"
     join_sign_in: "साइन इन करें"
     org_logo: "%{org} का लोगो"
+    location_search_placeholder:
+      any: "अपनी जगह खोजें…"
+      country: "अपना देश खोजें…"
+      region: "अपना क्षेत्र या राज्य खोजें…"
+      city: "अपना शहर खोजें…"
+      town: "अपना कस्बा खोजें…"
+      village: "अपना गाँव खोजें…"
+      district: "अपना मोहल्ला या ज़िला खोजें…"
   defaults:
     range: ["बिल्कुल असहमत", "असहमत", "तटस्थ", "सहमत", "पूरी तरह सहमत"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

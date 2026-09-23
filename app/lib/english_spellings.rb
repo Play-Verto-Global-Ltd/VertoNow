@@ -28,6 +28,9 @@ module EnglishSpellings
     "analysed"      => "analyzed",      "unanalysed"    => "unanalyzed",
     "cancelled"     => "canceled",      "labelled"      => "labeled",
     "programme"     => "program",
+    # SUSPECT's `our$` shapes only see the word's END, so a compound like this
+    # one passes the guard unnoticed — it has to be listed by hand.
+    "neighbourhood" => "neighborhood",  "neighbourhoods" => "neighborhoods",
     # Both forms: SUSPECT catches a bare `ise$` but not `ises$`, so "pluralises"
     # had been sitting in an en.yml comment undetected while "pluralise" three
     # lines above it failed the guard. A list that decides one and not the other

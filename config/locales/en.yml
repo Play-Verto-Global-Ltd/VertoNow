@@ -98,6 +98,25 @@ en:
     # Survey::MULTI_SELECT_TYPES.
     max_choices_label: "Answers they can pick"
     max_choices_all: "All"
+    # A location card's "Search for" block in the editor (LocationScope): the
+    # kinds of place the respondent's search offers, and the countries and
+    # cities it stays inside. The six levels are named for what they are
+    # everywhere, not in one country.
+    location_places_label: "Search for"
+    location_place:
+      country: "Country"
+      region: "Region / state"
+      city: "City"
+      town: "Town"
+      village: "Village"
+      district: "Neighbourhood"
+    location_places_note: "None selected means any place. Choose Country on its own for countries only."
+    location_countries_label: "Limit to countries"
+    location_countries_add: "Add a country…"
+    location_cities_label: "Limit to cities"
+    location_cities_add: "Search for a city…"
+    location_cities_note: "Only places inside these cities are offered."
+    location_remove: "Remove"
     # The eyebrow above a CAPPED select-many card, in place of the per-type
     # caption below. Never interpolated with 1 — the floor is two.
     eyebrow_max: "Choose up to %{n}"
@@ -291,6 +310,16 @@ en:
   player:
     compare_promise: "Finish to see how your answers compare with everyone else's."
     region_search_placeholder: "Search for your city or region…"
+    # The same search box once a creator has narrowed it to one kind of place
+    # (LocationScope.placeholder_key); `any` is for several kinds at once.
+    location_search_placeholder:
+      any: "Search for your place…"
+      country: "Search for your country…"
+      region: "Search for your region or state…"
+      city: "Search for your city…"
+      town: "Search for your town…"
+      village: "Search for your village…"
+      district: "Search for your neighbourhood or district…"
     region_search_change: "Change"
     region_search_credit: "Search by OpenStreetMap"
     see_regions: "See how regions answered"

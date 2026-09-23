@@ -5,7 +5,8 @@
       card — the card hash (must respond to `[]` for "type", "options", etc.)
       mode — :editor, :preview, or :player (default: :preview)
       card_index — this card's position in the deck. Player only, and only used
-        to place the tokenisation intro; nil everywhere else.
+        to place the tokenisation intro and to tell the location search which
+        card's narrowing to apply; nil everywhere else.
 
     The :editor mode adds inline edit chrome: contenteditable text,
     "card-editor" controller alongside "picker", per-option delete buttons,
@@ -1054,10 +1055,14 @@
           <div class="welcome-location-search" data-controller="location-search"
                <% if @survey.publish_token.present? %>
                  data-location-search-url-value="<%= player_location_search_url(@survey.publish_token) %>"
-               <% end %>>
+               <% end %>
+               <%# Which card this is, so the search runs under the creator's
+                   narrowing saved on it (LocationScope) — the server reads the
+                   scope off the saved card, never from the request. %>
+               <% unless card_index.nil? %>data-location-search-card-value="<%= card_index %>"<% end %>>
             <div class="location-search-input-wrap">
               <input type="text" autocomplete="off" maxlength="80" class="location-search-field"
-                     placeholder="<%= t("player.region_search_placeholder") %>"
+                     placeholder="<%= t(LocationScope.placeholder_key(card["location_places"])) %>"
                      data-location-search-target="input"
                      data-action="input->location-search#search keydown->location-search#keydown" />
               <ul class="location-search-results" data-location-search-target="results" hidden></ul>

@@ -162,6 +162,21 @@ ja:
     nps_low_placeholder: "最低は…という意味"
     nps_high_placeholder: "最高は…という意味"
     body_placeholder: "本文を追加（任意）"
+    location_places_label: "検索対象"
+    location_place:
+      country: "国"
+      region: "地域・州"
+      city: "市"
+      town: "町"
+      village: "村"
+      district: "地区"
+    location_places_note: "未選択の場合はすべての場所が対象です。国だけを選ぶと国のみになります。"
+    location_countries_label: "国で絞り込む"
+    location_countries_add: "国を追加…"
+    location_cities_label: "都市で絞り込む"
+    location_cities_add: "都市を検索…"
+    location_cities_note: "これらの都市内の場所だけが表示されます。"
+    location_remove: "削除"
   ask_submission_mailer:
     confirmation_subject: "VertoデータをAsk Vertoに提出しました"
     confirmation_heading: "審査に提出しました"
@@ -347,6 +362,14 @@ ja:
     join_have_account: "すでにアカウントをお持ちですか？"
     join_sign_in: "サインイン"
     org_logo: "%{org} のロゴ"
+    location_search_placeholder:
+      any: "場所を検索…"
+      country: "国を検索…"
+      region: "地域・州を検索…"
+      city: "市を検索…"
+      town: "町を検索…"
+      village: "村を検索…"
+      district: "地区を検索…"
   defaults:
     range: ["全くそう思わない", "そう思わない", "どちらとも言えない", "そう思う", "強くそう思う"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

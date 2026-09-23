@@ -1397,6 +1397,11 @@ class Survey < ApplicationRecord
           c.delete("heritage_country")
         end
       end
+
+      # A location card's search narrowing — places, countries, cities. Kept
+      # only on a location card, and each key only while it narrows anything
+      # (LocationScope.sanitize_card!).
+      LocationScope.sanitize_card!(c)
       # A range card's reaction-animation theme — only a known slug survives, and
       # only on a range card, so the helper always resolves to a real asset
       # folder (NpsHelper owns the theme list).

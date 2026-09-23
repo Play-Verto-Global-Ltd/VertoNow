@@ -162,6 +162,21 @@ es:
     nps_low_placeholder: "El más bajo significa…"
     nps_high_placeholder: "El más alto significa…"
     body_placeholder: "Añade texto adicional (opcional)"
+    location_places_label: "Buscar"
+    location_place:
+      country: "País"
+      region: "Región / estado"
+      city: "Ciudad"
+      town: "Pueblo"
+      village: "Aldea"
+      district: "Barrio"
+    location_places_note: "Sin selección se busca cualquier lugar. Elige solo País para buscar únicamente países."
+    location_countries_label: "Limitar a países"
+    location_countries_add: "Añadir un país…"
+    location_cities_label: "Limitar a ciudades"
+    location_cities_add: "Buscar una ciudad…"
+    location_cities_note: "Solo se ofrecen lugares dentro de estas ciudades."
+    location_remove: "Quitar"
   ask_submission_mailer:
     confirmation_subject: "Tus datos de Verto se enviaron a Ask Verto"
     confirmation_heading: "Enviado a revisión"
@@ -347,6 +362,14 @@ es:
     join_have_account: "¿Ya tienes una cuenta?"
     join_sign_in: "Iniciar sesión"
     org_logo: "Logotipo de %{org}"
+    location_search_placeholder:
+      any: "Busca tu lugar…"
+      country: "Busca tu país…"
+      region: "Busca tu región o estado…"
+      city: "Busca tu ciudad…"
+      town: "Busca tu pueblo…"
+      village: "Busca tu aldea…"
+      district: "Busca tu barrio o distrito…"
   defaults:
     range: ["Totalmente en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Totalmente de acuerdo"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

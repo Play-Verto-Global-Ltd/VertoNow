@@ -112,7 +112,7 @@ const UNDO_FIELD_SELECTOR = "[contenteditable='true'], input, textarea"
 export default class extends Controller {
   static targets = ["card", "saveButton", "status", "tab", "feed", "localeCode", "vertoScore", "scoreBoard", "panelLight",
     "cardFlags", "panelOther", "panelRequired", "panelAskOnce", "responseScale",
-                    "maxChoices", "maxChoicesPicker", "npsClassic", "panelNpsClassic",
+                    "maxChoices", "maxChoicesPicker", "npsClassic", "panelNpsClassic", "locationScope",
                     "recallToggle", "panelRecall", "vertoTitle", "vertoTheme", "undoBtn", "redoBtn"]
   static values  = {
     url: String, title: String, theme: String, description: String,
@@ -2090,6 +2090,18 @@ export default class extends Controller {
     this._syncResponseScale(card)
     this._syncMaxChoices(card)
     this._syncNpsClassic(card)
+    this._syncLocationScope(card)
+  }
+
+  // Location cards only: the "Search for" block (location_scope_controller),
+  // which owns its own markup and writes the card's location data attributes.
+  _syncLocationScope(card) {
+    if (!this.hasLocationScopeTarget) return
+    const isLocation = card?.dataset.cardInput === "location"
+    this.locationScopeTarget.hidden = !isLocation
+    if (!isLocation) return
+    const scope = this.application.getControllerForElementAndIdentifier(this.locationScopeTarget, "location-scope")
+    scope?.load(card)
   }
 
   // NPS cards only: is this card still on the classic 0-10?
@@ -2775,6 +2787,20 @@ export default class extends Controller {
       // tailored — a later country change would then have nothing to compare
       // against. Sanitised server-side against WorldRegions.
       if (card.dataset.cardHeritageCountry) out.heritage_country = card.dataset.cardHeritageCountry
+      // A location card's search narrowing (LocationScope) — written by the
+      // location-scope panel, JSON on the wrap like the pages and options.
+      // Nothing on the card redraws it, so without carrying it here the first
+      // autosave would drop it. Sanitised server-side.
+      if (card.dataset.cardInput === "location") {
+        for (const [attr, key] of [["cardLocationPlaces", "location_places"],
+                                   ["cardLocationCountries", "location_countries"],
+                                   ["cardLocationCities", "location_cities"]]) {
+          try {
+            const v = JSON.parse(card.dataset[attr] || "[]")
+            if (Array.isArray(v) && v.length) out[key] = v
+          } catch (_) { /* drop malformed */ }
+        }
+      }
 
       // Common Question provenance — the ids that let results aggregate the
       // same question across Vertos. Nothing in the editor displays them, so

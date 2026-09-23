@@ -162,6 +162,21 @@ he:
     nps_low_placeholder: "הנמוך ביותר פירושו…"
     nps_high_placeholder: "הגבוה ביותר פירושו…"
     body_placeholder: "הוסיפו טקסט מלווה (אופציונלי)"
+    location_places_label: "חיפוש לפי"
+    location_place:
+      country: "מדינה"
+      region: "אזור / מחוז"
+      city: "עיר"
+      town: "עיירה"
+      village: "כפר"
+      district: "שכונה"
+    location_places_note: "ללא בחירה – כל מקום. בחרו רק „מדינה” כדי להציג מדינות בלבד."
+    location_countries_label: "הגבלה למדינות"
+    location_countries_add: "הוספת מדינה…"
+    location_cities_label: "הגבלה לערים"
+    location_cities_add: "חיפוש עיר…"
+    location_cities_note: "מוצגים רק מקומות בתוך הערים האלה."
+    location_remove: "הסרה"
   ask_submission_mailer:
     confirmation_subject: "נתוני ה-Verto שלכם נשלחו ל-Ask Verto"
     confirmation_heading: "נשלח לבדיקה"
@@ -347,6 +362,14 @@ he:
     join_have_account: "כבר יש לכם חשבון?"
     join_sign_in: "התחברות"
     org_logo: "הלוגו של %{org}"
+    location_search_placeholder:
+      any: "חפשו את המקום שלכם…"
+      country: "חפשו את המדינה שלכם…"
+      region: "חפשו את האזור או המחוז שלכם…"
+      city: "חפשו את העיר שלכם…"
+      town: "חפשו את העיירה שלכם…"
+      village: "חפשו את הכפר שלכם…"
+      district: "חפשו את השכונה או הרובע שלכם…"
   defaults:
     range: ["מאוד לא מסכים", "לא מסכים", "ניטרלי", "מסכים", "מסכים מאוד"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

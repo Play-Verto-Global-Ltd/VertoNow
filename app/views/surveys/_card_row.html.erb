@@ -47,6 +47,12 @@
          Demographics tiles — a keyless birth-date card must still grey Age. %>
      <% if (dk = DemographicQuestions.key_for(card)) %>data-card-demographic-key="<%= dk %>"<% end %>
      <% if card['heritage_country'].present? %>data-card-heritage-country="<%= card['heritage_country'] %>"<% end %>
+     <%# A location card's search narrowing (LocationScope). Edited by the
+         location-scope panel; like everything here it must survive the DOM
+         round-trip autosave rebuilds each card from. %>
+     <% if card['location_places'].present? %>data-card-location-places="<%= Array(card['location_places']).to_json %>"<% end %>
+     <% if card['location_countries'].present? %>data-card-location-countries="<%= Array(card['location_countries']).to_json %>"<% end %>
+     <% if card['location_cities'].present? %>data-card-location-cities="<%= Array(card['location_cities']).to_json %>"<% end %>
      data-card-options="<%= Array(card['options']).to_json %>"
      data-card-pages="<%= Array(card['pages']).to_json %>"
      data-card-option-images="<%= Array(card['option_images']).to_json %>"

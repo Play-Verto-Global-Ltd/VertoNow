@@ -14,6 +14,12 @@ require "uri"
 # ever enters this app's data model; storage stays exactly as coarse as the
 # existing self-declared country+area fields it replaces.
 #
+# Two things read a result's `boundingbox`, and neither lets it out: a search
+# narrowed to several cities compares each result's box with the cities' and
+# then drops it, and the editor's city picker (search_cities) returns a
+# CITY's box to the creator who is configuring a card. A respondent's pick is
+# still resolved to names and nothing else.
+#
 # Provider: the public OpenStreetMap Nominatim server enforces a strict usage
 # policy and, in practice, returns HTTP 403 for server-side calls from cloud /
 # datacenter IPs — which is where this app runs. So when LOCATIONIQ_API_KEY is
@@ -41,17 +47,30 @@ class NominatimClient
   # LocationIQ's free tier is 2/second. Default to the stricter of the two and
   # let an operator raise it to match whatever plan they're actually on.
   DEFAULT_MAX_RPS = 1
+  # How many results a narrowed search asks for before filtering down.
+  MAX_FETCH = 10
   USER_AGENT   = "Playverto/1.0 (https://playverto.app; support@playverto.app)".freeze
 
   class << self
-    # Returns an array of { display_name:, city:, region:, country:, country_code: }
-    # (possibly empty). Never raises — any network/parse/non-200 error is
-    # logged and yields [] so the search box just shows no suggestions.
-    def search(query:, limit: 5)
+    # Returns an array of { display_name:, name:, place_type:, city:, region:,
+    # country:, country_code: } (possibly empty). Never raises — any
+    # network/parse/non-200 error is logged and yields [] so the search box just
+    # shows no suggestions.
+    #
+    # The scope (see LocationScope) is the creator's narrowing of a location
+    # card: `places` keeps only those kinds of place, `countries` and `cities`
+    # keep the search inside them. All empty searches exactly as this always
+    # did. `locale` asks for place names in the respondent's language.
+    def search(query:, limit: 5, places: [], countries: [], cities: [], locale: nil)
       q = query.to_s.strip
       return [] if q.length < MIN_QUERY_LEN
 
-      cache_key = "geocode_search:v2:#{provider}:#{q.downcase}:#{limit}"
+      places    = LocationScope.sanitize_places(places)
+      countries = LocationScope.sanitize_countries(countries)
+      cities    = LocationScope.sanitize_cities(cities, countries: countries)
+      locale    = locale.to_s.presence
+
+      cache_key = search_cache_key(q, limit, places, countries, cities, locale)
       cached = Rails.cache.read(cache_key)
       return cached if cached
 
@@ -65,10 +84,68 @@ class NominatimClient
         return []
       end
 
-      body    = get_json(endpoint, request_params(q, limit))
-      results = Array(body).filter_map { |place| normalize(place) }
+      # A narrowed search asks for more than it shows, because the type filter
+      # below throws some away — ask for five and keep "towns only" and a
+      # respondent typing a town that shares its name with a region might see
+      # nothing at all.
+      scoped = places.any? || cities.any?
+      params = request_params(q, scoped ? MAX_FETCH : limit)
+      params[:countrycodes] = (countries + cities.map { |c| c["country_code"] }).uniq.map(&:downcase).join(",") if countries.any? || cities.any?
+      params[:"accept-language"] = locale if locale
+      feature = feature_type_for(places)
+      params[:featureType] = feature if feature
+      if cities.any?
+        s, n, w, e = union_bbox(cities.map { |c| c["bbox"] })
+        params[:viewbox] = [ w, n, e, s ].join(",")
+        params[:bounded] = 1
+      end
+
+      body    = Array(get_json(endpoint, params))
+      body    = body.select { |place| inside_any?(place, cities) } if cities.size > 1
+      results = body.filter_map { |place| normalize(place) }
+      results = results.select { |r| places.include?(LocationScope.level_for(r[:place_type])) } if places.any?
+      results = results.uniq { |r| r[:display_name] }.first(limit.to_i.clamp(1, 10))
       # Only cache a real hit — never let a transient outage or a 403 poison a
       # search term with an empty list for a full day.
+      Rails.cache.write(cache_key, results, expires_in: 1.day) if results.any?
+      results
+    rescue => e
+      ErrorReporting.report("NominatimClient", e)
+      []
+    end
+
+    # The editor's city picker, for a creator narrowing a location card to one
+    # or more cities. Returns [{ name:, display_name:, country_code:, bbox: }].
+    #
+    # This is the ONE place a box is read off a result, and it is the city's
+    # own public boundary box, fetched for a creator configuring a card and
+    # stored on that card — never anything about a respondent. search above
+    # still returns no coordinate of any kind.
+    def search_cities(query:, countries: [], locale: nil)
+      q = query.to_s.strip
+      return [] if q.length < MIN_QUERY_LEN
+
+      countries = LocationScope.sanitize_countries(countries)
+      cache_key = "geocode_cities:v1:#{provider}:#{countries.join(",")}:#{locale}:#{q.downcase}"
+      cached = Rails.cache.read(cache_key)
+      return cached if cached
+      return [] unless limiter.allow?
+
+      params = request_params(q, MAX_FETCH)
+      params[:featureType] = "settlement"
+      params[:countrycodes] = countries.map(&:downcase).join(",") if countries.any?
+      params[:"accept-language"] = locale.to_s if locale.present?
+
+      results = Array(get_json(endpoint, params)).filter_map do |place|
+        norm = normalize(place)
+        next unless norm && %w[city town].include?(LocationScope.level_for(norm[:place_type]))
+
+        bbox = LocationScope.sanitize_bbox(place["boundingbox"])
+        next unless bbox
+
+        { name: norm[:name] || norm[:city], display_name: norm[:display_name],
+          country_code: norm[:country_code], bbox: bbox }
+      end.uniq { |c| c[:display_name] }.first(5)
       Rails.cache.write(cache_key, results, expires_in: 1.day) if results.any?
       results
     rescue => e
@@ -131,11 +208,71 @@ class NominatimClient
 
       {
         display_name: place["display_name"].to_s,
+        name: place_name(place),
+        place_type: place_type(place, address),
         city: city,
         region: region,
         country: address["country"],
         country_code: country_code
       }
+    end
+
+    # Every part of the scope is in the key: "Springfield" searched for towns
+    # in the US and for anywhere at all are different answers.
+    def search_cache_key(q, limit, places = [], countries = [], cities = [], locale = nil)
+      scope = [ places.join(","), countries.join(","),
+                cities.map { |c| "#{c["country_code"]}:#{c["bbox"].join(",")}" }.join(";"), locale ].join("|")
+      "geocode_search:v3:#{provider}:#{scope}:#{q.downcase}:#{limit}"
+    end
+
+    # Nominatim's own coarse filter, sent only when every chosen level sits
+    # inside one of its classes — it is a hint that saves the over-fetch being
+    # spent on the wrong kind of place, and the type filter in search is what
+    # actually decides. LocationIQ ignores parameters it doesn't know.
+    def feature_type_for(places)
+      return nil if places.empty?
+      return "country" if places == %w[country]
+      return "state" if places == %w[region]
+      return "settlement" if (places - %w[city town village]).empty?
+
+      nil
+    end
+
+    def place_name(place)
+      place["name"].to_s.strip.presence || place["display_name"].to_s.split(",").first.to_s.strip.presence
+    end
+
+    # What kind of place a result is, in OSM's own tag. jsonv2 answers it
+    # directly (`addresstype`). LocationIQ's `format=json` doesn't, and its
+    # `type` for any place drawn as a boundary — most countries, regions and
+    # many cities — is just "administrative"; so the fallback finds the address
+    # line that names the place itself ("Germany" is the address's country).
+    def place_type(place, address)
+      return place["addresstype"].to_s if place["addresstype"].present?
+
+      name = place_name(place)
+      key  = address.find { |k, v| k != "country_code" && v.to_s == name }&.first
+      key.presence || place["type"].to_s.presence
+    end
+
+    # The south/north/west/east box covering every chosen city.
+    def union_bbox(boxes)
+      [ boxes.map { |b| b[0] }.min, boxes.map { |b| b[1] }.max,
+        boxes.map { |b| b[2] }.min, boxes.map { |b| b[3] }.max ]
+    end
+
+    # With several cities the request's viewbox is the box around all of them,
+    # which for Nairobi and Mombasa is most of Kenya — so each result is kept
+    # only if its own box overlaps one of the cities'. The result's box is read
+    # for this comparison and dropped with the result; normalize never sees it.
+    def inside_any?(place, cities)
+      box = LocationScope.sanitize_bbox(place["boundingbox"])
+      return false unless box
+
+      cities.any? do |c|
+        s, n, w, e = c["bbox"]
+        box[0] <= n && box[1] >= s && box[2] <= e && box[3] >= w
+      end
     end
 
     # Isolated HTTP seam so tests can stub a canned response.

@@ -15,7 +15,10 @@ import { Controller } from "@hotwired/stimulus"
 // a published deck open from before the field was removed.
 export default class extends Controller {
   static targets = ["input", "results", "selected", "selectedText", "value"]
-  static values  = { url: String }
+  // `card` is this card's index in the deck: the server reads the creator's
+  // narrowing (places / countries / cities, see LocationScope) off the saved
+  // card, so all the client ever sends is which card it is.
+  static values  = { url: String, card: Number }
 
   connect() {
     this._results = []
@@ -58,7 +61,8 @@ export default class extends Controller {
 
     const token = (this._searchToken = (this._searchToken || 0) + 1)
     try {
-      const resp = await fetch(`${this.urlValue}?q=${encodeURIComponent(q)}`, { headers: { "Accept": "application/json" } })
+      const card = this.hasCardValue ? `&card=${this.cardValue}` : ""
+      const resp = await fetch(`${this.urlValue}?q=${encodeURIComponent(q)}${card}`, { headers: { "Accept": "application/json" } })
       const data = await resp.json()
       if (token !== this._searchToken) return // a newer search superseded this one
 

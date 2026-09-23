@@ -162,6 +162,21 @@ pt:
     nps_low_placeholder: "O mais baixo significa…"
     nps_high_placeholder: "O mais alto significa…"
     body_placeholder: "Adicione um texto complementar (opcional)"
+    location_places_label: "Pesquisar"
+    location_place:
+      country: "País"
+      region: "Região / estado"
+      city: "Cidade"
+      town: "Vila"
+      village: "Aldeia"
+      district: "Bairro"
+    location_places_note: "Sem seleção, qualquer lugar é aceite. Escolha apenas País para mostrar só países."
+    location_countries_label: "Limitar a países"
+    location_countries_add: "Adicionar um país…"
+    location_cities_label: "Limitar a cidades"
+    location_cities_add: "Pesquisar uma cidade…"
+    location_cities_note: "Só são mostrados lugares dentro destas cidades."
+    location_remove: "Remover"
   ask_submission_mailer:
     confirmation_subject: "Os seus dados Verto foram submetidos ao Ask Verto"
     confirmation_heading: "Submetido para revisão"
@@ -347,6 +362,14 @@ pt:
     join_have_account: "Já tens conta?"
     join_sign_in: "Iniciar sessão"
     org_logo: "Logotipo de %{org}"
+    location_search_placeholder:
+      any: "Pesquise o seu lugar…"
+      country: "Pesquise o seu país…"
+      region: "Pesquise a sua região ou estado…"
+      city: "Pesquise a sua cidade…"
+      town: "Pesquise a sua vila…"
+      village: "Pesquise a sua aldeia…"
+      district: "Pesquise o seu bairro ou distrito…"
   defaults:
     range: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

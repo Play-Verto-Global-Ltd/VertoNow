@@ -102,6 +102,80 @@ class NominatimClientTest < ActiveSupport::TestCase
     ENV.delete("GEOCODE_MAX_RPS")
   end
 
+  test "a scoped search keeps only the chosen kinds of place" do
+    region = PLACE.merge("display_name" => "Texas, United States", "name" => "Texas", "addresstype" => "state",
+                         "address" => { "state" => "Texas", "country" => "United States", "country_code" => "us" })
+    city = PLACE.merge("name" => "Austin", "addresstype" => "city")
+    seen = nil
+    stub_method(NominatimClient, :get_json, ->(_u, params) { seen = params; [ region, city ] }) do
+      results = NominatimClient.search(query: "tex-#{SecureRandom.hex(4)}", places: %w[city town])
+      assert_equal [ "Austin" ], results.map { |r| r[:name] }
+    end
+    assert_equal NominatimClient::MAX_FETCH, seen[:limit], "a filtered search over-fetches"
+    assert_equal "settlement", seen[:featureType]
+  end
+
+  test "countries only asks Nominatim for countries, and a boundary result is typed off its address" do
+    # LocationIQ's format=json has no addresstype, and a country drawn as a
+    # boundary is type "administrative" — the address line naming it decides.
+    germany = { "display_name" => "Deutschland", "type" => "administrative",
+                "address" => { "country" => "Deutschland", "country_code" => "de" } }
+    seen = nil
+    stub_method(NominatimClient, :get_json, ->(_u, params) { seen = params; [ germany, PLACE ] }) do
+      results = NominatimClient.search(query: "deu-#{SecureRandom.hex(4)}", places: %w[country], locale: "de")
+      assert_equal [ "DE" ], results.map { |r| r[:country_code] }
+      assert_equal "country", results.first[:place_type]
+    end
+    assert_equal "country", seen[:featureType]
+    assert_equal "de", seen[:"accept-language"]
+  end
+
+  test "countries and cities narrow the request, and several cities filter by overlap without exposing a box" do
+    nairobi = { "name" => "Nairobi", "country_code" => "KE", "bbox" => [ -1.44, -1.16, 36.66, 37.1 ] }
+    mombasa = { "name" => "Mombasa", "country_code" => "KE", "bbox" => [ -4.1, -3.9, 39.5, 39.8 ] }
+    inside  = { "display_name" => "Kibera, Nairobi, Kenya", "name" => "Kibera", "addresstype" => "suburb",
+                "boundingbox" => %w[-1.33 -1.30 36.77 36.80],
+                "address" => { "suburb" => "Kibera", "city" => "Nairobi", "country" => "Kenya", "country_code" => "ke" } }
+    between = inside.merge("display_name" => "Kibwezi, Kenya", "name" => "Kibwezi", "boundingbox" => %w[-2.5 -2.3 37.9 38.1])
+    seen = nil
+    stub_method(NominatimClient, :get_json, ->(_u, params) { seen = params; [ inside, between ] }) do
+      results = NominatimClient.search(query: "kib-#{SecureRandom.hex(4)}", countries: %w[KE], cities: [ nairobi, mombasa ])
+      assert_equal [ "Kibera" ], results.map { |r| r[:name] }
+      refute results.first.key?(:bbox)
+      refute results.first.key?(:boundingbox)
+    end
+    assert_equal "ke", seen[:countrycodes]
+    assert_equal "36.66,-1.16,39.8,-4.1", seen[:viewbox]
+    assert_equal 1, seen[:bounded]
+  end
+
+  test "an unscoped search sends none of the scope parameters" do
+    seen = nil
+    stub_method(NominatimClient, :get_json, ->(_u, params) { seen = params; [ PLACE ] }) do
+      NominatimClient.search(query: "aus-#{SecureRandom.hex(4)}")
+    end
+    assert_equal 5, seen[:limit]
+    %i[countrycodes viewbox bounded featureType].each { |k| refute seen.key?(k), k }
+  end
+
+  test "the scope is part of the cache key" do
+    refute_equal NominatimClient.send(:search_cache_key, "springfield", 5),
+                 NominatimClient.send(:search_cache_key, "springfield", 5, %w[town], %w[US])
+  end
+
+  test "search_cities returns cities and towns with their box, and nothing else" do
+    city = PLACE.merge("name" => "Austin", "addresstype" => "city", "boundingbox" => %w[30.09 30.52 -97.94 -97.56])
+    village = PLACE.merge("display_name" => "Tiny, Texas", "name" => "Tiny", "addresstype" => "village",
+                          "boundingbox" => %w[30 30.1 -97 -96.9])
+    stub_method(NominatimClient, :get_json, ->(_u, _p) { [ city, village ] }) do
+      results = NominatimClient.search_cities(query: "aus-#{SecureRandom.hex(4)}", countries: %w[US])
+      assert_equal 1, results.size
+      assert_equal "Austin", results.first[:name]
+      assert_equal "US", results.first[:country_code]
+      assert_equal [ 30.09, 30.52, -97.94, -97.56 ], results.first[:bbox]
+    end
+  end
+
   private
 
   def with_memory_cache

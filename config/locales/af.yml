@@ -163,6 +163,21 @@ af:
     nps_low_placeholder: "Laagste beteken…"
     nps_high_placeholder: "Hoogste beteken…"
     body_placeholder: "Voeg bykomende teks by (opsioneel)"
+    location_places_label: "Soek na"
+    location_place:
+      country: "Land"
+      region: "Streek / provinsie"
+      city: "Stad"
+      town: "Dorp"
+      village: "Gehug"
+      district: "Woonbuurt"
+    location_places_note: "Niks gekies nie beteken enige plek. Kies net Land vir slegs lande."
+    location_countries_label: "Beperk tot lande"
+    location_countries_add: "Voeg 'n land by…"
+    location_cities_label: "Beperk tot stede"
+    location_cities_add: "Soek 'n stad…"
+    location_cities_note: "Net plekke binne hierdie stede word aangebied."
+    location_remove: "Verwyder"
   ask_submission_mailer:
     confirmation_subject: "Jou Verto-data is aan Ask Verto voorgelê"
     confirmation_heading: "Voorgelê vir hersiening"
@@ -348,6 +363,14 @@ af:
     join_have_account: "Het jy reeds 'n rekening?"
     join_sign_in: "Meld aan"
     org_logo: "Logo van %{org}"
+    location_search_placeholder:
+      any: "Soek jou plek…"
+      country: "Soek jou land…"
+      region: "Soek jou streek of provinsie…"
+      city: "Soek jou stad…"
+      town: "Soek jou dorp…"
+      village: "Soek jou gehug…"
+      district: "Soek jou woonbuurt of distrik…"
   defaults:
     range: ["Stem heeltemal nie saam nie", "Stem nie saam nie", "Neutraal", "Stem saam", "Stem heeltemal saam"]
     nps: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]

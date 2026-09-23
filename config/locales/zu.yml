@@ -170,6 +170,21 @@ zu:
     nps_low_placeholder: "Okuphansi kusho…"
     nps_high_placeholder: "Okuphezulu kusho…"
     body_placeholder: "Engeza umbhalo omfushane (akuphoqelekile)"
+    location_places_label: "Sesha"
+    location_place:
+      country: "Izwe"
+      region: "Isifunda / isifundazwe"
+      city: "Idolobha elikhulu"
+      town: "Idolobha"
+      village: "Isigodi"
+      district: "Indawo yakho"
+    location_places_note: "Uma ungakhethanga lutho, noma iyiphi indawo. Khetha Izwe lodwa ukuze kube ngamazwe kuphela."
+    location_countries_label: "Khawulela emazweni"
+    location_countries_add: "Engeza izwe…"
+    location_cities_label: "Khawulela emadolobheni"
+    location_cities_add: "Sesha idolobha…"
+    location_cities_note: "Kunikezwa izindawo ezingaphakathi kwala madolobha kuphela."
+    location_remove: "Susa"
   ask_submission_mailer:
     confirmation_subject: "Idatha yakho ye-Verto ithunyelwe ku-Ask Verto"
     confirmation_heading: "Kuthunyelwe ukuze kubuyekezwe"
@@ -355,6 +370,14 @@ zu:
     join_have_account: "Usunayo i-akhawunti?"
     join_sign_in: "Ngena"
     org_logo: "Ilogo ka-%{org}"
+    location_search_placeholder:
+      any: "Sesha indawo yakho…"
+      country: "Sesha izwe lakho…"
+      region: "Sesha isifunda noma isifundazwe sakho…"
+      city: "Sesha idolobha lakho elikhulu…"
+      town: "Sesha idolobha lakho…"
+      village: "Sesha isigodi sakho…"
+      district: "Sesha indawo yakho noma isifunda sakho…"
   # Placeholder CONTENT a new card of each type starts with — answer options,
   # scale labels, statements. Unlike UI chrome (which follows the viewer's
   # locale), these are resolved in the Verto's default locale, because they are
