@@ -12,6 +12,10 @@ require "application_system_test_case"
 class ResultsScrollTest < ApplicationSystemTestCase
   # The rail is only drawn where there is a margin to draw it in.
   WIDE = 1440
+  # Under 1290 the header swaps its segmented date control and Overall chip
+  # for the two compact pickers, at every scroll position — the same width the
+  # rail and the cards' insight box give up at.
+  NARROW = 1280
 
   def setup
     super
@@ -36,12 +40,15 @@ class ResultsScrollTest < ApplicationSystemTestCase
     end
   end
 
-  def open_results
-    page.driver.browser.resize(width: WIDE, height: 900)
+  def open_results(width: WIDE)
+    page.driver.browser.resize(width: width, height: 900)
     sign_in_as(@user)
     visit survey_results_path(@survey)
     dismiss_cookie_banner
-    assert_selector ".ro-item", minimum: 16, wait: 5
+    # visible: :all — the rail itself is only drawn where there is a margin
+    # for it, and this waits for the feed to have rendered, not for the rail
+    # to be on screen. "The rail stays put" below is what tests the rail.
+    assert_selector ".ro-item", minimum: 16, wait: 5, visible: :all
     wait_for_stimulus
   end
 
@@ -174,30 +181,79 @@ class ResultsScrollTest < ApplicationSystemTestCase
       "scrolling back to the top left the header condensed"
   end
 
-  # The point of condensing: the filters join the actions' row instead of
-  # costing a row of their own, and each collapses to the one option in force.
-  # All of it is CSS ordering and display, which is exactly the kind of thing
-  # that regresses without any test noticing.
-  test "condensed, the filters join the actions' row and show only what is selected" do
+  # All three blocks — the publish date and Share, the filters, the actions —
+  # on ONE row, at both widths the header has a layout for. It was two rows
+  # until you scrolled, which cost the feed 34px on arrival and made the page
+  # you land on and the page you read two different shapes.
+  #
+  # Measured against the header's own height rather than eyeballed: a row is
+  # ~61px, two rows ~95px, and a block that has wrapped shares neither.
+  test "the header is one row, at every width it has a layout for" do
+    [ WIDE, NARROW ].each do |w|
+      open_results(width: w)
+
+      assert same_line?(".results-header-bar", ".results-header-actions"),
+        "at #{w}px the date and Share are not on the actions' row"
+      assert same_line?(".results-header-filters", ".results-header-actions"),
+        "at #{w}px the filters are not on the actions' row"
+
+      height = evaluate_script(
+        "Math.round(document.querySelector('.results-header').getBoundingClientRect().height)"
+      )
+      assert height < 80, "at #{w}px the header is #{height}px — that is more than one row"
+    end
+  end
+
+  # The filters sit on the actions' row at EVERY scroll position — they used
+  # to take a line of their own until you scrolled, which made arriving at the
+  # page and reading it two different layouts. All of it is CSS ordering, which
+  # is exactly the kind of thing that regresses without any test noticing.
+  test "the filters are on the actions' row before and after the header condenses" do
     open_results
+
+    assert same_line?(".results-header-filters", ".results-header-actions"),
+      "the filters are on a row of their own on the expanded header"
+
+    scroll_feed_to(600)
+    assert wait_until { condensed? }
+
+    assert same_line?(".results-header-filters", ".results-header-actions"),
+      "condensing moved the filters off the actions' row"
+  end
+
+  # Which form each filter takes is a question of WIDTH, not of scroll: the
+  # same window must not show one control on arrival and a different one once
+  # you have read a screen of it.
+  test "a wide window keeps the segmented control, scrolled or not" do
+    open_results(width: WIDE)
     assert_selector ".rh-when .rh-when-btn", count: 4, visible: true
     assert_no_selector ".rh-when-menu", visible: true
 
     scroll_feed_to(600)
     assert wait_until { condensed? }
 
+    assert page.has_selector?(".rh-when .rh-when-btn", count: 4, visible: true),
+      "the segmented control was swapped for a picker by scrolling, on a window wide enough for it"
+    assert_no_selector ".rh-when-menu", visible: true
+  end
+
+  test "a narrow window shows the compact pickers, scrolled or not" do
+    open_results(width: NARROW)
+
     refute page.has_selector?(".rh-when", visible: true),
-      "the four-option segmented control is still drawn on the condensed header"
+      "the four-option segmented control is drawn on a window too narrow for the row"
     assert_selector ".rh-when-menu summary", visible: true
     assert_equal "All time", find(".rh-when-menu summary .rh-picker-active").text.strip
-
-    assert same_line?(".results-header-filters", ".results-header-actions"),
-      "the filters are still on a row of their own next to a condensed header"
+    assert same_line?(".results-header-filters", ".results-header-actions")
 
     # …and the options are one click away.
     open_menu(".rh-when-menu")
     assert_selector ".rh-when-menu-panel .rh-menu-item", count: 4, visible: true
     assert_selector ".rh-when-menu-panel .rh-menu-item", text: "Last 30 days"
+
+    scroll_feed_to(600)
+    assert wait_until { condensed? }
+    assert_selector ".rh-when-menu summary", visible: true
   end
 
   # The title bar is what you need on arrival and 54px of a page you are now
@@ -268,7 +324,9 @@ class ResultsScrollTest < ApplicationSystemTestCase
   # exclusive group — no controller, and it degrades to the old behaviour
   # rather than breaking anywhere that doesn't support it.
   test "opening one header menu closes the others" do
-    open_results
+    # NARROW, because the date filter is only a <details> below 1290 — wider
+    # than that it is the segmented control, which has nothing to open.
+    open_results(width: NARROW)
     scroll_feed_to(600)
     assert wait_until { condensed? }
 

@@ -36,7 +36,14 @@ class ResultsSegmentPickerTest < ApplicationSystemTestCase
     end
   end
 
+  # 1280, deliberately: under 1290 the header's segment filter is the single
+  # compact picker this file is about, and over it the Overall chip beside it
+  # carries the reset instead. Stated rather than inherited from the driver's
+  # default, because which control exists here depends on it.
+  NARROW = 1280
+
   def open_results(**params)
+    page.driver.browser.resize(width: NARROW, height: 900)
     sign_in_as(@user)
     visit survey_results_path(@survey, **params)
     dismiss_cookie_banner
@@ -79,7 +86,7 @@ class ResultsSegmentPickerTest < ApplicationSystemTestCase
     find(".rh-segments-panel .rh-group--reset a").click
 
     assert_current_path survey_results_path(@survey), wait: 5
-    assert_selector ".rh-picker-wide", text: "Segments", wait: 5
+    assert_selector ".rh-segments summary .rh-picker-active", text: "Overall", wait: 5
     refute picker_open?, "Overall is 'I am done' — the panel would sit over the numbers just asked for"
   end
 end

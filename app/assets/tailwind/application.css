@@ -5715,16 +5715,21 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
   background: #1C2034;
   transition: padding 0.2s ease, box-shadow 0.2s ease;
 }
-/* Three siblings — tally, actions, filters — on a wrapping row, so the same
-   markup is two rows expanded and one row condensed. Expanded, the tally
-   grows and the filters take a whole line of their own; condensed, the tally
-   stops growing, the filters slot in beside it and the actions are pushed to
-   the end. Nothing moves in the DOM: only `order` and `flex` change. */
-.results-header-bar { display: flex; align-items: center; gap: 16px; flex: 1 1 auto; min-width: 0; }
-.results-header-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+/* Three siblings — meta+share, filters, actions — on ONE row, at every scroll
+   position. The filters used to take a whole line of their own until you
+   scrolled, which cost the feed a row of header and made arriving at the page
+   and reading it two different layouts. `flex-wrap` above is the safety net
+   for a window too narrow to hold the row, not the intended state.
+
+   Nothing moves in the DOM; the row is `order` alone. */
+.results-header-bar { display: flex; align-items: center; gap: 16px; flex: 0 0 auto; min-width: 0; }
 .results-header-filters {
   display: flex; align-items: center; gap: 10px;
-  flex: 1 0 100%; margin-top: 11px;
+  flex: 0 1 auto; order: 1; min-width: 0;
+}
+.results-header-actions {
+  margin-inline-start: auto; display: flex; align-items: center; gap: 8px;
+  flex: 0 0 auto; order: 2;
 }
 
 /* ── The header, condensed ───────────────────────────────────────────────────
@@ -5742,30 +5747,46 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
    also animate the pills' hover colours. */
 .results-header.is-condensed { padding: 7px 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.22); }
 
-/* One row: the tally stops growing, the filters slot in after it, the actions
-   take the end. The filters still wrap to a line of their own on a narrow
-   window — a toolbar squeezed onto one line is not a saving. */
-.results-header.is-condensed .results-header-bar { flex: 0 0 auto; gap: 12px; }
-.results-header.is-condensed .results-header-filters {
-  flex: 0 1 auto; margin-top: 0; gap: 8px; order: 1;
-}
-.results-header.is-condensed .results-header-actions { order: 2; }
+/* Condensed is a SIZE now, not a rearrangement: the row is already one row,
+   so scrolling shrinks the padding and the pills and folds the publish date,
+   and nothing changes places. It used to also swap the filters for their
+   compact pickers, which meant the same window showed two different controls
+   depending on how far down the page you were. */
+.results-header.is-condensed .results-header-bar { gap: 12px; }
+.results-header.is-condensed .results-header-filters { gap: 8px; }
 
-/* Condensed, each filter is ONE pill saying what is in force; the options are
-   behind a click. Expanded, the segmented control and the Overall chip say it
-   without one, which is worth a row of its own but not worth a row you are
-   scrolling past. */
 /* The header's own copy of the way out, drawn only while the top bar that
    normally holds it is folded away. First in the row, where it has been since
    this page took the editor's convention. */
 .rh-leave { display: none; flex-shrink: 0; }
 .results-header.is-condensed .rh-leave { display: inline-flex; }
 
+/* Each filter has two forms: the segmented control and the Overall chip, which
+   say what is in force without a click, and a single pill that names it and
+   puts the options behind one. Which you get is now a question of WIDTH —
+   whether the wide pair still fits on the row beside the actions — rather
+   than of how far you have scrolled.
+
+   1290px, which is where the outline rail and the insight box beside each
+   card also give up, so the page has ONE width at which its layout changes
+   instead of three. Measured, the wide controls survive further than that
+   (78px of slack left at 1280, first overlap at 1180); matching the page's
+   own breakpoint is worth more than the last eighty pixels.
+
+   Scoped to .results-header, not bare: `.rh-when { display: inline-flex }` is
+   declared further down this file, and at equal specificity the later rule
+   wins — which is exactly what happened to the first cut of this, silently,
+   since a media query that loses looks identical to one that never matched.
+
+   Both forms are always rendered and CSS picks one, so only one is ever in
+   the accessibility tree. */
 .rh-when-menu, .rh-picker-mini { display: none; }
-.results-header.is-condensed .rh-when { display: none; }
-.results-header.is-condensed .rh-when-menu { display: block; position: relative; }
-.results-header.is-condensed .rh-picker-mini { display: inline; }
-.results-header.is-condensed .rh-picker-wide { display: none; }
+@media (max-width: 1289px) {
+  .results-header .rh-when { display: none; }
+  .results-header .rh-when-menu { display: block; position: relative; }
+  .results-header .rh-picker-mini { display: inline; }
+  .results-header .rh-picker-wide { display: none; }
+}
 
 .rh-when-menu-panel {
   position: absolute; inset-inline-start: 0; top: calc(100% + 6px); z-index: 30;
