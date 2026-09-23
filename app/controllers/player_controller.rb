@@ -281,6 +281,14 @@ class PlayerController < ApplicationController
     # a 410 rather than a 404 — but the "not published yet" copy is the accurate
     # explanation for a respondent, not the archived-forever one.
     return render :unavailable, status: :gone unless @survey.published?
+    # A creator who set a custom link wants respondents on it, including the
+    # ones holding the opaque link handed out before it existed. Only the page
+    # moves: every POST endpoint still resolves the publish token, so a page
+    # already open on the old address keeps submitting. 302, not 301 — the
+    # slug can be changed or cleared, and a browser would remember a 301.
+    if @survey.slug? && params[:token] == @survey.publish_token
+      return redirect_to play_survey_path(@survey.slug, request.query_parameters), status: :found
+    end
     @display_locale = resolve_play_locale
     # Not set for test_show or the owner's dashboard preview (SurveysController's
     # own action) — the studio's own /manifest keeps serving those, matching the
@@ -1589,9 +1597,24 @@ class PlayerController < ApplicationController
   # settings, locale) so an edit busts it immediately — the TTL is only a
   # backstop for the rare change that doesn't bump one of those. race_condition_ttl
   # serves the just-expired copy while ONE caller re-renders, so an expiry can't
-  # stampede; a genuinely cold key (first play, or right after a deploy flushes
-  # the store) is not covered, which is why an event pre-warms this before doors.
+  # stampede; a genuinely cold key (first play, or the first request after a
+  # deploy — see PLAYER_PAGE_BUILD) is not covered, which is why an event
+  # pre-warms this before doors.
   PLAYER_PAGE_TTL = 1.hour
+
+  # Which build rendered a cached page. The shared store (Key Value, or Solid
+  # Cache) OUTLIVES a deploy, and the page names its stylesheets and scripts by
+  # digest — so without this a link that was warm before a deploy kept being
+  # handed the previous build's HTML for up to PLAYER_PAGE_TTL, pointing at
+  # tailwind-<old>.css and JS the new image no longer carries: a bare,
+  # unstyled page with no script behind the consent gate (2026-09-23, the old
+  # Unleash Football link, while its freshly-keyed vanity slug rendered fine).
+  # The precompiled asset manifest changes whenever any asset does; with none
+  # (development, test) assets are served live and there is nothing to go stale.
+  PLAYER_PAGE_BUILD = begin
+    manifests = Dir[Rails.public_path.join("assets", ".sprockets-manifest-*.json").to_s].sort
+    manifests.empty? ? "live" : Digest::SHA256.hexdigest(manifests.map { |f| File.read(f) }.join)[0, 16]
+  end
 
   # The rendered #show HTML, cached as shared bytes per link + deck version +
   # resolved locale. Safe to share: the page boots player_controller.js and
@@ -1619,6 +1642,7 @@ class PlayerController < ApplicationController
     ActiveSupport::Cache::MemoryStore.new(size: 32.megabytes)
   end
   class_attribute :player_page_local_cache, instance_accessor: false, default: default_player_page_local_cache
+  class_attribute :player_page_build, instance_accessor: false, default: PLAYER_PAGE_BUILD
 
   def cached_play_page
     key = play_page_cache_key
@@ -1643,8 +1667,10 @@ class PlayerController < ApplicationController
   # named link's settings can alter the page without bumping survey.updated_at,
   # so both ride the key; Current.locale only matters when the chrome does NOT
   # follow the Verto's language (otherwise @display_locale already captures it).
+  # The build leads, because a page from another build is wrong whatever else
+  # matches (PLAYER_PAGE_BUILD).
   def play_page_cache_key
-    [ "player-page", params[:token], @survey.updated_at.to_f, @display_locale,
+    [ "player-page", self.class.player_page_build, params[:token], @survey.updated_at.to_f, @display_locale,
       @survey.current_wave&.position,
       (@survey.chrome_follows_verto_language? ? nil : Current.locale),
       @survey_link&.updated_at&.to_f ]

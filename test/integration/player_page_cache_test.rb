@@ -100,4 +100,66 @@ test "each process keeps its own copy, so the shared store is off the page's hot
     end
   end
 end
+
+# The shared store outlives a deploy, and the page names its stylesheets and
+# scripts by digest: a page from the previous build points at files the new
+# image doesn't carry, which renders bare and unscripted.
+test "a new build never serves the previous build's page" do
+  survey = published_survey(theme: "Sports")
+  old_build = PlayerController.player_page_build
+
+  with_memory_cache do
+    with_local_page_cache do
+      PlayerController.player_page_build = "build-a"
+      get play_survey_path(survey.publish_token)
+      assert_includes @response.body, "Sports"
+
+      # Same deck, same key in every other respect — only the build moved.
+      survey.update_columns(theme: "Cricket")
+      PlayerController.player_page_build = "build-b"
+      get play_survey_path(survey.publish_token)
+      assert_includes @response.body, "Cricket", "a new build re-renders rather than reusing build-a's bytes"
+    end
+  end
+ensure
+  PlayerController.player_page_build = old_build
+end
+
+test "the opaque link sends a respondent to the custom link, query and all" do
+  survey = published_survey
+  survey.update!(slug: "vanity-#{SecureRandom.hex(3)}")
+
+  get play_survey_path(survey.publish_token, lang: "fr", utm_source: "whatsapp")
+  assert_redirected_to play_survey_path(survey.slug, lang: "fr", utm_source: "whatsapp")
+  assert_equal 302, response.status
+
+  get play_survey_path(survey.slug)
+  assert_response :success
+end
+
+test "without a custom link the opaque link is the page" do
+  survey = published_survey
+  get play_survey_path(survey.publish_token)
+  assert_response :success
+end
+
+test "a named share link is never redirected to the custom link" do
+  survey = published_survey
+  survey.update!(slug: "vanity-#{SecureRandom.hex(3)}")
+  link = survey.survey_links.create!(slug: "named-#{SecureRandom.hex(3)}", name: "Q1")
+
+  get play_survey_path(link.slug)
+  assert_response :success
+end
+
+test "a page open on the opaque link still submits after the custom link is set" do
+  survey = published_survey
+  survey.update!(slug: "vanity-#{SecureRandom.hex(3)}")
+
+  post submit_survey_path(survey.publish_token),
+       params: { answers: { "1" => { "value" => "a" } } }.to_json,
+       headers: { "CONTENT_TYPE" => "application/json" }
+  assert_not_equal 302, response.status
+  assert_response :success
+end
 end

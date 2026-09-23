@@ -72,7 +72,7 @@ class CustomLinkTest < ActionDispatch::IntegrationTest
     assert_equal "keep-me", s.reload.slug
   end
 
-  test "the player resolves a survey by its custom slug, same as by its token" do
+  test "the player resolves a survey by its custom slug, and the token leads there" do
     org = sign_in_org("slug-play")
     s   = published_survey(org, slug: "play-me-now")
 
@@ -80,8 +80,10 @@ class CustomLinkTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".q-title", text: "Q"
 
+    # Links handed out before the slug existed still arrive — on the slug.
     get play_survey_path(s.publish_token)
-    assert_response :success
+    assert_redirected_to play_survey_path("play-me-now")
+    follow_redirect!
     assert_select ".q-title", text: "Q"
   end
 
