@@ -36,28 +36,24 @@
       over the map now (surveys/_results_tally) — the headline number is what
       the page is about, and this row is where the controls are. %>
 
-  <%# Metadata, and the one action that belongs beside it. The date is a fact.
-      The Play link that used to sit next to it was an address dressed as a
-      link: copying it, showing its QR code, or sending it anywhere meant
-      opening it and copying out of the address bar. The dashboard's Share
-      panel already does all of that (SurveyLinksController#show), so this is
-      the same button, behind the same modal, from the page the creator is
-      actually on when they decide to send it. %>
-  <div class="rh-meta">
-    <% if @survey.published_at %>
-      <span>Published <%= @survey.published_at.strftime("%b %-d, %Y") %></span>
-    <% end %>
-    <% if @survey.publish_token.present? %>
-      <button type="button" class="rh-pill rh-pill--share"
-              data-action="click->share-modal#open"
-              data-panel-url="<%= share_survey_path(@survey) %>">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M11 5.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6ZM5 9.8a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6ZM11 14.1a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z" stroke="currentColor" stroke-width="1.4"/>
-          <path d="m6.6 8.9 2.8 1.7M9.4 5.4 6.6 7.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        </svg><%= t("dashboard_card.share") %>
-      </button>
-    <% end %>
-  </div>
+  <%# The one action on this side of the row. The Play link it replaced was an
+      address dressed as a link: copying it, showing its QR code, or sending it
+      anywhere meant opening it and copying out of the address bar. The
+      dashboard's Share panel already does all of that
+      (SurveyLinksController#show), so this is the same button, behind the same
+      modal, from the page the creator is actually on when they decide to send
+      it. The publish date that used to sit beside it is in the top bar now,
+      with the name it is a fact about. %>
+  <% if @survey.publish_token.present? %>
+    <button type="button" class="rh-pill rh-pill--share"
+            data-action="click->share-modal#open"
+            data-panel-url="<%= share_survey_path(@survey) %>">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M11 5.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6ZM5 9.8a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6ZM11 14.1a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z" stroke="currentColor" stroke-width="1.4"/>
+        <path d="m6.6 8.9 2.8 1.7M9.4 5.4 6.6 7.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg><%= t("dashboard_card.share") %>
+    </button>
+  <% end %>
 </div><%# end results-header-bar %>
 
   <%# A SIBLING of the tally strip, not a child of it: condensed, the header

@@ -136,6 +136,19 @@ class ResultsTallyTest < ActionDispatch::IntegrationTest
       "the shell the panel loads into has to be on the page for the button to have anywhere to open"
   end
 
+  # The date belongs with the name it is a fact about, not in the row of
+  # controls where it was the only thing that was not one. It folds with the
+  # top bar on scroll, which is the same behaviour it had before the move.
+  test "the publish date is in the top bar, beside the name" do
+    with_map
+    get survey_results_path(@survey)
+
+    assert_select ".results-top-bar .rtb-published", text: /\APublished /
+    assert_select ".results-header .rtb-published", 0
+    refute_match(/Published/, css_select(".results-header-bar").first.to_s,
+                 "the date is still in the controls row")
+  end
+
   # Two controls called "Share", one handing out the play link and the other a
   # read-only view of the answers, is a mistake waiting to be made.
   test "the results-sharing menu names what it shares" do

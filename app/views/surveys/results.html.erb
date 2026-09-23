@@ -104,6 +104,13 @@
       <% if @survey.theme.present? && @survey.theme != @survey.title %>
         <span class="editor-verto-title editor-verto-theme is-static" title="<%= @survey.theme %>"><%= @survey.theme %></span>
       <% end %>
+      <%# A fact about the Verto, next to the Verto's name — rather than in the
+          row below, where it sat among the controls and was the only thing in
+          it that was not one. Folds away with this bar on scroll, exactly as
+          it did before: it is what you want on arrival, not while reading. %>
+      <% if @survey.published_at %>
+        <span class="rtb-published">Published <%= @survey.published_at.strftime("%b %-d, %Y") %></span>
+      <% end %>
       <%# A viewer has no editor to go back to — the pill above is their whole
           way out, so only an editor is offered the door back into it. %>
       <% if can_edit_vertos? %>

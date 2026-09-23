@@ -5211,6 +5211,17 @@ button.editor-leave-btn { cursor: pointer; }
    visibility, not just height — a 0px bar you can still tab into is a trap,
    and it is delayed by the collapse so the fold is still visible while it
    happens. */
+/* A fact, beside the name it is about — quieter than the name and quieter
+   than the Editor link at the other end, so the bar reads name-then-note
+   rather than as three things competing. Clipped rather than wrapped: the
+   bar is a fixed 54px and a long Verto name has already taken its 22ch. */
+.rtb-published {
+  flex-shrink: 1; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+  margin-inline-start: 6px;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
+  color: rgba(255,255,255,0.28);
+}
 .results-top-bar.is-condensed {
   height: 0; opacity: 0; visibility: hidden; border-bottom-width: 0;
   transition: height 0.2s ease, opacity 0.15s ease, visibility 0s linear 0.2s;
@@ -5800,18 +5811,9 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
    muted label rather than one of the seven segment colours. */
 .rh-group--reset { padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
-/* The published date folds away condensed; the Share button beside it does
-   not, because a control that disappears as you scroll is a control you have
-   to scroll back for. The tally used to fold here too — it is over the map
-   now, which never condenses. */
-.rh-meta {
-  transition: max-width 0.2s ease, opacity 0.15s ease, margin 0.2s ease;
-  max-width: 340px; overflow: hidden;
-}
-.rh-meta > span { transition: max-width 0.2s ease, opacity 0.15s ease; }
-.results-header.is-condensed .rh-meta > span {
-  max-width: 0; opacity: 0; margin-inline: 0;
-}
+/* The publish date is in the top bar now, beside the name it is a fact about,
+   so it folds with that bar rather than needing a fold of its own. Nothing is
+   left in this row that is not a control. */
 .rh-pill { transition: background 0.15s, border-color 0.15s, color 0.15s, padding 0.2s ease, font-size 0.2s ease; }
 .results-header.is-condensed .rh-pill { padding: 4px 11px; font-size: 11px; }
 .results-header.is-condensed .rh-pill svg { width: 12px; height: 12px; }
@@ -5822,7 +5824,7 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
 /* A reader who asked not to be animated gets the same layout, arrived at
    instantly. */
 @media (prefers-reduced-motion: reduce) {
-  .results-header, .rh-meta, .rh-meta > span, .rh-pill { transition: none; }
+  .results-header, .rh-pill { transition: none; }
 }
 
 /* ── The headline numbers, over the map ──────────────────────────────────────
@@ -5891,12 +5893,6 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
    pills would be floating over a full-screen map with nothing to do. */
 .regions-box-body.is-fullscreen .rmap-stats { display: none; }
 
-/* Metadata reads as facts, not as controls */
-.rh-meta {
-  display: flex; align-items: center; gap: 10px;
-  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
-  color: rgba(255,255,255,0.28); white-space: nowrap;
-}
 
 /* One pill shape for every action, so the row has a single grammar: glass for
    secondary, solid brand for the one primary. Same recipe as .editor-leave-btn
@@ -6026,9 +6022,11 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
 
 @media (max-width: 900px) {
   .results-header-bar { flex-wrap: wrap; gap: 10px; }
-  .rh-meta { order: 3; width: 100%; }
   .results-header-actions { margin-inline-start: 0; }
   .results-header-filters { flex-wrap: wrap; }
+  /* The bar is 54px whatever is in it, so on a phone the date goes rather
+     than squeezing the name it sits beside down to nothing. */
+  .rtb-published { display: none; }
 }
 
 /* ── Ask Verto on results: floating CTA + slide-over ────────────────────────
