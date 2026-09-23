@@ -1,0 +1,41 @@
+<%# ── The headline numbers ────────────────────────────────────────────────────
+    How many answered, and how many of them finished — as two pills over the
+    map's empty half rather than as a row in the header. The map opens fitted
+    to the countries that have responses, so one side of the band is reliably
+    empty space; the header is where the controls belong, and the number the
+    page is about does not need to compete with them for the same row.
+
+    Rendered absolutely INSIDE the map's own stage when there is a map, and as
+    an ordinary block above the feed when there is not — the band only exists
+    on a Verto with region-tagged responses or two waves (see results.html.erb),
+    and the count is the one thing this page must never be missing.
+
+    `inline` picks the second form. ── %>
+<div class="rmap-stats<%= " rmap-stats--inline" if local_assigns[:inline] %>">
+  <% if @active_segment && @active_segment[:id] != "overall" %>
+    <%# A segment's count comes from its own filtered scope, so it is NOT the
+        live tally: a broadcast carrying whole-Verto totals would contradict
+        the pills the filter just produced. No rate either — completion is
+        only counted Verto-wide (ResultsActivity), and inventing a segment's
+        would mean a second query per filter click for a number nothing else
+        on the page shows. %>
+    <div class="rmap-pill rmap-pill--count">
+      <% if @active_segment[:suppressed] %>
+        <%# A combination under the small-cell threshold: the number itself is
+            the disclosure (see ResolvesResultSegments#combine_result_segments),
+            so the pill says only that it is under the line. The feed says why. %>
+        <span class="rh-count-num rh-count-num--under" title="<%= t("results.combination_suppressed_title") %>">&lt;<%= ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE %></span>
+        <span class="rh-count-word">responses</span>
+      <% else %>
+        <span class="rh-count-num"><%= @total %></span>
+        <span class="rh-count-word">response<%= @total == 1 ? "" : "s" %></span>
+      <% end %>
+    </div>
+    <span class="rmap-of">of <%= @overall_total %> overall</span>
+  <% else %>
+    <%= turbo_stream_from(*ResultsActivity.stream_for(@survey)) %>
+    <%= render "surveys/results_live",
+          survey: @survey, live: false,
+          **ResultsActivity.counts_for(@survey) %>
+  <% end %>
+</div>

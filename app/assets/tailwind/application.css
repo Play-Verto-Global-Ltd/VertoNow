@@ -5779,65 +5779,103 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
    muted label rather than one of the seven segment colours. */
 .rh-group--reset { padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
-/* The word "responses" stays while the rest folds away: a bare "44" beside an
-   Auto ↻ toggle is a number with no noun, and it costs 70px. */
-.rh-meta, .rh-of, .ask-stat {
+/* The published date folds away condensed; the Share button beside it does
+   not, because a control that disappears as you scroll is a control you have
+   to scroll back for. The tally used to fold here too — it is over the map
+   now, which never condenses. */
+.rh-meta {
   transition: max-width 0.2s ease, opacity 0.15s ease, margin 0.2s ease;
   max-width: 340px; overflow: hidden;
 }
-.results-header.is-condensed :is(.rh-meta, .rh-of, .ask-stat) {
-  max-width: 0; opacity: 0; margin-inline: 0; padding-inline: 0; border-width: 0;
+.rh-meta > span { transition: max-width 0.2s ease, opacity 0.15s ease; }
+.results-header.is-condensed .rh-meta > span {
+  max-width: 0; opacity: 0; margin-inline: 0;
 }
-.rh-count-word { transition: font-size 0.2s ease; }
-.results-header.is-condensed .rh-count-word { font-size: var(--text-sm); }
-.rh-count-num { transition: font-size 0.2s ease; }
-.results-header.is-condensed .rh-count-num { font-size: 19px; }
 .rh-pill { transition: background 0.15s, border-color 0.15s, color 0.15s, padding 0.2s ease, font-size 0.2s ease; }
 .results-header.is-condensed .rh-pill { padding: 4px 11px; font-size: 11px; }
 .results-header.is-condensed .rh-pill svg { width: 12px; height: 12px; }
 .results-header.is-condensed .rh-when { padding: 2px; }
 .results-header.is-condensed .rh-when-btn { padding: 3px 11px; font-size: 11px; }
-.results-header.is-condensed .rh-toggle { padding: 3px 10px; font-size: 11px; }
 .results-header.is-condensed .seg-pill { padding: 3px 10px; font-size: 11px; }
 
 /* A reader who asked not to be animated gets the same layout, arrived at
    instantly. */
 @media (prefers-reduced-motion: reduce) {
-  .results-header, .rh-meta, .rh-of, .ask-stat, .rh-count-word, .rh-count-num, .rh-pill {
-    transition: none;
-  }
+  .results-header, .rh-meta, .rh-meta > span, .rh-pill { transition: none; }
 }
-.rh-livewrap { display: flex; align-items: center; gap: 10px; }
-.rh-tally { display: flex; align-items: center; gap: 10px; }
 
-/* The headline count and its supporting tiles */
+/* ── The headline numbers, over the map ──────────────────────────────────────
+   The map opens fitted to the countries that have responses, so one side of
+   the band is reliably empty; these sit in it. Absolute, so the band's height
+   is the map's and a long number never pushes it taller.
+
+   pointer-events is off on the column and back on for the pills themselves:
+   the countries underneath stay clickable everywhere the pills are not, which
+   on a world view is most of the space they hang in. */
+.rmap-stats {
+  position: absolute; inset-inline-start: 26px; top: 50%; transform: translateY(-50%);
+  z-index: 3; pointer-events: none;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+}
+/* No map on this Verto (no region-tagged responses, fewer than two waves), so
+   the same pills run along the top of the feed instead. */
+.rmap-stats--inline {
+  position: static; transform: none;
+  margin: 4px 0 20px; padding-inline: 26px;
+}
+.rmap-tally { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.rmap-stats--inline, .rmap-stats--inline .rmap-tally { flex-direction: row; align-items: center; }
+
+.rmap-pill {
+  pointer-events: auto;
+  display: inline-flex; align-items: baseline; gap: 8px;
+  padding: 11px 20px; border-radius: 100px;
+}
+/* Verto pink for the number the page is about. */
+.rmap-pill--count {
+  background: var(--color-hot-pink, #FF1E6F);
+  box-shadow: 0 10px 30px rgba(255,30,111,0.32);
+}
+.rmap-pill--rate {
+  background: var(--color-aquamarine, #01EACB);
+  box-shadow: 0 10px 30px rgba(1,234,203,0.24);
+  padding: 8px 17px;
+}
 .rh-count { display: flex; align-items: baseline; gap: 6px; flex-shrink: 0; }
 .rh-count-num {
-  font-family: "Alata", sans-serif; font-size: 34px; color: #01EACB; line-height: 1;
+  font-family: "Alata", sans-serif; font-size: 34px; color: #fff; line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .rh-count-num.is-pulsing { animation: results-live-pulse 1.1s ease-out; }
-.rh-count-word { font-family: "ABeeZee", sans-serif; font-size: var(--text-base); color: rgba(255,255,255,0.4); }
-.rh-stat { margin: 0; }
-.rh-of { font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: rgba(255,255,255,0.3); }
+.rh-count-word { font-family: "ABeeZee", sans-serif; font-size: var(--text-base); color: rgba(255,255,255,0.82); }
+/* Dark ink on the teal, the same pairing every solid aquamarine control in
+   the app uses — white on #01EACB is under 2:1. */
+.rmap-rate-num {
+  font-family: "Alata", sans-serif; font-size: 21px; color: #04221E; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.rmap-rate-word { font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: rgba(4,34,30,0.72); }
+.rmap-of {
+  pointer-events: auto;
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: rgba(255,255,255,0.45);
+}
 .rh-refresh {
+  pointer-events: auto;
   font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: #01EACB;
   text-decoration: none; border: 1px solid rgba(1,234,203,0.35);
   border-radius: 100px; padding: 4px 12px; white-space: nowrap;
+  background: rgba(28,32,52,0.8);
 }
+/* Compare mode moves the map's body out to <body> and takes the screen; the
+   pills would be floating over a full-screen map with nothing to do. */
+.regions-box-body.is-fullscreen .rmap-stats { display: none; }
 
 /* Metadata reads as facts, not as controls */
 .rh-meta {
-  display: flex; align-items: center; gap: 7px;
+  display: flex; align-items: center; gap: 10px;
   font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
   color: rgba(255,255,255,0.28); white-space: nowrap;
 }
-.rh-meta-dot { opacity: 0.5; }
-.rh-meta-link {
-  display: inline-flex; align-items: center; gap: 5px;
-  color: rgba(255,255,255,0.42); text-decoration: none; transition: color 0.15s;
-}
-.rh-meta-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
 
 /* One pill shape for every action, so the row has a single grammar: glass for
    secondary, solid brand for the one primary. Same recipe as .editor-leave-btn
@@ -5858,14 +5896,18 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
   background: #01EACB; border-color: #01EACB; color: #04221E; backdrop-filter: none;
 }
 .rh-pill--ai:hover { background: #18F0D4; border-color: #18F0D4; color: #04221E; }
-.rh-toggle {
-  padding: 6px 12px; border-radius: 100px; cursor: pointer; white-space: nowrap;
-  background: transparent; border: 1px solid rgba(255,255,255,0.14);
-  color: rgba(255,255,255,0.4);
-  font-family: "ABeeZee", sans-serif; font-size: 11px;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+/* Share the Verto — the same solid pink the dashboard card's Share wears, so
+   the button that hands out the play link looks the same wherever it is. It
+   is not a rival to AI Report: that one makes something out of the answers,
+   this one goes and gets more of them. */
+.rh-pill--share {
+  background: var(--color-hot-pink, #FF1E6F); border-color: var(--color-hot-pink, #FF1E6F);
+  color: #fff; backdrop-filter: none;
+  box-shadow: 0 6px 18px rgba(255,30,111,0.26);
 }
-.rh-toggle:hover { color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.28); }
+.rh-pill--share:hover {
+  background: #FF3F85; border-color: #FF3F85; color: #fff;
+}
 
 /* Menu rows inside the Export dropdown */
 .rh-menu-item {

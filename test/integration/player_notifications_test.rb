@@ -471,18 +471,23 @@ class PlayerNotificationsTest < ActionDispatch::IntegrationTest
 
   # ── What the creator sees ─────────────────────────────────────────────────
 
-  test "the results page counts who asked to hear, and only where the ask is on" do
+  # The results page used to carry an "N asked to hear" tile beside the
+  # response count. It was removed on the owner's instruction, 2026-09-23 — a
+  # third number in a row of two that describe the results themselves, and the
+  # only one of the three that was not about the answers.
+  #
+  # The claims it counted are untouched: they are what the follow-up mail is
+  # sent to, which is what every other test in this file is about. This one
+  # holds the removal, so a tile does not quietly come back with a count of
+  # people on a page that no longer explains who they are.
+  test "the results page does not show who asked to hear" do
     s = survey
     keeper(s)
     admin_for(s.organisation)
 
     get survey_results_path(s)
-    # The count and its label are separate elements since the header made them
-    # a stat tile, so assert the pair rather than one contiguous string.
-    assert_select ".ask-stat", text: /1\s*asked to hear/
-
-    s.update!(join_prompt_enabled: false)
-    get survey_results_path(s)
+    assert_response :success
     assert_no_match(/asked to hear/, response.body)
+    assert_equal 1, s.player_claims.count, "the claim itself still stands; only its tile went"
   end
 end

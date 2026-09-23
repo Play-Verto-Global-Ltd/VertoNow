@@ -32,59 +32,30 @@
     <span class="editor-leave-label"><%= t("results.leave_results") %></span>
   <% end %>
 
-  <%# The tally updates live as answers land; the breakdown below
-      rebuilds on request. Only meaningful on the unsegmented view —
-      a segment's count comes from its own filtered scope, which a
-      broadcast carrying whole-Verto totals would contradict. %>
-  <% if @active_segment && @active_segment[:id] != "overall" %>
-    <div class="rh-count">
-      <% if @active_segment[:suppressed] %>
-        <%# A combination under the small-cell threshold: the number itself is
-            the disclosure (see ResolvesResultSegments#combine_result_segments),
-            so the tally says only that it is under the line. The feed below
-            says why. %>
-        <span class="rh-count-num rh-count-num--under" title="<%= t("results.combination_suppressed_title") %>">&lt;<%= ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE %></span>
-        <span class="rh-count-word">responses</span>
-      <% else %>
-        <span class="rh-count-num"><%= @total %></span>
-        <span class="rh-count-word">response<%= @total == 1 ? "" : "s" %></span>
-      <% end %>
-    </div>
-  <% else %>
-    <%# The toggle lives OUTSIDE #results-live — that node is replaced
-        wholesale on every broadcast (see results_live partial) and
-        would wipe any state kept inside it. Off by default: opt-in,
-        not a reversal of why auto-rebuild was rejected (see the
-        partial's own comment). %>
-    <div data-controller="results-autorefresh"
-         data-results-autorefresh-url-value="<%= survey_results_path(@survey, segment: @active_segment[:id]) %>"
-         data-action="turbo:before-stream-render->results-autorefresh#markDirty"
-         class="rh-livewrap">
-      <%= turbo_stream_from(*ResultsActivity.stream_for(@survey)) %>
-      <%= render "surveys/results_live",
-            survey: @survey, live: false,
-            **ResultsActivity.counts_for(@survey) %>
-      <button type="button" data-results-autorefresh-target="toggle"
-              data-action="click->results-autorefresh#toggle"
-              class="rh-toggle">Auto ↻ off</button>
-    </div>
-  <% end %>
-  <% if @active_segment && @active_segment[:id] != "overall" %>
-    <span class="rh-of">of <%= @overall_total %> overall</span>
-  <% end %>
+  <%# The tally used to live here, between the way out and the metadata. It is
+      over the map now (surveys/_results_tally) — the headline number is what
+      the page is about, and this row is where the controls are. %>
 
-  <%# Metadata, not controls. These were dressed as buttons and competed with
-      the real ones for the same attention; the date is a fact and the play
-      link is a link. %>
+  <%# Metadata, and the one action that belongs beside it. The date is a fact.
+      The Play link that used to sit next to it was an address dressed as a
+      link: copying it, showing its QR code, or sending it anywhere meant
+      opening it and copying out of the address bar. The dashboard's Share
+      panel already does all of that (SurveyLinksController#show), so this is
+      the same button, behind the same modal, from the page the creator is
+      actually on when they decide to send it. %>
   <div class="rh-meta">
     <% if @survey.published_at %>
       <span>Published <%= @survey.published_at.strftime("%b %-d, %Y") %></span>
-      <span class="rh-meta-dot" aria-hidden="true">·</span>
     <% end %>
-    <%= link_to play_survey_url(@survey.publish_token), class: "rh-meta-link", target: "_blank" do %>
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M6.5 3.5H3.5v9h9v-3M9.5 3.5h3v3M12.5 3.5 7 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>Play link
+    <% if @survey.publish_token.present? %>
+      <button type="button" class="rh-pill rh-pill--share"
+              data-action="click->share-modal#open"
+              data-panel-url="<%= share_survey_path(@survey) %>">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M11 5.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6ZM5 9.8a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6ZM11 14.1a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z" stroke="currentColor" stroke-width="1.4"/>
+          <path d="m6.6 8.9 2.8 1.7M9.4 5.4 6.6 7.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg><%= t("dashboard_card.share") %>
+      </button>
     <% end %>
   </div>
 </div><%# end results-header-bar %>
@@ -158,7 +129,11 @@
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M6.6 9.4a2.6 2.6 0 0 0 3.9.3l2-2a2.6 2.6 0 0 0-3.7-3.7l-1.1 1.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M9.4 6.6a2.6 2.6 0 0 0-3.9-.3l-2 2a2.6 2.6 0 0 0 3.7 3.7l1.1-1.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>Share
+        <%# "Share results", not "Share": the button in the bar above shares the
+            VERTO — the address respondents answer at — and two controls both
+            called Share, one of them handing out a read-only view of the
+            answers, is a mistake waiting to be made. %>
+        </svg>Share results
       </summary>
       <div style="position:absolute;right:0;top:calc(100% + 6px);background:#272D4A;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px;min-width:280px;z-index:30;box-shadow:0 10px 28px rgba(0,0,0,0.4);">
         <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.6);line-height:1.5;margin-bottom:10px;">

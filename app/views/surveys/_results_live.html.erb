@@ -7,32 +7,27 @@
     Rebuilding them automatically would re-aggregate every response for every
     viewer on every submission, and move the page under someone reading it.
 
-    The headline is the one number people open this page for, so it keeps its
-    34px; the supporting counts are .ask-stat tiles — the same component Ask
-    Verto's scope folder uses — because they were three interchangeable grey
-    phrases in a row that wrapped mid-phrase at 1440. %>
-<div id="results-live" class="rh-tally">
-  <div class="rh-count">
+    Two pills, over the empty half of the map rather than in the header: the
+    headline number is what the page is about, and the header is where the
+    controls live. Completion is a RATE here, not the raw count it used to be —
+    "339" beside "465" is a subtraction the reader has to do, and the answer
+    (73%) is the thing they wanted. The count is still in the title.
+
+    The "asked to hear" count that used to sit beside these is gone; it was a
+    third number competing with the two that describe the results themselves. %>
+<div id="results-live" class="rmap-tally">
+  <div class="rmap-pill rmap-pill--count">
     <span class="rh-count-num<%= " is-pulsing" if live %>"><%= responders %></span>
     <span class="rh-count-word">response<%= responders == 1 ? "" : "s" %></span>
   </div>
 
-  <div class="ask-stat rh-stat" style="--stat-accent:#01EACB;">
-    <span class="ask-stat-dot"></span>
-    <span class="ask-stat-num"><%= completed %></span>
-    <span class="ask-stat-label">completed</span>
-  </div>
-
-  <%# Did anyone join? Only shown once the creator has switched the ask on —
-      on every other Verto it would be a permanent zero that means nothing.
-      A count, deliberately, and never a list: the creator is being told how
-      many people want to hear what happened, not who they are. %>
-  <% if survey.join_prompt? %>
-    <div class="ask-stat rh-stat" style="--stat-accent:#8B85FF;"
-         title="People who asked to hear what came of this Verto">
-      <span class="ask-stat-dot"></span>
-      <span class="ask-stat-num"><%= survey.player_claims.count %></span>
-      <span class="ask-stat-label">asked to hear</span>
+  <%# No rate before there is anything to rate: 0% of nobody is not a fact
+      about the Verto, it is a fact about it not having started. %>
+  <% if responders.positive? %>
+    <div class="rmap-pill rmap-pill--rate"
+         title="<%= completed %> of <%= responders %> reached the end">
+      <span class="rmap-rate-num"><%= (completed * 100.0 / responders).round %>%</span>
+      <span class="rmap-rate-word">completed</span>
     </div>
   <% end %>
 

@@ -3,14 +3,13 @@
   .results-export-menu > summary::-webkit-details-marker { display: none; }
   .results-export-menu > summary::marker { content: ""; }
   .results-export-menu > summary:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
-  [data-results-autorefresh-target="toggle"].is-on { color: #01EACB; border-color: rgba(1,234,203,0.4); background: rgba(1,234,203,0.08); }
 </style>
 
 <%# Full-viewport app-shell — body stays overflow:hidden from fullscreen layout %>
 <div style="height:100%;background:#1C2034;display:flex;overflow:hidden;position:relative;"
-     data-controller="freeform-answers answer-timeline"
+     data-controller="freeform-answers answer-timeline share-modal"
      data-answer-timeline-range-value="<%= @date_range.presence || "all" %>"
-     data-action="keydown.esc@window->freeform-answers#closeOnEsc keydown.esc@window->answer-timeline#closeOnEsc">
+     data-action="keydown.esc@window->freeform-answers#closeOnEsc keydown.esc@window->answer-timeline#closeOnEsc keydown.esc@window->share-modal#closeOnEsc">
 
   <%# ── Freeform answers panel — one shell for the whole page, opened by the
       "View all answers" button on any freeform result card (_result_cards).
@@ -45,6 +44,25 @@
         <button type="button" class="freeform-modal__more" hidden data-freeform-answers-target="more"
                 data-action="click->freeform-answers#loadMore"><%= t("results.freeform_load_more") %></button>
       </div>
+    </div>
+  </div>
+
+  <%# ── Share this Verto ── one shell for the page, filled per open from
+      SurveyLinksController#show into the frame. The same panel the dashboard's
+      Share button opens, and deliberately the same empty shell rather than a
+      server-rendered copy: it carries an inline QR SVG and a form per link,
+      which is a lot of markup for a panel most visits never open.
+
+      No .app-modal--below-nav here, unlike the dashboard's: that class pads
+      the modal down past the global nav, and this page hides it
+      (@hide_main_nav) — the padding would push the panel off-centre against
+      nothing. ── %>
+  <div data-share-modal-target="modal" class="app-modal hidden">
+    <div class="app-modal__backdrop" data-action="click->share-modal#close"></div>
+    <div class="app-modal__panel share-modal__shell">
+      <%= turbo_frame_tag "share-modal", data: { share_modal_target: "frame" } do %>
+        <div class="share-modal__loading"><%= t("share_modal.loading") %></div>
+      <% end %>
     </div>
   </div>
 
@@ -178,6 +196,7 @@
               in on that country's shape for a closer look. ── %>
           <div class="compare-map-stage" data-results-compare-target="mapStage">
             <%= render "shared/world_map" %>
+            <%= render "surveys/results_tally" %>
           </div>
         </div>
 
@@ -205,6 +224,10 @@
     </div>
   </div>
   <script type="application/json" id="results-region-map-data"><%= map_data.to_json.html_safe %></script>
+<% else %>
+  <%# No region-tagged responses and fewer than two waves, so there is no map
+      band to hang the tally over. It still has to be on the page. %>
+  <%= render "surveys/results_tally", inline: true %>
 <% end %>
 
 <%# Everything below the map: the question rail in the left margin, and the

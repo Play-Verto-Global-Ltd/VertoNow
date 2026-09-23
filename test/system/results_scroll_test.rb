@@ -321,16 +321,39 @@ class ResultsScrollTest < ApplicationSystemTestCase
     settle_box(find(".results-outline"))
 
     # It rises by however much the CHROME above it gave back — the title bar
-    # and the header together — and no further. Stated against the measured
-    # shrink rather than a number, so tuning either one doesn't quietly turn
-    # this into a test of nothing. (It already earned that: the title bar
-    # learning to fold took the give-back from 27px to 113px, and this said so
-    # rather than passing.)
+    # and the header together — plus whatever scrolled away above it inside
+    # the feed before it reached its sticky top, and no further. Stated
+    # against the measured shrink rather than a number, so tuning either one
+    # doesn't quietly turn this into a test of nothing. (It already earned
+    # that: the title bar learning to fold took the give-back from 27px to
+    # 113px, and this said so rather than passing.)
+    #
+    # Still a real assertion with the allowance in it: a rail that was not
+    # sticky at all would rise by the whole 1500px scroll.
     gave_back = chrome_before - chrome_height
     moved = top_before - rail_top.call
-    assert moved.between?(0, gave_back + 4),
-      "the rail moved #{moved}px up the screen while the chrome gave back #{gave_back}px — " \
+    allowance = gave_back + scrolled_away_above_rail + 4
+    assert moved.between?(0, allowance),
+      "the rail moved #{moved}px up the screen while the chrome gave back #{gave_back}px " \
+      "and #{scrolled_away_above_rail}px scrolled away above it — " \
       "it is scrolling with the feed, not sticking to it"
+  end
+
+  # The tally pills (surveys/_results_tally). On a Verto with a map they hang
+  # in the map band; on one without — this fixture, whose responses carry no
+  # country — they are a row at the top of the feed, above the rail, and they
+  # scroll away like any other feed content. The rail therefore starts that
+  # much lower and slides that much further before it sticks.
+  def scrolled_away_above_rail
+    evaluate_script(<<~JS)
+      (() => {
+        const t = document.querySelector(".rmap-stats--inline")
+        if (!t) return 0
+        const cs = getComputedStyle(t)
+        return Math.round(t.getBoundingClientRect().height +
+                          parseFloat(cs.marginTop) + parseFloat(cs.marginBottom))
+      })()
+    JS
   end
 
   test "clicking a question scrolls the feed to it" do
