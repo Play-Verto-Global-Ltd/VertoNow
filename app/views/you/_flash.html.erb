@@ -1,0 +1,13 @@
+<%# The account pages' flash. notice_detail is an optional second sentence
+    under the notice (PlayerEmailConfirmationsController#show sets one). %>
+<% if notice.present? %>
+  <div class="you-flash is-notice" role="status">
+    <% if flash[:notice_detail].present? %>
+      <strong class="you-flash-title"><%= notice %></strong>
+      <span class="you-flash-detail"><%= flash[:notice_detail] %></span>
+    <% else %>
+      <%= notice %>
+    <% end %>
+  </div>
+<% end %>
+<% if alert.present? %><div class="you-flash is-alert" role="alert"><%= alert %></div><% end %>

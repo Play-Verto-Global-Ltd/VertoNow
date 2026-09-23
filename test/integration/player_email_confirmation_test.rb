@@ -140,15 +140,43 @@ class PlayerEmailConfirmationTest < ActionDispatch::IntegrationTest
 
   # ── The link ───────────────────────────────────────────────────────────────
 
-  test "following the link confirms the address without signing anyone in" do
+  test "signed in, the link confirms and goes straight to the dashboard" do
+    pl = join_and_sign_in
+
+    get player_email_confirmation_path(pl.generate_token_for(:email_confirmation))
+
+    assert_redirected_to you_path
+    assert_not_nil pl.reload.email_verified_at
+    follow_redirect!
+    assert_select ".you-flash.is-notice .you-flash-title", text: I18n.t("player_email_confirmation.confirmed_title")
+    assert_select ".you-flash-detail", text: I18n.t("player_email_confirmation.confirmed_body")
+    assert_select ".you-confirm", 0, "the banner asking for it is gone once it is done"
+  end
+
+  test "signed out, it confirms without signing anyone in and sends them to sign in" do
     pl = Player.create!(email_address: address, password: PASSWORD)
 
     get player_email_confirmation_path(pl.generate_token_for(:email_confirmation))
 
-    assert_response :success
+    assert_redirected_to new_player_session_path
     assert_not_nil pl.reload.email_verified_at
-    assert_select "h1", text: I18n.t("player_email_confirmation.confirmed_title")
-    assert_nil cookies[:player_session_id].presence, "the token is proof of an inbox, not a way in"
+    assert_nil cookies[:player_session_id].presence, "a week-long reusable token must not be a way in"
+    follow_redirect!
+    assert_select ".you-flash-title", text: I18n.t("player_email_confirmation.confirmed_title")
+
+    post new_player_session_path, params: { email_address: pl.email_address, password: PASSWORD }
+    assert_redirected_to you_path, "and signing in lands on the dashboard"
+  end
+
+  test "signed in as someone else, it confirms the mail's account, not theirs" do
+    other = join_and_sign_in
+    pl = Player.create!(email_address: address, password: PASSWORD)
+
+    get player_email_confirmation_path(pl.generate_token_for(:email_confirmation))
+
+    assert_redirected_to new_player_session_path
+    assert pl.reload.email_verified?
+    assert_not other.reload.email_verified?
   end
 
   test "opened twice, it says so and does not move the date" do
@@ -161,7 +189,7 @@ class PlayerEmailConfirmationTest < ActionDispatch::IntegrationTest
       get player_email_confirmation_path(token)
     end
 
-    assert_select "h1", text: I18n.t("player_email_confirmation.already_title")
+    assert_equal I18n.t("player_email_confirmation.already_title"), flash[:notice]
     assert_equal first, pl.reload.email_verified_at
   end
 

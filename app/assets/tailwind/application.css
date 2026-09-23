@@ -15748,6 +15748,8 @@ body.generating-overlay-active .bottom-bar { display: none; }
 .you-flash { font-size: 13px; line-height: 1.45; padding: 10px 14px; border-radius: 12px; }
 .you-flash.is-notice { background: rgba(1,234,203,0.1); border: 1px solid rgba(1,234,203,0.3); color: #fff; }
 .you-flash.is-alert { background: rgba(255,30,111,0.1); border: 1px solid rgba(255,30,111,0.32); color: #fff; }
+.you-flash-title { display: block; font-weight: 600; }
+.you-flash-detail { display: block; margin-top: 2px; color: rgba(255,255,255,0.8); }
 
 /* Confirm your email (you/_confirm_banner). Amber rather than the alert pink:
    nothing is broken or blocked, the account simply cannot be written to yet.

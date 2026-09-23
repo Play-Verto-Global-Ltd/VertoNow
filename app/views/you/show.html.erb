@@ -58,8 +58,7 @@
     </section>
 
     <div class="you-main">
-      <% if notice.present? %><div class="you-flash is-notice" role="status"><%= notice %></div><% end %>
-      <% if alert.present? %><div class="you-flash is-alert" role="alert"><%= alert %></div><% end %>
+      <%= render "you/flash" %>
       <%= render "you/confirm_banner", state: @confirm, player: current_player if @confirm %>
 
       <section class="you-section" id="vertos">

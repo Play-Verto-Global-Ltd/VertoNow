@@ -14,6 +14,10 @@
     <div class="you-card">
       <h1 class="you-h1"><%= t("player_session.title") %></h1>
       <p class="you-sub"><%= t("player_session.body") %></p>
+      <%# Where a confirmation link opened on a signed-out device lands, so it
+          has to be able to say what just happened — and a failed sign-in
+          sets an alert that this page had nowhere to draw. %>
+      <%= render "you/flash" %>
 
       <%# Google first, and for a reason beyond convenience: there is no
           respondent password reset, so for somebody who signed up this way it

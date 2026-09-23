@@ -43,16 +43,31 @@ class PlayerEmailConfirmationsController < ApplicationController
   # scanner is reading that inbox. EmailConfirmationsController#show makes the
   # same call for creators, for the same reason: one tap.
   #
-  # No sign-in required, and none started. People open these on a phone that
-  # is not signed in; the signed token is the proof, not the session.
+  # Straight on to the dashboard, with the confirmation said in its flash
+  # (owner's call, 2026-09-23). Signed out — the mail opened on another device,
+  # or in a mail app's own browser — it goes to the sign-in form instead, which
+  # lands on the dashboard once they are in. It does NOT sign them in itself:
+  # this token is reusable for a week and sits in an inbox, so letting it open
+  # a session would make it a week-long bearer credential, which is the thing
+  # PlayerSignInLink is deliberately 20 minutes and single-use to avoid.
   def show
     player = Player.find_by_token_for(:email_confirmation, params[:token].to_s)
     return render(:invalid, status: :not_found) if player.nil?
 
-    # Captured before verify_email!, which is idempotent, so a link re-opened
-    # a week later says so rather than claiming to have done it again.
-    @already = player.email_verified?
+    # Read before verify_email!, which is idempotent, so a link re-opened a
+    # week later says so rather than claiming to have done it again.
+    state = player.email_verified? ? "already" : "confirmed"
     player.verify_email!
+
+    # A heading and a sentence, carried as two flash values rather than glued
+    # into one string: how a heading runs into the sentence after it is
+    # punctuated differently across the 26 locales.
+    flash[:notice]        = t("player_email_confirmation.#{state}_title")
+    flash[:notice_detail] = t("player_email_confirmation.#{state}_body")
+
+    # Signed in as somebody else on this device: their dashboard is not the
+    # one the confirmation was about, so they sign in like anyone else would.
+    redirect_to current_player == player ? you_path : new_player_session_path
   end
 
   # POST /you/confirm — "Send me the link", from /you and /you/account.
