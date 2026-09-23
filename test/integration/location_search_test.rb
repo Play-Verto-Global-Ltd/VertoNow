@@ -58,6 +58,28 @@ class LocationSearchTest < ActionDispatch::IntegrationTest
     assert_nil r["label"]
   end
 
+  test "the card is found by its cid, which wins over a wrong index" do
+    # The editor and its Preview render no card index, only the cid — without
+    # this a search there ran unscoped (seen on a live Verto, 2026-09-23).
+    s = published_survey
+    s.update_columns(cards: s.cards + [ { "type" => "open_ended", "input" => "location", "text" => "Where?",
+                                          "cid" => "c_loc", "location_places" => [ "country" ] } ])
+    seen = nil
+    stub_method(NominatimClient, :search, ->(**kw) { seen = kw; [] }) do
+      get player_location_search_path(s.publish_token), params: { q: "Germ", cid: "c_loc" }
+      assert_equal [ "country" ], seen[:places], "cid alone"
+
+      get player_location_search_path(s.publish_token), params: { q: "Germ", cid: "c_loc", card: 0 }
+      assert_equal [ "country" ], seen[:places], "cid over a wrong index"
+
+      get player_location_search_path(s.publish_token), params: { q: "Germ", cid: "nope" }
+      assert_equal [], seen[:places], "an unknown cid and no index is unscoped"
+
+      get player_location_search_path(s.publish_token), params: { q: "Germ", cid: "nope", card: 1 }
+      assert_equal [ "country" ], seen[:places], "an unknown cid falls back to the index"
+    end
+  end
+
   test "a card index that isn't a location card searches unscoped" do
     s = published_survey
     seen = nil

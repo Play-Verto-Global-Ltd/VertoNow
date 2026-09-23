@@ -1002,9 +1002,14 @@ class PlayerController < ApplicationController
 
     # The creator's narrowing (LocationScope) is read off the SAVED card the
     # search is for, never taken from the request: the client only says which
-    # card it is. An index that isn't a location card searches unscoped, as
-    # every card did before scopes existed.
-    card  = Integer(params[:card].to_s, exception: false)&.then { |i| i >= 0 ? Array(@survey.cards)[i] : nil }
+    # card it is: its cid (sent from every render mode, including the
+    # editor's Preview, which has no index), else its index (player pages
+    # opened before the cid was sent). Anything that isn't a location card
+    # searches unscoped, as every card did before scopes existed.
+    cards = Array(@survey.cards)
+    cid   = params[:cid].to_s.presence
+    card  = cid && cards.find { |c| c.is_a?(Hash) && c["cid"].to_s == cid }
+    card ||= Integer(params[:card].to_s, exception: false)&.then { |i| i >= 0 ? cards[i] : nil }
     scope = LocationScope.for_card(card)
     results = NominatimClient.search(query: params[:q].to_s, locale: I18n.locale.to_s, **scope).map do |place|
       label = LocationScope.label_for(place, scope[:places])

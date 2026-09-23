@@ -1068,7 +1068,12 @@
                <%# Which card this is, so the search runs under the creator's
                    narrowing saved on it (LocationScope) — the server reads the
                    scope off the saved card, never from the request. %>
-               <% unless card_index.nil? %>data-location-search-card-value="<%= card_index %>"<% end %>>
+               <% unless card_index.nil? %>data-location-search-card-value="<%= card_index %>"<% end %>
+               <%# The card's cid, in EVERY mode. The editor and its Preview
+                   (which clones the editor's cards) render no card_index, so
+                   without this a search there ran unscoped. The cid is also
+                   the better key: it survives a reorder the index doesn't. %>
+               <% if card["cid"].present? %>data-location-search-cid-value="<%= card["cid"] %>"<% end %>>
             <div class="location-search-input-wrap">
               <input type="text" autocomplete="off" maxlength="80" class="location-search-field"
                      placeholder="<%= t(LocationScope.placeholder_key(card["location_places"])) %>"
