@@ -363,6 +363,13 @@ export default class extends Controller {
     this._bodyObserver?.disconnect()
     if (this._answeredFrame) cancelAnimationFrame(this._answeredFrame)
     clearTimeout(this._revealTimer)
+    // The scroll cue is two chained timers and a set of listeners on window;
+    // left running they fire against whatever replaced the deck.
+    clearTimeout(this._nudgeDown)
+    clearTimeout(this._nudgeUp)
+    clearTimeout(this._nudgeRetry)
+    if (this._nudgeFrame) cancelAnimationFrame(this._nudgeFrame)
+    this._nudgeAbort?.()
     // kbd-open lives on <html>, outside this controller's element, so it does
     // NOT go away with the deck. Left behind it would guard _fitCard on
     // whatever renders next (the thank-you screen, a Turbo visit) and that
@@ -540,6 +547,201 @@ export default class extends Controller {
     // whether there IS anything below — left unconditional it greys out the
     // final row's label on an answer that fits perfectly well.
     box.classList.toggle("is-scrollable", over > 1)
+  }
+
+  // ── Saying that the answer MOVES, once ──────────────────────────────────
+  //
+  // The fade says the list continues. This says it scrolls. Reported four or
+  // five times now, most recently from a study run on students' own phones:
+  // the first option is the only one on screen, so it is the one that gets
+  // picked, and the answer distribution becomes a property of the viewport
+  // rather than of the question. That is a measurement problem, not a
+  // cosmetic one, which is why "the RAs will remind them to scroll" was not an
+  // acceptable answer to it.
+  //
+  // A NUDGE, not a scroll to the bottom, which was the other candidate. On a
+  // list long enough to need this, travelling to the end takes the QUESTION
+  // off the screen with it: for a second the respondent is reading options
+  // with nothing to answer, then it snaps back. One option's worth of travel
+  // says "this moves" just as clearly and keeps the question in view. It is
+  // also the shape already proven here — the range slider nudges, it does not
+  // run its track (.option-limit-counter.is-rejected is the same idea in CSS).
+  //
+  // ONCE PER PLAY, and deliberately not once per browser. A flag in
+  // localStorage would fire for a first-time respondent and stay silent for a
+  // returning one — a difference in treatment between people inside the same
+  // study, which is a worse problem than the one being fixed. Every respondent
+  // gets the same run; the cost is that somebody playing two Vertos sees it
+  // twice, which is the right way round.
+  static NUDGE_MIN_OVERFLOW = 32   // px below the fold worth teaching about; less
+                                   // than this is a clipped edge, and moving it reads as a glitch
+  static NUDGE_DELAY_MS     = 520  // let the card's entry animation land first
+  static NUDGE_HOLD_MS      = 460  // dwell before coming back
+  static NUDGE_DOWN_MS      = 420
+  static NUDGE_UP_MS        = 380
+  static NUDGE_FALLBACK     = 88   // an option-ish height, when no row can be measured
+  static NUDGE_TRIES        = 6    // looks, including the one at card entry
+  static NUDGE_RETRY_MS     = 120  // ~720ms of looking in all, then it fits
+
+  // WHICH box scrolls is a layout question, and naming it was the wrong answer.
+  // Usually it is .split-right > .mt-2 — the panel _fitCard measures and the
+  // element the fade is masked onto — but the tiers that size a card for a
+  // phone can leave that panel fitting and hand the overflow to an ancestor
+  // instead. A cue that only ever looks at .mt-2 reports "nothing below the
+  // fold" on precisely the layouts this exists for. So walk up from the
+  // options and take whichever ancestor is actually scrolling; on every
+  // viewport measured so far it resolves to .mt-2, which is the point — it
+  // finds the scroller rather than assuming it.
+  _answerScroller(card) {
+    const list = card?.querySelector(".choice-list, .pick-list, .choice-grid, .prioritise-list")
+    if (!list) return null
+    for (let el = list.parentElement; el && el !== document.body; el = el.parentElement) {
+      const oy = getComputedStyle(el).overflowY
+      if ((oy === "auto" || oy === "scroll") && el.scrollHeight - el.clientHeight > 1) return el
+    }
+    return null
+  }
+
+  // `tries` counts down. _update runs before the panel has settled into the
+  // height _fitCardHeight gives it and its observers then correct — so the
+  // first look often finds a box that does not overflow YET, on a card that
+  // will. One shot at card entry therefore misses the common case entirely
+  // (measured: desktop found over=0 at entry and 110 a moment later). Look
+  // again a few times, then stop: a card whose answer still fits after this
+  // long fits.
+  _maybeNudgeScroll(idx, tries = this.constructor.NUDGE_TRIES) {
+    // Two flags, not one. _scrollNudged is spent only by a cue that actually
+    // MOVED (see _runNudge); _nudgeArmed just stops a second _update() in the
+    // same frame scheduling a second run. The first cut spent the one-shot
+    // here, at scheduling — which, with the window listeners below, meant the
+    // tap that dismissed the cookie banner killed the cue before it had moved
+    // anything, and nothing ever brought it back.
+    if (this._scrollNudged || this._nudgeArmed) return
+    // No motion cue for anyone who asked for no motion. They are not left
+    // without one: the fade is already on the box, and is the part of this the
+    // owner rates most highly.
+    if (this._reducedMotion) return
+    // Never behind a panel. The survey-level consent banner and the creator's
+    // intro modal each dim the deck and mark .preview-body inert, so a list
+    // animating under one is motion on something the respondent can neither
+    // read properly nor touch — the same reasoning, and the same two
+    // attributes, as _syncCardModal's guard. Neither needs a retry: both
+    // _dismissConsentBanner and dismissCardModal call _update(), which re-enters
+    // here with a full budget the moment the deck is live, which is the first
+    // moment the cue is any use. (A self-driving CARD — consent_gate, the
+    // respondent-code gate — never reaches this line: _update returns above.)
+    if (this.element.hasAttribute("data-consent-pending")) return
+    if (this.element.hasAttribute("data-card-modal-open")) return
+
+    const again = () => {
+      if (tries <= 1) return
+      this._nudgeRetry = setTimeout(() => this._maybeNudgeScroll(idx, tries - 1),
+                                    this.constructor.NUDGE_RETRY_MS)
+    }
+
+    const card = this.cardTargets[idx]
+    if (!card || !card.classList.contains("active")) return
+    const box = this._answerScroller(card)
+    if (!box) return again()
+    // Already moved — by them, or by a position the browser restored. The cue
+    // is for someone who has not discovered it yet.
+    if (box.scrollTop > 0) return
+
+    const over = box.scrollHeight - box.clientHeight
+    if (over <= this.constructor.NUDGE_MIN_OVERFLOW) return again()
+
+    this._nudgeArmed = true
+
+    const row    = box.querySelector(".choice-list-item, .pick-item, .choice-card")
+    const travel = Math.min(over, Math.round(row?.getBoundingClientRect().height) || this.constructor.NUDGE_FALLBACK)
+
+    // Any sign of a real person ON THIS LIST cancels it, and leaves them
+    // exactly where they put themselves. A cue that fights the hand it is
+    // teaching is a bug report.
+    //
+    // On the box, NOT on window — window was the bug. A respondent's first
+    // taps land on furniture this cue has nothing to do with: Accept all on the
+    // cookie banner, Agree on the consent banner, the intro modal's button.
+    // Listening globally read every one of those as "they have found the
+    // scroll". keydown is the exception and stays global on purpose: Space,
+    // PageDown and the arrows scroll the box without ever targeting it.
+    this._nudgeCancelled = false
+    const ac = new AbortController()
+    this._nudgeListeners = ac
+    this._nudgeAbort = () => { this._nudgeCancelled = true; this._teardownNudge() }
+    const opts = { passive: true, signal: ac.signal }
+    for (const ev of [ "pointerdown", "touchstart", "wheel" ]) box.addEventListener(ev, this._nudgeAbort, opts)
+    window.addEventListener("keydown", this._nudgeAbort, opts)
+    this._nudgeDown = setTimeout(() => this._runNudge(box, travel), this.constructor.NUDGE_DELAY_MS)
+  }
+
+  async _runNudge(box, travel) {
+    if (this._nudgeCancelled) return
+    // Spent HERE. The pre-roll is over, nothing interrupted it, and the next
+    // frame moves the list — that is the cue being delivered, and the only
+    // thing that should cost a respondent their one showing of it.
+    this._scrollNudged = true
+    await this._scrollOver(box, travel, this.constructor.NUDGE_DOWN_MS)
+    if (this._nudgeCancelled) return
+    await new Promise(done => { this._nudgeUp = setTimeout(done, this.constructor.NUDGE_HOLD_MS) })
+    if (this._nudgeCancelled) return
+    // The dwell is the one stretch of this with no frame callback watching the
+    // box, so the return leg re-checks before it starts: a list somebody else
+    // moved while it sat there must not be animated back to a position the cue
+    // remembers and nobody else does.
+    if (this._nudgeMovedElsewhere(box)) return this._teardownNudge()
+    await this._scrollOver(box, 0, this.constructor.NUDGE_UP_MS)
+    this._teardownNudge()
+  }
+
+  // A scroll the cue did not make. Pointer, touch, wheel and key each cancel
+  // through their own listener; this catches everything that moves a scroller
+  // without one — an option scrolled into view by a focus ring, a position the
+  // browser restored, another script driving the box. All of them outrank a
+  // cue, which exists to say the list moves and has no business deciding where
+  // it ends up.
+  _nudgeMovedElsewhere(box) {
+    return this._nudgeAt != null && Math.abs(box.scrollTop - this._nudgeAt) > 2
+  }
+
+  // Drop the listeners without claiming the run was cancelled — _nudgeAbort did
+  // both, so a cue that finished cleanly left _nudgeCancelled true behind it.
+  // True of nothing, and a trap for the next thing to read the flag.
+  _teardownNudge() {
+    this._nudgeArmed = false
+    this._nudgeAt = null
+    this._nudgeListeners?.abort()
+    this._nudgeListeners = null
+  }
+
+  // Animated by hand rather than with scroll-behavior: smooth. The native one
+  // was measured stalling halfway back — a programmatic smooth scroll is at
+  // the browser's discretion and the observers that fire while the card
+  // settles are enough to abandon it, which leaves the list parked off its
+  // origin with no way back. This is the same motion, deterministic, and
+  // cancellable to the frame.
+  _scrollOver(box, to, ms) {
+    return new Promise(done => {
+      const from = box.scrollTop
+      const dist = to - from
+      if (!dist) return done()
+      this._nudgeAt = from
+      const t0 = performance.now()
+      const step = now => {
+        if (this._nudgeCancelled) return done()
+        if (this._nudgeMovedElsewhere(box)) { this._nudgeAbort?.(); return done() }
+        const p = Math.min(1, (now - t0) / ms)
+        const eased = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
+        box.scrollTop = from + dist * eased
+        // Read back rather than trusting the write: the browser clamps to the
+        // scrollable range and rounds, and comparing against what we MEANT
+        // would read its own rounding as interference, every frame.
+        this._nudgeAt = box.scrollTop
+        if (p < 1) this._nudgeFrame = requestAnimationFrame(step)
+        else done()
+      }
+      this._nudgeFrame = requestAnimationFrame(step)
+    })
   }
 
   // ── The card's real height ──────────────────────────────────────────────
@@ -2464,6 +2666,11 @@ export default class extends Controller {
     this._syncAnswered()
     this._fitFooter()
     this._fitCard()
+    // After _fitCard, which is what decides whether the answer overflows at
+    // all — and on a frame of its own, because the panel is still settling
+    // into the height _fitCardHeight just gave it and a box measured mid-flight
+    // reports the overflow of a layout nobody will ever see.
+    requestAnimationFrame(() => this._maybeNudgeScroll(idx))
   }
 
   // ── The creator's intro modal ─────────────────────────────────────────────
