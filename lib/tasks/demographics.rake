@@ -1,4 +1,63 @@
 namespace :demographics do
+  desc "Swap a Verto's retired birth-date card for the age-band slider, in place (TOKEN=..., APPLY=1 to write)"
+  # For a live Verto that still carries the month/year card. Only the CARD
+  # changes: it is replaced at the SAME index, in one write, so every stored
+  # answer stays keyed to the question it was given on. Doing this in the
+  # editor means a delete and an insert, two autosaves, and a window in which
+  # every later card sits one position early for anyone submitting.
+  #
+  # Stored data is deliberately left alone — the old "YYYY-MM" answers stay in
+  # responses.answers and demographic_birth_year stays filled, so the age
+  # segments keep counting those respondents. The cid is kept too, so anything
+  # addressed to the card by cid still finds it.
+  #
+  # Dry run unless APPLY=1.
+  task swap_age_card: :environment do
+    token = ENV["TOKEN"].to_s.strip.sub(%r{\A.*/play/}, "").sub(%r{[/?#].*\z}, "")
+    abort "TOKEN=<publish token or /play/ URL> is required" if token.blank?
+
+    survey = Survey.find_by(publish_token: token) ||
+             Survey.where.not(publish_token: nil).find_by(slug: token) ||
+             SurveyLink.find_by(slug: token)&.survey
+    abort "No Verto found for #{token.inspect}" unless survey
+
+    cards = Array(survey.cards).map { |c| c.is_a?(Hash) ? c.dup : c }
+    idx   = cards.find_index { |c| c.is_a?(Hash) && c["demographic"] && c["input"] == "month" }
+    if idx.nil?
+      already = cards.any? { |c| c.is_a?(Hash) && c["demographic"] && c["type"].to_s == "range" }
+      puts already ? "“#{survey.title}” already has the age slider — nothing to do." :
+                     "“#{survey.title}” has no birth-date card — nothing to do."
+      next
+    end
+
+    old  = cards[idx]
+    card = DemographicQuestions.core_card("age", locale: survey.default_locale)
+    card["cid"] = old["cid"] if old["cid"].present?
+    # Same prefill SurveysController#add_demographic_card gives a multilingual
+    # Verto, so the slider is translated in every language the Verto claims.
+    (Array(survey.locales) - [ survey.default_locale ]).each do |loc|
+      tr = DemographicQuestions.core_card("age", locale: loc)
+      (card["i18n"] ||= {})[loc] =
+        { "text" => tr["text"], "description" => tr["description"], "options" => tr["options"] }.compact
+    end
+    cards[idx] = card
+
+    answered = survey.responses.where.not(demographic_birth_year: nil).count
+    puts "Verto:     “#{survey.title}” (id #{survey.id}, #{survey.responses.count} responses)"
+    puts "Card #{idx + 1}:    “#{old['text']}” (month picker) → “#{card['text']}” (#{card['options'].size}-band slider)"
+    puts "Unchanged: every card position, every stored answer, #{answered} stored birth year(s)"
+
+    unless ENV["APPLY"] == "1"
+      puts "[DRY RUN] nothing written — re-run with APPLY=1 to swap the card."
+      next
+    end
+
+    # update_columns: the card list is written exactly as built above. A save
+    # would run the deck normalisers, and a locked deck is never re-sanitised.
+    survey.update_columns(cards: cards, updated_at: Time.current)
+    puts "Swapped."
+  end
+
   desc "Backfill demographic_gender / demographic_birth_year from stored answers (DRY_RUN=1 to preview)"
   # New responses denormalise these on save; this fills in the ones stored
   # before the columns existed, so the demographic filters aren't blank on every
