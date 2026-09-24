@@ -33,12 +33,59 @@ class NpsHelperTest < ActionView::TestCase
   end
 
   test "the neutral frame indexes a real asset in every animation set" do
-    NpsHelper::RANGE_THEMES.each do |slug|
-      url = nps_lottie_urls(slug)[NpsHelper::NPS_NEUTRAL_FRAME - 1]
+    NpsHelper::LOTTIE_THEMES.each do |slug|
+      neutral = NpsHelper.neutral_frame_for(slug)
+      url = nps_lottie_urls(slug)[neutral - 1]
       assert url.present?, "#{slug} has no asset at the neutral frame"
-      assert Rails.root.join("app/assets/lottie/#{slug}/#{NpsHelper::NPS_NEUTRAL_FRAME}.json").exist?,
+      assert Rails.root.join("app/assets/lottie/#{slug}/#{neutral}.json").exist?,
         "#{slug} is missing its neutral frame file"
     end
+  end
+
+  # ── The age card's bound set ───────────────────────────────────────────────
+  # Seven frames, one per age band, so the slider changes the file per answer.
+
+  test "the age-band set has exactly one frame per age band, in band order" do
+    assert_equal DemographicQuestions::AGE_BANDS.length, NpsHelper.frames_for(NpsHelper::AGE_BAND_THEME)
+    assert_equal 7, nps_lottie_urls(NpsHelper::AGE_BAND_THEME).size
+    assert_equal NpsHelper::NPS_FRAMES, NpsHelper.frames_for("football"), "every pickable set keeps five"
+    assert_equal 4, NpsHelper.neutral_frame_for(NpsHelper::AGE_BAND_THEME),
+                 "the resting pose is the middle band, where the thumb parks"
+    assert_equal NpsHelper::NPS_NEUTRAL_FRAME, NpsHelper.neutral_frame_for("football")
+  end
+
+  test "the age card always plays the age-band set, whatever range_theme it stores" do
+    age = DemographicQuestions.cards.first
+    assert NpsHelper.age_band_card?(age)
+    assert_equal NpsHelper::AGE_BAND_THEME, range_theme_slug(age)
+    assert_equal NpsHelper::AGE_BAND_THEME, range_theme_slug(age.merge("range_theme" => "pizza")),
+                 "a stamp from before the set existed must not win"
+    assert_equal NpsHelper::AGE_BAND_THEME,
+                 range_theme_slug(DemographicQuestions.core_card("age")), "the keyed generation too"
+
+    seven = { "type" => "range", "text" => "Q", "options" => DemographicQuestions::AGE_BAND_LABELS,
+              "range_theme" => "pizza" }
+    refute NpsHelper.age_band_card?(seven), "seven stops alone do not make a card the age card"
+    assert_equal "pizza", range_theme_slug(seven)
+    assert slider_top_down?(age)
+    refute slider_top_down?(seven)
+  end
+
+  test "the age-band set is bound to its card, never offered or stored" do
+    refute_includes NpsHelper::RANGE_THEMES, NpsHelper::AGE_BAND_THEME, "the picker must not offer it"
+    refute_includes range_theme_picker_data[:themes].map { |t| t[:slug] }, NpsHelper::AGE_BAND_THEME
+    assert_includes NpsHelper::LOTTIE_THEMES, NpsHelper::AGE_BAND_THEME, "but it is playable"
+    assert_equal NpsHelper::NPS_THEME, range_theme_slug({ "range_theme" => NpsHelper::AGE_BAND_THEME }),
+                 "an ordinary card storing the slug falls back like any unknown slug"
+  end
+
+  test "render_nps_reaction opens the age-band set on its own middle frame with all seven urls" do
+    html = render_nps_reaction(theme: NpsHelper::AGE_BAND_THEME)
+    assert_includes html, %(data-lottie-player-current-value="4")
+    urls = JSON.parse(Nokogiri::HTML.fragment(html).at(".nps-lottie")["data-lottie-player-urls-value"])
+    assert_equal 7, urls.size
+    assert_match %r{/music_eras/1(-\h+)?\.json\z}, urls.first
+    assert_match %r{/music_eras/7(-\h+)?\.json\z}, urls.last
   end
 
   test "range_theme_slug returns a known card theme, default otherwise" do
@@ -79,12 +126,17 @@ class NpsHelperTest < ActionView::TestCase
     assert_equal NpsHelper::RANGE_THEMES.sort, slugs.sort
   end
 
-  test "every registered theme ships all five animation frames" do
-    NpsHelper::RANGE_THEMES.each do |slug|
-      (1..NpsHelper::NPS_FRAMES).each do |i|
+  test "every registered theme ships exactly the animation frames it declares" do
+    NpsHelper::LOTTIE_THEMES.each do |slug|
+      frames = NpsHelper.frames_for(slug)
+      (1..frames).each do |i|
         path = Rails.root.join("app/assets/lottie", slug, "#{i}.json")
         assert File.exist?(path), "missing #{path}"
+        assert JSON.parse(File.read(path)).key?("layers"), "#{path} is not a Lottie animation"
       end
+      extra = Rails.root.join("app/assets/lottie", slug, "#{frames + 1}.json")
+      refute File.exist?(extra), "#{slug} ships #{extra.basename} but declares #{frames} frames — " \
+                                 "register the count in NpsHelper::LOTTIE_FRAMES or the player never reaches it"
     end
   end
 

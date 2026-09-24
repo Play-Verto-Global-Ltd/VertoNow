@@ -37,7 +37,7 @@ this covers visuals).*
 | **Background** | One full-bleed backdrop behind the whole Verto. |
 | **Card panel** | One photo **or** one short muted video on each card's left panel (never both). Videos autoplay, looped, no sound. |
 | **Tap-card statements** | One square image per swipe statement. |
-| **Range card** | No stored image — the panel plays a reactive animation that changes with the slider. The animation *set* is a per-card asset in its own right: theme-matched, re-rolled by Shuffle, and overridable by the creator (see §7). |
+| **Range card** | No stored image — the panel plays a reactive animation that changes with the slider. The animation *set* is a per-card asset in its own right: theme-matched, re-rolled by Shuffle, and overridable by the creator (see §7). The age card plays a fixed set with a frame per band. |
 | **Grid / list tiles** | No photos — small subject icons matched to each option's wording (see §7). |
 | **Mobile card backdrop** | A soft image behind the card body on phones, chosen per Verto so the mobile view never looks bare. |
 
@@ -297,6 +297,14 @@ the more specific the keywords, the more precisely it will be picked.
   - The sets, their groups and theme keywords live in `NpsHelper`
     (`RANGE_THEME_GROUPS` / `RANGE_THEME_KEYWORDS` / `range_themes_for`); each
     slug is a folder of five Lottie frames under `app/assets/lottie/<slug>/`.
+  - *The age card is the exception.* Its slider has a stop per age band, and
+    it plays a set bound to it alone — `NpsHelper::AGE_BAND_THEME`, seven
+    frames in band order (online music, wireless headphones, an MP3 player, a
+    CD, a cassette, vinyl, a gramophone) — so every answer plays its own file
+    rather than sampling five poses across seven stops. The set is not in the
+    picker and the populator never draws it; the card plays it whatever
+    `range_theme` it was stamped with before the set existed, and the
+    sanitiser drops that stamp on the next save.
 - **NPS cards** render a procedurally drawn "vessel" that fills as the score
   rises — generated on the fly and tinted with the Verto's brand colour, not
   an image file.
@@ -362,7 +370,7 @@ picker: a **Change animation** CTA on the card's left panel opens the
 `animation-picker` modal — a grouped, live-preview grid of every reaction set
 (Sport / Climate / Wellbeing / General). Picking one swaps the panel animation
 live and persists as the card's `range_theme`, exactly as the media picker does
-for images.
+for images. The age card has no such CTA: its set is bound to it (§7).
 
 ## 9. Safety gates
 
@@ -441,7 +449,7 @@ drop onto any card or background from the editor's media picker.
 | Background | Pexels landscape (theme query) | Library `backgrounds` (theme-gated, never blank) | Brand library / Library / Pexels / upload |
 | Card panel | Pexels portrait (theme-anchored query, must clear the relevance floor) — every 3rd media card a video | Tier 1 themed → Tier 2 type art → blank | Brand library / Library / Recommended / Pexels / upload |
 | Tap statements | Pexels square, unique per statement | `swipe_cards` pool, no repeats in a card | Per-statement pick in editor |
-| Range panel | Reactive animation, theme-matched set (Shuffle re-rolls it) | General animation set | Per-card **Change animation** picker |
+| Range panel | Reactive animation, theme-matched set (Shuffle re-rolls it); the age card's own seven-frame set | General animation set | Per-card **Change animation** picker (not on the age card) |
 | NPS control | Procedural vessel (always) | — | — |
 | Grid/list tiles | Keyword icon or gradient (always) | — | — |
 | Mobile backdrop | Library `mobile_backgrounds`, theme-matched | Random from the pool (never empty) | — |

@@ -46,9 +46,12 @@
   <% if card["type"].to_s == "range" %>
     <%# Range: the LEFT panel plays a Lottie animation that swaps to match the
         slider position. The lottie-player controller listens for the
-        `verto:scaleValue` event dispatched by the range slider on the right.
-        No initial_value — the helper defaults to the neutral middle frame, so
-        the character starts expressionless (see NpsHelper::NPS_NEUTRAL_FRAME). %>
+        `verto:scaleValue` event dispatched by the range slider on the right
+        (its step index and count) and maps it onto its own set's frames — the
+        age card's set has one per band, so every answer plays its own file.
+        No initial_value — the helper defaults to the set's neutral middle
+        frame, so the character starts expressionless (see
+        NpsHelper::NPS_NEUTRAL_FRAME). %>
     <%= render_nps_reaction(theme: range_theme_slug(card)) %>
   <% elsif has_lottie %>
     <%# A pasted LottieFiles animation, stored same-origin by CardLottieStore
@@ -128,9 +131,12 @@
           this one visible. A second CTA opens the ordinary media picker for
           the colour or image BEHIND the animation — the header's backdrop
           (media-picker#open already shows that section for a range card —
-          _cardTakesBackground just checks the card type). %>
+          _cardTakesBackground just checks the card type).
+          The age card gets no such CTA: it plays its own bound set, one frame
+          per band (NpsHelper::AGE_BAND_THEME), and a pick here would preview
+          one animation and reload to another. %>
       <div class="split-left-cta-row">
-        <%= render "shared/change_animation_cta", action: "open" %>
+        <%= render "shared/change_animation_cta", action: "open" unless NpsHelper.age_band_card?(card) %>
         <button type="button" class="add-bg-fab header-bg-fab"
                 data-action="click->media-picker#open"
                 title="<%= t("editor.header_background_title", default: "Colour or image behind this card's animation — the header on a phone") %>">

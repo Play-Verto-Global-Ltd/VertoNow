@@ -8,14 +8,15 @@ import { Controller } from "@hotwired/stimulus"
 // only the thumb needs runtime axis awareness.
 //
 // It also drives the left-panel reaction animation on Range cards: each step
-// change dispatches `verto:scaleValue` with a 1–5 value (the slider's 3–5
-// steps mapped proportionally onto the 5 animation frames), which the
-// lottie-player controller listens for.
-const REACTION_FRAMES = 5
-
-// The neutral, expressionless middle frame — where the character rests before
-// the respondent has said anything (mirrors NpsHelper::NPS_NEUTRAL_FRAME).
-const REACTION_NEUTRAL = Math.ceil(REACTION_FRAMES / 2)
+// change dispatches `verto:scaleValue` with the step index and the step count,
+// and the lottie-player controller maps that position onto however many
+// frames ITS set holds — five for every pickable set, one per band for the
+// age card's seven-stop slider (NpsHelper::AGE_BAND_THEME), where the mapping
+// is the identity and every answer plays its own file. The frame count is the
+// player's to know, not this slider's, which is why nothing here says "5".
+//
+// On connect it dispatches `neutral` instead of a position, so the character
+// opens on its set's resting frame whatever the step count.
 
 // ── Scale words are never broken mid-word ─────────────────────────────────
 // Five stops divide the panel into five equal columns, and a flex column
@@ -78,7 +79,7 @@ export default class extends Controller {
     // Survey#enforce_range_scale deliberately leaves alone) maps its centre
     // index to an off-centre frame, so the character would greet the
     // respondent already leaning one way.
-    this._dispatchScaleValue(REACTION_NEUTRAL)
+    this._dispatchScaleValue(true)
   }
 
   disconnect() {
@@ -157,17 +158,17 @@ export default class extends Controller {
     }
   }
 
-  // Map the current step (0…n-1) onto a 1…5 frame and broadcast it for the
-  // reaction animation. Dispatched from this slider's own element and left to
-  // BUBBLE, so the lottie-player in the same .split-card picks it up and no
-  // other card's does — the player and editor both hold every card in the DOM,
-  // so a document-level event used to drag every character off neutral at once.
-  _dispatchScaleValue(forced = null) {
-    const n     = Math.max(2, this.stepsValue)
-    const ratio = n > 1 ? this.indexValue / (n - 1) : 0
-    const value = forced || Math.round(ratio * (REACTION_FRAMES - 1)) + 1
+  // Broadcast the current step (0…n-1, of n) for the reaction animation, or
+  // `neutral` for the resting pose. Dispatched from this slider's own element
+  // and left to BUBBLE, so the lottie-player in the same .split-card picks it
+  // up and no other card's does — the player and editor both hold every card
+  // in the DOM, so a document-level event used to drag every character off
+  // neutral at once.
+  _dispatchScaleValue(neutral = false) {
+    const n      = Math.max(2, this.stepsValue)
+    const detail = neutral ? { neutral: true } : { index: this.indexValue, steps: n }
     this.element.dispatchEvent(
-      new CustomEvent("verto:scaleValue", { detail: { value }, bubbles: true })
+      new CustomEvent("verto:scaleValue", { detail, bubbles: true })
     )
   }
 

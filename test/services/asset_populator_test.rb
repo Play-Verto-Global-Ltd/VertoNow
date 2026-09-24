@@ -215,6 +215,23 @@ class AssetPopulatorTest < ActiveSupport::TestCase
     assert_includes NpsHelper::RANGE_THEME_FALLBACK, s.reload.cards[0]["range_theme"]
   end
 
+  test "populate! leaves the age card alone — it plays its own bound set" do
+    age = DemographicQuestions.cards.first
+    s = make_survey(theme: "Sport fans", audience_age: "all",
+                    cards: [ { "type" => "range", "text" => "How much?", "options" => %w[a b c] }, age ])
+
+    AssetPopulator.new(s).populate!
+
+    range, age_card = s.reload.cards
+    assert_includes NpsHelper::RANGE_THEMES, range["range_theme"], "an ordinary range card is still picked for"
+    assert_nil age_card["range_theme"], "the age card plays NpsHelper::AGE_BAND_THEME, not a pick"
+
+    # The flow path returns cards without saving, so it shows the populator's
+    # own restraint rather than the sanitiser's.
+    animated = AssetPopulator.new(s).animate_cards!([ age.deep_dup ])
+    assert_nil animated.first["range_theme"]
+  end
+
   test "same seed produces the same range animation theme" do
     cards = [ { "type" => "range", "text" => "How hard?", "options" => %w[a b c] } ] * 4
     s1 = make_survey(theme: "Sport fans", audience_age: "18-24", cards: cards.deep_dup)

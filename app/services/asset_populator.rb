@@ -522,7 +522,11 @@ class AssetPopulator
           # for the old ones go with them — same reasoning as apply_card_media.
           new_card.delete("option_focals")
         end
-        if card["type"].to_s == "range" && !(@fill_only && card["range_theme"].present?)
+        # The age card plays its own bound set (NpsHelper::AGE_BAND_THEME), so
+        # there is nothing to pick for it — and a pick would spend one of the
+        # deck's on-theme animations on a card that never plays it.
+        if card["type"].to_s == "range" && !NpsHelper.age_band_card?(card) &&
+           !(@fill_only && card["range_theme"].present?)
           new_card["range_theme"] = pick_range_theme(idx, used_themes)
         end
       rescue => e
@@ -556,6 +560,7 @@ class AssetPopulator
     Array(cards).each_with_index.map do |card, idx|
       next card unless card.is_a?(Hash)
       next card unless card["type"].to_s == "range" && card["range_theme"].blank?
+      next card if NpsHelper.age_band_card?(card) # plays its own bound set
 
       card.merge("range_theme" => pick_range_theme("flow-#{idx}", used_themes))
     end

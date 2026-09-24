@@ -838,10 +838,11 @@
           </button>
         <% end %>
       </div>
-      <% if editable %>
+      <% if editable && !NpsHelper.age_band_card?(card) %>
         <%# Reaction-animation theme for this Range card. Changing it swaps the
             left-panel Lottie live (survey-editor#setRangeTheme) and persists as
-            the card's `range_theme`. %>
+            the card's `range_theme`. Not on the age card, whose set is bound
+            to it (NpsHelper::AGE_BAND_THEME) and offered no CTA to drive this. %>
         <% cur_theme = range_theme_slug(card) %>
         <%# The animation is now changed from the "Change animation" CTA on the
             left panel (animation-picker modal), like every other asset — this

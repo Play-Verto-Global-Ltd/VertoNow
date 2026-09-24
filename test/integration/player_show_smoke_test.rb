@@ -61,6 +61,29 @@ class PlayerShowSmokeTest < ActionDispatch::IntegrationTest
                   "the character must not open on the most extreme pose"
   end
 
+  # The age card's slider has a stop per age band and its set a frame per stop
+  # (NpsHelper::AGE_BAND_THEME), so it is served that set — all seven files,
+  # whatever animation it was stamped with before the set existed — resting on
+  # ITS middle frame, the fourth, where the thumb parks.
+  test "the age card is served its own seven-frame set, resting on its middle frame" do
+    org = Organisation.create!(name: "Acme", slug: "acme-#{SecureRandom.hex(2)}")
+    survey = org.surveys.create!(
+      title: "Sports", theme: "Sports", audience_age: "all", key_insight: "x",
+      default_locale: "en", locales: [ "en" ],
+      cards: [ DemographicQuestions.cards.first.merge("range_theme" => "football") ]
+    )
+    survey.update!(publish_token: SecureRandom.hex(8))
+
+    get play_survey_path(survey.publish_token)
+    assert_response :success
+
+    assert_select ".nps-lottie[data-lottie-player-current-value='4']", 1
+    urls = JSON.parse(css_select(".nps-lottie").first["data-lottie-player-urls-value"])
+    assert_equal 7, urls.size
+    assert urls.all? { |u| u.include?("/#{NpsHelper::AGE_BAND_THEME}/") },
+           "expected the age-band set, got #{urls.inspect}"
+  end
+
   test "welcome card shows the creator's logo, centred, when one is uploaded" do
     survey = published_survey
     survey.organisation.logo.attach(

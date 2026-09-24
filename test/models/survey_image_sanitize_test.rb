@@ -330,6 +330,14 @@ class SurveyImageSanitizeTest < ActiveSupport::TestCase
     assert_nil out[3]["range_theme"], "range_theme is only kept on range cards"
   end
 
+  test "sanitize_cards_images! drops range_theme from the age card, which plays its own bound set" do
+    age = DemographicQuestions.cards.first.merge("range_theme" => "football")
+    out = Survey.sanitize_cards_images!([ age, { "type" => "range", "text" => "Q", "range_theme" => "football" } ])
+
+    assert_nil out[0]["range_theme"], "the age card plays NpsHelper::AGE_BAND_THEME whatever it stores"
+    assert_equal "football", out[1]["range_theme"], "an ordinary range card keeps its pick"
+  end
+
   test "sanitize_cards_images! whitelists demographic_key on demographic cards and drops the rest" do
     cards = [
       { "type" => "multiple_choice", "text" => "Q", "demographic" => true, "demographic_key" => "heritage" },

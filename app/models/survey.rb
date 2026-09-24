@@ -1421,10 +1421,13 @@ class Survey < ApplicationRecord
       LocationScope.sanitize_card!(c)
       # A range card's reaction-animation theme — only a known slug survives, and
       # only on a range card, so the helper always resolves to a real asset
-      # folder (NpsHelper owns the theme list).
+      # folder (NpsHelper owns the theme list). Never on the age card, which
+      # plays its own bound set whatever it stores (NpsHelper::AGE_BAND_THEME):
+      # a stamp from before that set existed is dropped here rather than left
+      # to count as an animation in play in the populator's ledger.
       if c.key?("range_theme")
         slug = c["range_theme"].to_s
-        if c["type"].to_s == "range" && NpsHelper::RANGE_THEMES.include?(slug)
+        if c["type"].to_s == "range" && !NpsHelper.age_band_card?(c) && NpsHelper::RANGE_THEMES.include?(slug)
           c["range_theme"] = slug
         else
           c.delete("range_theme")

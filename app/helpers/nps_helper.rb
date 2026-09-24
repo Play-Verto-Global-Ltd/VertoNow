@@ -24,7 +24,9 @@ module NpsHelper
   # the order (and grouping) shown in the editor's picker. Each slug is a folder
   # app/assets/lottie/<slug>/ holding 1..5.json (the five slider states). To add
   # a set: drop the folder in and add its slug to a group here. NPS_THEME (the
-  # default) must appear in one of these groups.
+  # default) must appear in one of these groups. A set bound to ONE card rather
+  # than offered to every range card is registered below (AGE_BAND_THEME),
+  # never here.
   RANGE_THEME_GROUPS = {
     "Sport"                     => %w[basketball football football_goal stopwatch target snooker_ball
                                       sport_trainers water_bottle],
@@ -38,6 +40,45 @@ module NpsHelper
   # Flat allow-list derived from the groups — the single source of truth for
   # sanitisation (Survey.sanitize_cards_images!) and URL building.
   RANGE_THEMES = RANGE_THEME_GROUPS.values.flatten.freeze
+
+  # A reaction set bound to ONE card rather than picked for a deck. The age
+  # card's slider has a stop per age band and this set has a frame per stop —
+  # seven, in DemographicQuestions::AGE_BANDS order, each the music of that
+  # generation: online music (under 16), wireless headphones (16–17), an MP3
+  # player (18–24), a CD (25–34), a cassette (35–49), vinyl (50–64), a
+  # gramophone (65+). The slider changes the file per ANSWER, rather than
+  # sampling five poses across seven stops, which is why the set has seven
+  # frames and why it is not in RANGE_THEME_GROUPS: the picker never offers it
+  # and the populator never draws it, because no other card has seven answers
+  # to map it onto. The age card always plays it (range_theme_slug), whatever
+  # `range_theme` it may still carry from before this set existed.
+  AGE_BAND_THEME = "music_eras".freeze
+
+  # Frame counts where a set departs from NPS_FRAMES. Every other folder holds
+  # 1..5.json.
+  LOTTIE_FRAMES = { AGE_BAND_THEME => DemographicQuestions::AGE_BANDS.length }.freeze
+
+  # Every slug with a folder under app/assets/lottie/: the pickable sets plus
+  # the card-bound one. RANGE_THEMES stays the allow-list for what a card may
+  # STORE and the picker may offer; this is the list of what can be PLAYED.
+  LOTTIE_THEMES = (RANGE_THEMES + [ AGE_BAND_THEME ]).freeze
+
+  def self.frames_for(theme)
+    LOTTIE_FRAMES.fetch(theme.to_s, NPS_FRAMES)
+  end
+
+  # A set's resting pose: its middle frame, the way NPS_NEUTRAL_FRAME is the
+  # middle of a five-frame set. For the age set that is frame 4, the CD — the
+  # band the slider parks its thumb on too (index 3 of 7, "25–34").
+  def self.neutral_frame_for(theme)
+    (frames_for(theme) + 1) / 2
+  end
+
+  # The demographic age card: a range card whose stops are the age bands. It
+  # is drawn top-down (slider_top_down?) and plays AGE_BAND_THEME.
+  def self.age_band_card?(card)
+    card.is_a?(Hash) && card["type"].to_s == "range" && DemographicQuestions.key_for(card) == "age"
+  end
 
   # Subject-specific words each animation set depicts, so auto-population and
   # Shuffle can prefer an on-theme animation (a Climate range card reacts with
@@ -296,18 +337,20 @@ module NpsHelper
     (0..(NPS_STEPS - 1)).map(&:to_s)
   end
 
-  # Asset URLs for the 5 reaction Lotties. Files live under
-  # `app/assets/lottie/<theme>/` which Sprockets treats as an asset path root,
-  # so files resolve at `/assets/<theme>/<file>`. Using asset_path so digested
-  # URLs work in prod.
+  # Asset URLs for a set's reaction Lotties — five, or LOTTIE_FRAMES' count.
+  # Files live under `app/assets/lottie/<theme>/` which Sprockets treats as an
+  # asset path root, so files resolve at `/assets/<theme>/<file>`. Using
+  # asset_path so digested URLs work in prod.
   def nps_lottie_urls(theme = NPS_THEME)
-    theme = NPS_THEME unless RANGE_THEMES.include?(theme.to_s)
-    (1..NPS_FRAMES).map { |i| asset_path("#{theme}/#{i}.json") }
+    theme = NPS_THEME unless LOTTIE_THEMES.include?(theme.to_s)
+    (1..NpsHelper.frames_for(theme)).map { |i| asset_path("#{theme}/#{i}.json") }
   end
 
-  # The reaction theme a range card actually uses: its own `range_theme` when
-  # that's a known slug, otherwise the default. Safe on any card hash.
+  # The reaction theme a range card actually uses: the age card's own bound
+  # set; otherwise the card's `range_theme` when that's a known slug, else the
+  # default. Safe on any card hash.
   def range_theme_slug(card)
+    return AGE_BAND_THEME if NpsHelper.age_band_card?(card)
     slug = card.is_a?(Hash) ? card["range_theme"].to_s : ""
     RANGE_THEMES.include?(slug) ? slug : NPS_THEME
   end
@@ -338,7 +381,7 @@ module NpsHelper
   # rather than stored on it, so Vertos already carrying the age card get it
   # without a data change.
   def slider_top_down?(card)
-    card.is_a?(Hash) && card["type"].to_s == "range" && DemographicQuestions.key_for(card) == "age"
+    NpsHelper.age_band_card?(card)
   end
 
   # [[category, [[label, slug], …]], …] for the range card's grouped <optgroup>
@@ -364,10 +407,12 @@ module NpsHelper
   # The full list of Lottie URLs is passed via data attribute so the JS doesn't
   # need to know about Rails asset digesting.
   #
-  # Starts on the NEUTRAL middle frame, matching where slider_controller parks
-  # the thumb on connect — so the character is expressionless until the
-  # respondent actually moves the slider, and there's no frame-1 flash.
-  def render_nps_reaction(initial_value: NPS_NEUTRAL_FRAME, theme: NPS_THEME)
+  # Starts on the set's NEUTRAL middle frame (NPS_NEUTRAL_FRAME for a
+  # five-frame set), matching where slider_controller parks the thumb on
+  # connect — so the character is expressionless until the respondent actually
+  # moves the slider, and there's no frame-1 flash.
+  def render_nps_reaction(initial_value: nil, theme: NPS_THEME)
+    initial_value ||= NpsHelper.neutral_frame_for(theme)
     content_tag :div, class: "nps-lottie",
                 data: {
                   controller:                   "lottie-player",

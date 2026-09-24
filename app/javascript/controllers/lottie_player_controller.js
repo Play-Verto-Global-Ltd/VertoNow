@@ -4,8 +4,11 @@ import lottie from "lottie-web"
 // Mounts a lottie-web instance and swaps the animation in response to
 // `verto:scaleValue` events from the slider. Each value-swap destroys the
 // previous animation and plays the next one from frame 0 (no loop).
-// Animation URLs (one per slider value 1..N) are supplied as a JSON array
-// in the `urls` value, so Rails can pass digested asset paths.
+// Animation URLs (one per frame 1..N) are supplied as a JSON array in the
+// `urls` value, so Rails can pass digested asset paths. N is this set's to
+// know: five for every pickable set, one per age band for the age card's
+// (NpsHelper::AGE_BAND_THEME) — the slider sends its position and `react`
+// maps it onto whatever is mounted.
 //
 // The default `current` is the NEUTRAL middle frame (3 of 5), matching
 // NpsHelper::NPS_NEUTRAL_FRAME and where slider_controller parks its thumb —
@@ -21,7 +24,7 @@ export default class extends Controller {
   static targets = ["mount"]
 
   connect() {
-    this._onChange = (e) => this.show(e.detail.value)
+    this._onChange = (e) => this.react(e.detail || {})
     // Listen on THIS card, not the document: the player and the editor both
     // hold every card in the DOM at once, so a document-level listener let one
     // card's drag move every other card's character off its neutral resting
@@ -51,14 +54,30 @@ export default class extends Controller {
     this.shown = null
   }
 
+  // A slider position → the frame of THIS set that stands for it. Five frames
+  // under a five-stop slider, or seven under the age card's seven, is the
+  // identity: every stop plays its own file. Five frames under a three-stop
+  // scale spreads the stops across the set, exactly the 1–5 value the slider
+  // used to compute for itself, so every existing set reacts as it always did.
+  // `neutral` is the resting pose (connect, and the slider's own connect),
+  // derived from the mounted set rather than assumed to be 3.
+  react({ neutral, index, steps }) {
+    if (neutral) return this.show(this._neutralFrame)
+    const frames = this.urlsValue.length
+    if (!Number.isFinite(index) || !(steps > 1) || !frames) return
+    this.show(Math.round(index / (steps - 1) * (frames - 1)) + 1)
+  }
+
   // The editor's theme picker swaps the `urls` value to a different animation
   // set; re-render the current frame so the change shows at once. Guarded on the
   // mount target since Stimulus fires this before connect() on first render
-  // (where connect() already does the initial show).
+  // (where connect() already does the initial show). Clamped to the new set's
+  // length: a frame the old set had and the new one lacks would leave the
+  // mount empty, since show() has nothing to load for it.
   urlsValueChanged() {
     if (!this.hasMountTarget) return
     this.shown = null
-    this.show(this.currentValue)
+    this.show(Math.min(this.currentValue, this.urlsValue.length))
   }
 
   show(value) {
