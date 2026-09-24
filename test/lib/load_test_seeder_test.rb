@@ -126,8 +126,10 @@ test "refuses a database that holds an organisation which is not a seed artifact
 end
 
 test "tolerates the organisations db/seeds.rb provisions on every deploy" do
-  # A fresh scratch database the moment db:prepare has run its seeds.
-  Organisation.find_or_create_by!(slug: AlpbachAccountProvisioner::ORG_SLUG) { |o| o.name = "Alpbach" }
+  # A fresh scratch database the moment db:prepare has run its seeds: every
+  # managed client account, provisioned the way seeds provision them, so a
+  # new account left out of SEEDED_SLUGS trips this test rather than scratch.
+  ManagedAccountProvisioner.all.each { |provisioner| provisioner.new.call }
   Organisation.find_or_create_by!(slug: "playverto") { |o| o.name = "Playverto" }
 
   result = with_seed_flag("1") { LoadTestSeeder.run!(responses: 1, io: StringIO.new) }

@@ -44,9 +44,10 @@ Membership.find_or_create_by!(user: owner, organisation: org) do |m|
   m.role = "admin"
 end
 
-# The Alpbach client account and Jamie's access to it. Needed HERE as well as
-# in db/migrate/20260818120001_provision_alpbach_account.rb, and the split is
-# not redundancy — the two paths are disjoint:
+# The managed client accounts (ManagedAccountProvisioner.all — Alpbach was the
+# first) and Jamie's and Nick's access to each. Needed HERE as well as in each
+# account's db/migrate/*_provision_*_account*.rb, and the split is not
+# redundancy — the two paths are disjoint:
 #
 #   * an EXISTING database (production) runs the pending migration and never
 #     re-seeds, so the migration is the only thing that provisions it; while
@@ -55,23 +56,11 @@ end
 #     this line is the only thing that provisions it.
 #
 # Same reasoning as the Comms owner grant above, which lives in both places for
-# exactly this reason. AlpbachAccountProvisioner is create-only, so whichever
-# path runs first, the other is a no-op.
-AlpbachAccountProvisioner.new.call
-
-# The Unleash Football client account, and Jamie's and Nick's access to it.
-# Same two-path split, and the same create-only provisioner, as the Alpbach
-# account above: this line covers a FRESH database,
-# db/migrate/20260909090000_provision_unleash_football_account.rb covers an
-# existing one.
-UnleashFootballAccountProvisioner.new.call
-
-# The History Collab client account, and Jamie's and Nick's access to it. Same
-# two-path split, and the same create-only provisioner, as the two accounts
-# above: this line covers a FRESH database,
-# db/migrate/20260921120000_provision_history_collab_account.rb covers an
-# existing one.
-HistoryCollabAccountProvisioner.new.call
+# exactly this reason. Every provisioner is create-only, so whichever path runs
+# first, the other is a no-op. Opening an account is a subclass listed in
+# ManagedAccountProvisioner.all plus its migration — there is nothing to add
+# here.
+ManagedAccountProvisioner.all.each { |provisioner| provisioner.new.call }
 
 # The showcase Verto in the Playverto org itself — one deck that plays every
 # answer type, with imagery, branching and points on. Same split as the Alpbach
