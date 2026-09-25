@@ -36,6 +36,11 @@ class ContactGateTest < ActionDispatch::IntegrationTest
     assert_select "[data-card-type=contact_gate_card]", 0
   end
 
+  test "the gate's privacy link opens the published policy" do
+    get play_survey_path(live_survey.publish_token)
+    assert_select "[data-card-type=contact_gate_card] .play-consent-legal a[href=?]", privacy_policy_url
+  end
+
   test "contact details ride the save into their own table, never into answers" do
     s = live_survey
     key = SecureRandom.uuid

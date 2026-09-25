@@ -180,6 +180,12 @@ Rails.application.routes.draw do
   get "terms",         to: "legal#terms",         as: :terms
   get "cookie-policy", to: "legal#cookie_policy", as: :cookie_policy
 
+  # The published privacy policy, hosted on Termly — what the player's
+  # "How we handle your data" link opens. /privacy above is still the draft.
+  direct :privacy_policy do
+    "https://app.termly.io/policy-viewer/policy.html?policyUUID=6765e850-d5f6-4045-ae16-5bc474130053"
+  end
+
   # Org management (admin only)
   resources :organisations, only: [ :edit, :update ] do
     resources :memberships, only: [ :index, :destroy ]

@@ -72,15 +72,17 @@ class DefaultConsentGateTest < ActionDispatch::IntegrationTest
   end
 
   test "the gate links to the privacy policy" do
+    # The published policy on Termly, not the draft /privacy page.
     get play_survey_path(published([ DEMOGRAPHIC ]).publish_token)
-    assert_select ".play-consent-legal a[href=?]", privacy_path
+    assert_select ".play-consent-legal a[href=?][target=_blank]",
+                  "https://app.termly.io/policy-viewer/policy.html?policyUUID=6765e850-d5f6-4045-ae16-5bc474130053"
   end
 
   test "a creator-authored gate also gets the privacy link" do
     # The link is on every gate, not only the default one.
     get play_survey_path(published([ DEMOGRAPHIC ], consent_text: "My own wording").publish_token)
     assert_select ".play-consent-body", text: /My own wording/
-    assert_select ".play-consent-legal a[href=?]", privacy_path
+    assert_select ".play-consent-legal a[href=?]", privacy_policy_url
   end
 
   test "no gate is rendered when nothing personal is collected" do
