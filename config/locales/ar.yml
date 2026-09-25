@@ -776,6 +776,8 @@ ar:
     role_viewer: "مشاهد"
     members: الأعضاء
     sign_out: تسجيل الخروج
+    clients: "العملاء"
+    see_all_clients: "عرض كل العملاء"
   partnerships:
     cq_section: "الأسئلة المشتركة"
     cq_add_body: "اختر إحدى مجموعات أسئلتك — يمكن لكل شريك في هذه الشراكة رؤية أسئلتها."
@@ -2372,3 +2374,17 @@ ar:
     already_confirmed: "عنوانك مؤكَّد بالفعل."
     too_many: "هذه رسائل كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى."
     unavailable: "لا يمكننا إرسال بريد إلى هذا العنوان حاليًا."
+  clients:
+    title: "العملاء — Playverto"
+    eyebrow: "فريق Playverto"
+    heading_html: "كل <span style=\"color:#FFC24B;\">العملاء</span>"
+    subtitle: "كل حسابات العملاء التي تعمل فيها وكيف يسير كل منها. افتح حسابًا للعمل فيه."
+    stat_clients: "العملاء"
+    stat_members: "الأعضاء"
+    opened_ago: "فُتح قبل %{when}"
+    never_opened: "لم يُفتح بعد"
+    current: "الحالي"
+    open: "فتح"
+    internal: "داخلي"
+    empty_title: "لا توجد حسابات عملاء بعد"
+    empty_body: "عند إضافتك إلى حساب أحد العملاء سيظهر هنا، مع Verto الخاصة به والمشاركين في لمحة."

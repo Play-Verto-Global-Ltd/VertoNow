@@ -806,6 +806,22 @@ en-US:
     role_viewer: "Viewer"
     members: "Members"
     sign_out: "Sign out"
+    clients: "Clients"
+    see_all_clients: "See all clients"
+  clients:
+    title: "Clients — Playverto"
+    eyebrow: "Playverto team"
+    heading_html: 'All <span style="color:#FFC24B;">clients</span>'
+    subtitle: "Every client account you work in, and how each one is doing. Open one to act in it."
+    stat_clients: "Clients"
+    stat_members: "Members"
+    opened_ago: "Opened %{when} ago"
+    never_opened: "Not opened yet"
+    current: "Current"
+    open: "Open"
+    internal: "Internal"
+    empty_title: "No client accounts yet"
+    empty_body: "When you are added to a client's account it will appear here, with its Vertos and responders at a glance."
   partnerships:
     cq_section: "Common Questions"
     cq_add_body: "Pick one of your question sets — every partner in this partner group can see its questions."

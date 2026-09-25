@@ -114,4 +114,113 @@ class WorkspaceSwitcherTest < ActionDispatch::IntegrationTest
     assert_equal 2, forms,
                  "expected one switch form in the workspace popover and one in the palette, got #{forms}"
   end
+
+  # ── Recording where you are ──────────────────────────────────────────────
+
+  test "switching records the visit on the target membership, every time" do
+    sign_in @user
+    membership = @user.memberships.find_by(organisation: @second)
+    membership.update_column(:last_visited_at, 10.minutes.ago)
+
+    post switch_organisation_path, params: { organisation_id: @second.id }
+
+    assert_in_delta Time.current, membership.reload.last_visited_at, 2.seconds,
+                    "a switch inside the throttle window must still move the stamp"
+  end
+
+  test "landing in a workspace records the visit without a switch" do
+    assert_nil @user.memberships.find_by(organisation: @first).last_visited_at
+
+    sign_in @user
+    get root_path
+
+    assert_in_delta Time.current, @user.memberships.find_by(organisation: @first).reload.last_visited_at, 2.seconds
+  end
+
+  test "a switch you are not allowed records nothing" do
+    outsider = Organisation.create!(name: "Not Yours", slug: "not-#{SecureRandom.hex(3)}")
+    sign_in @user
+
+    post switch_organisation_path, params: { organisation_id: outsider.id }
+
+    assert_nil Membership.find_by(organisation: outsider)
+  end
+
+  # ── The staff picker ─────────────────────────────────────────────────────
+  # Playverto staff work in every client account. Their picker leads with the
+  # Playverto workspace, then a row to the Clients dashboard, then the two
+  # clients they were in most recently — not every account they belong to.
+
+  def make_staff_with_clients(names)
+    playverto = Organisation.find_or_create_by!(slug: PlayvertoStaff::SLUG) { |o| o.name = "Playverto" }
+    staff = User.create!(name: "Jamie", email_address: "ws-staff-#{SecureRandom.hex(3)}@test.com",
+                         password: "verylongpassword")
+    # Playverto first, so signing in lands there (memberships.first).
+    playverto.memberships.create!(user: staff, role: "member")
+    clients = names.map do |name|
+      org = Organisation.create!(name: name, slug: "ws-c-#{SecureRandom.hex(3)}")
+      org.memberships.create!(user: staff, role: "admin")
+      org
+    end
+    [ staff, playverto, clients ]
+  end
+
+  def popover_rows(body)
+    doc = Nokogiri::HTML(body)
+    doc.css("[data-command-palette-target='workspacePopover'] .bottom-bar-workspace-item")
+       .map { |row| row.css(".bottom-bar-workspace-item-name").text.strip }
+  end
+
+  test "staff see Playverto, See all clients, then the two most recently opened clients" do
+    staff, _playverto, clients = make_staff_with_clients([ "Alpbach", "Riders for Health", "Unleash Football", "History CoLab" ])
+    staff.memberships.find_by(organisation: clients[1]).update_column(:last_visited_at, 3.hours.ago)
+    staff.memberships.find_by(organisation: clients[2]).update_column(:last_visited_at, 1.hour.ago)
+    staff.memberships.find_by(organisation: clients[3]).update_column(:last_visited_at, 2.hours.ago)
+
+    sign_in staff
+    get root_path
+    assert_response :success
+
+    # Alpbach, never opened, is not among the rows — the ⌘K palette still lists
+    # it, since that surface is searched rather than read.
+    assert_equal [ "Playverto", I18n.t("nav.see_all_clients"), "Unleash Football", "History CoLab" ],
+                 popover_rows(response.body)
+    assert_select "[data-command-palette-target='workspacePopover'] a.bottom-bar-workspace-cta[href='#{clients_path}']"
+    # Playverto is where they are, so it is the marked row.
+    assert_select "[data-command-palette-target='workspacePopover'] .bottom-bar-workspace-item[data-current='true'] .bottom-bar-workspace-item-name",
+                  text: "Playverto"
+  end
+
+  test "the client being acted in leads the recent two and is marked current" do
+    staff, _playverto, clients = make_staff_with_clients([ "Alpbach", "Riders for Health", "Unleash Football" ])
+    staff.memberships.find_by(organisation: clients[1]).update_column(:last_visited_at, 2.hours.ago)
+    staff.memberships.find_by(organisation: clients[2]).update_column(:last_visited_at, 1.hour.ago)
+
+    sign_in staff
+    post switch_organisation_path, params: { organisation_id: clients[0].id }
+    follow_redirect!
+
+    assert_equal [ "Playverto", I18n.t("nav.see_all_clients"), "Alpbach", "Unleash Football" ],
+                 popover_rows(response.body)
+    assert_select "[data-command-palette-target='workspacePopover'] .bottom-bar-workspace-item[data-current='true'] .bottom-bar-workspace-item-name",
+                  text: "Alpbach"
+  end
+
+  test "staff who have opened no client yet still get the door to all of them" do
+    staff, = make_staff_with_clients([ "Alpbach" ])
+
+    sign_in staff
+    get root_path
+
+    assert_equal [ "Playverto", I18n.t("nav.see_all_clients") ], popover_rows(response.body)
+  end
+
+  test "a customer's picker is the full list, with no clients row" do
+    sign_in @user
+    get root_path
+
+    assert_equal [ "Acme Research", "Beta Foundation" ], popover_rows(response.body)
+    refute_match I18n.t("nav.see_all_clients"), response.body
+    assert_select "[data-command-palette-target='workspacePopover'][data-staff='false']"
+  end
 end

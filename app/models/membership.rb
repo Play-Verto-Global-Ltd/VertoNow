@@ -29,6 +29,36 @@ class Membership < ApplicationRecord
   # can't land in one and not the other.
   scope :editing, -> { where.not(role: "viewer") }
 
+  # Most recently acted-in first. Only rows that HAVE a visit: a membership
+  # nobody has opened since the column arrived is not "least recent", it is
+  # unknown, and the two engines disagree about where a NULL sorts under DESC
+  # (last in SQLite, FIRST in Postgres), so leaving them in would put every
+  # never-opened account at the top of the list in production alone.
+  scope :recently_visited, -> { where.not(last_visited_at: nil).order(last_visited_at: :desc) }
+
+  # How often a request inside an account re-records that the person is
+  # still there. Same shape and reasoning as Session#touch_seen!: at most
+  # one write per membership per hour, which is nothing beside the queries
+  # the same page runs, and far finer than "which two clients did I open
+  # most recently" needs.
+  VISITED_EVERY = 1.hour
+
+  # Records that this person is acting in this account now. Called from the
+  # request that resolves the acting organisation (throttled), and from the
+  # Workspaces switcher with force: true — switching IS the moment of choice,
+  # and a throttled write there would leave "the two most recent" wrong for
+  # anyone who hops between accounts inside an hour (A at 10:00, B at 10:05,
+  # back to A at 10:10 would still read B as the more recent).
+  #
+  # `update_column` on purpose: no validations, no callbacks, no touching of
+  # updated_at (which is when the ROLE last changed), and it writes the
+  # in-memory attribute too, so the throttle holds for the rest of the request.
+  def touch_visited!(force: false)
+    return if !force && last_visited_at && last_visited_at > VISITED_EVERY.ago
+
+    update_column(:last_visited_at, Time.current)
+  end
+
   # May this membership create or edit Vertos in its organisation? Admin and
   # member both can; viewer is the one that can't. The account-level creation
   # switch (Organisation#verto_creation_enabled) is a separate question, asked

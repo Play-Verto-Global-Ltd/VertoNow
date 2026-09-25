@@ -776,6 +776,8 @@ id:
     role_viewer: "Pelihat"
     members: Anggota
     sign_out: Keluar
+    clients: "Klien"
+    see_all_clients: "Lihat semua klien"
   partnerships:
     cq_section: "Pertanyaan Bersama"
     cq_add_body: "Pilih salah satu set pertanyaanmu — setiap mitra di kemitraan ini dapat melihat pertanyaannya."
@@ -2356,3 +2358,17 @@ id:
     already_confirmed: "Alamatmu sudah dikonfirmasi."
     too_many: "Terlalu banyak email dalam waktu singkat. Tunggu sebentar lalu coba lagi."
     unavailable: "Saat ini kami tidak bisa mengirim email ke alamat ini."
+  clients:
+    title: "Klien — Playverto"
+    eyebrow: "Tim Playverto"
+    heading_html: "Semua <span style=\"color:#FFC24B;\">klien</span>"
+    subtitle: "Setiap akun klien tempat Anda bekerja, dan bagaimana kondisi masing-masing. Buka salah satunya untuk bekerja di dalamnya."
+    stat_clients: "Klien"
+    stat_members: "Anggota"
+    opened_ago: "Dibuka %{when} lalu"
+    never_opened: "Belum dibuka"
+    current: "Saat ini"
+    open: "Buka"
+    internal: "Internal"
+    empty_title: "Belum ada akun klien"
+    empty_body: "Saat Anda ditambahkan ke akun klien, akun itu akan muncul di sini, dengan Verto dan respondennya sekilas pandang."

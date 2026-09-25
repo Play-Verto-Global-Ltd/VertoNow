@@ -776,6 +776,8 @@ he:
     role_viewer: "צופה"
     members: חברים
     sign_out: התנתק
+    clients: "לקוחות"
+    see_all_clients: "כל הלקוחות"
   partnerships:
     cq_section: "שאלות משותפות"
     cq_add_body: "בחרו אחת מערכות השאלות שלכם — כל שותף בשותפות הזו יוכל לראות את השאלות שלה."
@@ -2364,3 +2366,17 @@ he:
     already_confirmed: "הכתובת שלך כבר אושרה."
     too_many: "אלה הרבה מיילים בזמן קצר. המתן/י מעט ונסה/י שוב."
     unavailable: "איננו יכולים לשלוח מייל לכתובת הזו כרגע."
+  clients:
+    title: "לקוחות — Playverto"
+    eyebrow: "צוות Playverto"
+    heading_html: "כל <span style=\"color:#FFC24B;\">הלקוחות</span>"
+    subtitle: "כל חשבונות הלקוחות שאתם עובדים בהם, ואיך כל אחד מתקדם. פתחו חשבון כדי לפעול בו."
+    stat_clients: "לקוחות"
+    stat_members: "חברים"
+    opened_ago: "נפתח לפני %{when}"
+    never_opened: "טרם נפתח"
+    current: "נוכחי"
+    open: "פתיחה"
+    internal: "פנימי"
+    empty_title: "אין עדיין חשבונות לקוחות"
+    empty_body: "כשתצורפו לחשבון של לקוח הוא יופיע כאן, עם ה-Verto והמשיבים שלו במבט אחד."

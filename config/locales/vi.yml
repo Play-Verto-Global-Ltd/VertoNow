@@ -776,6 +776,8 @@ vi:
     role_viewer: "Người xem"
     members: Thành viên
     sign_out: Đăng xuất
+    clients: "Khách hàng"
+    see_all_clients: "Xem tất cả khách hàng"
   partnerships:
     cq_section: "Câu hỏi chung"
     cq_add_body: "Chọn một bộ câu hỏi của bạn — mọi đối tác trong nhóm đối tác này đều có thể xem các câu hỏi của nó."
@@ -2356,3 +2358,17 @@ vi:
     already_confirmed: "Địa chỉ của bạn đã được xác nhận."
     too_many: "Quá nhiều email trong thời gian ngắn. Vui lòng đợi một lúc rồi thử lại."
     unavailable: "Hiện chúng tôi không thể gửi email tới địa chỉ này."
+  clients:
+    title: "Khách hàng — Playverto"
+    eyebrow: "Đội ngũ Playverto"
+    heading_html: "Tất cả <span style=\"color:#FFC24B;\">khách hàng</span>"
+    subtitle: "Mọi tài khoản khách hàng bạn đang làm việc, và tình hình của từng tài khoản. Mở một tài khoản để làm việc trong đó."
+    stat_clients: "Khách hàng"
+    stat_members: "Thành viên"
+    opened_ago: "Đã mở %{when} trước"
+    never_opened: "Chưa mở"
+    current: "Hiện tại"
+    open: "Mở"
+    internal: "Nội bộ"
+    empty_title: "Chưa có tài khoản khách hàng nào"
+    empty_body: "Khi bạn được thêm vào tài khoản của một khách hàng, tài khoản đó sẽ hiện ở đây, cùng các Verto và người trả lời của họ trong nháy mắt."

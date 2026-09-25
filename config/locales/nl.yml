@@ -776,6 +776,8 @@ nl:
     role_viewer: "Kijker"
     members: Leden
     sign_out: Uitloggen
+    clients: "Klanten"
+    see_all_clients: "Alle klanten bekijken"
   partnerships:
     cq_section: "Gemeenschappelijke vragen"
     cq_add_body: "Kies een van je vragensets — elke partner in dit partnerschap kan de vragen zien."
@@ -2357,3 +2359,17 @@ nl:
     already_confirmed: "Je adres is al bevestigd."
     too_many: "Dat zijn veel e-mails in korte tijd. Wacht even en probeer het opnieuw."
     unavailable: "We kunnen op dit moment geen e-mail naar dit adres sturen."
+  clients:
+    title: "Klanten — Playverto"
+    eyebrow: "Playverto-team"
+    heading_html: "Alle <span style=\"color:#FFC24B;\">klanten</span>"
+    subtitle: "Elk klantaccount waarin je werkt, en hoe het met elk gaat. Open er een om erin te werken."
+    stat_clients: "Klanten"
+    stat_members: "Leden"
+    opened_ago: "%{when} geleden geopend"
+    never_opened: "Nog niet geopend"
+    current: "Huidig"
+    open: "Openen"
+    internal: "Intern"
+    empty_title: "Nog geen klantaccounts"
+    empty_body: "Zodra je aan het account van een klant wordt toegevoegd, verschijnt het hier, met zijn Verto's en deelnemers in één oogopslag."

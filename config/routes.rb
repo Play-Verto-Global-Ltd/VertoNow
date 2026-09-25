@@ -162,6 +162,15 @@ Rails.application.routes.draw do
   # Org switcher
   post "switch_organisation", to: "organisations#switch", as: :switch_organisation
 
+  # The Clients dashboard — every client account the Playverto team works in,
+  # with a switch into each. Staff only, and gated by a routing CONSTRAINT
+  # exactly like /comms and /blazer below, for the same reason: to anyone
+  # else the route simply isn't there (404), because a cross-account overview
+  # is itself something customers have no reason to learn exists.
+  constraints(->(request) { PlayvertoStaff.member_request?(request) }) do
+    get "clients", to: "clients#index", as: :clients
+  end
+
   # UI language switcher (works on public pages too)
   post "locale", to: "locales#update", as: :locale
 

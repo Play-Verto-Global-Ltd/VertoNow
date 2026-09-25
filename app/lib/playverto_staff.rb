@@ -29,4 +29,19 @@ module PlayvertoStaff
               .where(user_id: user.id, organisations: { slug: SLUG })
               .exists?
   end
+
+  # Routing-constraint predicate, for a surface that should not exist (404)
+  # for anyone but staff — the Clients dashboard, as /comms and /blazer are
+  # gated. Resolves the user from the same signed session cookie the app's
+  # Authentication concern issues (BlazerAccess already knows how).
+  def member_request?(request)
+    member?(BlazerAccess.user_for(request))
+  end
+
+  # The Playverto workspace itself — the one account that is not a client.
+  # nil on a database that has never been seeded, which no caller treats as
+  # an error: with no Playverto org there is no staff either.
+  def home_organisation
+    Organisation.find_by(slug: SLUG)
+  end
 end

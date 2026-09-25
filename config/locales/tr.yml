@@ -776,6 +776,8 @@ tr:
     role_viewer: "Görüntüleyici"
     members: Üyeler
     sign_out: Çıkış yap
+    clients: "Müşteriler"
+    see_all_clients: "Tüm müşterileri gör"
   partnerships:
     cq_section: "Ortak Sorular"
     cq_add_body: "Soru setlerinden birini seç — bu ortaklıktaki her ortak sorularını görebilir."
@@ -2357,3 +2359,17 @@ tr:
     already_confirmed: "Adresin zaten doğrulandı."
     too_many: "Kısa sürede çok fazla e-posta oldu. Biraz bekleyip yeniden dene."
     unavailable: "Şu anda bu adrese e-posta gönderemiyoruz."
+  clients:
+    title: "Müşteriler — Playverto"
+    eyebrow: "Playverto ekibi"
+    heading_html: "Tüm <span style=\"color:#FFC24B;\">müşteriler</span>"
+    subtitle: "Çalıştığınız tüm müşteri hesapları ve her birinin durumu. İçinde çalışmak için birini açın."
+    stat_clients: "Müşteriler"
+    stat_members: "Üyeler"
+    opened_ago: "%{when} önce açıldı"
+    never_opened: "Henüz açılmadı"
+    current: "Geçerli"
+    open: "Aç"
+    internal: "Dahili"
+    empty_title: "Henüz müşteri hesabı yok"
+    empty_body: "Bir müşterinin hesabına eklendiğinizde burada görünür; Verto'ları ve katılımcıları bir bakışta."

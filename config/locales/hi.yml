@@ -776,6 +776,8 @@ hi:
     role_viewer: "दर्शक"
     members: सदस्य
     sign_out: साइन आउट
+    clients: "क्लाइंट"
+    see_all_clients: "सभी क्लाइंट देखें"
   partnerships:
     cq_section: "साझा प्रश्न"
     cq_add_body: "अपने प्रश्न सेट में से एक चुनें — इस साझेदारी का हर साथी इसके प्रश्न देख सकेगा।"
@@ -2357,3 +2359,17 @@ hi:
     already_confirmed: "आपका पता पहले ही पुष्टि हो चुका है।"
     too_many: "कम समय में बहुत सारे ईमेल हो गए। थोड़ा रुककर फिर कोशिश करें।"
     unavailable: "इस समय हम इस पते पर ईमेल नहीं भेज सकते।"
+  clients:
+    title: "क्लाइंट — Playverto"
+    eyebrow: "Playverto टीम"
+    heading_html: "सभी <span style=\"color:#FFC24B;\">क्लाइंट</span>"
+    subtitle: "वे सभी क्लाइंट खाते जिनमें आप काम करते हैं, और हर एक कैसा चल रहा है। किसी में काम करने के लिए उसे खोलें।"
+    stat_clients: "क्लाइंट"
+    stat_members: "सदस्य"
+    opened_ago: "%{when} पहले खोला"
+    never_opened: "अभी तक नहीं खोला"
+    current: "वर्तमान"
+    open: "खोलें"
+    internal: "आंतरिक"
+    empty_title: "अभी कोई क्लाइंट खाता नहीं"
+    empty_body: "जब आपको किसी क्लाइंट के खाते में जोड़ा जाएगा, तो वह यहाँ दिखेगा, उसके Verto और उत्तरदाताओं की एक झलक के साथ।"

@@ -15,6 +15,18 @@
   # issues a query per call, and the popover asks once per workspace.
   workspaces       = Current.user ? Current.user.organisations.order(:name).to_a : []
   workspace_roles  = Current.user ? Current.user.memberships.pluck(:organisation_id, :role).to_h : {}
+
+  # Playverto staff work in every client account, and a picker that lists all
+  # of them is a list to read every time. Theirs shows the Playverto workspace,
+  # a row to the Clients dashboard (every account, with numbers), then the two
+  # clients they were in most recently — the acting one first when it is a
+  # client, so the current workspace is never missing from its own picker.
+  # Everyone else keeps the full list: for a person in two or three accounts
+  # it IS the overview.
+  staff_picker     = Current.user && workspaces.many? && PlayvertoStaff.member?(Current.user)
+  staff_home       = staff_picker ? workspaces.find { |w| w.slug == PlayvertoStaff::SLUG } : nil
+  recent_clients   = staff_picker ? ClientWorkspaces.recent_for(Current.user, current_organisation: org).map(&:organisation) : []
+  picker_rows      = staff_picker ? ([ staff_home ] + recent_clients).compact : workspaces
 %>
 <nav class="bottom-bar" aria-label="Primary">
   <div class="bottom-bar-left">
@@ -42,14 +54,30 @@
             </svg>
           </button>
 
-          <div class="bottom-bar-workspace-popover" data-command-palette-target="workspacePopover" hidden>
+          <div class="bottom-bar-workspace-popover" data-command-palette-target="workspacePopover" hidden
+               data-staff="<%= staff_picker ? true : false %>">
             <div class="bottom-bar-user-popover-section"><%= t("nav.workspaces") %></div>
-            <% workspaces.each do |w| %>
+            <% picker_rows.each do |w| %>
               <% role_label = case workspace_roles[w.id]
                               when "admin"  then t("nav.role_admin")
                               when "viewer" then t("nav.role_viewer")
                               else               t("nav.role_member")
                               end %>
+              <%# The CTA sits between the Playverto row and the recent clients:
+                  the second row of a staff picker, whatever comes after it. %>
+              <% if staff_picker && w == recent_clients.first %>
+                <a href="<%= clients_path %>" class="bottom-bar-workspace-item bottom-bar-workspace-cta"
+                   data-current="<%= request.path == clients_path %>">
+                  <svg class="bottom-bar-workspace-cta-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                    <rect x="1" y="1" width="5.5" height="5.5" rx="1.3" fill="currentColor"/>
+                    <rect x="8.5" y="1" width="5.5" height="5.5" rx="1.3" fill="currentColor"/>
+                    <rect x="1" y="8.5" width="5.5" height="5.5" rx="1.3" fill="currentColor"/>
+                    <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.3" fill="currentColor"/>
+                  </svg>
+                  <span class="bottom-bar-workspace-item-name"><%= t("nav.see_all_clients") %></span>
+                  <span class="bottom-bar-workspace-cta-arrow" aria-hidden="true">→</span>
+                </a>
+              <% end %>
               <% if w.id == org.id %>
                 <div class="bottom-bar-workspace-item" data-current="true">
                   <%= render "shared/workspace_avatar", organisation: w %>
@@ -67,6 +95,21 @@
                   <span class="bottom-bar-workspace-role"><%= role_label %></span>
                 <% end %>
               <% end %>
+            <% end %>
+            <%# A staff member who has not opened a client yet still gets the
+                door: the CTA above only renders ahead of a recent client. %>
+            <% if staff_picker && recent_clients.empty? %>
+              <a href="<%= clients_path %>" class="bottom-bar-workspace-item bottom-bar-workspace-cta"
+                 data-current="<%= request.path == clients_path %>">
+                <svg class="bottom-bar-workspace-cta-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                  <rect x="1" y="1" width="5.5" height="5.5" rx="1.3" fill="currentColor"/>
+                  <rect x="8.5" y="1" width="5.5" height="5.5" rx="1.3" fill="currentColor"/>
+                  <rect x="1" y="8.5" width="5.5" height="5.5" rx="1.3" fill="currentColor"/>
+                  <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.3" fill="currentColor"/>
+                </svg>
+                <span class="bottom-bar-workspace-item-name"><%= t("nav.see_all_clients") %></span>
+                <span class="bottom-bar-workspace-cta-arrow" aria-hidden="true">→</span>
+              </a>
             <% end %>
           </div>
         <% else %>

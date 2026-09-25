@@ -776,6 +776,8 @@ ja:
     role_viewer: "閲覧者"
     members: メンバー
     sign_out: ログアウト
+    clients: "クライアント"
+    see_all_clients: "すべてのクライアントを見る"
   partnerships:
     cq_section: "共通の質問"
     cq_add_body: "質問セットを選ぶと、このパートナーシップのすべてのパートナーがその質問を見られます。"
@@ -2355,3 +2357,17 @@ ja:
     already_confirmed: "アドレスはすでに確認済みです。"
     too_many: "短時間にメールが多すぎます。しばらく待ってからもう一度お試しください。"
     unavailable: "現在このアドレスにはメールを送信できません。"
+  clients:
+    title: "クライアント — Playverto"
+    eyebrow: "Playvertoチーム"
+    heading_html: "すべての<span style=\"color:#FFC24B;\">クライアント</span>"
+    subtitle: "あなたが担当しているクライアントアカウントと、それぞれの状況です。開くとそのアカウントで作業できます。"
+    stat_clients: "クライアント"
+    stat_members: "メンバー"
+    opened_ago: "%{when}前に開きました"
+    never_opened: "まだ開いていません"
+    current: "現在"
+    open: "開く"
+    internal: "社内"
+    empty_title: "クライアントアカウントはまだありません"
+    empty_body: "クライアントのアカウントに追加されると、そのVertoと回答者の概要とともにここに表示されます。"

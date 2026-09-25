@@ -12,10 +12,15 @@ class OrganisationsController < ApplicationController
   # funder-owner workspace lands on its Funders dashboard rather than a My
   # Vertos screen it doesn't use. An unauthorised id is a silent no-op: it
   # leaks nothing, and a revoked membership just lands you back home.
+  #
+  # The visit is recorded here, unthrottled, as well as by the landing page's
+  # own (throttled) resolution: the switch is the choice, and it is what puts
+  # this account at the top of the picker's recent clients.
   def switch
-    organisation_id = params[:organisation_id].to_i
-    if Current.user.organisations.exists?(organisation_id)
-      session[:current_organisation_id] = organisation_id
+    membership = Current.user.memberships.find_by(organisation_id: params[:organisation_id].to_i)
+    if membership
+      session[:current_organisation_id] = membership.organisation_id
+      membership.touch_visited!(force: true)
     end
     redirect_to default_landing_url
   end

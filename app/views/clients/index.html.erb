@@ -1,0 +1,159 @@
+<% content_for :title, t("clients.title") %>
+<% content_for :head do %>
+  <style>
+    body { overflow: auto !important; height: auto !important; }
+  </style>
+<% end %>
+<%
+  # Same responder basis as the My Vertos strip: people who answered at least
+  # one question, and completion as the share of them who finished.
+  org_ids          = @clients.map(&:organisation_id)
+  total_vertos     = org_ids.sum { |id| @stats.vertos[id].to_i }
+  total_live       = org_ids.sum { |id| @stats.live[id].to_i }
+  total_responders = org_ids.sum { |id| @stats.responders[id].to_i }
+  total_completed  = org_ids.sum { |id| @stats.completed[id].to_i }
+  completion_rate  = total_responders.positive? ? ((total_completed.to_f / total_responders) * 100).round : nil
+  current_id       = current_organisation&.id
+%>
+
+<div style="display:flex;min-height:100vh;background:#1C2034;">
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+
+    <%# ── Hero ── the same dash-* hooks as My Vertos, so the phone rules at
+        the end of application.css apply here unchanged. %>
+    <div class="dash-hero" style="position:relative;overflow:hidden;padding:32px 36px 40px;border-bottom:1px solid rgba(255,255,255,0.05);flex-shrink:0;">
+      <div class="gen-orbs" style="opacity:0.28;">
+        <div class="gen-orb gen-orb-2"></div>
+        <div class="gen-orb gen-orb-3"></div>
+        <div class="gen-orb gen-orb-4"></div>
+      </div>
+
+      <div style="position:relative;z-index:1;max-width:1320px;margin:0 auto;">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:24px;">
+          <div style="min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#FFC24B;box-shadow:0 0 12px rgba(255,194,75,0.7);"></span>
+              <span style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.45);letter-spacing:0.12em;text-transform:uppercase;"><%= t("clients.eyebrow") %></span>
+            </div>
+            <h1 class="dash-h1" style="font-family:'Alata',sans-serif;font-size:38px;color:#fff;line-height:1.1;margin:0 0 8px;">
+              <%= t("clients.heading_html") %>
+            </h1>
+            <p style="font-family:'ABeeZee',sans-serif;font-size: var(--text-lg);color:rgba(255,255,255,0.45);margin:0;max-width:520px;line-height:1.55;">
+              <%= t("clients.subtitle") %>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# ── Totals strip ── %>
+    <div class="dash-metrics" style="position:relative;padding:24px 36px 28px;border-bottom:1px solid rgba(255,255,255,0.05);flex-shrink:0;">
+      <div class="dash-metrics-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;max-width:1320px;margin:0 auto;">
+        <%
+          stats = [
+            { value: @clients.size.to_s,     label: t("clients.stat_clients"),      accent: "#FFC24B", grad: "linear-gradient(135deg,rgba(255,194,75,0.18),rgba(255,194,75,0.04))" },
+            { value: total_vertos.to_s,      label: "Vertos",                       accent: "#01EACB", grad: "linear-gradient(135deg,rgba(1,234,203,0.18),rgba(1,234,203,0.04))" },
+            { value: total_live.to_s,        label: t("dashboard.stat_live"),       accent: "#FF1E6F", grad: "linear-gradient(135deg,rgba(255,30,111,0.18),rgba(255,30,111,0.04))" },
+            { value: total_responders.to_s,  label: t("dashboard.stat_responders"), accent: "#615BF5", grad: "linear-gradient(135deg,rgba(97,91,245,0.18),rgba(97,91,245,0.04))" },
+            { value: completion_rate ? "#{completion_rate}%" : "—", label: t("dashboard.stat_completion"), accent: "#FFFA77", grad: "linear-gradient(135deg,rgba(255,250,119,0.18),rgba(255,250,119,0.04))" },
+          ]
+        %>
+        <% stats.each do |s| %>
+          <div class="dash-stat" style="background:<%= s[:grad] %>;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:18px 16px;text-align:center;backdrop-filter:blur(8px);">
+            <div class="dash-stat-value" style="font-family:'Alata',sans-serif;font-size:36px;color:<%= s[:accent] %>;line-height:1;letter-spacing:-0.01em;"><%= s[:value] %></div>
+            <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-2xs);color:rgba(255,255,255,0.5);margin-top:8px;letter-spacing:0.12em;text-transform:uppercase;"><%= s[:label] %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# ── Body ── %>
+    <div class="dash-body" style="flex:1;padding:32px 36px 60px;max-width:1320px;width:100%;margin:0 auto;box-sizing:border-box;">
+      <% if @clients.empty? %>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 32px;text-align:center;gap:12px;">
+          <div style="font-family:'Alata',sans-serif;font-size: var(--text-3xl);color:#fff;"><%= t("clients.empty_title") %></div>
+          <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-md);color:rgba(255,255,255,0.4);max-width:360px;line-height:1.6;"><%= t("clients.empty_body") %></div>
+        </div>
+      <% else %>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#FFC24B;box-shadow:0 0 10px rgba(255,194,75,0.7);"></span>
+          <span style="font-family:'Alata',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.5);letter-spacing:0.12em;text-transform:uppercase;"><%= t("clients.stat_clients") %></span>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.06);"></div>
+          <span style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.25);"><%= @clients.size %></span>
+        </div>
+
+        <div class="clients-grid">
+          <% @clients.each do |membership| %>
+            <% org        = membership.organisation
+               is_current = org.id == current_id
+               completion = @stats.completion_rate(org.id)
+               role_label = case membership.role
+                            when "admin"  then t("nav.role_admin")
+                            when "viewer" then t("nav.role_viewer")
+                            else               t("nav.role_member")
+                            end %>
+            <div class="clients-card" data-current="<%= is_current %>" data-organisation-id="<%= org.id %>">
+              <div class="clients-card-head">
+                <span class="clients-card-mark" aria-hidden="true">
+                  <% if org.logo.attached? %>
+                    <%= image_tag rails_blob_path(org.logo, only_path: true), alt: "", class: "clients-card-logo" %>
+                  <% else %>
+                    <span class="clients-card-initial" style="background:hsl(<%= org.id * 47 % 360 %>,52%,42%);"><%= org.name.to_s.strip.first.to_s.upcase %></span>
+                  <% end %>
+                </span>
+                <div style="flex:1;min-width:0;">
+                  <div class="clients-card-name"><%= org.name %></div>
+                  <div class="clients-card-meta">
+                    <span class="clients-card-role"><%= role_label %></span>
+                    <% if org.internal? %>
+                      <span class="clients-card-role" style="color:#FFC24B;"><%= t("clients.internal") %></span>
+                    <% end %>
+                  </div>
+                  <div class="clients-card-opened">
+                    <%= membership.last_visited_at ? t("clients.opened_ago", when: time_ago_in_words(membership.last_visited_at)) : t("clients.never_opened") %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="clients-card-stats">
+                <div class="clients-card-stat">
+                  <div class="clients-card-stat-value" style="color:#01EACB;"><%= @stats.vertos[org.id].to_i %></div>
+                  <div class="clients-card-stat-label">Vertos</div>
+                </div>
+                <div class="clients-card-stat">
+                  <div class="clients-card-stat-value" style="color:#FF1E6F;"><%= @stats.live[org.id].to_i %></div>
+                  <div class="clients-card-stat-label"><%= t("dashboard.stat_live") %></div>
+                </div>
+                <div class="clients-card-stat">
+                  <div class="clients-card-stat-value" style="color:#615BF5;"><%= @stats.responders[org.id].to_i %></div>
+                  <div class="clients-card-stat-label"><%= t("dashboard.stat_responders") %></div>
+                </div>
+                <div class="clients-card-stat">
+                  <div class="clients-card-stat-value" style="color:#FFFA77;"><%= completion ? "#{completion}%" : "—" %></div>
+                  <div class="clients-card-stat-label"><%= t("dashboard.stat_completion") %></div>
+                </div>
+                <div class="clients-card-stat">
+                  <div class="clients-card-stat-value" style="color:#0CA7FF;"><%= @stats.members[org.id].to_i %></div>
+                  <div class="clients-card-stat-label"><%= t("clients.stat_members") %></div>
+                </div>
+              </div>
+
+              <div class="clients-card-actions">
+                <% if is_current %>
+                  <span class="clients-card-current"><span aria-hidden="true">✓</span> <%= t("clients.current") %></span>
+                <% else %>
+                  <%= button_to switch_organisation_path, method: :post,
+                        params: { organisation_id: org.id },
+                        class: "clients-card-open",
+                        form: { style: "margin:0;" } do %>
+                    <%= t("clients.open") %> <span aria-hidden="true">→</span>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

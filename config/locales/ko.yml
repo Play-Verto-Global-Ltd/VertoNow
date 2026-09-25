@@ -776,6 +776,8 @@ ko:
     role_viewer: "뷰어"
     members: 멤버
     sign_out: 로그아웃
+    clients: "클라이언트"
+    see_all_clients: "모든 클라이언트 보기"
   partnerships:
     cq_section: "공통 질문"
     cq_add_body: "질문 세트를 선택하면 이 파트너십의 모든 파트너가 그 질문을 볼 수 있어요."
@@ -2355,3 +2357,17 @@ ko:
     already_confirmed: "주소가 이미 확인되었습니다."
     too_many: "짧은 시간에 이메일이 너무 많습니다. 잠시 후 다시 시도해 주세요."
     unavailable: "지금은 이 주소로 이메일을 보낼 수 없습니다."
+  clients:
+    title: "클라이언트 — Playverto"
+    eyebrow: "Playverto 팀"
+    heading_html: "모든 <span style=\"color:#FFC24B;\">클라이언트</span>"
+    subtitle: "작업 중인 모든 클라이언트 계정과 각 계정의 현황입니다. 계정을 열어 그 안에서 작업하세요."
+    stat_clients: "클라이언트"
+    stat_members: "멤버"
+    opened_ago: "%{when} 전 열람"
+    never_opened: "아직 열지 않음"
+    current: "현재"
+    open: "열기"
+    internal: "내부"
+    empty_title: "아직 클라이언트 계정이 없습니다"
+    empty_body: "클라이언트 계정에 추가되면 해당 계정의 Verto와 응답자를 한눈에 볼 수 있도록 여기에 표시됩니다."

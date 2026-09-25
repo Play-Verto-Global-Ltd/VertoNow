@@ -101,6 +101,23 @@
           </a>
         <% end %>
 
+        <%# The Clients dashboard: every client account the Playverto team
+            works in. Same membership gate as the route's constraint, so a
+            customer never sees a tile to a page that 404s for them. %>
+        <% if PlayvertoStaff.member?(user) %>
+          <a href="<%= clients_path %>"
+             class="command-palette-tile"
+             style="--tile-accent:#FFC24B;"
+             data-command-palette-target="item"
+             data-search-text="clients accounts workspaces all clients dashboard">
+            <svg class="command-palette-tile-icon" viewBox="0 0 15 15" fill="none">
+              <rect x="1.5" y="2.5" width="12" height="10" rx="1.6" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1.5 6h12M5.5 6v6.5" stroke="currentColor" stroke-width="1.3"/>
+            </svg>
+            <%= t("nav.clients") %>
+          </a>
+        <% end %>
+
         <%# Staff-only door to the review queue, gated by the same allowlist as
             the routing constraint — everyone else keeps not learning the
             surface exists (routes.rb's 404 rationale). English label like the

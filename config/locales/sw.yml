@@ -776,6 +776,8 @@ sw:
     role_viewer: "Mtazamaji"
     members: Wanachama
     sign_out: Toka
+    clients: "Wateja"
+    see_all_clients: "Ona wateja wote"
   partnerships:
     cq_section: "Maswali ya Pamoja"
     cq_add_body: "Chagua seti yako ya maswali — kila mshirika katika muungano huu ataona maswali yake."
@@ -2357,3 +2359,17 @@ sw:
     already_confirmed: "Anwani yako tayari imethibitishwa."
     too_many: "Hizo ni barua pepe nyingi kwa muda mfupi. Subiri kidogo kisha ujaribu tena."
     unavailable: "Hatuwezi kutuma barua pepe kwa anwani hii kwa sasa."
+  clients:
+    title: "Wateja — Playverto"
+    eyebrow: "Timu ya Playverto"
+    heading_html: "Wateja <span style=\"color:#FFC24B;\">wote</span>"
+    subtitle: "Kila akaunti ya mteja unayofanyia kazi, na jinsi kila moja inavyoendelea. Fungua moja ili ufanye kazi ndani yake."
+    stat_clients: "Wateja"
+    stat_members: "Wanachama"
+    opened_ago: "Ilifunguliwa %{when} zilizopita"
+    never_opened: "Bado haijafunguliwa"
+    current: "Ya sasa"
+    open: "Fungua"
+    internal: "Ya ndani"
+    empty_title: "Bado hakuna akaunti za wateja"
+    empty_body: "Utakapoongezwa kwenye akaunti ya mteja, itaonekana hapa, pamoja na Verto zake na waliojibu kwa mtazamo mmoja."

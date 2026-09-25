@@ -49,6 +49,12 @@ module OrganisationScope
     # below and the views' predicates ask for it several times per request,
     # so hand it over rather than looking it up again each time.
     @current_membership = membership
+    # Resolving the acting account is also the moment we learn this person is
+    # working in it — throttled, see Membership#touch_visited!. It is what
+    # orders the Workspaces picker's recent clients and dates the Clients
+    # dashboard, and it happens here rather than only in the switcher because
+    # a sign-in lands in an account without ever switching to it.
+    membership.touch_visited!
   end
 
   def current_organisation

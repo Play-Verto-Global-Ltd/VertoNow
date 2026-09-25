@@ -776,6 +776,8 @@ pt:
     role_viewer: "Leitor"
     members: Membros
     sign_out: Terminar sessão
+    clients: "Clientes"
+    see_all_clients: "Ver todos os clientes"
   partnerships:
     cq_section: "Perguntas comuns"
     cq_add_body: "Escolha um dos seus conjuntos de perguntas — todos os parceiros desta parceria poderão ver as suas perguntas."
@@ -2357,3 +2359,17 @@ pt:
     already_confirmed: "Seu endereço já está confirmado."
     too_many: "São muitos e-mails em pouco tempo. Aguarde um pouco e tente de novo."
     unavailable: "No momento não podemos enviar e-mails para este endereço."
+  clients:
+    title: "Clientes — Playverto"
+    eyebrow: "Equipa Playverto"
+    heading_html: "Todos os <span style=\"color:#FFC24B;\">clientes</span>"
+    subtitle: "Todas as contas de clientes em que trabalha e como está cada uma. Abra uma para atuar nela."
+    stat_clients: "Clientes"
+    stat_members: "Membros"
+    opened_ago: "Aberta há %{when}"
+    never_opened: "Ainda não aberta"
+    current: "Atual"
+    open: "Abrir"
+    internal: "Interna"
+    empty_title: "Ainda não há contas de clientes"
+    empty_body: "Quando for adicionado à conta de um cliente, ela aparecerá aqui, com os seus Vertos e participantes num relance."
