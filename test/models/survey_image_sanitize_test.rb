@@ -77,7 +77,10 @@ class SurveyImageSanitizeTest < ActiveSupport::TestCase
   # Card animations: only the same-origin stored copy survives — a pasted
   # LottieFiles URL must go through CardLottieStore first, never straight
   # onto the card.
-  LOTTIE_BLOB_URL = "/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MX19==--6b887ab3d44f50c2/card-lottie-abc123.json"
+  # The PROXY form — what card_lottie returns since 2026-09-25. The redirect
+  # form every earlier paste stored is rewritten to this on save (below).
+  LOTTIE_BLOB_URL = "/rails/active_storage/blobs/proxy/eyJfcmFpbHMiOnsiZGF0YSI6MX19==--6b887ab3d44f50c2/card-lottie-abc123.json"
+  LOTTIE_REDIRECT_URL = "/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MX19==--6b887ab3d44f50c2/card-lottie-abc123.json"
 
   test "sanitize_lottie_url accepts same-origin Active Storage JSON only" do
     assert_equal LOTTIE_BLOB_URL, Survey.sanitize_lottie_url(LOTTIE_BLOB_URL)
@@ -86,6 +89,21 @@ class SurveyImageSanitizeTest < ActiveSupport::TestCase
     assert_nil Survey.sanitize_lottie_url("/rails/active_storage/blobs/x.png")
     assert_nil Survey.sanitize_lottie_url("https://evil.com/rails/active_storage/blobs/x.json")
     assert_nil Survey.sanitize_lottie_url("")
+  end
+
+  # A redirect-form path 302s to the bucket in production, where lottie-web's
+  # XHR cannot read it (no CORS) — the animation the server accepted rendered
+  # as the dashed is-broken outline. Storing the proxy form is the fix for
+  # every save from now on; card_lottie_url covers the render of rows saved
+  # before it.
+  test "sanitize_lottie_url rewrites the redirect form to the proxy form" do
+    assert_equal LOTTIE_BLOB_URL, Survey.sanitize_lottie_url(LOTTIE_REDIRECT_URL)
+    assert_equal LOTTIE_BLOB_URL, Survey.lottie_proxy_path(LOTTIE_REDIRECT_URL)
+    assert_equal LOTTIE_BLOB_URL, Survey.lottie_proxy_path(LOTTIE_BLOB_URL), "already proxied: untouched"
+    assert_equal "", Survey.lottie_proxy_path(nil)
+
+    cards = [ { "type" => "multiple_choice", "text" => "Q", "lottie" => LOTTIE_REDIRECT_URL } ]
+    assert_equal LOTTIE_BLOB_URL, Survey.sanitize_cards_images!(cards).first["lottie"]
   end
 
   test "sanitize_cards_images! keeps a stored lottie and drops the rest of the media" do

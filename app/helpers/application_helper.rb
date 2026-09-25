@@ -522,6 +522,15 @@ module ApplicationHelper
     card["image"].blank? && card["video"].blank?
   end
 
+  # The path a card's pasted Lottie is fetched from: always the same-origin
+  # PROXY form, whatever form the card stored. Every animation saved before
+  # 2026-09-25 holds the redirect form, whose 302 lands on the bucket where
+  # lottie-web's XHR cannot read it (Survey.lottie_proxy_path) — rewriting at
+  # render time is what makes those cards work again without a re-save.
+  def card_lottie_url(card)
+    Survey.lottie_proxy_path(card["lottie"])
+  end
+
   def card_media_bg(card)
     return nil unless card_takes_backdrop?(card)
 

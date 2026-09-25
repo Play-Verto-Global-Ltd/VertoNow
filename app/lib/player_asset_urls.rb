@@ -33,7 +33,9 @@ module PlayerAssetUrls
 
   # Card keys holding a single image URL the player paints (shared/_split_left).
   # "lottie" is deliberately absent: it is JSON the player fetch()es, and a
-  # cross-origin fetch would need CORS on the bucket, so it stays same-origin.
+  # cross-origin fetch would need CORS on the bucket, so it stays same-origin —
+  # on the PROXY route, since the redirect route's 302 would land on the bucket
+  # just the same (Survey.lottie_proxy_path).
   IMAGE_KEYS = %w[image video_poster].freeze
 
   def active?

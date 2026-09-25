@@ -761,7 +761,10 @@ class SurveysController < ApplicationController
     blob = Survey::CardLottieStore.fetch_and_attach(survey, params[:url].to_s)
     return render json: { ok: false, error: "That link doesn't look like a LottieFiles animation." }, status: :unprocessable_entity unless blob
 
-    render json: { ok: true, url: rails_blob_path(blob, only_path: true) }
+    # The PROXY path, not rails_blob_path's redirect: lottie-web reads this
+    # by XHR, and the redirect's 302 lands on the bucket, where no CORS
+    # header lets a script read it (Survey.lottie_proxy_path).
+    render json: { ok: true, url: rails_storage_proxy_path(blob, only_path: true) }
   rescue ActiveRecord::RecordNotFound
     raise
   rescue => e

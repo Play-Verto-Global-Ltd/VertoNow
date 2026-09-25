@@ -71,9 +71,14 @@ class CardLottieStoreTest < ActiveSupport::TestCase
            "the extension is load-bearing: sanitize_lottie_url only accepts .json paths"
     assert_includes @survey.card_images.map(&:blob_id), blob.id
 
-    path = Rails.application.routes.url_helpers.rails_blob_path(blob, only_path: true)
-    assert_equal path, Survey.sanitize_lottie_url(path),
+    # The proxy form is what card_lottie hands the card (see
+    # Survey.lottie_proxy_path); the redirect form is accepted and converted.
+    proxy    = Rails.application.routes.url_helpers.rails_storage_proxy_path(blob, only_path: true)
+    redirect = Rails.application.routes.url_helpers.rails_blob_path(blob, only_path: true)
+    assert_equal proxy, Survey.sanitize_lottie_url(proxy),
                  "what the store produces must survive the cards sanitiser"
+    assert_equal proxy, Survey.sanitize_lottie_url(redirect),
+                 "a path stored before the proxy switch converges on save"
   end
 
   test "junk, non-Lottie JSON and oversized bodies are all refused" do

@@ -28,7 +28,7 @@
          must survive the round-trip or one reload-and-save would drop them. %>
      <% if card['image_source'].present? %>data-card-image-source="<%= card['image_source'] %>"<% end %>
      <% if card['image_crop'].is_a?(Hash) %>data-card-image-crop="<%= card['image_crop'].to_json %>"<% end %>
-     data-card-lottie="<%= card['lottie'].to_s %>"
+     data-card-lottie="<%= card_lottie_url(card) %>"
      data-card-video="<%= card['video'].to_s %>"
      data-card-video-poster="<%= card['video_poster'].to_s %>"
      data-card-image-credit="<%= card['image_credit'].to_s %>"

@@ -39,17 +39,64 @@ class CardLottieTest < ActionDispatch::IntegrationTest
          headers: { "Content-Type" => "application/json", "Accept" => "application/json" }
   end
 
-  test "a LottieFiles URL is stored and handed back as a same-origin path" do
+  test "a LottieFiles URL is stored and handed back as a same-origin PROXY path" do
     sign_in
     with_fetch(JSON.generate(ANIMATION)) { post_lottie("https://lottie.host/abc/anim.json") }
 
     assert_response :success
     body = JSON.parse(response.body)
     assert body["ok"], "expected the ingest to succeed, got: #{body['error']}"
-    assert_match %r{\A/rails/active_storage/}, body["url"],
-                 "the card must receive OUR path, never the third-party URL"
+    # The proxy route, not rails_blob_path's redirect. lottie-web reads the
+    # JSON by XHR, and once uploads live in the bucket the redirect's 302
+    # lands cross-origin with no CORS header — the browser refuses the body,
+    # the player fires data_failed, and the creator sees the dashed "could not
+    # load" outline for a paste the server accepted (2026-09-25, Riders).
+    assert_match %r{\A/rails/active_storage/blobs/proxy/}, body["url"],
+                 "the card must receive OUR proxy path, never a redirect and never the third-party URL"
     assert_equal body["url"], Survey.sanitize_lottie_url(body["url"]),
                  "what the endpoint returns must survive the cards sanitiser"
+  end
+
+  test "the stored animation is served same-origin as JSON in one hop" do
+    sign_in
+    with_fetch(JSON.generate(ANIMATION)) { post_lottie("https://lottie.host/abc/anim.json") }
+    stored = JSON.parse(response.body)["url"]
+
+    get stored
+    assert_response :success, "a redirect here is the bucket 302 an XHR cannot follow"
+    assert_equal "application/json", response.media_type
+    assert_equal ANIMATION, JSON.parse(response.body)
+  end
+
+  # Every animation pasted before the proxy switch is stored in the redirect
+  # form. Rewriting on render is what fixes those cards without a re-save, and
+  # the editor's data attribute is what an autosave sends back — so it carries
+  # the proxy form too, and the next save converges.
+  test "an animation stored as a redirect path renders and autosaves as the proxy path" do
+    sign_in
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: StringIO.new(JSON.generate(ANIMATION)),
+      filename: "card-lottie-legacy.json", content_type: "application/json"
+    )
+    @survey.card_images.attach(blob)
+    redirect = Rails.application.routes.url_helpers.rails_blob_path(blob, only_path: true)
+    proxy    = Rails.application.routes.url_helpers.rails_storage_proxy_path(blob, only_path: true)
+    assert_match %r{/blobs/redirect/}, redirect, "sanity: the legacy form is the redirect one"
+
+    cards = @survey.cards
+    cards[0] = cards[0].merge("lottie" => redirect)
+    @survey.update_columns(cards: cards) # past the sanitiser, as the old rows are
+
+    get survey_path(@survey)
+    assert_response :success
+    assert_select ".card-lottie[data-lottie-player-urls-value=?]", [ proxy ].to_json
+    assert_select "[data-card-lottie=?]", proxy
+
+    @survey.update_columns(publish_token: SecureRandom.hex(8), published_at: Time.current)
+    get play_survey_path(@survey.publish_token)
+    assert_response :success
+    assert_select ".card-lottie[data-lottie-player-urls-value=?]", [ proxy ].to_json
+    assert_select "[data-lottie-player-urls-value*=?]", "/blobs/redirect/", count: 0
   end
 
   test "a non-LottieFiles URL is refused" do

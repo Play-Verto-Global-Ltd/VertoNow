@@ -1086,10 +1086,38 @@ class Survey < ApplicationRecord
   end
 
   # A card left-panel Lottie animation — only a same-origin stored copy is
-  # allowed (CardLottieStore ingests the pasted LottieFiles URL).
+  # allowed (CardLottieStore ingests the pasted LottieFiles URL), and it is
+  # always the PROXY form of that path (see lottie_proxy_path).
   def self.sanitize_lottie_url(value)
     v = value.to_s.strip
-    v.match?(ACTIVE_STORAGE_LOTTIE_URL) ? v : nil
+    v.match?(ACTIVE_STORAGE_LOTTIE_URL) ? lottie_proxy_path(v) : nil
+  end
+
+  # The redirect form of an Active Storage blob path, which every card upload
+  # returns and every animation was stored as until 2026-09-25.
+  LOTTIE_REDIRECT_PATH = %r{\A/rails/active_storage/blobs/redirect/}i
+
+  # Rewrite a stored animation path to /rails/active_storage/blobs/proxy/…,
+  # which streams the JSON through Rails as a single same-origin 200.
+  #
+  # The redirect form answers a 302 — to a second disk URL on the local
+  # service, and to a PRESIGNED BUCKET URL once uploads live in object storage
+  # (production since 2026-09-08, docs/OBJECT_STORAGE_CUTOVER.md). An <img>
+  # follows that without complaint, which is why card photos kept working.
+  # lottie-web fetches its `path:` by XMLHttpRequest, and a redirect that lands
+  # cross-origin on a bucket serving no CORS headers is blocked by the browser
+  # before the body arrives: `data_failed`, the dashed is-broken outline, and a
+  # creator who pasted a link the server accepted without a word of error
+  # ("no error in the upload, but a white rectangle and no visible asset",
+  # 2026-09-25). The same-origin proxy route is what brand_logo_tag already
+  # uses for the org logo, for the sibling reason (an expiring second
+  # signature); a Lottie takes it because its bytes are read by script.
+  #
+  # Applied on the way in (sanitize_lottie_url) so new saves store the proxy
+  # form, and on the way out (card_lottie_url) so a card saved before the
+  # switch renders correctly before anyone touches it again.
+  def self.lottie_proxy_path(value)
+    value.to_s.sub(LOTTIE_REDIRECT_PATH, "/rails/active_storage/blobs/proxy/")
   end
 
   # A photographer-credit link — only a pexels.com URL is allowed (rendered as

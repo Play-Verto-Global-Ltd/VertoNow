@@ -56,10 +56,13 @@
   <% elsif has_lottie %>
     <%# A pasted LottieFiles animation, stored same-origin by CardLottieStore
         and played on a loop. Its own class (card-lottie, not nps-lottie): the
-        :has(.nps-lottie) CSS hides the Change-media CTA, which this keeps. %>
+        :has(.nps-lottie) CSS hides the Change-media CTA, which this keeps.
+        card_lottie_url: the proxy form of the path, whatever form was stored —
+        lottie-web fetches this by XHR, and the redirect form 302s to the
+        bucket, which a script cannot read (Survey.lottie_proxy_path). %>
     <div class="card-lottie"<%= " data-card-media".html_safe if editable %>
          data-controller="lottie-player"
-         data-lottie-player-urls-value="<%= [ card["lottie"] ].to_json %>"
+         data-lottie-player-urls-value="<%= [ card_lottie_url(card) ].to_json %>"
          data-lottie-player-current-value="1"
          data-lottie-player-loop-value="true">
       <div class="card-lottie-mount" data-lottie-player-target="mount"></div>

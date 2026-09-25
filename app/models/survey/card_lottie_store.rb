@@ -1,5 +1,7 @@
 # Turns a pasted LottieFiles URL into an Active Storage blob attached to a
-# Verto, scrubbed and served same-origin.
+# Verto, scrubbed and served same-origin — through the blob PROXY route, not
+# the redirect one (Survey.lottie_proxy_path says why: the redirect's 302
+# lands on the bucket, and an XHR cannot read a cross-origin response there).
 #
 # Hotlinking the JSON was rejected deliberately: lottie-web loads `path:` URLs
 # with XHR, which the CSP's connect_src (rightly) confines to our own origin —
