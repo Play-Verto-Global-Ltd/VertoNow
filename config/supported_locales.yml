@@ -39,6 +39,7 @@ locales:
   - { code: it, english_name: Italian,             native_name: Italiano,           flag: "🇮🇹", dir: ltr }
   - { code: nl, english_name: Dutch,               native_name: Nederlands,         flag: "🇳🇱", dir: ltr }
   - { code: pl, english_name: Polish,              native_name: Polski,             flag: "🇵🇱", dir: ltr }
+  - { code: cs, english_name: Czech,               native_name: Čeština,            flag: "🇨🇿", dir: ltr }
   - { code: ru, english_name: Russian,             native_name: Русский,            flag: "🇷🇺", dir: ltr }
   - { code: uk, english_name: Ukrainian,           native_name: Українська,         flag: "🇺🇦", dir: ltr }
   - { code: tr, english_name: Turkish,             native_name: Türkçe,             flag: "🇹🇷", dir: ltr }

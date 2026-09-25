@@ -238,12 +238,12 @@ The switch itself (dashboard, `render.yaml`) is in `docs/DEPLOYMENT_RUNBOOK.md`
   tests. CI sets a stub value.
 - GitHub Actions branch filters are case-sensitive: the branch is `Main`,
   not `main` (ci.yml watches both).
-- Locale strings live in 26 files under `config/locales/` — new UI strings
+- Locale strings live in 27 files under `config/locales/` — new UI strings
   must be added to all of them (they mirror en.yml's structure).
   **`en-US.yml` is GENERATED**, not hand-written: `bin/rails i18n:en_us`
   respells en.yml through `EnglishSpellings` (a word list, because "analysis",
   "promise" and "otherwise" are identical in both variants and a rule mangles
-  them). Add your string to en.yml and the other 24, then regenerate;
+  them). Add your string to en.yml and the other 25, then regenerate;
   `LocaleEnUsTest` fails if the file is stale or if en.yml grows a spelling the
   word list hasn't decided about. `bin/rails i18n:translate` skips English
   variants for the same reason.

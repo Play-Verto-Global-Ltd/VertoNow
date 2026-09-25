@@ -30,4 +30,19 @@ class SupportedLocalesTest < ActiveSupport::TestCase
   test "Verto content-language pickers (SupportedLocales.all) include the batch even independent of UI coverage" do
     SOUTHERN_AFRICA.each { |code| assert_includes SupportedLocales.codes, code }
   end
+
+  # Czech shipped with a full cs.yml rather than as a registry-only entry like
+  # `zh`, so it belongs in the platform switcher as well as the content
+  # pickers — the same acceptance bar as the batch above.
+  test "Czech is registered and translated enough to appear in the picker" do
+    loc = SupportedLocales.find("cs")
+    assert loc, "cs is not in config/supported_locales.yml"
+    assert_equal "Czech", loc.english_name
+    assert_equal "Čeština", loc.native_name
+    assert_equal "ltr", loc.dir
+    assert_includes SupportedLocales.ui_ready.map(&:code), "cs",
+      "cs.yml exists but doesn't cover enough of en.yml's keys yet (80% threshold)"
+    assert_equal "cs", SupportedLocales.coerce_tag("cs-CZ"),
+      "a Czech browser sends cs-CZ and must land on the bare language subtag"
+  end
 end
