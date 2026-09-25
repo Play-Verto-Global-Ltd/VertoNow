@@ -200,7 +200,17 @@ class ResultsMapBandTest < ApplicationSystemTestCase
     assert_no_selector "#av-rest", visible: true
     assert_selector ".results-summary-more", text: "See more"
 
-    find(".results-summary-more").click
+    # The button appears on the first chunk that carries a second paragraph,
+    # while the rest of the summary is still streaming in and the map band
+    # above is still painting — so it can still be moving when the driver
+    # works out where to click, and a click beside it opens nothing (one gate
+    # run in 2026-09-25 failed exactly so, and the test passed alone). Wait
+    # for the whole text to have landed and the button's box to hold still.
+    assert_selector "#av-rest", visible: :all, text: /behind the fold\./
+    wait_for_stimulus
+    more = find(".results-summary-more")
+    settle_box(more)
+    more.click
     assert_selector "#av-rest", visible: true, text: /Second paragraph/
     assert_selector ".results-summary-more", text: "See less"
   end
