@@ -256,6 +256,13 @@ cs:
     timeline_share: "Podíl %"
     timeline_count: "Počet"
     timeline_footnote: "Podíl se počítá z odpovědí, které přišly v daném období. Období s méně než %{count} odpověďmi zůstává prázdné."
+    dwell_label: "%{time} na odpověď"
+    dwell_hint:
+      one: "Doba strávená — medián času, který na této otázce strávil %{count} respondent, jenž na ni odpověděl (průměr %{mean})"
+      other: "Doba strávená — medián času, který na této otázce strávilo %{count} respondentů, kteří na ni odpověděli (průměr %{mean})"
+    dwell_time_seconds: "%{s} s"
+    dwell_time_minutes: "%{m} min %{s} s"
+    dwell_time_hours: "%{h} h %{m} min"
   shared_results:
     title: "Výsledky"
     read_only_badge: "Jen pro čtení"

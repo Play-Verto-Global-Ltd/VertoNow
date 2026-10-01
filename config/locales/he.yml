@@ -261,6 +261,13 @@ he:
     timeline_share: "שיעור %"
     timeline_count: "כמות"
     timeline_footnote: "השיעור מחושב מהתשובות שהתקבלו בכל תקופה. תקופה עם פחות מ-%{count} תשובות נשארת ריקה."
+    dwell_label: "%{time} למענה"
+    dwell_hint:
+      one: "זמן שהייה — חציון הזמן ש%{count} משיב שענה על השאלה הזו הקדיש לה (ממוצע %{mean})"
+      other: "זמן שהייה — חציון הזמן ש-%{count} משיבים שענו על השאלה הזו הקדישו לה (ממוצע %{mean})"
+    dwell_time_seconds: "%{s} שנ׳"
+    dwell_time_minutes: "%{m} דק׳ %{s} שנ׳"
+    dwell_time_hours: "%{h} שע׳ %{m} דק׳"
   shared_results:
     title: תוצאות
     read_only_badge: לקריאה בלבד

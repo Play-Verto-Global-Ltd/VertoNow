@@ -25,6 +25,7 @@ A `responses` row can hold:
 | `started_at`, `completed_at`, `created_at` | Timings |
 | `consent_agreed_at` / `consent_declined_at`, `consent_text_snapshot` | The consent record, including the exact wording shown |
 | `score`, `quiz_max`, `token_totals` | Quiz and token scoring |
+| `dwell_ms` | Milliseconds spent on each question card, keyed by card index — how long they took to answer. Cleared on consent decline, erased with the row |
 | `session_token` | A random per-session UUID minted in the browser |
 | `respondent_code_digest` | HMAC of a code the respondent chose, if the creator enabled codes |
 | `player_key_digest` | HMAC of a random key the browser minted for this Verto; recorded only where a feature needs a per-device identity — the leaderboard, the contact gate, ask-once questions, or No retests on a Verto that collects no respondent code |

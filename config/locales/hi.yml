@@ -261,6 +261,13 @@ hi:
     timeline_share: "हिस्सा %"
     timeline_count: "संख्या"
     timeline_footnote: "हिस्सा हर अवधि में आए जवाबों के आधार पर है। %{count} से कम जवाबों वाली अवधि खाली छोड़ी जाती है।"
+    dwell_label: "उत्तर देने में %{time}"
+    dwell_hint:
+      one: "ठहराव समय — इस प्रश्न का उत्तर देने वाले %{count} उत्तरदाता द्वारा इस पर बिताया गया माध्यिका समय (औसत %{mean})"
+      other: "ठहराव समय — इस प्रश्न का उत्तर देने वाले %{count} उत्तरदाताओं द्वारा इस पर बिताया गया माध्यिका समय (औसत %{mean})"
+    dwell_time_seconds: "%{s} से"
+    dwell_time_minutes: "%{m} मि %{s} से"
+    dwell_time_hours: "%{h} घं %{m} मि"
   shared_results:
     title: परिणाम
     read_only_badge: केवल पढ़ने के लिए

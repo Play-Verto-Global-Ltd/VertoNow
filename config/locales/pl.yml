@@ -261,6 +261,13 @@ pl:
     timeline_share: "Udział %"
     timeline_count: "Liczba"
     timeline_footnote: "Udział liczony jest z odpowiedzi, które wpłynęły w danym okresie. Okres z mniej niż %{count} odpowiedziami pozostaje pusty."
+    dwell_label: "%{time} na odpowiedź"
+    dwell_hint:
+      one: "Czas spędzony — mediana czasu poświęconego na to pytanie przez %{count} respondenta, który na nie odpowiedział (średnia %{mean})"
+      other: "Czas spędzony — mediana czasu poświęconego na to pytanie przez %{count} respondentów, którzy na nie odpowiedzieli (średnia %{mean})"
+    dwell_time_seconds: "%{s} s"
+    dwell_time_minutes: "%{m} min %{s} s"
+    dwell_time_hours: "%{h} godz. %{m} min"
   shared_results:
     title: Wyniki
     read_only_badge: Tylko do odczytu

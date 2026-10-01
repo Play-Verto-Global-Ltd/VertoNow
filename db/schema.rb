@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_01_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_01_130000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -836,6 +836,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_01_090000) do
     t.string "demographic_heritage"
     t.string "demographic_neurodiversity"
     t.string "device_kind"
+    t.json "dwell_ms", default: {}, null: false
     t.string "locale"
     t.string "player_key_digest"
     t.integer "quiz_max"

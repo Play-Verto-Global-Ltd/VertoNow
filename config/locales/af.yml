@@ -262,6 +262,13 @@ af:
     timeline_share: "Aandeel %"
     timeline_count: "Aantal"
     timeline_footnote: "Die aandeel is van die antwoorde wat in elke tydperk ingekom het. 'n Tydperk met minder as %{count} antwoorde word oopgelaat."
+    dwell_label: "%{time} om te antwoord"
+    dwell_hint:
+      one: "Verblyftyd — die mediaan tyd wat die %{count} respondent wat hierdie vraag beantwoord het daaraan bestee het (gemiddeld %{mean})"
+      other: "Verblyftyd — die mediaan tyd wat die %{count} respondente wat hierdie vraag beantwoord het daaraan bestee het (gemiddeld %{mean})"
+    dwell_time_seconds: "%{s} s"
+    dwell_time_minutes: "%{m} min %{s} s"
+    dwell_time_hours: "%{h} u %{m} min"
   shared_results:
     title: "Resultate"
     read_only_badge: "Leesalleen"

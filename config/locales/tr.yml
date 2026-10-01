@@ -261,6 +261,13 @@ tr:
     timeline_share: "Pay %"
     timeline_count: "Sayı"
     timeline_footnote: "Pay, her dönemde gelen yanıtlar üzerinden hesaplanır. %{count} yanıttan az olan bir dönem boş bırakılır."
+    dwell_label: "yanıt için %{time}"
+    dwell_hint:
+      one: "Soruda geçirilen süre — bu soruyu yanıtlayan %{count} katılımcının soruda geçirdiği medyan süre (ortalama %{mean})"
+      other: "Soruda geçirilen süre — bu soruyu yanıtlayan %{count} katılımcının soruda geçirdiği medyan süre (ortalama %{mean})"
+    dwell_time_seconds: "%{s} sn"
+    dwell_time_minutes: "%{m} dk %{s} sn"
+    dwell_time_hours: "%{h} sa %{m} dk"
   shared_results:
     title: Sonuçlar
     read_only_badge: Salt okunur

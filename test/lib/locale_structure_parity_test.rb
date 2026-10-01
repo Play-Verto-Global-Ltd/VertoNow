@@ -33,12 +33,16 @@ require "test_helper"
 # remaining backfill first: `editor.*` carries a handful of keys missing from
 # 18-24 locales, left by other work.
 class LocaleStructureParityTest < ActiveSupport::TestCase
+  # `results` joined with the dwell-time keys (2026-10-01): it was already in
+  # full parity in every file — measured, zero gaps, zero extras — and the
+  # results page is the creator's daily screen, so a results.* key landing
+  # in English alone is the defect this test exists to catch.
   NAMESPACES = %w[js defaults card templates demographics ask unsubscribe
                   you player_join player_sign_in player_session
                   player_sign_in_mailer
                   player_notification_mailer player_unsubscribe
                   player_email_confirmation player_email_confirmation_mailer
-                  language_check].freeze
+                  language_check results].freeze
 
   def locale_files
     Dir[Rails.root.join("config/locales/*.yml")]

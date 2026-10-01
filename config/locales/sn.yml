@@ -263,6 +263,13 @@ sn:
     timeline_share: "Chikamu %"
     timeline_count: "Huwandu"
     timeline_footnote: "Chikamu chinobva pamhinduro dzakasvika munguva imwe neimwe. Nguva ine mhinduro dzisingasviki %{count} inosiiwa isina chinhu."
+    dwell_label: "%{time} kupindura"
+    dwell_hint:
+      one: "Nguva yakashandiswa — nguva yepakati yakashandiswa pamubvunzo uyu nemupinduri %{count} akaupindura (avhareji %{mean})"
+      other: "Nguva yakashandiswa — nguva yepakati yakashandiswa pamubvunzo uyu nevapinduri %{count} vakaupindura (avhareji %{mean})"
+    dwell_time_seconds: "%{s}s"
+    dwell_time_minutes: "%{m}m %{s}s"
+    dwell_time_hours: "%{h}h %{m}m"
   shared_results:
     title: "Mhedzisiro"
     read_only_badge: "Kungoverenga"

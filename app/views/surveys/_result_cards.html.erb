@@ -39,11 +39,17 @@
                    gets the provenance without the analysis, which is the
                    right way round: why a question was asked is worth sharing
                    with whoever you sent the link to; the creator's reading of
-                   their own numbers is theirs. %>
+                   their own numbers is theirs.
+      dwell      — DwellTimes.for output ({ card index => { n:, median_ms:,
+                   mean_ms: } }) over the same responses `aggregated` counted,
+                   for the typical-time-to-answer chip in each question's
+                   head. Omitted (or nil), no chip is drawn. Aggregate timing,
+                   not PII, so the shared page passes it too. %>
 <%
   shared   = local_assigns.fetch(:shared, false)
   answers  = local_assigns[:answers]
   insights = local_assigns.fetch(:insights, false)
+  dwell    = local_assigns[:dwell]
 %>
 <% aggregated.each_with_index do |result, idx| %>
   <% type      = result[:type]
@@ -94,6 +100,19 @@
       <span class="rc-answers <%= "is-zero" if total_ans.to_i.zero? %>">
         <%= total_ans %> answer<%= total_ans == 1 ? "" : "s" %>
       </span>
+      <%# Dwell time — the median time respondents who answered this question
+          spent on it. Only where the player recorded any: a deck answered
+          before the measurement existed shows nothing rather than "0s". %>
+      <% if dwell.is_a?(Hash) && CardTypes.question?(type) && (stat = dwell[idx]) %>
+        <span class="rc-dwell"
+              title="<%= t("results.dwell_hint", count: stat[:n], mean: dwell_time_label(stat[:mean_ms])) %>">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.25" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 4.5V8l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <%= t("results.dwell_label", time: dwell_time_label(stat[:median_ms])) %>
+        </span>
+      <% end %>
     </div>
 
     <div class="rc-ask">

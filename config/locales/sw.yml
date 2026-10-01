@@ -261,6 +261,13 @@ sw:
     timeline_share: "Sehemu %"
     timeline_count: "Idadi"
     timeline_footnote: "Sehemu ni ya majibu yaliyofika katika kila kipindi. Kipindi chenye majibu chini ya %{count} huachwa wazi."
+    dwell_label: "%{time} kujibu"
+    dwell_hint:
+      one: "Muda uliotumika — muda wa kati ambao mjibu %{count} aliyejibu swali hili alitumia (wastani %{mean})"
+      other: "Muda uliotumika — muda wa kati ambao wajibu %{count} waliojibu swali hili walitumia (wastani %{mean})"
+    dwell_time_seconds: "sek. %{s}"
+    dwell_time_minutes: "dak. %{m} sek. %{s}"
+    dwell_time_hours: "saa %{h} dak. %{m}"
   shared_results:
     title: Matokeo
     read_only_badge: Kusoma tu

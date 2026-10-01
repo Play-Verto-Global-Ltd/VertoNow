@@ -54,7 +54,7 @@ module EnglishSpellings
   # transform has to be a list and not a rule.
   IDENTICAL = %w[
     analysis audience audiences confidence controller democratise difference
-    differences ellis experience experiences neurodivergence otherwise
+    differences ellis experience experiences hours neurodivergence otherwise
     playerjoinscontroller preference
     preferences promise raised recalled reference respelling sentence sequence
     sequences spelled yours

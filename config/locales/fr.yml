@@ -261,6 +261,13 @@ fr:
     timeline_share: "Part %"
     timeline_count: "Nombre"
     timeline_footnote: "La part est calculée sur les réponses arrivées dans chaque période. Une période de moins de %{count} réponses est laissée vide."
+    dwell_label: "%{time} pour répondre"
+    dwell_hint:
+      one: "Temps passé — temps médian consacré à cette question par le %{count} répondant qui y a répondu (moyenne %{mean})"
+      other: "Temps passé — temps médian consacré à cette question par les %{count} répondants qui y ont répondu (moyenne %{mean})"
+    dwell_time_seconds: "%{s} s"
+    dwell_time_minutes: "%{m} min %{s} s"
+    dwell_time_hours: "%{h} h %{m} min"
   shared_results:
     title: Résultats
     read_only_badge: Lecture seule

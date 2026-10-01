@@ -437,6 +437,7 @@ class DemoSeeder
         survey: survey, session_token: SecureRandom.uuid,
         status: completed ? "completed" : "started",
         answers: answers,
+        dwell_ms: simulate_dwell(answers),
         score: quiz_result&.dig(:score), quiz_max: quiz_result&.dig(:max),
         token_totals: token_totals,
         # Same rule as the player: an identity digest exists only while the
@@ -477,6 +478,13 @@ class DemoSeeder
     end
 
     answers
+  end
+
+  # How long each answered question took, so the demo's results page and
+  # exports show the dwell figures a live Verto would: a few seconds to about
+  # forty, skewed short the way real decks are.
+  def simulate_dwell(answers)
+    answers.keys.index_with { (2_000 + (rand**2 * 38_000)).round }
   end
 
   def answer_value(card, region:)

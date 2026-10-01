@@ -261,6 +261,13 @@ ja:
     timeline_share: "割合 %"
     timeline_count: "件数"
     timeline_footnote: "割合は各期間に届いた回答に対するものです。回答が%{count}件未満の期間は空白になります。"
+    dwell_label: "回答まで%{time}"
+    dwell_hint:
+      one: "滞在時間 — この質問に回答した%{count}人がこの質問に費やした時間の中央値（平均 %{mean}）"
+      other: "滞在時間 — この質問に回答した%{count}人がこの質問に費やした時間の中央値（平均 %{mean}）"
+    dwell_time_seconds: "%{s}秒"
+    dwell_time_minutes: "%{m}分%{s}秒"
+    dwell_time_hours: "%{h}時間%{m}分"
   shared_results:
     title: 結果
     read_only_badge: 読み取り専用

@@ -270,6 +270,13 @@ xh:
     timeline_share: "Isabelo %"
     timeline_count: "Inani"
     timeline_footnote: "Isabelo sisekelwe kwiimpendulo ezifike kwixesha ngalinye. Ixesha elineempendulo ezingaphantsi kuka-%{count} lishiywa lingenanto."
+    dwell_label: "%{time} ukuphendula"
+    dwell_hint:
+      one: "Ixesha elichithiweyo — ixesha eliphakathi elichithwe kulo mbuzo ngumphenduli ongu-%{count} owuphendulileyo (umndilili %{mean})"
+      other: "Ixesha elichithiweyo — ixesha eliphakathi elichithwe kulo mbuzo ngabaphenduli abangu-%{count} abawuphendulileyo (umndilili %{mean})"
+    dwell_time_seconds: "%{s}s"
+    dwell_time_minutes: "%{m}m %{s}s"
+    dwell_time_hours: "%{h}h %{m}m"
   shared_results:
     title: "Iziphumo"
     read_only_badge: "Ukufunda kuphela"

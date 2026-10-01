@@ -261,6 +261,13 @@ ar:
     timeline_share: "النسبة %"
     timeline_count: "العدد"
     timeline_footnote: "النسبة محسوبة من الردود الواردة في كل فترة. الفترة التي تقل ردودها عن %{count} تُترك فارغة."
+    dwell_label: "%{time} للإجابة"
+    dwell_hint:
+      one: "مدة البقاء — الوسيط للوقت الذي قضاه %{count} مشارك أجاب عن هذا السؤال (المتوسط %{mean})"
+      other: "مدة البقاء — الوسيط للوقت الذي قضاه %{count} مشاركين أجابوا عن هذا السؤال (المتوسط %{mean})"
+    dwell_time_seconds: "%{s} ث"
+    dwell_time_minutes: "%{m} د %{s} ث"
+    dwell_time_hours: "%{h} س %{m} د"
   shared_results:
     title: النتائج
     read_only_badge: للقراءة فقط

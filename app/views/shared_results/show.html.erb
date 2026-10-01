@@ -118,7 +118,7 @@
       <% if @active_segment[:suppressed] %>
         <%= render "surveys/results_suppressed" %>
       <% else %>
-        <%= render "surveys/result_cards", aggregated: @aggregated, total: @total, shared: true %>
+        <%= render "surveys/result_cards", aggregated: @aggregated, total: @total, shared: true, dwell: @dwell %>
       <% end %>
     </div>
 

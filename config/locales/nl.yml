@@ -261,6 +261,13 @@ nl:
     timeline_share: "Aandeel %"
     timeline_count: "Aantal"
     timeline_footnote: "Het aandeel is berekend over de antwoorden die in elke periode binnenkwamen. Een periode met minder dan %{count} antwoorden blijft leeg."
+    dwell_label: "%{time} om te antwoorden"
+    dwell_hint:
+      one: "Verblijftijd — de mediane tijd die de %{count} respondent die deze vraag beantwoordde eraan besteedde (gemiddeld %{mean})"
+      other: "Verblijftijd — de mediane tijd die de %{count} respondenten die deze vraag beantwoordden eraan besteedden (gemiddeld %{mean})"
+    dwell_time_seconds: "%{s} s"
+    dwell_time_minutes: "%{m} min %{s} s"
+    dwell_time_hours: "%{h} u %{m} min"
   shared_results:
     title: Resultaten
     read_only_badge: Alleen-lezen

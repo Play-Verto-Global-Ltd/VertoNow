@@ -261,6 +261,13 @@ vi:
     timeline_share: "Tỷ lệ %"
     timeline_count: "Số lượng"
     timeline_footnote: "Tỷ lệ tính trên các câu trả lời đến trong mỗi kỳ. Kỳ có ít hơn %{count} câu trả lời sẽ để trống."
+    dwell_label: "%{time} để trả lời"
+    dwell_hint:
+      one: "Thời gian dừng — thời gian trung vị mà %{count} người trả lời câu hỏi này đã dành cho nó (trung bình %{mean})"
+      other: "Thời gian dừng — thời gian trung vị mà %{count} người trả lời câu hỏi này đã dành cho nó (trung bình %{mean})"
+    dwell_time_seconds: "%{s} giây"
+    dwell_time_minutes: "%{m} phút %{s} giây"
+    dwell_time_hours: "%{h} giờ %{m} phút"
   shared_results:
     title: Kết quả
     read_only_badge: Chỉ xem

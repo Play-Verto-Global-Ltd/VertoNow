@@ -271,6 +271,13 @@ st:
     timeline_share: "Karolo %"
     timeline_count: "Palo"
     timeline_footnote: "Karolo e ipapisitse le dikarabo tse fihlileng nakong ka nngwe. Nako e nang le dikarabo tse ka tlase ho %{count} e siuwa e se na letho."
+    dwell_label: "%{time} ho araba"
+    dwell_hint:
+      one: "Nako e sebedisitsweng — nako e bohareng e sebedisitsweng potsong ena ke moarabi a le %{count} ya e arabileng (karolelano %{mean})"
+      other: "Nako e sebedisitsweng — nako e bohareng e sebedisitsweng potsong ena ke baarabi ba %{count} ba e arabileng (karolelano %{mean})"
+    dwell_time_seconds: "%{s}s"
+    dwell_time_minutes: "%{m}m %{s}s"
+    dwell_time_hours: "%{h}h %{m}m"
   shared_results:
     title: "Diphetho"
     read_only_badge: "Ho Bala Feela"

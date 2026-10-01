@@ -269,6 +269,13 @@ zu:
     timeline_share: "Ingxenye %"
     timeline_count: "Inani"
     timeline_footnote: "Ingxenye isuselwa ezimpendulweni ezifike esikhathini ngasinye. Isikhathi esinezimpendulo ezingaphansi kuka-%{count} sishiywa singenalutho."
+    dwell_label: "%{time} ukuphendula"
+    dwell_hint:
+      one: "Isikhathi esichithiwe — isikhathi esiphakathi esichithwe kulo mbuzo ngumphenduli ongu-%{count} owuphendulile (isilinganiso %{mean})"
+      other: "Isikhathi esichithiwe — isikhathi esiphakathi esichithwe kulo mbuzo ngabaphenduli abangu-%{count} abawuphendulile (isilinganiso %{mean})"
+    dwell_time_seconds: "%{s}s"
+    dwell_time_minutes: "%{m}m %{s}s"
+    dwell_time_hours: "%{h}h %{m}m"
   shared_results:
     title: "Imiphumela"
     read_only_badge: "Ukufunda kuphela"

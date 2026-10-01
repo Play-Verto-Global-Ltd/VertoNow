@@ -60,7 +60,11 @@ class ResultsExportTest < ActiveSupport::TestCase
     header = @export.response_rows.first
     assert_equal [ "Response ID", "Submitted at", "Source", "Language",
                    "Duration (seconds)", "Device", "Responder", "Device group" ], header.first(META).map(&:to_s)
-    assert_equal [ "Favourite colour?", "Which fruits?", "How happy?", "Rate us", "Agree?", "Which path?", "Comments?" ], header[META..]
+    questions = [ "Favourite colour?", "Which fruits?", "How happy?", "Rate us", "Agree?", "Which path?", "Comments?" ]
+    assert_equal questions, header[META, questions.size]
+    # The dwell block comes AFTER every answer column, so nothing that reads
+    # this file by column position moves when it is added.
+    assert_equal questions.map { |q| "Dwell time (seconds): #{q}" }, header[(META + questions.size)..]
     refute_includes header, "Welcome"
   end
 
@@ -118,6 +122,66 @@ class ResultsExportTest < ActiveSupport::TestCase
     assert_equal "Sad", second[META + 2]                    # range index 0
     assert_equal "Right", second[META + 5]
     assert_equal "", second[META + 6]                        # blank open_ended
+  end
+
+  # ── Dwell time ─────────────────────────────────────────────────────────────
+
+  test "each response's dwell time per question rides in the block after the answers, in seconds" do
+    first, second = @survey.responses.order(:created_at).to_a
+    first.update!(dwell_ms:  { "1" => 4210, "3" => 12_000, "7" => 61_449 })
+    second.update!(dwell_ms: { "1" => 999 })
+    rebuild_export!
+
+    rows   = @export.response_rows
+    header = rows.first
+    base   = META + 7 # the seven question columns
+    assert_equal "Dwell time (seconds): Favourite colour?", header[base]
+    assert_equal "Dwell time (seconds): Comments?", header[base + 6]
+
+    assert_equal [ 4.2, "", 12.0, "", "", "", 61.4 ], rows[1][base, 7]
+    assert_equal [ 1.0, "", "", "", "", "", "" ],     rows[2][base, 7], "blank where nothing was recorded"
+  end
+
+  test "a response from before dwell existed exports blank dwell cells, not zeros" do
+    rows = @export.response_rows
+    assert_equal Array.new(7, ""), rows[1][(META + 7)..]
+  end
+
+  test "summary_rows carry a median and mean dwell row per question that has any" do
+    first, second = @survey.responses.order(:created_at).to_a
+    first.update!(dwell_ms:  { "1" => 4000, "3" => 10_000 })
+    second.update!(dwell_ms: { "1" => 10_000 })
+    rebuild_export!
+
+    rows = @export.summary_rows
+    colour = rows.select { |r| r[2] == "Favourite colour?" }
+    assert_includes colour, [ 2, "multiple_choice", "Favourite colour?", "Time to answer — median (seconds)", 7.0, nil, 2 ]
+    assert_includes colour, [ 2, "multiple_choice", "Favourite colour?", "Time to answer — mean (seconds)", 7.0, nil, 2 ]
+    # The timing rows come after the card's own answer rows, so a reader going
+    # down the card meets its options first.
+    labels = colour.map { |r| r[3] }
+    assert_equal labels.size - 2, labels.index("Time to answer — median (seconds)")
+
+    happy = rows.select { |r| r[2] == "How happy?" }
+    assert_includes happy, [ 4, "range", "How happy?", "Time to answer — median (seconds)", 10.0, nil, 1 ]
+    assert_equal 7, happy.size, "five steps plus the two timing rows"
+
+    fruits = rows.select { |r| r[2] == "Which fruits?" }
+    refute fruits.any? { |r| r[3].to_s.start_with?("Time to answer") }, "no dwell recorded, no timing rows"
+  end
+
+  test "the summary's time to answer is over answered cards, the per-response dwell is time on the card" do
+    first, second = @survey.responses.order(:created_at).to_a
+    # The second respondent spent twenty seconds on "Comments?" and left it blank.
+    first.update!(dwell_ms:  { "7" => 5000 })
+    second.update!(dwell_ms: { "7" => 20_000 })
+    rebuild_export!
+
+    comments = @export.summary_rows.select { |r| r[2] == "Comments?" }
+    assert_includes comments, [ 8, "open_ended", "Comments?", "Time to answer — median (seconds)", 5.0, nil, 1 ]
+
+    rows = @export.response_rows
+    assert_equal [ 5.0, 20.0 ], [ rows[1].last, rows[2].last ], "both times are real, and both are in the row"
   end
 
   test "summary_rows produce counts and percentages per option" do

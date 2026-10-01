@@ -67,7 +67,9 @@ class ResultsExport
   # formatted cells (never AR objects), which puts this path's peak memory
   # where the Sheets/XLSX paths already are — both materialise every row.
   def each_response_row
-    yield csv_safe_row(RESPONSE_HEADER + question_cards.map { |card, _idx| question_text(card) })
+    yield csv_safe_row(RESPONSE_HEADER +
+                       question_cards.map { |card, _idx| question_text(card) } +
+                       question_cards.map { |card, _idx| dwell_header(card) })
 
     buffered = []
     each_export_response do |response|
@@ -83,7 +85,16 @@ class ResultsExport
         # never the digests — so a fill bug cannot leak one into a cell.
         nil,
         nil
-      ] + question_cards.map { |card, idx| format_answer(card, answers[idx.to_s]) }
+      ] + question_cards.map { |card, idx| format_answer(card, answers[idx.to_s]) } +
+        # Dwell time per question, as a block AFTER the answers rather than
+        # interleaved beside each one: every column that existed before keeps
+        # its position, so nothing reading this file by column index moves.
+        # Seconds to one decimal; blank where the player recorded nothing
+        # (a response from before dwell existed, a card never shown). The
+        # time is given for a card the respondent viewed and skipped too —
+        # that is real behaviour — whereas the summary's typical figure is
+        # over answers only (DwellTimes).
+        question_cards.map { |_card, idx| response.dwell_seconds_at(idx) || "" }
       buffered << { cells: cells,
                     code_digest: response.respondent_code_digest.presence,
                     device_digest: response.player_key_digest.presence,
@@ -132,7 +143,43 @@ class ResultsExport
       summary_option_rows(result, type).each do |label, count, pct|
         yield csv_safe_row([ number, type, question, label, count, pct, total ])
       end
+      # How long it typically took to answer, in the rating card's "Average
+      # (1–5)" shape: a figure in the Count column, no percentage. Its own
+      # "Total answers" is the number of answers the figure is over, which can
+      # be fewer than the card's — responses collected before dwell existed
+      # have no time to contribute.
+      #
+      # "Time to answer", not "Dwell time", and the difference is the
+      # population: these rows are over respondents who ANSWERED the card
+      # (DwellTimes), the same figure the results page shows beside the answer
+      # count. The per-response table's "Dwell time" columns are time on the
+      # card, answered or not — so the median of that column is not this row,
+      # and the two names say why.
+      next unless (stat = dwell_stats[idx])
+
+      yield csv_safe_row([ number, type, question, TIME_TO_ANSWER_MEDIAN_LABEL, dwell_seconds(stat[:median_ms]), nil, stat[:n] ])
+      yield csv_safe_row([ number, type, question, TIME_TO_ANSWER_MEAN_LABEL,   dwell_seconds(stat[:mean_ms]),   nil, stat[:n] ])
     end
+  end
+
+  TIME_TO_ANSWER_MEDIAN_LABEL = "Time to answer — median (seconds)".freeze
+  TIME_TO_ANSWER_MEAN_LABEL   = "Time to answer — mean (seconds)".freeze
+
+  # The per-question header for a dwell column, built from the same text the
+  # answer column uses so the two line up by eye.
+  def dwell_header(card)
+    "Dwell time (seconds): #{question_text(card)}"
+  end
+
+  def dwell_seconds(ms)
+    (ms.to_f / 1000).round(1)
+  end
+
+  # Per-card typical time to answer, over the same responses the rows are
+  # (DwellTimes — answered cards only, median first). Computed on demand: the
+  # per-response table reads each row's own figures and never needs this.
+  def dwell_stats
+    @dwell_stats ||= DwellTimes.for(Array(@survey.cards), @responses)
   end
 
   # Iterate the response set without loading it all at once. For an AR relation,
@@ -142,7 +189,7 @@ class ResultsExport
     if @responses.respond_to?(:find_each)
       @responses.reorder(nil)
         .select(:id, :created_at, :locale, :survey_share_id, :survey_link_id, :answers,
-                :started_at, :completed_at, :device_kind,
+                :started_at, :completed_at, :device_kind, :dwell_ms,
                 :respondent_code_digest, :player_key_digest)
         .find_each(batch_size: 500, &block)
     else

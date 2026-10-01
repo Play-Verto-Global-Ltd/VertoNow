@@ -5658,6 +5658,14 @@ button.editor-leave-btn { cursor: pointer; }
   font-family: "Alata", sans-serif; font-size: var(--text-sm); color: #01EACB;
 }
 .rc-answers.is-zero { color: rgba(255,255,255,0.2); }
+/* Typical time to answer, beside the answer count it is over. Dimmer than the
+   count: the count is the card's headline number, this is its footnote. */
+.rc-dwell {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: "Alata", sans-serif; font-size: var(--text-sm); color: rgba(255,255,255,0.5);
+  cursor: default;
+}
+.rc-dwell svg { flex: 0 0 auto; opacity: 0.8; }
 
 .rc-ask { display: flex; align-items: center; gap: 12px; }
 .rc-thumb {

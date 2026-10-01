@@ -65,6 +65,9 @@ class SharedResultsController < ApplicationController
     @overall_total = base.count
     @total         = @active_segment[:count]
     @aggregated    = aggregate_results(Array(@survey.cards), @active_segment[:scope])
+    # Typical time to answer per question — aggregate timing, no free text,
+    # so it is shown here on the same terms as the distributions.
+    @dwell         = @active_segment[:suppressed] ? {} : DwellTimes.for(Array(@survey.cards), @active_segment[:scope])
 
     # without_report_text (set_survey) excludes both of these columns —
     # #show only needs to know whether a report exists and show the cached

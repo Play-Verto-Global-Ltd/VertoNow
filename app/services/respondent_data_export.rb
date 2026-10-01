@@ -179,27 +179,33 @@ class RespondentDataExport
   # Answers are stored keyed by CARD INDEX, so they're only meaningful next to
   # the deck. Emitted with the question text so the file makes sense to the
   # person receiving it rather than being a bag of numbered values.
+  #
+  # A question gets an entry when anything at all is held about it: a value,
+  # an "Other" write-in (an answer on its own — Response.answered_entry?),
+  # or time spent on it. The last is why a question the person read and
+  # left unanswered can still appear here: how long they lingered is
+  # behavioural data about them, the creator's export shows it, and a
+  # subject-access file that says "every field" must too.
   def answers(response)
     stored = response.answers
-    return [] unless stored.is_a?(Hash)
+    stored = {} unless stored.is_a?(Hash)
 
     Array(@survey.cards).each_with_index.filter_map do |card, index|
       next unless card.is_a?(Hash)
 
-      answer = stored[index.to_s]
-      next unless answer.is_a?(Hash)
-
-      value = answer["value"]
-      other = answer["other"].presence
-      # An entry is theirs if either half has words in it: the Other box is an
-      # answer on its own, and the respondent's own typed words are the one
-      # thing a subject access request most obviously covers.
-      next if (value.nil? || (value.respond_to?(:empty?) && value.empty?)) && other.nil?
+      answer  = stored[index.to_s]
+      answer  = {} unless answer.is_a?(Hash)
+      value   = answer["value"]
+      value   = nil if value.respond_to?(:empty?) && value.empty?
+      other   = answer["other"].presence
+      seconds = response.dwell_seconds_at(index)
+      next if value.nil? && other.nil? && seconds.nil?
 
       { "question" => card["text"].to_s,
         "type"     => card["type"].to_s,
         "answer"   => value,
-        "other"    => other }.compact
+        "other"    => other,
+        "time_on_question_seconds" => seconds }.compact
     end
   end
 end

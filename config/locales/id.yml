@@ -261,6 +261,13 @@ id:
     timeline_share: "Porsi %"
     timeline_count: "Jumlah"
     timeline_footnote: "Porsi dihitung dari jawaban yang masuk pada tiap periode. Periode dengan kurang dari %{count} jawaban dibiarkan kosong."
+    dwell_label: "%{time} untuk menjawab"
+    dwell_hint:
+      one: "Waktu tinggal — median waktu yang dihabiskan untuk pertanyaan ini oleh %{count} responden yang menjawabnya (rata-rata %{mean})"
+      other: "Waktu tinggal — median waktu yang dihabiskan untuk pertanyaan ini oleh %{count} responden yang menjawabnya (rata-rata %{mean})"
+    dwell_time_seconds: "%{s} dtk"
+    dwell_time_minutes: "%{m} mnt %{s} dtk"
+    dwell_time_hours: "%{h} jam %{m} mnt"
   shared_results:
     title: Hasil
     read_only_badge: Hanya baca

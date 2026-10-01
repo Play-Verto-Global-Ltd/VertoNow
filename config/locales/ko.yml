@@ -261,6 +261,13 @@ ko:
     timeline_share: "비율 %"
     timeline_count: "건수"
     timeline_footnote: "비율은 각 기간에 들어온 응답을 기준으로 합니다. 응답이 %{count}건 미만인 기간은 비워 둡니다."
+    dwell_label: "답변까지 %{time}"
+    dwell_hint:
+      one: "체류 시간 — 이 질문에 답한 %{count}명이 이 질문에 쓴 시간의 중앙값 (평균 %{mean})"
+      other: "체류 시간 — 이 질문에 답한 %{count}명이 이 질문에 쓴 시간의 중앙값 (평균 %{mean})"
+    dwell_time_seconds: "%{s}초"
+    dwell_time_minutes: "%{m}분 %{s}초"
+    dwell_time_hours: "%{h}시간 %{m}분"
   shared_results:
     title: 결과
     read_only_badge: 읽기 전용

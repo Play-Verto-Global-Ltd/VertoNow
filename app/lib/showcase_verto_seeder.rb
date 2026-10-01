@@ -522,6 +522,9 @@ class ShowcaseVertoSeeder
         survey: survey, session_token: SecureRandom.uuid,
         status: completed ? "completed" : "started",
         answers: answers,
+        # A few seconds to about forty on each answered question, skewed
+        # short, so the showcase's results page carries dwell figures too.
+        dwell_ms: answers.keys.index_with { (2_000 + (rand**2 * 38_000)).round },
         token_totals: TokenGrading.totals(cards, answers, token_ids),
         # One identity per simulated respondent, same rule as the player: the
         # digest only exists while a leaderboard is active. Names are minted

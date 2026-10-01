@@ -136,6 +136,29 @@ class RespondentDataTest < ActionDispatch::IntegrationTest
     assert_not_nil row["duration_seconds"]
   end
 
+  test "the export says how long they spent on each question, answered or not" do
+    @resp.update!(answers: { "0" => { "type" => "yes_no", "value" => "Yes" } }, dwell_ms: { "0" => 8400, "1" => 2600 })
+    login(@admin)
+    get survey_respondent_data_export_path(@survey, session_token: @token)
+
+    answers = JSON.parse(response.body)["responses"].first["answers"]
+    assert_equal 8.4, answers.first["time_on_question_seconds"]
+    # Read and left blank: no answer to show, but the time is still theirs.
+    assert_equal "Where do you live?", answers.second["question"]
+    assert_nil answers.second["answer"]
+    assert_equal 2.6, answers.second["time_on_question_seconds"]
+  end
+
+  test "an Other write-in is an answer and is exported as one" do
+    @resp.update!(answers: { "0" => { "type" => "yes_no", "value" => nil, "other" => "Sometimes" } })
+    login(@admin)
+    get survey_respondent_data_export_path(@survey, session_token: @token)
+
+    answers = JSON.parse(response.body)["responses"].first["answers"]
+    assert_equal "Sometimes", answers.first["other"]
+    assert_nil answers.first["time_on_question_seconds"], "absent, not zero, where nothing was recorded"
+  end
+
   test "answers are exported next to the question that was asked" do
     # Answers are stored keyed by card INDEX, which is meaningless to the person
     # receiving the file.

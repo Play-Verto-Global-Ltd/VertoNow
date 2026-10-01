@@ -236,8 +236,19 @@ export default class extends Controller {
     // paths (the quiz state restore, the already-played branch) and every one
     // of them asks this set whether to open a modal.
     this._modalSeen = this._loadModalSeen()
+    // Dwell time — see _bankDwell. Up here, before any path that can reach
+    // _update() or _payload(), so neither ever meets an unset clock.
+    this._dwell       = {}
+    this._dwellKey    = null
+    this._dwellSince  = null
+    this._dwellFrozen = new Set()
+    this._onDwellVisibility = () => this._dwellVisibility()
+    document.addEventListener("visibilitychange", this._onDwellVisibility)
 
     this._sessionToken = this._ensureToken()
+    // The running dwell totals live beside the token, so a reload carries on
+    // from where this run was rather than timing the same cards from zero.
+    this._dwell = this._loadDwell()
     // The durable identity is minted for the leaderboard, the contact gate,
     // or any ask-once question — for contacts it is the only bridge between
     // the volunteered details and the pseudonymous responses, and for
@@ -379,6 +390,7 @@ export default class extends Controller {
     // card would keep whatever hero state it happened to have.
     document.documentElement.classList.remove("kbd-open")
     this._clearTestTimers()
+    document.removeEventListener("visibilitychange", this._onDwellVisibility)
   }
 
   // ── Footer: answered glow + the cramped-bar fallback ─────────────────────
@@ -1017,6 +1029,7 @@ export default class extends Controller {
     try {
       sessionStorage.removeItem(`verto_session_${this.submitUrlValue}`)
     } catch (_e) { /* storage blocked */ }
+    this._clearStoredDwell()
     // A full navigation, not in-place surgery: Test Mode's guarantee is that the
     // page carries no live endpoint at all, and only a server render can make
     // that true. Same reasoning as playAgain()'s reload — connect() is the one
@@ -1075,6 +1088,9 @@ export default class extends Controller {
     // client re-uploading its own — an unload flush or a queued submit would
     // otherwise restore exactly what the respondent just refused to give.
     this._answers = {}
+    this._endDwell()
+    this._dwell = {}
+    this._clearStoredDwell()
     this._declined = true
     this._recordConsent(false)
     if (this.hasConsentMainTarget) this.consentMainTarget.classList.add("hidden")
@@ -1360,6 +1376,9 @@ export default class extends Controller {
       this._capture(this.currentValue)
       if (this._resolveNext(this.currentValue).end != null) return
     }
+    // Answered at the last swipe: the beat before the deck moves on is not
+    // time spent answering, and a manually advanced card does not carry one.
+    this._freezeDwell(card.dataset.cardIndex)
     this._cancelAutoAdvance()
     this._autoAdvanceTimer = setTimeout(() => {
       this._autoAdvanceTimer = null
@@ -1375,6 +1394,14 @@ export default class extends Controller {
   // timer too, so a manual Next or Back during the beat never double-fires.
   cancelAutoAdvance() {
     this._cancelAutoAdvance()
+    // Reset re-opens the stack, so the card is being answered again — timed
+    // again, from now. Only here, on the Reset hook: _update()'s own cancel
+    // is a navigation, and the card being left keeps its settled figure.
+    // Never for a checked quiz card: its answer is committed, so a Reset
+    // reached by keyboard on the locked stack must not reopen its time.
+    if (this._revealed.has(this.currentValue)) return
+    const key = this.cardTargets[this.currentValue]?.dataset.cardIndex
+    if (key != null && key !== "") this._unfreezeDwell(key)
   }
 
   _cancelAutoAdvance() {
@@ -1468,17 +1495,28 @@ export default class extends Controller {
 
   _payload() {
     let answers = this._answers
+    let dwell   = this._dwellPayload()
     // Under logic, only submit answers for cards actually on the taken path —
     // backing up and re-routing can leave a stale answer for a now-skipped
     // card, which the server's index-based quiz/token totals would else count.
+    // The dwell map is cut to the same path, so this save describes one
+    // route. (A card's time that an EARLIER save already carried stays on the
+    // server — Response.merge_dwell never forgets a figure — and reads in
+    // the export as a blank answer with time beside it: viewed, then routed
+    // around, which is what happened.)
     if (this.logicValue) {
       const keep = new Set(
         this._path.map(i => this.cardTargets[i]?.dataset.cardIndex).filter(k => k != null && k !== "")
       )
       answers = {}
       for (const [k, v] of Object.entries(this._answers)) if (keep.has(k)) answers[k] = v
+      const onPath = {}
+      for (const [k, ms] of Object.entries(dwell)) if (keep.has(k)) onPath[k] = ms
+      dwell = onPath
     }
-    const payload = { session_token: this._sessionToken, answers, locale: this.localeValue }
+    // Dwell rides every save too, as running totals: the server keeps the
+    // larger of what it holds and what arrives (Response.merge_dwell).
+    const payload = { session_token: this._sessionToken, answers, locale: this.localeValue, dwell }
     // Rides along with the ordinary save rather than needing an endpoint of its
     // own. The server hashes it and drops the plaintext; it's only sent until a
     // digest is recorded, and the server ignores a second one anyway.
@@ -1493,6 +1531,138 @@ export default class extends Controller {
     // costs nothing.
     if (this._contact && this._playerKey) payload.contact = this._contact
     return payload
+  }
+
+  // ── Dwell time ─────────────────────────────────────────────────────────────
+  // How long each card is on screen before the respondent leaves it — the time
+  // it takes to answer the question — summed over every visit (Back and
+  // forward again adds to it), keyed by card index like the answers, in
+  // milliseconds. _update() banks the card being left and starts the one
+  // arriving; _payload() banks before every save, so the server always holds
+  // the running totals (Response.merge_dwell keeps the larger per card).
+  //
+  // What is NOT time to answer, and is not counted: the survey-level consent
+  // banner (the deck is inert beneath it, and reading the sheet is not
+  // thinking about card one), a hidden tab (switching apps for an hour is
+  // not an hour's thought), the thank-you screen, and a quiz card once its
+  // answer has been checked — the answer is committed at the check, and
+  // reading the right-or-wrong reveal is not answering. A card that carries
+  // no index (the respondent-code gate) is not a question and has no key.
+  //
+  // What IS counted, by decision: a card's own intro modal (the creator's
+  // preface is part of the question, unlike the consent sheet), and the
+  // stretch after an auto-advancing tap stack's last swipe until the deck
+  // moves on (under a second; a tap card is answered when it is swiped, so
+  // _freezeDwell settles it at that moment — see tapStackCompleted).
+
+  // Point the clock at the card at `idx`. The key, not the index: under logic
+  // currentValue can move through cards nobody saw (ask-once skips), and
+  // time belongs to the card that was actually on screen.
+  _startDwell(idx) {
+    const key = this.cardTargets[idx]?.dataset.cardIndex
+    this._dwellKey   = key === undefined || key === "" ? null : key
+    this._dwellSince = this._dwellRunnable() ? performance.now() : null
+  }
+
+  // Whether the clock may run right now: a card with an index, a live deck,
+  // a visible tab.
+  _dwellRunnable() {
+    return this._dwellKey != null &&
+           !this.element.hasAttribute("data-consent-pending") &&
+           !document.hidden
+  }
+
+  // Add the time since the clock last (re)started to the current card, and
+  // restart it. Additive and self-resetting, so banking twice on the way to
+  // one save never counts the same stretch twice.
+  _bankDwell() {
+    if (this._dwellSince == null) return
+    const now = performance.now()
+    if (this._dwellKey != null && !this._dwellFrozen.has(this._dwellKey)) {
+      this._dwell[this._dwellKey] = (this._dwell[this._dwellKey] || 0) + (now - this._dwellSince)
+      this._saveDwell()
+    }
+    this._dwellSince = now
+  }
+
+  // The totals persist in sessionStorage under the same discipline as the
+  // session token (_ensureToken): same lifetime, same per-Verto key, cleared
+  // together wherever the token is orphaned. A reload then resumes the run's
+  // totals, which is what lets the server keep the larger figure per card
+  // and be right — a run restarted from zero would hand it a smaller one.
+  _dwellStorageKey() {
+    return `verto_dwell_${this.submitUrlValue}`
+  }
+
+  _loadDwell() {
+    try {
+      const parsed = JSON.parse(sessionStorage.getItem(this._dwellStorageKey()) || "null")
+      if (!parsed || typeof parsed !== "object") return {}
+      const out = {}
+      for (const [key, ms] of Object.entries(parsed)) {
+        if (typeof ms === "number" && Number.isFinite(ms) && ms > 0) out[key] = ms
+      }
+      return out
+    } catch (_) {
+      return {}
+    }
+  }
+
+  _saveDwell() {
+    try { sessionStorage.setItem(this._dwellStorageKey(), JSON.stringify(this._dwell)) } catch (_) { /* storage blocked */ }
+  }
+
+  _clearStoredDwell() {
+    try { sessionStorage.removeItem(this._dwellStorageKey()) } catch (_) { /* storage blocked */ }
+  }
+
+  // Pause: bank and stop, keeping the card so a visible tab can resume it.
+  _pauseDwell() {
+    this._bankDwell()
+    this._dwellSince = null
+  }
+
+  // End: the deck is over (thank-you screen), nothing accrues to anything.
+  _endDwell() {
+    this._pauseDwell()
+    this._dwellKey = null
+  }
+
+  // Quiz: freeze the card whose answer was just checked. Its figure is what it
+  // was at the check; a reveal read for a minute, or a Back onto it later,
+  // adds nothing.
+  _freezeDwell(key) {
+    this._bankDwell()
+    if (key != null && key !== "") this._dwellFrozen.add(key)
+  }
+
+  // A check that failed: the card is answerable again, so it is timed again —
+  // from now. _bankDwell skipped the frozen stretch and the restart below
+  // drops it, so the failed round-trip never lands on the card.
+  _unfreezeDwell(key) {
+    const wasFrozen = this._dwellFrozen.delete(key)
+    // Restart only a clock that was actually stopped, and only this card's:
+    // a never-frozen card (a tap stack Reset mid-way through) is still being
+    // answered and its clock simply carries on, and a Back during a grade
+    // round-trip has moved the clock to another card, whose time this must
+    // not drop.
+    if (wasFrozen && this._dwellKey === key && this._dwellSince != null) this._dwellSince = performance.now()
+  }
+
+  _dwellVisibility() {
+    if (document.hidden) { this._pauseDwell(); return }
+    if (this._dwellSince == null && this._dwellRunnable()) this._dwellSince = performance.now()
+  }
+
+  // The payload's copy: whole milliseconds, only cards with time on them.
+  _dwellPayload() {
+    this._bankDwell()
+    const out = {}
+    for (const [key, ms] of Object.entries(this._dwell)) {
+      const whole = Math.round(ms)
+      if (whole > 0) out[key] = whole
+    }
+    return out
   }
 
   async finish() {
@@ -1835,6 +2005,7 @@ export default class extends Controller {
   // the deck's state machine starts clean.
   playAgain() {
     try { sessionStorage.removeItem(`verto_session_${this.submitUrlValue}`) } catch (_) { /* storage blocked */ }
+    this._clearStoredDwell()
     window.location.reload()
   }
 
@@ -2043,6 +2214,7 @@ export default class extends Controller {
   }
 
   _showThankyou(queued = false, rejected = false) {
+    this._endDwell()
     this.cardTargets.forEach(c => c.classList.remove("active"))
     this._applyEndScreen(this._endId)
     this.thankyouTarget.classList.add("active")
@@ -2604,6 +2776,12 @@ export default class extends Controller {
     this._cancelAutoAdvance()
     const cards = this.cardTargets
     const idx   = this.currentValue
+    // The card being left gets its time; the one arriving starts its clock.
+    // Re-running _update() on the same card (a dismissed intro modal, the
+    // consent banner coming down) banks and restarts, which adds up to the
+    // same total.
+    this._bankDwell()
+    this._startDwell(idx)
     cards.forEach((c, i) => c.classList.toggle("active", i === idx))
     this._animateCardEntry(cards[idx], idx)
     // The creator's intro modal, if this card carries one and this run has not
@@ -2803,6 +2981,9 @@ export default class extends Controller {
         this._revealCard(card, { correct: info.correct, correctAnswer: info.correct_answer,
                                  explanation: info.explanation, mine: info.value })
         this._revealed.add(this.cardTargets.indexOf(card))
+        // Committed before the reload: its time is settled, and re-reading
+        // the locked reveal adds nothing.
+        this._dwellFrozen.add(key)
       })
       if (typeof data.score === "number") this._quizScore = data.score
       this._renderScoreChip()
@@ -2821,6 +3002,10 @@ export default class extends Controller {
     const card = this.cardTargets[idx]
     const key  = card.dataset.cardIndex
     this._revealed.add(idx) // lock now so a double-tap can't re-submit
+    // Committed at the TAP: the time to answer this card is settled now, before
+    // the round-trip — a slow grade (free text can wait on an AI judgment) is
+    // the server's time, not the respondent's.
+    this._freezeDwell(key)
     // Clear any note from a previous failed attempt, so a retry that works
     // doesn't leave the old error sitting under the answer.
     card.querySelector(".quiz-grade-error")?.remove()
@@ -2834,12 +3019,14 @@ export default class extends Controller {
     this._setGradingBusy(false)
     if (result?.failed) {
       // Say so and let them try again, rather than leaving a button that
-      // silently does nothing.
+      // silently does nothing. The card is open again, so its clock is too —
+      // from now, not from the tap: the failed round-trip is not their time.
       this._revealed.delete(idx)
+      this._unfreezeDwell(key)
       this._showGradeError(card, result)
       return
     }
-    if (!result) { this._revealed.delete(idx); return } // nothing to grade here
+    if (!result) { this._revealed.delete(idx); this._unfreezeDwell(key); return } // nothing to grade here
 
     if (typeof result.score === "number") this._quizScore = result.score
     else if (result.correct) this._quizScore++
@@ -3537,6 +3724,7 @@ export default class extends Controller {
   // quiz/token result cards stay hidden and nothing is submitted. The pill
   // never names the wave or the identity.
   _showAlreadyPlayed() {
+    this._endDwell()
     this.cardTargets.forEach(c => c.classList.remove("active"))
     this.thankyouTarget.classList.add("active")
     this.backBtnTarget.classList.add("hidden")

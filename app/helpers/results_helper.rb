@@ -103,4 +103,19 @@ module ResultsHelper
 
     "background-image:url('#{image}'); #{card_focal_style(card)}"
   end
+
+  # A dwell time for the results page: "12s", "1m 05s", "1h 02m". Whole
+  # seconds — a results chip is read at a glance, and tenths would be
+  # precision the median does not have. Under half a second rounds to zero,
+  # which would read as "no time at all", so the floor is one second.
+  def dwell_time_label(ms)
+    total = [ (ms.to_f / 1000).round, 1 ].max
+    if total < 60
+      t("results.dwell_time_seconds", s: total)
+    elsif total < 3600
+      t("results.dwell_time_minutes", m: total / 60, s: format("%02d", total % 60))
+    else
+      t("results.dwell_time_hours", h: total / 3600, m: format("%02d", (total % 3600) / 60))
+    end
+  end
 end

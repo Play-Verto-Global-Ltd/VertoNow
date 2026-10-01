@@ -14,6 +14,14 @@ class ResultsHelperTest < ActionView::TestCase
     { id: id, label: id.to_s.titleize, count: count }
   end
 
+  test "dwell_time_label reads as seconds, minutes or hours at a glance" do
+    assert_equal "12s",    dwell_time_label(12_449)
+    assert_equal "1s",     dwell_time_label(120), "under half a second is still a second, not nothing"
+    assert_equal "1m 05s", dwell_time_label(65_000)
+    assert_equal "59m 59s", dwell_time_label(3_599_400)
+    assert_equal "1h 02m", dwell_time_label(3_720_000)
+  end
+
   test "groups segments by the id prefixes ResolvesResultSegments mints" do
     groups = results_segment_groups([
       seg("overall"), seg("direct"), seg("share_7"), seg("link_3"),

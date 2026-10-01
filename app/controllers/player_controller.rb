@@ -347,6 +347,7 @@ class PlayerController < ApplicationController
     # Quiz answers are immutable once committed — fold the incoming payload over
     # what's already stored so an already-answered graded card can't be changed.
     resp.answers = locked_merge(stored_answers(resp), data["answers"] || {})
+    apply_dwell(resp, data["dwell"])
     apply_respondent_code(resp, data["respondent_code"])
     apply_player_key(resp, data["player_key"])
     return if refuse_if_retest(resp)
@@ -380,6 +381,7 @@ class PlayerController < ApplicationController
     resp  = find_or_init_response(token)
     return if refuse_if_declined(resp)
     resp.answers = locked_merge(stored_answers(resp), data["answers"] || {})
+    apply_dwell(resp, data["dwell"])
     apply_respondent_code(resp, data["respondent_code"])
     apply_player_key(resp, data["player_key"])
     return if refuse_if_retest(resp)
@@ -554,6 +556,7 @@ class PlayerController < ApplicationController
     return if refuse_if_declined(resp)
     first_time = !answered?(stored_answers(resp)[idx.to_s])
     resp.answers = locked_merge(stored_answers(resp), data["answers"] || {})
+    apply_dwell(resp, data["dwell"])
     # The code rides the grade payload like every other save; it used to be
     # dropped here, so a quiz that collected codes recorded none for a
     # respondent who never hit /progress.
@@ -1376,6 +1379,17 @@ class PlayerController < ApplicationController
   def stamp_started_metadata(resp)
     resp.started_at  ||= Time.current
     resp.device_kind ||= DeviceKind.from(request.user_agent)
+  end
+
+  # Per-card dwell time, riding every save the way the answers do — see
+  # Response.merge_dwell for the rule (bounded, max-merged, never coerced).
+  # Before refuse_if_retest like the digests, so a refused run never reaches
+  # save! with it; after locked_merge because it is not an answer and must
+  # never be mistaken for one.
+  def apply_dwell(resp, incoming)
+    return unless incoming.is_a?(Hash)
+
+    resp.dwell_ms = Response.merge_dwell(resp.persisted? ? resp.dwell_ms : {}, incoming, cards: @survey.cards)
   end
 
   # The answers already persisted for a response (empty for a brand-new row).

@@ -261,6 +261,13 @@ it:
     timeline_share: "Quota %"
     timeline_count: "Conteggio"
     timeline_footnote: "La quota è calcolata sulle risposte arrivate in ciascun periodo. Un periodo con meno di %{count} risposte resta vuoto."
+    dwell_label: "%{time} per rispondere"
+    dwell_hint:
+      one: "Tempo di permanenza — tempo mediano dedicato a questa domanda dal %{count} rispondente che ha risposto (media %{mean})"
+      other: "Tempo di permanenza — tempo mediano dedicato a questa domanda dai %{count} rispondenti che hanno risposto (media %{mean})"
+    dwell_time_seconds: "%{s} s"
+    dwell_time_minutes: "%{m} min %{s} s"
+    dwell_time_hours: "%{h} h %{m} min"
   shared_results:
     title: Risultati
     read_only_badge: Sola lettura

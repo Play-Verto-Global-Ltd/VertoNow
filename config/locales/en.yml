@@ -247,6 +247,13 @@ en:
     ask_verto: "Ask Verto"
     analysing: "Analysing responses…"
     view_all_answers: "View all answers (%{count})"
+    dwell_label: "%{time} to answer"
+    dwell_hint:
+      one: "Dwell time — the median time spent on this question by the %{count} respondent who answered it (mean %{mean})"
+      other: "Dwell time — the median time spent on this question by the %{count} respondents who answered it (mean %{mean})"
+    dwell_time_seconds: "%{s}s"
+    dwell_time_minutes: "%{m}m %{s}s"
+    dwell_time_hours: "%{h}h %{m}m"
     freeform_eyebrow: "Freeform answers"
     freeform_other_eyebrow: "Other: written-in answers"
     freeform_search_placeholder: "Search answers…"

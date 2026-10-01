@@ -271,6 +271,13 @@ tn:
     timeline_share: "Karolo %"
     timeline_count: "Palo"
     timeline_footnote: "Karolo e ikaegile ka dikarabo tse di gorogileng mo nakong nngwe le nngwe. Nako e e nang le dikarabo tse di ka fa tlase ga %{count} e tlogelwa e sena sepe."
+    dwell_label: "%{time} go araba"
+    dwell_hint:
+      one: "Nako e e dirisitsweng — nako e e fa gare e e dirisitsweng mo potsong eno ke moarabi a le %{count} yo o e arabileng (palogare %{mean})"
+      other: "Nako e e dirisitsweng — nako e e fa gare e e dirisitsweng mo potsong eno ke baarabi ba le %{count} ba ba e arabileng (palogare %{mean})"
+    dwell_time_seconds: "%{s}s"
+    dwell_time_minutes: "%{m}m %{s}s"
+    dwell_time_hours: "%{h}h %{m}m"
   shared_results:
     title: "Diphetho"
     read_only_badge: "Go bala fela"

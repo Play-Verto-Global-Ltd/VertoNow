@@ -261,6 +261,13 @@ pt:
     timeline_share: "Percentual"
     timeline_count: "Contagem"
     timeline_footnote: "O percentual é sobre as respostas recebidas em cada período. Um período com menos de %{count} respostas fica em branco."
+    dwell_label: "%{time} para responder"
+    dwell_hint:
+      one: "Tempo de permanência — tempo mediano dedicado a esta pergunta pelo %{count} respondente que a respondeu (média %{mean})"
+      other: "Tempo de permanência — tempo mediano dedicado a esta pergunta pelos %{count} respondentes que a responderam (média %{mean})"
+    dwell_time_seconds: "%{s} s"
+    dwell_time_minutes: "%{m} min %{s} s"
+    dwell_time_hours: "%{h} h %{m} min"
   shared_results:
     title: Resultados
     read_only_badge: Somente leitura

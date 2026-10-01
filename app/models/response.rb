@@ -67,6 +67,65 @@ class Response < ApplicationRecord
     (completed_at - started_at).round
   end
 
+  # ── Dwell time ─────────────────────────────────────────────────────────────
+  # How long the respondent spent on each card before moving on, keyed by card
+  # index like `answers` ({ "3" => 12400 }, whole milliseconds) — the time it
+  # took to answer each question. Measured by the player (its clock stops
+  # while the tab is hidden and once a quiz answer is checked; see
+  # _bankDwell in player_controller.js) and sent with every save.
+  #
+  # Self-reported by the client, like every answer, so the server bounds it
+  # rather than trusts it: a figure above this is junk (a day on one card is
+  # not a measurement), and an entry for a card the deck doesn't have is
+  # dropped. In milliseconds, like the column.
+  DWELL_CAP_MS = 24 * 60 * 60 * 1000
+
+  # The stored dwell for one card, folded with what a save just sent. Per key
+  # the LARGER wins. The player's totals only grow — it keeps them in
+  # sessionStorage beside the session token, so a reload carries on rather
+  # than starting at zero — and max is the backstop for whatever still
+  # arrives out of order (a grade and a progress racing, a submit drained
+  # from the service worker's queue after a later save): nothing can shrink a
+  # figure, and a save that arrives without one leaves the stored value
+  # standing. Keys are strings of digits naming a QUESTION card in `cards` —
+  # the player times every card with an index, welcome and checkpoint cards
+  # included, but nothing reports those, so nothing holds them. Values are
+  # numbers from zero to the cap. Anything else is ignored, never coerced —
+  # this endpoint is public JSON.
+  def self.merge_dwell(stored, incoming, cards:)
+    merged = stored.is_a?(Hash) ? stored.dup : {}
+    return merged unless incoming.is_a?(Hash)
+
+    cards = Array(cards)
+    incoming.each do |key, value|
+      key = key.to_s
+      # Canonical digits only: "07" would be looked up as card 7 and stored
+      # under a key nothing reads, and a crafted client could grow a row with
+      # as many such keys as it liked.
+      next unless key.match?(/\A\d+\z/) && key == key.to_i.to_s
+      card = cards[key.to_i]
+      next unless card.is_a?(Hash) && CardTypes.question?(card["type"])
+
+      ms = value.is_a?(Numeric) ? value.to_f : (value.is_a?(String) && value.match?(/\A\d+(\.\d+)?\z/) ? value.to_f : nil)
+      # finite? refuses NaN and ±Infinity, either of which would raise on round.
+      next unless ms&.finite? && ms >= 0
+
+      ms = [ ms.round, DWELL_CAP_MS ].min
+      merged[key] = ms if ms > (merged[key].is_a?(Numeric) ? merged[key] : 0)
+    end
+    merged
+  end
+
+  # Seconds spent on the card at `index`, to one decimal, or nil where the
+  # player recorded nothing (a response collected before dwell existed, a
+  # card never shown, a replay that arrived without it).
+  def dwell_seconds_at(index)
+    ms = dwell_ms.is_a?(Hash) ? dwell_ms[index.to_s] : nil
+    return nil unless ms.is_a?(Numeric) && ms.positive?
+
+    (ms / 1000.0).round(1)
+  end
+
   # THE definition of "this card was answered", for the whole app.
   #
   # It used to exist twice in Ruby and once in JavaScript, and all three
@@ -140,6 +199,9 @@ class Response < ApplicationRecord
     self.score = nil
     self.quiz_max = nil
     self.token_totals = {}
+    # How long they lingered on each question is behavioural data about them,
+    # collected on the same promise as the answers it timed.
+    self.dwell_ms = {}
     self.respondent_code_digest = nil
     # The leaderboard identity is a durable handle on this person's plays —
     # exactly the kind of thing the decline purge exists to drop.

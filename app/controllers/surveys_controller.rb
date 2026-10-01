@@ -1358,6 +1358,10 @@ class SurveysController < ApplicationController
     @responses  = @active_segment[:scope]
     @total      = @active_segment[:count]
     @aggregated = aggregate_results(Array(@survey.cards), @responses)
+    # Typical time to answer each question, over the same scope the cards
+    # count — skipped for a segment under the small-cell line, whose cards
+    # are replaced by the notice.
+    @dwell      = @active_segment[:suppressed] ? {} : DwellTimes.for(Array(@survey.cards), @responses)
 
     # The creator's view of the board. Whole-Verto on purpose — identities
     # span the date/segment filters, and the retake policy already decides
