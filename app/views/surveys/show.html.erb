@@ -115,7 +115,7 @@
          See SurveysController#update_card_modal. %>
      data-survey-editor-card-modal-url-value="<%= card_modal_survey_path(@survey) %>"
      data-swipe-card-urls="<%= AssetPopulator.swipe_card_urls.to_json %>"
-     data-action="type-panel:changed->survey-editor#markDirty card-editor:changed->survey-editor#markDirty scenario:changed->survey-editor#markDirty option-style:changed->survey-editor#markDirty rich-text:changed->survey-editor#markDirty input->survey-editor#markDirty type-panel:cardSelected->publish-panel#closeForCard type-panel:cardSelected->editor-panel#open type-panel:cardSelected->editor-scroll-sync#armSuppression gate-cards:status->survey-editor#gateStatus setup-status:progress->survey-editor#setupStatus media-picker:consentImage->gate-cards#setConsentImage card-editor:changed->survey-editor#syncBranchingEvent card-editor:changed->survey-editor#syncTokenRowsEvent card-editor:changed->survey-editor#syncResponseScaleEvent card-editor:changed->survey-editor#syncMaxChoicesEvent type-panel:changed->survey-editor#syncMaxChoicesEvent focusout->survey-editor#syncBranchingEvent focusout->survey-editor#syncTokenRowsEvent focusout->editor-scroll-sync#focusOut survey-editor:refreshed->flows#repaint survey-editor:refreshed->journey#refreshed keydown.esc@window->share-modal#closeOnEsc"
+     data-action="type-panel:changed->survey-editor#markDirty card-editor:changed->survey-editor#markDirty scenario:changed->survey-editor#markDirty option-style:changed->survey-editor#markDirty rich-text:changed->survey-editor#markDirty rich-text:ink->survey-editor#setTextInk input->survey-editor#markDirty type-panel:cardSelected->publish-panel#closeForCard type-panel:cardSelected->editor-panel#open type-panel:cardSelected->editor-scroll-sync#armSuppression gate-cards:status->survey-editor#gateStatus setup-status:progress->survey-editor#setupStatus media-picker:consentImage->gate-cards#setConsentImage card-editor:changed->survey-editor#syncBranchingEvent card-editor:changed->survey-editor#syncTokenRowsEvent card-editor:changed->survey-editor#syncResponseScaleEvent card-editor:changed->survey-editor#syncMaxChoicesEvent type-panel:changed->survey-editor#syncMaxChoicesEvent focusout->survey-editor#syncBranchingEvent focusout->survey-editor#syncTokenRowsEvent focusout->editor-scroll-sync#focusOut survey-editor:refreshed->flows#repaint survey-editor:refreshed->journey#refreshed keydown.esc@window->share-modal#closeOnEsc"
      <%# Define the (potentially large) background data URL ONCE here; the card
          feed and preview overlay below inherit --brand-bg-image rather than
          each inlining the full data URL. Palette vars stay scoped to those
@@ -3048,6 +3048,19 @@
             aria-label="<%= t("js.editor.rich_font") %>"></select>
     <select data-rich-text-target="sizeSelect" data-action="change->rich-text#sizeChanged"
             aria-label="<%= t("js.editor.rich_size") %>"></select>
+    <%# The card's words over its mobile background: dark or light, never a
+        colour ("people are going to start doing pink text on red"). About the
+        whole card, not the selection — the selection is just how the creator
+        points at the card — and only shown while the card has a mobile
+        background to paint on (rich-text#_reflectInk). Pressing the lit one
+        again goes back to Auto, the ink measured off the picture. %>
+    <span class="rich-text-sep" aria-hidden="true"></span>
+    <button type="button" class="rich-text-ink" data-rich-text-target="inkDarkBtn" data-ink="dark"
+            data-action="click->rich-text#ink" aria-pressed="false" hidden
+            title="<%= t("js.editor.rich_ink_dark") %>" aria-label="<%= t("js.editor.rich_ink_dark") %>"><span class="rich-text-ink-dot is-dark"></span></button>
+    <button type="button" class="rich-text-ink" data-rich-text-target="inkLightBtn" data-ink="light"
+            data-action="click->rich-text#ink" aria-pressed="false" hidden
+            title="<%= t("js.editor.rich_ink_light") %>" aria-label="<%= t("js.editor.rich_ink_light") %>"><span class="rich-text-ink-dot is-light"></span></button>
   </div>
 
   <%# Per-option style popover (one instance serves every 🎨 button) —

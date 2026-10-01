@@ -1614,6 +1614,15 @@ export default class extends Controller {
   async applyImage() {
     if (!this._pendingUrl && !this._pendingVideo) return
 
+    // The picture's bytes as the browser holds them NOW — for an upload, the
+    // data URL that _persistUpload is about to trade for a storage path. The
+    // mobile background's ink is measured off a canvas draw, and in production
+    // the stored path redirects to the bucket, which serves no CORS headers:
+    // drawn from there the canvas taints, the measurement resolves null, and
+    // every uploaded picture — however pale — left the words white. Measured
+    // off these bytes instead, the answer is right whatever the path becomes.
+    const pixels = this._pendingUrl
+
     // Uploaded images (data URLs) can't be word-filtered like Pexels picks, so
     // they get a PG / age-appropriateness check before they're ever applied.
     if (this._pendingUrl && this._pendingUrl.startsWith("data:")) {
@@ -1680,7 +1689,7 @@ export default class extends Controller {
         // backdrop's answer is about a different picture — so it goes, rather
         // than colouring this one until the measurement lands.
         this._writeBg(slot, { ...this._readBg(slot), image: this._pendingUrl, ink: null }, card)
-        this._measureBackdropInk(slot, card, this._pendingUrl)
+        this._measureBackdropInk(slot, card, this._pendingUrl, pixels)
       }
       this.close()
       return
@@ -2406,8 +2415,10 @@ export default class extends Controller {
             : el.style.removeProperty("--mobile-bg-image")
         // The class the stylesheet flips its ink tokens on, mirroring
         // ApplicationHelper#card_mobile_bg_classes so the live editor and the
-        // next server render agree without one waiting for the other.
-        el.classList.toggle("bg-ink-dark", clean.ink === "dark")
+        // next server render agree without one waiting for the other. The
+        // creator's own say (card.text_ink, the toolbar's two circles) beats
+        // the measurement, there as here.
+        el.classList.toggle("bg-ink-dark", (card.dataset.cardTextInk || clean.ink) === "dark")
       } else {
         el.style.backgroundColor = clean.color || ""
         el.style.backgroundImage = url
@@ -2510,9 +2521,14 @@ export default class extends Controller {
   // cross-origin picture with no CORS headers taints the canvas) and null
   // leaves the ink alone rather than guessing. Only for the slot that carries
   // an ink at all.
-  async _measureBackdropInk(slot, card, url) {
+  //
+  // `url` is what the card stores and what the staleness check below compares
+  // against; `pixels` is what gets drawn — for an upload, the data URL the
+  // browser still holds, because the stored path is the one that taints (see
+  // applyImage). They are the same string for a library or Pexels pick.
+  async _measureBackdropInk(slot, card, url, pixels = url) {
     if (!this.constructor.BG_SLOTS[slot].inked) return
-    const ink = await inkForImage(url)
+    const ink = await inkForImage(pixels)
     if (!ink) return
     const bg = this._readBg(slot, card)
     if (bg.image !== url) return // the creator moved on; this answer is stale

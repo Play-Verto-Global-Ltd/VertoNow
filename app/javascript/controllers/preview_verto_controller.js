@@ -445,15 +445,29 @@ export default class extends Controller {
       row.replaceWith(btn)
     })
 
-    // 2. The "+ Other" CTA is disabled in the editor itself (there the
-    //    checkbox above it does the toggling, not the button) — re-enable it
-    //    so a "Preview" respondent can actually open the free-text panel.
-    clone.querySelectorAll(".other-cta-btn").forEach(el => el.removeAttribute("disabled"))
+    // 2. The Other block's buttons — the "+ Other" CTA, the panel's Add, the
+    //    committed row's edit and × — are disabled in the editor itself (there
+    //    the "Allow other" switch does the toggling, not the buttons). Re-enable
+    //    them so a "Preview" respondent can open, commit, edit and clear the
+    //    write-in exactly as the player would, and start the block idle.
+    clone.querySelectorAll(".other-cta-btn, .other-add-btn, .other-chip-main, .other-chip-clear")
+         .forEach(el => el.removeAttribute("disabled"))
+    clone.querySelectorAll(".other-block").forEach(block => {
+      const ta = block.querySelector(".other-textarea"); if (ta) ta.value = ""
+      block.querySelectorAll(".other-panel, .other-chip").forEach(el => { el.hidden = true })
+      const cta = block.querySelector(".other-cta-btn")
+      if (cta) { cta.hidden = false; cta.classList.remove("is-active") }
+    })
 
-    // 3. Strip contenteditable from everything so preview is read-only.
+    // 3. Strip contenteditable from everything so preview is read-only — and
+    //    the rich-text region marker with it: `rich-text` is bound on the
+    //    editor root, an ancestor of this overlay, and its toolbar opens over
+    //    any selection inside a [data-rich-text], so a respondent-view clone
+    //    that kept the marker could still raise the creator's B/I/U bar.
     clone.querySelectorAll("[contenteditable]").forEach(el =>
       el.removeAttribute("contenteditable")
     )
+    clone.querySelectorAll("[data-rich-text]").forEach(el => el.removeAttribute("data-rich-text"))
 
     // 3a. An NPS anchors column the creator never filled. The player renders
     //     no column at all for it, and an empty one still costs a stage gap

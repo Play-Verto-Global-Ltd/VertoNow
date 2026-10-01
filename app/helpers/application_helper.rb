@@ -610,7 +610,17 @@ module ApplicationHelper
     bg = card_mobile_bg(card)
     return "" if bg.blank?
 
-    bg["ink"] == "dark" ? " has-mobile-bg bg-ink-dark" : " has-mobile-bg"
+    card_text_ink(card, bg) == "dark" ? " has-mobile-bg bg-ink-dark" : " has-mobile-bg"
+  end
+
+  # The ink the card's words actually take: the creator's own say (`text_ink`,
+  # the black and white circles on the editor's selection toolbar) beats the
+  # measurement (`mobile_bg.ink`), and absent both the stylesheet's default is
+  # white. The editor mirrors this precedence live (survey-editor#applyTextInk
+  # and media-picker#_writeBg) so the two never disagree about a card.
+  def card_text_ink(card, bg = card_mobile_bg(card))
+    own = Survey.sanitize_backdrop_ink(card.is_a?(Hash) ? card["text_ink"] : nil)
+    own || (bg.is_a?(Hash) ? bg["ink"] : nil)
   end
 
   # The tile's icon slot, in precedence order: the creator's explicit icon

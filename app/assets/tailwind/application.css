@@ -3545,6 +3545,22 @@
   outline: none; max-width: 110px;
 }
 .rich-text-toolbar select option { background: #1C2034; color: #fff; }
+/* The two ink circles: the card's words dark or light over its mobile
+   background. A swatch, not a glyph, because the choice IS a colour — and
+   exactly two of them, which is the whole point. Hidden until the card has a
+   background to paint on (rich-text#_reflectInk). */
+.rich-text-sep {
+  width: 1px; height: 20px; margin: 0 2px;
+  background: rgba(255,255,255,0.14);
+}
+.rich-text-toolbar .rich-text-ink[hidden], .rich-text-sep:has(+ .rich-text-ink[hidden]) { display: none; }
+.rich-text-ink-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,0.45);
+}
+.rich-text-ink-dot.is-dark  { background: #1C2034; }
+.rich-text-ink-dot.is-light { background: #fff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35); }
+.rich-text-toolbar .rich-text-ink.is-active .rich-text-ink-dot { box-shadow: 0 0 0 2px #01EACB; }
 
 /* ── Rich text (per-selection formatting) ────────── */
 /* The class allowlist RichTextSanitizer accepts — fonts and sizes are ONLY
@@ -10109,6 +10125,14 @@ body.generating-overlay-active .bottom-bar { display: none; }
   .preview-overlay .split-card:has(.has-mobile-bg) .q-title {
     color: var(--bg-ink);
   }
+  /* The floating "＋ Other" is a brand colour mixed toward black, chosen for
+     a white card; over a photograph it takes the card's ink like the title
+     does, or on a dark picture it is a dark word on a dark ground. */
+  .preview-overlay .split-card:has(.has-mobile-bg) .other-cta-btn {
+    color: var(--bg-ink);
+    text-decoration-color: color-mix(in srgb, var(--bg-ink) 45%, transparent);
+    text-shadow: var(--bg-ink-shadow);
+  }
   .preview-overlay .split-card:has(.has-mobile-bg)
     :is(.q-subtitle, .rotate-reset-btn, .tap-nav-count, .nps-anchor-text,
       .slider-label-text:not(.is-active), .rating-label, .freeform-counter,
@@ -12516,10 +12540,15 @@ body.generating-overlay-active .bottom-bar { display: none; }
 }
 .device-mobile .split-card:has(.has-mobile-bg)
   :is(.choice-list-item, .pick-item, .freeform-textarea, .freeform-date,
-      .other-textarea, .book-page) {
+      .other-textarea, .other-chip, .other-add-btn, .book-page) {
   background: #fff;
   border-color: rgba(0,0,0,0.07);
   color: #1C2034;
+}
+.device-mobile .split-card:has(.has-mobile-bg) .other-cta-btn {
+  color: var(--bg-ink);
+  text-decoration-color: color-mix(in srgb, var(--bg-ink) 45%, transparent);
+  text-shadow: var(--bg-ink-shadow);
 }
 .device-mobile .split-card:has(.has-mobile-bg) :is(.tap-add-btn, .pick-add-btn) {
   border-color: color-mix(in srgb, var(--bg-ink) 35%, transparent);

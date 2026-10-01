@@ -342,6 +342,97 @@ class MobileBackgroundTest < ApplicationSystemTestCase
     end
   end
 
+  # "A black circle and a white circle" — on the selection toolbar, because the
+  # creator points at the card by highlighting its words. The choice is the
+  # card's, not the selection's: every word over the background flips, the
+  # answer boxes stay white, and pressing the lit circle again hands the card
+  # back to the measurement.
+  test "the creator can force the card's words dark or light from the selection toolbar" do
+    survey = @org.surveys.create!(
+      title: "Ink", theme: "football", audience_age: "adults", key_insight: "k",
+      default_locale: "en", locales: [ "en" ],
+      cards: [
+        { "type" => "welcome_card", "title" => "Hello" },
+        # An unmeasured picture: white words by default, which is the case the
+        # report was about (a pale upload the measurement never reached).
+        { "type" => "tap_card", "cid" => "t1", "text" => "What is your call?",
+          "options" => [ "One", "Two" ], "mobile_bg" => { "image" => BG } },
+        # A picture measured dark, to show light can be forced the other way.
+        { "type" => "prioritise", "cid" => "p1", "text" => "In order, please.",
+          "options" => [ "Cheaper", "Closer" ], "mobile_bg" => { "image" => BG, "ink" => "dark" } }
+      ]
+    )
+    open_editor(survey, device: "mobile")
+    title = find("[data-card-cid='t1'] .q-title")
+    assert_equal "rgb(255, 255, 255)", colour_of(title), "an unmeasured picture starts with white words"
+
+    select_contents(title)
+    assert_selector ".rich-text-toolbar", visible: true, wait: 3
+    assert page.has_css?(".rich-text-toolbar .rich-text-ink[data-ink='dark']", visible: true),
+           "the circles are missing from the toolbar on a card that has a background"
+    find(".rich-text-toolbar .rich-text-ink[data-ink='dark']").click
+
+    assert_equal "rgb(28, 32, 52)", colour_of(title), "pressing the black circle did not darken the words"
+    assert_equal "true", find(".rich-text-toolbar .rich-text-ink[data-ink='dark']")[:"aria-pressed"]
+    assert_equal "dark", wait_for_text_ink(survey, "t1", "dark"), "the choice did not reach the deck"
+
+    # Pressing the lit circle again is Auto: the measurement, which here never
+    # happened, so the words go back to white.
+    find(".rich-text-toolbar .rich-text-ink[data-ink='dark']").click
+    assert_equal "rgb(255, 255, 255)", colour_of(title)
+    assert_nil wait_for_text_ink(survey, "t1", nil), "Auto must leave the deck, not store a blank"
+
+    # And the other way: light words forced over a picture measured dark.
+    p_title = find("[data-card-cid='p1'] .q-title")
+    assert_equal "rgb(28, 32, 52)", colour_of(p_title), "a picture measured dark starts with dark words"
+    select_contents(p_title)
+    assert_selector ".rich-text-toolbar", visible: true, wait: 3
+    find(".rich-text-toolbar .rich-text-ink[data-ink='light']").click
+    assert_equal "rgb(255, 255, 255)", colour_of(p_title)
+    assert_equal "light", wait_for_text_ink(survey, "p1", "light")
+    # The answer rows are not the card's words: they stay white with dark text
+    # whichever way the words go.
+    assert_equal "rgb(255, 255, 255)",
+                 evaluate_script(%(getComputedStyle(document.querySelector("[data-card-cid='p1'] .choice-list-item")).backgroundColor))
+  end
+
+  test "the ink circles stay off the toolbar on a card with no background to paint" do
+    survey = @org.surveys.create!(
+      title: "Plain", theme: "football", audience_age: "adults", key_insight: "k",
+      default_locale: "en", locales: [ "en" ],
+      cards: [ { "type" => "welcome_card", "title" => "Hello" },
+               { "type" => "tap_card", "cid" => "t1", "text" => "What is your call?", "options" => [ "One", "Two" ] } ]
+    )
+    open_editor(survey, device: "mobile")
+    select_contents(find("[data-card-cid='t1'] .q-title"))
+    assert_selector ".rich-text-toolbar", visible: true, wait: 3
+    assert_no_selector ".rich-text-toolbar .rich-text-ink", visible: true
+  end
+
+  def select_contents(el)
+    page.execute_script(<<~JS, el)
+      const el = arguments[0]
+      el.focus()
+      const r = document.createRange(); r.selectNodeContents(el)
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r)
+    JS
+  end
+
+  def colour_of(el)
+    page.evaluate_script("getComputedStyle(arguments[0]).color", el)
+  end
+
+  # Autosave is debounced ~1.5s; poll the deck rather than the status chip.
+  def wait_for_text_ink(survey, cid, expected)
+    stored = :unset
+    30.times do
+      stored = survey.reload.cards.find { |c| c["cid"] == cid }["text_ink"]
+      break if stored == expected
+      sleep 0.5
+    end
+    stored
+  end
+
   test "a background with no measurement keeps the white default" do
     survey = @org.surveys.create!(
       title: "Ink", theme: "football", audience_age: "adults", key_insight: "k",
