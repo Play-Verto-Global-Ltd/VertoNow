@@ -70,6 +70,54 @@ class QuestionInsightsEndpointTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal 1, calls.size
+    assert_equal QuestionInsights::VERSION, @survey.reload.results_insights["version"],
+      "the cache must say which version of the service filed it"
+  end
+
+  # Every row written before readings were filed by Q number (BUG-043) has
+  # every reading one card down and no version key. It must be read afresh on
+  # its next visit — the count that keys it has no reason to move.
+  test "a cache written by an older version of the service is read afresh, never replayed" do
+    5.times { answer }
+    @survey.update_columns(results_insights: {
+      "segment" => "overall", "count" => 5, "questions" => { "2" => "About the card above." }
+    })
+    fake, calls = fake_service
+
+    stub_method(QuestionInsights, :new, ->(*) { fake }) do
+      get survey_results_insights_path(@survey)
+      body = JSON.parse(response.body)
+      refute body["cached"], "a reading filed under the old numbering was replayed"
+      assert_equal({ "1" => "Most said yes." }, body["insights"])
+    end
+    assert_equal 1, calls.size
+
+    stored = @survey.reload.results_insights
+    assert_equal QuestionInsights::VERSION, stored["version"]
+    assert_equal({ "1" => "Most said yes." }, stored["questions"])
+
+    # An explicit older version is just as stale as none.
+    @survey.update_columns(results_insights: stored.merge("version" => QuestionInsights::VERSION - 1))
+    stub_method(QuestionInsights, :new, ->(*) { fake }) do
+      get survey_results_insights_path(@survey)
+      refute JSON.parse(response.body)["cached"]
+    end
+    assert_equal 2, calls.size
+  end
+
+  # The readings are keyed by card position and cached by response count, so a
+  # deck that changed shape with no new answers would replay every reading one
+  # card off. A save clears them; the next visit reads the new deck.
+  test "saving the deck clears the readings" do
+    @survey.update_columns(results_insights: {
+      "version" => QuestionInsights::VERSION, "segment" => "overall", "count" => 0,
+      "questions" => { "1" => "About a card that may be about to move." }
+    })
+
+    patch survey_path(@survey), params: { cards: CARDS.map(&:dup) }.to_json,
+                                headers: { "CONTENT_TYPE" => "application/json" }
+    assert_response :success
+    assert_nil @survey.reload.results_insights
   end
 
   # The one that matters. results_summary caches on the response count alone,

@@ -16,11 +16,17 @@
 # it has only its own tallies. The whole digest goes in once and the model
 # reads every question against the rest of the deck.
 #
-# BY INDEX, NOT BY PROSE. The tool returns {index, insight} pairs rather than
-# a document to be split up, because a reading filed against the wrong chart
-# is worse than no reading: it is confidently wrong, in the creator's own
-# words, under their own question. An index outside the deck is dropped, the
-# same discipline OpenTextThemer uses for quotes.
+# BY NUMBER, NOT BY PROSE. The tool returns {question, insight} pairs rather
+# than a document to be split up, because a reading filed against the wrong
+# chart is worse than no reading: it is confidently wrong, in the creator's
+# own words, under their own question. The number is the one printed on the
+# digest's own line — "Q3", the card the results page calls "Card 3" — echoed
+# back, never worked out. The first cut asked for a zero-based index under a
+# prompt that only ever said Q2, Q3, …; the model echoed the Q number, and
+# every reading landed one card down with the first slot empty (BUG-043). The
+# translation to a deck index happens here, in code, and a number naming a
+# question that was not offered is dropped, the same discipline
+# OpenTextThemer uses for quotes.
 #
 # THE FRAMEWORK GOES IN. Where a card carries the editor's Why tagging
 # (competency / condition / outcome — Playverto's reading of the OECD "Acting
@@ -42,6 +48,13 @@ class QuestionInsights
   # already withholds a segment under MIN_DEMOGRAPHIC_SAMPLE for the same
   # reason; this is the same judgement applied to prose.
   MIN_ANSWERS = 5
+
+  # Stamped into surveys.results_insights beside the readings. Bump it when the
+  # tool's shape, or the key a reading is filed under, changes: a cache written
+  # under an older version is a miss, so a fix reaches the rows the model has
+  # already written rather than waiting for the response count to move.
+  # 1 was the zero-based `index` field, which filed every reading one card down.
+  VERSION = 2
 
   SYSTEM = <<~PROMPT.freeze
     You are an expert survey analyst. You will be given the aggregated results
@@ -70,13 +83,16 @@ class QuestionInsights
     Skip any question whose answers are too few to read honestly. Returning
     nothing for a question is correct and expected; a padded reading is not.
 
+    Name each question by the number on its Q line, exactly as printed: the
+    line "Q3 [yes_no]: …" is question 3, whatever position it holds in the list.
+
     Output via the emit_insights tool.
   PROMPT
   SYSTEM_WITH_SAFETY = (SYSTEM + PromptSafety::INSTRUCTION).freeze
 
   TOOL = {
     name: "emit_insights",
-    description: "Return one short reading per question, keyed by the question's index.",
+    description: "Return one short reading per question, keyed by the Q number the digest gave it.",
     input_schema: {
       type: "object",
       properties: {
@@ -86,12 +102,14 @@ class QuestionInsights
           items: {
             type: "object",
             properties: {
-              index: { type: "integer",
-                       description: "The question's index, exactly as given in the digest (Q1 is index 0)." },
+              question: { type: "integer",
+                          description: "The number after \"Q\" on this question's line in the digest, copied " \
+                                       "exactly: the line \"Q3 [yes_no]: …\" is 3. Never renumber and never " \
+                                       "count from zero — the first question listed is often not Q1." },
               insight: { type: "string",
                          description: "1-3 sentences, under 55 words, citing real numbers." }
             },
-            required: %w[index insight]
+            required: %w[question insight]
           }
         }
       },
@@ -126,7 +144,7 @@ class QuestionInsights
     block = Array(response.content).find { |b| tool_use?(b) }
     return {} unless block
 
-    resolve(deep_stringify(input_of(block))["insights"], aggregated.size)
+    resolve(deep_stringify(input_of(block))["insights"], readable.map { |_, idx| idx })
   end
 
   private
@@ -140,13 +158,20 @@ class QuestionInsights
       result[:total].to_i >= MIN_ANSWERS
   end
 
-  # An index outside the deck is dropped rather than clamped. Clamping would
-  # file a reading against a question it was not written about, which is the
-  # one failure this whole shape exists to prevent.
-  def resolve(insights, card_count)
+  # The model echoes the number printed on the digest line (Q#{idx + 1}); the
+  # deck index is one less. A reading is filed only against a question that
+  # was OFFERED — not the welcome card, not a withheld contact form, not a
+  # question under MIN_ANSWERS, not anything past the deck — and anything else
+  # is dropped rather than clamped or coerced: a "3" or a 2.5 is not a number
+  # the digest printed, and guessing which question it meant is the one
+  # failure this whole shape exists to prevent.
+  def resolve(insights, offered)
     Array(insights).each_with_object({}) do |entry, out|
-      idx = entry["index"]
-      next unless idx.is_a?(Integer) && idx >= 0 && idx < card_count
+      number = entry["question"]
+      next unless number.is_a?(Integer)
+
+      idx = number - 1
+      next unless offered.include?(idx)
 
       text = entry["insight"].to_s.strip
       next if text.empty?

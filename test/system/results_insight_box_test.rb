@@ -62,10 +62,11 @@ class ResultsInsightBoxTest < ApplicationSystemTestCase
                                 status: "completed", answers: answers)
     end
 
-    # The endpoint replays this rather than calling the model: same segment,
-    # same count. Both have to match or it reads afresh — which in a test
-    # environment means a real request to Anthropic.
+    # The endpoint replays this rather than calling the model: same version,
+    # same segment, same count. All three have to match or it reads afresh —
+    # which in a test environment means a real request to Anthropic.
     @survey.update_columns(results_insights: {
+      "version" => QuestionInsights::VERSION,
       "segment" => "overall", "count" => @survey.responses.where(answered: true).count,
       "questions" => READINGS
     })

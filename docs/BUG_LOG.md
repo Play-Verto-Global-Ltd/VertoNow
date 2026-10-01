@@ -8,6 +8,53 @@ and what now stops it coming back. Newest first.
 
 ---
 
+## BUG-043 — Every reading landed one card down
+
+**Severity:** every "What the answers tell us" box on every results page
+described the question above it — fluent prose citing that question's numbers
+under this question's chart. The first question's box stayed empty and the
+last question's reading was dropped. The cache replayed the shift on every
+visit until the response count moved.
+**Found:** the owner, from a screenshot — "the little summaries on the right
+panel seem to fall below the question they are referring to."
+
+The layout was the obvious suspect and was fine: the box is a flex sibling
+inside its own card, nothing measures or moves it, and the Stimulus controller
+fills slots by key. The digest the model reads labels questions `Q#{idx + 1}`
+over the whole deck and skips the welcome card at index 0, so the first line
+it ever sees is "Q2". The tool then asked for "the question's index, exactly
+as given in the digest (Q1 is index 0)" — a zero-based number the prompt never
+printed, anchored to a label that wasn't there. Haiku copied the Q number.
+`resolve` only range-checked it, and 3 is in range for a deck of twelve, so
+the reading of "Q3" — the card the page calls "Card 3" — was filed under "3"
+and drawn beside Card 4. The service test fed its fake client already-correct
+indices and asserted separately that the prompt said "Q2": each half was
+pinned, the translation between them never.
+
+**Fix:** the tool asks for `question`, the number printed on the line, copied;
+the service subtracts one and files a reading only against a question it
+actually offered — not the welcome card, not a withheld or thin question, not
+anything past the deck — and drops anything else rather than clamping or
+coercing it. `QuestionInsights::VERSION` is stamped into the cache and required
+back from it, so every row written under the old numbering is a miss on its
+next visit rather than a replay. A card save now clears the column too: the
+readings are keyed by position and the cache was keyed by count alone.
+
+**Guard:** `test/services/question_insights_test.rb` — a client that reads the
+digest it was handed and copies the number off the "Would you come back?"
+line, asserting that number is 3 and the reading lands under "2"; plus the
+welcome card, a thin question, a string and the deck size offered as Q numbers.
+`test/integration/question_insights_test.rb` — a cache without the current
+version is read afresh, and a deck save clears the readings.
+
+**Lesson:** when the prompt prints one numbering and the tool asks for another
+of the same thing, the model copies the prompt. Ask it to copy what was printed
+and translate in code. And a cache that doesn't carry the version of the code
+that wrote it keeps a fix from ever reaching the rows already written — the
+count that keyed it had no reason to move.
+
+---
+
 ## BUG-042 — An undo that covered nine gestures and greyed out after the rest
 
 **Severity:** the editor's Undo sat disabled after most edits, and a ⌘Z pressed

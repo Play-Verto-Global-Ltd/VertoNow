@@ -12,9 +12,11 @@ class AddResultsInsightsToSurveys < ActiveRecord::Migration[8.1]
   #     "questions" => { "8" => "Two thirds say cost…", "9" => "…" } }
   #
   # Keyed by CARD INDEX, as a string, which is the same positional key every
-  # answer is already stored under (see the deck-order note in CLAUDE.md) — so
-  # a reordered deck invalidates these exactly as it re-points everything else,
-  # and nothing here is more fragile than the answers themselves.
+  # answer is already stored under (see the deck-order note in CLAUDE.md).
+  # Nothing here is invalidated by the deck changing shape, though — only by
+  # the response count moving — so a card save nils the column outright
+  # (SurveysController#update), and the service stamps its VERSION into the
+  # hash so a fix to how readings are filed reaches rows already written.
   def change
     add_column :surveys, :results_insights, :json
   end

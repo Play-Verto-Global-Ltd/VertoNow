@@ -508,6 +508,11 @@ class SurveysController < ApplicationController
       FlowCompiler.compile!(attrs[:cards], flows_now)
       attrs[:results_summary]                = nil
       attrs[:results_summary_response_count] = nil
+      # The per-question readings are keyed by card position and their cache by
+      # response count, so a deck that changed shape with no new answers would
+      # replay every reading one card off. Cleared outright; the next results
+      # visit reads the new deck.
+      attrs[:results_insights]               = nil
       # Anything that left the deck goes to the bin, so it can be restored after
       # a reload — the one thing in-session undo can't survive. Computed from the
       # SAVED deck rather than from a client signal, so a delete is caught however

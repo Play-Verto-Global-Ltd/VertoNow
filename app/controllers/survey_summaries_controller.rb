@@ -28,14 +28,18 @@ class SurveySummariesController < ApplicationController
   # "Overall" would be wrong in the most convincing possible way — it is prose
   # about numbers that are no longer on the screen. The whole-survey summary
   # above caches on the count alone and has exactly that wrinkle; this does not
-  # inherit it.
+  # inherit it. And against QuestionInsights::VERSION, so a cache written by a
+  # version of the service that filed its readings differently is a miss
+  # rather than a replay: a fix to the filing has to reach the rows the model
+  # already wrote, and the count alone would never move them (BUG-043).
   def questions
     survey = Current.organisation.surveys.find(params[:id])
     _base, segments, segment = resolve_result_segments(survey, params[:segment])
     total = segment[:scope].count
 
     cached = survey.results_insights
-    if cached.is_a?(Hash) && cached["segment"] == segment[:id] && cached["count"] == total
+    if cached.is_a?(Hash) && cached["version"] == QuestionInsights::VERSION &&
+       cached["segment"] == segment[:id] && cached["count"] == total
       return render json: { ok: true, cached: true, insights: cached["questions"] || {} }
     end
 
@@ -43,7 +47,7 @@ class SurveySummariesController < ApplicationController
     insights   = QuestionInsights.new.call(survey: survey, aggregated: aggregated, total: total)
 
     survey.update_columns(results_insights: {
-      "segment" => segment[:id], "count" => total, "questions" => insights
+      "version" => QuestionInsights::VERSION, "segment" => segment[:id], "count" => total, "questions" => insights
     })
 
     render json: { ok: true, cached: false, insights: insights }
