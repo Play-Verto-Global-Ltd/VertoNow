@@ -4659,22 +4659,26 @@
 .other-cta-btn:disabled, .other-add-btn:disabled { opacity: 0.55; cursor: default; }
 .other-chip-main:disabled { cursor: default; }
 .other-chip-clear:disabled { display: none; }
-.other-panel { margin-top: 10px; }
-/* Two lines of room, not the free-text card's essay box (see the overlay's
-   twin of this rule): the write-in is one answer that may wrap. */
-.other-panel .other-textarea { min-height: 4.4em; }
+/* The panel is a positioned box so its foot can sit INSIDE the textarea's
+   bottom edge (below), and so the counter — absolute by the freeform rule
+   above — lands in this corner and not the card's. */
+.other-panel { margin-top: 10px; position: relative; }
 /* Hidden means gone. .other-cta-btn is inline-flex and .other-chip is flex,
    and an author display beats the UA's [hidden] rule — without this the idle
    CTA and the committed row would both paint at once. */
 .other-cta-btn[hidden], .other-chip[hidden], .other-add-btn[hidden] { display: none; }
-/* The counter is absolute by the freeform rule above and, with the panel not
-   a positioned box, floated to the CARD's corner. It shares a row with Add
-   instead: a counter and a commit, side by side under the box. */
+/* Counter and Add share the box's bottom edge, like a message composer: the
+   foot is laid OVER the textarea rather than under it, so the panel is exactly
+   as tall as the box — player_reveal_field_test pins the phone's scroll
+   geometry to that height — and the words wrap above the pill. */
 .other-panel-foot {
+  position: absolute; left: 12px; right: 10px; bottom: 10px;
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  margin-top: 8px;
+  pointer-events: none;
 }
+.other-panel-foot > * { pointer-events: auto; }
 .other-panel .freeform-counter { position: static; }
+.other-panel .other-textarea { padding-bottom: 62px; }
 /* Add — the commit. A filled pill where the CTA is a floating word: the CTA
    invites, this one finishes, and the two should not read as the same control.
    The selected row's own pair (soft fill, ink text) keeps 4.5:1 on any brand
@@ -10760,10 +10764,6 @@ body.generating-overlay-active .bottom-bar { display: none; }
     resize: none;
   }
   .preview-overlay .freeform-textarea::placeholder { color: rgba(0,0,0,0.35); }
-  /* The Other box is one answer, not a paragraph — "there should only be one
-     line allowed", wrapping to a second when the words need it. Two lines of
-     room says that; the free-text card's 140px says "write an essay". */
-  .preview-overlay .other-textarea { min-height: 4.4em; }
   .preview-overlay .freeform-counter {
     position: static;
     align-self: flex-end;
@@ -10775,8 +10775,10 @@ body.generating-overlay-active .bottom-bar { display: none; }
   /* flex-end above was written for the free-text card's column, where it
      right-aligns the counter under the box. The Other panel's foot is a ROW
      — counter beside the Add pill — and there the same value pins the
-     counter to the pill's bottom edge. */
+     counter to the pill's bottom edge. The overlay's 14px padding is restated
+     for the bottom so the words wrap above the pill here too. */
   .preview-overlay .other-panel-foot .freeform-counter { align-self: center; }
+  .preview-overlay .other-panel .other-textarea { padding-bottom: 62px; }
 
   /* Choice-grid cards. The rows used to be `minmax(0, 1fr)`, which divides
      the panel's height between them whatever that costs: fine for four
