@@ -66,7 +66,7 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "bootsnap", require: false
 
 # Anthropic Claude SDK
-gem "anthropic", "~> 1.40"
+gem "anthropic", "~> 1.71"
 gem "csv"
 gem "rubyzip", "~> 2.3", require: "zip" # bulk brand-asset import (extract a zip of images)
 
