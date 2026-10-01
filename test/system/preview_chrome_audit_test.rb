@@ -44,7 +44,9 @@ class PreviewChromeAuditTest < ApplicationSystemTestCase
         { "type" => "scenario", "cid" => "sc", "text" => "A choice",
           "pages" => [ { "id" => "p1", "text" => "Page one" },
                        { "id" => "p2", "text" => "Page two" } ],
-          "options" => %w[Stay Go] }
+          "options" => %w[Stay Go] },
+        { "type" => "rating", "cid" => "rt", "text" => "How was it?",
+          "options" => [ "Poor", "Fair", "Good", "Great", "Excellent" ] }
       ]
     )
   end
@@ -79,8 +81,11 @@ class PreviewChromeAuditTest < ApplicationSystemTestCase
 
     # .add-bg-fab is the class both "Background" and "Reposition" carry; the row
     # is the box they sat in, absolutely positioned over the panel.
+    # .rating-style-slot is the rating card's 🎨 and the input the shared emoji
+    # picker writes into; `emoji-picker` is bound on the editor root too.
     [ ".add-bg-fab", ".card-bg-fab", ".header-bg-fab", ".media-adjust-fab",
-      ".split-left-cta-row", ".card-media-dock", ".tap-card-adjust-btn" ].each do |sel|
+      ".split-left-cta-row", ".card-media-dock", ".tap-card-adjust-btn",
+      ".rating-style-slot" ].each do |sel|
       assert page.has_no_css?(".preview-overlay #{sel}", visible: :all),
              "#{sel} reached the preview clone — `media-picker` is bound on the editor root, so " \
              "this one is live: it opens the creator's media modal from inside a respondent view"

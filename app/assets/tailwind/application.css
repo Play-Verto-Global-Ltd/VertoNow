@@ -7592,6 +7592,27 @@ summary.publish-block-title::-webkit-details-marker { display: none; }
   --rating-star-gap: 10px;
   display: flex; flex-direction: column; align-items: center; gap: 12px;
   padding-top: 20px;
+  /* The 🎨 slot below is pinned to this box's corner. */
+  position: relative;
+}
+/* The creator's one 🎨 for the whole rating (editor only — the Preview strips
+   the slot). The select options' paint button, which shows on the row's
+   hover; a rating has no row to hover, so this one rests faintly visible and
+   comes up with the component. The input beside it is the shared emoji
+   picker's target and is never seen: it is the wire, not a field. */
+.rating-style-slot {
+  position: absolute; top: 0; right: 0; z-index: 2;
+  display: inline-flex; align-items: center;
+}
+/* Two classes deep on purpose: .option-style-btn's own rule (opacity: 0 until
+   its row is hovered) comes later in this file and would win a one-class
+   selector, leaving the only 🎨 a rating has invisible at rest. */
+.rating-wrap .rating-style-btn { opacity: 0.6; filter: grayscale(0.4); }
+.rating-wrap:hover .rating-style-btn, .rating-wrap .rating-style-btn:focus-visible { opacity: 1; filter: none; }
+.rating-emoji-input {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  border: 0; padding: 0; margin: -1px;
 }
 .rating-stars  {
   display: flex; gap: var(--rating-star-gap); position: relative;

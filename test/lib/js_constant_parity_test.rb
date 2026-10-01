@@ -233,6 +233,19 @@ class JsConstantParityTest < ActiveSupport::TestCase
                  "loses its overrides on the next autosave")
   end
 
+  # A rating card's own emoji and a card's text ink are both read back off the
+  # card row by the serializer; a field it stops emitting is stripped on the
+  # next autosave of ANY card.
+  test "serialize emits rating_emoji and text_ink" do
+    source = js("controllers/survey_editor_controller.js")
+    assert_match(/out\.rating_emoji/, source,
+                 "serialize() no longer emits rating_emoji — every rating card with its own " \
+                 "emoji goes back to the themed glyph on the next autosave")
+    assert_match(/out\.text_ink/, source,
+                 "serialize() no longer emits text_ink — every card a creator gave dark or " \
+                 "light words goes back to the measured ink on the next autosave")
+  end
+
   test "serialize emits the rich-text layer" do
     source = js("controllers/survey_editor_controller.js")
     %w[out\.text_html out\.description_html out\.options_html].each do |emission|

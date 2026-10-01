@@ -138,7 +138,16 @@ module ApplicationHelper
     end
   end
 
-  def rating_icon(survey)
+  # The glyph a rating card's five points wear. A creator's own pick on the card
+  # (`rating_emoji`, one emoji that fills the whole set — a rating is a set,
+  # never five different pictures) beats the Verto-themed default below, the
+  # way nps_shape beats the themed vessel: absent means "whatever the theme
+  # picks", so a deck nobody has touched keeps following its theme.
+  def rating_icon(survey, card = nil)
+    if card.is_a?(Hash) && (emoji = card["rating_emoji"].to_s.strip).present?
+      return { on: emoji, off: emoji, kind: "emoji" }
+    end
+
     signal = %i[theme title key_insight]
              .filter_map { |m| survey.public_send(m) if survey.respond_to?(m) }
              .join(" ").downcase

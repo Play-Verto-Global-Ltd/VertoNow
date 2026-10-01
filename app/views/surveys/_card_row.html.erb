@@ -91,6 +91,12 @@
          has touched keeps following its theme rather than being frozen to the
          shape it happened to render once. %>
      <% if card['nps_shape'].present? %>data-card-nps-shape="<%= card['nps_shape'] %>"<% end %>
+     <%# A rating card's own emoji for its five points. Absent means "whatever
+         the Verto's theme picks" — the same open default nps_shape has. %>
+     <% if card['rating_emoji'].present? %>data-card-rating-emoji="<%= card['rating_emoji'] %>"<% end %>
+     <%# The creator's say on the colour of this card's words over its mobile
+         background (dark / light). Absent is Auto: the measured mobile_bg.ink. %>
+     <% if card['text_ink'].present? %>data-card-text-ink="<%= card['text_ink'] %>"<% end %>
      <%# Present only when the creator has turned the classic 0-10 off. Its
          ABSENCE is not "classic" — it is "nobody has said" — so nothing is
          emitted for a card that has never been asked, and the labels answer

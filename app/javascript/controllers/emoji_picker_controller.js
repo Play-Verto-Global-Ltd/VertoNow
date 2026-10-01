@@ -137,8 +137,24 @@ export default class extends Controller {
     return (EMOJI_CATEGORIES.find(c => c.key === this._category)?.emoji || []).map(([ e ]) => e)
   }
 
+  // A single emoji typed or pasted into the search box — a flag, a unicorn,
+  // something copied off Emojipedia — is itself the answer, whether or not the
+  // library has a row for it. The search can only match the library's words,
+  // so without this a creator who pasted 🇪🇺 was told "No emoji match that"
+  // and had nowhere to put it.
+  _pastedEmoji() {
+    const query = this.searchTarget.value.trim()
+    if (!query || !/\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(query)) return null
+    const clusters = typeof Intl?.Segmenter === "function"
+      ? [ ...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(query) ].length
+      : [ ...query ].length
+    return clusters === 1 ? query : null
+  }
+
   _renderGrid() {
-    const list = this._list()
+    let list = this._list()
+    const pasted = this._pastedEmoji()
+    if (pasted && !list.includes(pasted)) list = [ pasted, ...list ]
 
     if (!list.length) {
       this._allShown = 0
