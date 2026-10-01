@@ -1005,6 +1005,17 @@ class SurveysController < ApplicationController
       next unless params.key?(flag)
       attrs[flag] = ActiveModel::Type::Boolean.new.cast(params[flag])
     end
+    # An account is somewhere to see your answers beside everyone else's, and
+    # /you/verto/:id draws nothing of the kind while show_results_comparison is
+    # off (YouController#comparison_for). So offering the account brings the
+    # comparison with it by default. Only on the flip from off to on, and only
+    # when the request doesn't name the comparison itself: the creator's switch
+    # stays theirs, and a later "off" in the Response comparison panel sticks
+    # because re-saving this form is not a flip.
+    if attrs[:join_prompt_enabled] == true && !@survey.join_prompt_enabled? &&
+       !params.key?(:show_results_comparison)
+      attrs[:show_results_comparison] = true
+    end
     if params.key?(:leaderboard_retake_policy)
       attrs[:leaderboard_retake_policy] =
         Survey.normalize_leaderboard_retake_policy(params[:leaderboard_retake_policy])

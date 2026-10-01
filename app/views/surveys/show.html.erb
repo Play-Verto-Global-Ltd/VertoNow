@@ -2063,6 +2063,22 @@
               The wording is on the <strong>Ask them to join</strong> card in the deck,
               under the thank-you screen.
             </div>
+            <%# What the account is for, on this surface rather than discovered:
+                turning the ask on turns the comparison on (update_settings), and
+                the account shows how a respondent answered beside everyone else.
+                Off is still the creator's call, so say what that costs. %>
+            <% if @survey.show_results_comparison? %>
+              <div class="card-flag-note" style="margin-left:24px;margin-top:8px;">
+                Their account shows how they answered next to everyone else, which
+                needs <strong>Response comparison</strong>. It's on, and still yours
+                to switch off.
+              </div>
+            <% else %>
+              <div class="card-flag-note" id="join-compare-off" style="margin-left:24px;margin-top:8px;">
+                <strong>Response comparison</strong> is off, so their account has
+                nothing to compare. It will only say you haven't opened the results.
+              </div>
+            <% end %>
           <% end %>
         </details>
 

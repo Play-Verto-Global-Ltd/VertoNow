@@ -53,6 +53,90 @@ class JoinPromptTest < ActionDispatch::IntegrationTest
       "with the presentation switches rather than in SETTINGS_LOCKED_IN_USE"
   end
 
+  # ── The comparison it brings with it ──────────────────────────────────────
+
+  # An account is where you see your answers beside everyone else's, and that
+  # page draws nothing while show_results_comparison is off. So the ask turning
+  # on turns the comparison on — once, as a default, never as an override.
+
+  test "turning the ask on turns the comparison on with it" do
+    s = survey
+    assert_not s.show_results_comparison?
+    admin_for(s.organisation)
+
+    post survey_settings_path(s), params: { join_prompt_enabled: "1" }
+
+    s.reload
+    assert s.join_prompt_enabled?
+    assert s.show_results_comparison?,
+      "an account whose Verto has no comparison open has nothing to show a respondent"
+  end
+
+  test "a request that names the comparison itself is taken at its word" do
+    s = survey
+    admin_for(s.organisation)
+
+    post survey_settings_path(s), params: { join_prompt_enabled: "1", show_results_comparison: "0" }
+
+    assert s.reload.join_prompt_enabled?
+    assert_not s.show_results_comparison?
+  end
+
+  test "the creator can switch the comparison off afterwards and re-saving the ask leaves it off" do
+    s = survey
+    admin_for(s.organisation)
+    post survey_settings_path(s), params: { join_prompt_enabled: "1" }
+    post survey_settings_path(s), params: { show_results_comparison: "0" }
+    assert_not s.reload.show_results_comparison?
+
+    # The checkbox form posts its field on every change, so this is the shape of
+    # a creator re-saving the ask — not a flip, so not a second default.
+    post survey_settings_path(s), params: { join_prompt_enabled: "1" }
+
+    assert s.reload.join_prompt_enabled?
+    assert_not s.show_results_comparison?, "a default is applied once, not enforced"
+  end
+
+  test "turning the ask off leaves the comparison as the creator had it" do
+    s = survey
+    admin_for(s.organisation)
+    post survey_settings_path(s), params: { join_prompt_enabled: "1" }
+    assert s.reload.show_results_comparison?
+
+    post survey_settings_path(s), params: { join_prompt_enabled: "0" }
+
+    assert_not s.reload.join_prompt_enabled?
+    assert s.show_results_comparison?,
+      "the end screen's comparison was open before the account was and is not the account's to close"
+  end
+
+  test "a refused ask does not open the comparison either" do
+    neuro = DemographicQuestions::OPTIONAL_CARDS["neurodiversity"].dup
+    s = survey
+    s.update!(cards: CARDS.map(&:dup) + [ neuro ])
+    admin_for(s.organisation)
+
+    post survey_settings_path(s), params: { join_prompt_enabled: "1" }
+
+    assert_not s.reload.join_prompt_enabled?
+    assert_not s.show_results_comparison?,
+      "the whole request is refused; half of it landing would publish a comparison nobody asked for"
+  end
+
+  test "the panel says what the account needs, and says so when the comparison is off" do
+    s = survey(join_prompt_enabled: true, show_results_comparison: true)
+    admin_for(s.organisation)
+
+    get survey_path(s)
+    assert_response :success
+    assert_select "#join-compare-off", 0
+
+    s.update_columns(show_results_comparison: false)
+    get survey_path(s)
+    assert_select "#join-compare-off", 1,
+      "an account with no comparison behind it should be flagged where the creator turns it on"
+  end
+
   # ── The copy ──────────────────────────────────────────────────────────────
 
   test "blank copy reads as the locale default, and a creator's copy replaces it" do
