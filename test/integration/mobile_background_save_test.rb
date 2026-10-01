@@ -188,6 +188,45 @@ class MobileBackgroundSaveTest < ActionDispatch::IntegrationTest
                "a text colour with no colour and no picture behind it was stored as a background"
   end
 
+  # "If you upload anything that's light, it's the upload that's triggering the
+  # text to change" — and the creator could not change it back. Now they can:
+  # text_ink is the creator's say, it beats the measurement, and it is stored
+  # beside the background rather than inside it, so swapping or removing the
+  # picture does not take the choice with it.
+  test "the creator's text ink survives the save, beats the measurement, and outlives the picture" do
+    patch_cards([ @survey.cards[0],
+                  @survey.cards[1].merge("mobile_bg" => { "image" => BG, "ink" => "light" }, "text_ink" => "dark") ])
+    assert_response :success
+
+    t1 = card("t1")
+    assert_equal "dark", t1["text_ink"], "the creator's choice did not survive the save"
+    assert_equal "light", t1.dig("mobile_bg", "ink"), "the measurement is kept too — Auto has to know what it would do"
+    assert_includes ApplicationController.helpers.card_mobile_bg_classes(t1), "bg-ink-dark",
+                    "the words render in the measured ink, not the creator's"
+
+    patch_cards([ @survey.cards[0], t1.merge("text_ink" => "light", "mobile_bg" => { "image" => BG, "ink" => "dark" }) ])
+    assert_response :success
+    t1 = card("t1")
+    refute_includes ApplicationController.helpers.card_mobile_bg_classes(t1), "bg-ink-dark",
+                    "light words were asked for over a picture measured dark, and dark won"
+
+    # Auto again: no say from the creator, the measurement decides.
+    patch_cards([ @survey.cards[0], t1.except("text_ink") ])
+    assert_response :success
+    t1 = card("t1")
+    refute t1.key?("text_ink")
+    assert_includes ApplicationController.helpers.card_mobile_bg_classes(t1), "bg-ink-dark"
+
+    # The choice is not a background: it is kept when the picture goes…
+    patch_cards([ @survey.cards[0], t1.merge("text_ink" => "dark").except("mobile_bg") ])
+    assert_response :success
+    t1 = card("t1")
+    assert_equal "dark", t1["text_ink"], "removing the background took the creator's choice with it"
+    assert_nil t1["mobile_bg"]
+    # …and paints nothing until there is one to paint on.
+    assert_equal "", ApplicationController.helpers.card_mobile_bg_classes(t1)
+  end
+
   # ── A GIF is an image ─────────────────────────────────────────────────
   # The picker keeps a GIF's bytes rather than re-encoding it through a canvas
   # (which would keep one frame), and the server stores it as a GIF: the

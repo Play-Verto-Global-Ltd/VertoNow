@@ -13,7 +13,8 @@ import { FONT_LABELS, SIZE_LABELS, FONT_CLASSES, SIZE_CLASSES } from "lib/rich_t
 // fine — the server sanitiser and the textContent-canonical plain layer are
 // the safety net.
 export default class extends Controller {
-  static targets = ["toolbar", "fontSelect", "sizeSelect", "boldBtn", "italicBtn", "underlineBtn", "linkBtn"]
+  static targets = ["toolbar", "fontSelect", "sizeSelect", "boldBtn", "italicBtn", "underlineBtn", "linkBtn",
+                    "inkDarkBtn", "inkLightBtn"]
 
   connect() {
     this._buildSelects()
@@ -50,8 +51,12 @@ export default class extends Controller {
     this._range = range.cloneRange()
     this._regionEl = region
     this._reflect(range, region)
-    this._position(range)
+    // Shown BEFORE it is placed: hidden is display:none, and a toolbar with no
+    // box measures 0 wide, so _position's clamp would fall back to a guess
+    // every time it reappears. It is position: fixed, so the frame between
+    // showing and placing costs nothing visible.
     this.toolbarTarget.hidden = false
+    this._position(range)
   }
 
   _region(range) {
@@ -64,8 +69,12 @@ export default class extends Controller {
   _position(range) {
     const rect = range.getBoundingClientRect()
     const pop = this.toolbarTarget
+    // Measured, not a constant: the toolbar is wider on the survey editor (the
+    // two ink circles) than on Comms, and a stale number here is a toolbar
+    // that runs off the right edge on the one page that has them.
+    const width = pop.offsetWidth || 340
     pop.style.top = `${Math.max(8, rect.top - 48)}px`
-    pop.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - 340))}px`
+    pop.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`
   }
 
   // Reflect the current formats at the selection into the controls.
@@ -84,6 +93,45 @@ export default class extends Controller {
     this.fontSelectTarget.value = fontSpan ? FONT_CLASSES.find(c => fontSpan.classList.contains(c)) : ""
     const sizeSpan = SIZE_CLASSES.map(c => within(`span.${c}`)).find(Boolean)
     this.sizeSelectTarget.value = sizeSpan ? SIZE_CLASSES.find(c => sizeSpan.classList.contains(c)) : ""
+    this._reflectInk(region)
+  }
+
+  // The two ink circles are about the CARD, not the selection: they say which
+  // colour every word on this card takes over its mobile background, and they
+  // light up from the card's own record (text_ink). They only appear on a card
+  // that has a mobile background to paint on — on a white panel there is
+  // nothing for them to do, and a control that does nothing reads as broken.
+  _reflectInk(region) {
+    if (!this.hasInkDarkBtnTarget || !this.hasInkLightBtnTarget) return
+    const card = this._cardOf(region)
+    const painted = !!card?.querySelector(".split-right.has-mobile-bg")
+    const ink = card?.dataset.cardTextInk || ""
+    this.inkDarkBtnTarget.hidden = !painted
+    this.inkLightBtnTarget.hidden = !painted
+    this.inkDarkBtnTarget.classList.toggle("is-active", ink === "dark")
+    this.inkLightBtnTarget.classList.toggle("is-active", ink === "light")
+    this.inkDarkBtnTarget.setAttribute("aria-pressed", String(ink === "dark"))
+    this.inkLightBtnTarget.setAttribute("aria-pressed", String(ink === "light"))
+  }
+
+  // The editor card the region belongs to; null in a Preview clone or on the
+  // Comms builder, where the same controller runs with no cards at all.
+  _cardOf(region) {
+    return region?.closest?.("[data-survey-editor-target='card']") || null
+  }
+
+  // Dark or light words for the card under the selection — or, pressed again
+  // on the one already lit, back to Auto (the ink measured off the picture).
+  // The card-level write and the dirty mark are survey-editor#setTextInk's;
+  // this only names the card and the choice.
+  ink(event) {
+    event.preventDefault()
+    const card = this._cardOf(this._regionEl)
+    if (!card) return
+    const choice = event.currentTarget.dataset.ink
+    const next = card.dataset.cardTextInk === choice ? "" : choice
+    this.dispatch("ink", { detail: { card, ink: next } })
+    this._reflectInk(this._regionEl)
   }
 
   // ── Formatting actions ────────────────────────────────────────────────────
