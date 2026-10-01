@@ -190,12 +190,16 @@ class RespondentDataExport
       next unless answer.is_a?(Hash)
 
       value = answer["value"]
-      next if value.nil? || (value.respond_to?(:empty?) && value.empty?)
+      other = answer["other"].presence
+      # An entry is theirs if either half has words in it: the Other box is an
+      # answer on its own, and the respondent's own typed words are the one
+      # thing a subject access request most obviously covers.
+      next if (value.nil? || (value.respond_to?(:empty?) && value.empty?)) && other.nil?
 
       { "question" => card["text"].to_s,
         "type"     => card["type"].to_s,
         "answer"   => value,
-        "other"    => answer["other"].presence }.compact
+        "other"    => other }.compact
     end
   end
 end

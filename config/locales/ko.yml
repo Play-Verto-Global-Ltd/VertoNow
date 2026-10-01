@@ -166,6 +166,10 @@ ko:
     location_cities_add: "도시 검색…"
     location_cities_note: "이 도시 안의 장소만 표시됩니다."
     location_remove: "삭제"
+    other_add: "추가"
+    other_edit: "답변 수정"
+    other_clear: "답변 삭제"
+    rating_icon: "이 평점의 이모지 선택"
   ask_submission_mailer:
     confirmation_subject: "Verto 데이터가 Ask Verto에 제출되었습니다"
     confirmation_heading: "검토 요청 제출됨"
@@ -716,6 +720,8 @@ ko:
           range: "답이 하나의 척도로 수렴할 때만 통합니다 — 대개는 주관식의 의미가 사라집니다."
         welcome_card:
           welcome_card: "질문 전에 분위기를 잡습니다 — 맥락이 필요한 낯선 응답자에게 이상적인 첫 카드입니다."
+      rich_ink_dark: "이 카드의 글자를 어둡게 (다시 누르면 자동)"
+      rich_ink_light: "이 카드의 글자를 밝게 (다시 누르면 자동)"
     wizard:
       step_counter: "%{total}단계 중 %{n}단계"
     results:

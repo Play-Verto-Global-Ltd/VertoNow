@@ -166,6 +166,10 @@ ja:
     location_cities_add: "都市を検索…"
     location_cities_note: "これらの都市内の場所だけが表示されます。"
     location_remove: "削除"
+    other_add: "追加"
+    other_edit: "回答を編集"
+    other_clear: "回答を削除"
+    rating_icon: "この評価の絵文字を選ぶ"
   ask_submission_mailer:
     confirmation_subject: "VertoデータをAsk Vertoに提出しました"
     confirmation_heading: "審査に提出しました"
@@ -716,6 +720,8 @@ ja:
           range: "答えが1つのスケールに集約できる場合にだけ機能します — たいていは自由回答にする意味が失われます。"
         welcome_card:
           welcome_card: "質問が始まる前に雰囲気をつくります — 文脈を必要とする初見のオーディエンスに理想的な最初のカードです。"
+      rich_ink_dark: "このカードの文字を濃い色に（もう一度押すと自動）"
+      rich_ink_light: "このカードの文字を明るい色に（もう一度押すと自動）"
     wizard:
       step_counter: "%{total}ステップ中 %{n}"
     results:

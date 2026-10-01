@@ -167,6 +167,10 @@ af:
     location_cities_add: "Soek 'n stad…"
     location_cities_note: "Net plekke binne hierdie stede word aangebied."
     location_remove: "Verwyder"
+    other_add: "Voeg by"
+    other_edit: "Wysig jou antwoord"
+    other_clear: "Verwyder jou antwoord"
+    rating_icon: "Kies die emoji vir hierdie gradering"
   ask_submission_mailer:
     confirmation_subject: "Jou Verto-data is aan Ask Verto voorgelê"
     confirmation_heading: "Voorgelê vir hersiening"
@@ -717,6 +721,8 @@ af:
           range: "Werk net as die antwoord na 'n enkele skaal reduseer — verloor gewoonlik die punt van oop vrae."
         welcome_card:
           welcome_card: "Stel die toon voor enige vrae — ideale eerste kaart vir koue gehore wat konteks nodig het."
+      rich_ink_dark: "Donker teks op hierdie kaart (druk weer vir outomaties)"
+      rich_ink_light: "Ligte teks op hierdie kaart (druk weer vir outomaties)"
     wizard:
       step_counter: "Stap %{n} van %{total}"
     results:

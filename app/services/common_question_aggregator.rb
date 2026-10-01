@@ -53,7 +53,10 @@ class CommonQuestionAggregator
         next unless response.answers.is_a?(Hash)
         cq_by_idx.each do |idx, cq_id|
           ans = response.answers[idx.to_s]
-          per_question_answers[cq_id] << ans if ans.is_a?(Hash) && ans["value"].present?
+          # The canonical "did they answer" — a write-in alone, a held text
+          # and a yes_no `false` all count, as they do on the Verto's own
+          # results page, so the set's totals agree with the card's.
+          per_question_answers[cq_id] << ans if ans.is_a?(Hash) && Response.answered_entry?(ans)
         end
       end
 

@@ -1754,11 +1754,12 @@ class PlayerController < ApplicationController
     n_allowed = neuro_idx ? Array(cards[neuro_idx]["options"]).map(&:to_s) : []
     valid      = (picked & n_allowed).reject { |v| v.include?("|") }
     conditions = valid.reject { |v| DemographicQuestions.neuro_exclusive_labels.include?(v) }
-    # Same off-list handling as heritage. The Other box is a standalone answer
-    # platform-wide — typing replaces the ticks — so `picked` is empty whenever
-    # `other` is set, and this can't collide with a real selection. A typed
-    # answer is a real condition, so it beats the exclusives for the same
-    # reason a ticked one does.
+    # Same off-list handling as heritage. The Other box combines with the ticks
+    # platform-wide, so `picked` and `other` can both be set; a ticked
+    # condition wins the column outright and the off-list label is only
+    # recorded when nothing on the list was. A typed answer is a real
+    # condition, so it beats the exclusives for the same reason a ticked one
+    # does.
     chosen =
       if conditions.any?
         conditions

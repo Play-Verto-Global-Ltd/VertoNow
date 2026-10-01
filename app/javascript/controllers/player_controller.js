@@ -1942,10 +1942,14 @@ export default class extends Controller {
   _answerOf(card) {
     const type  = card.dataset.cardType
     const value = this._read(card, type)
-    // "Other" is a standalone answer: if the respondent typed free text it
-    // replaces any normal selection for this card.
+    // "Other" combines with whatever the card holds — on every type, single
+    // select included. The textarea is read in every state (panel open, or
+    // folded into the committed row — see other_controller.js); the server
+    // stores both halves (Survey#clamp_free_text) and answered_entry? reads
+    // both. It used to replace the picks here, which is how a respondent who
+    // ticked two and wrote a third lost the two.
     const other = card.querySelector("[data-other-input]")?.value.trim()
-    return other ? { type, value: null, other } : { type, value }
+    return other ? { type, value, other } : { type, value }
   }
 
   // The canonical (primary-language) label an option element answers as.
@@ -3041,7 +3045,9 @@ export default class extends Controller {
   _lockInputs(card) {
     card.querySelectorAll(".choice-list, .choice-grid, .rotate-wrap, .slider-wrap, .nps-slider, .prioritise-list, .rating-wrap, .freeform-wrap, .other-block")
         .forEach(el => { el.style.pointerEvents = "none" })
-    card.querySelectorAll("textarea, input, button[data-other-target='btn']").forEach(el => { el.disabled = true })
+    // Every button in the Other block, not just the CTA: the committed row's
+    // edit and × and the panel's Add would otherwise reopen a locked answer.
+    card.querySelectorAll("textarea, input, .other-block button").forEach(el => { el.disabled = true })
   }
 
   _formatCorrect(type, c) {

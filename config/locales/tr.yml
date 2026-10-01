@@ -166,6 +166,10 @@ tr:
     location_cities_add: "Şehir ara…"
     location_cities_note: "Yalnızca bu şehirlerin içindeki yerler sunulur."
     location_remove: "Kaldır"
+    other_add: "Ekle"
+    other_edit: "Cevabını düzenle"
+    other_clear: "Cevabını kaldır"
+    rating_icon: "Bu puanlama için emoji seç"
   ask_submission_mailer:
     confirmation_subject: "Verto verin Ask Verto'ya gönderildi"
     confirmation_heading: "İncelemeye gönderildi"
@@ -716,6 +720,8 @@ tr:
           range: "Yalnızca yanıt tek bir ölçeğe iniyorsa işe yarar — genellikle açık uçlu sormanın amacını kaybettirir."
         welcome_card:
           welcome_card: "Daha sorular gelmeden tonu belirler — bağlama ihtiyaç duyan soğuk kitleler için ideal ilk kart."
+      rich_ink_dark: "Bu kartta koyu metin (otomatik için tekrar bas)"
+      rich_ink_light: "Bu kartta açık metin (otomatik için tekrar bas)"
     wizard:
       step_counter: Adım %{n} / %{total}
     results:

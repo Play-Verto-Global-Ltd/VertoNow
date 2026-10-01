@@ -176,6 +176,10 @@ st:
     location_cities_add: "Batla toropo…"
     location_cities_note: "Ho fanwa feela ka dibaka tse ka hare ho ditoropo tsena."
     location_remove: "Tlosa"
+    other_add: "Eketsa"
+    other_edit: "Fetola karabo ya hao"
+    other_clear: "Tlosa karabo ya hao"
+    rating_icon: "Kgetha emoji bakeng sa tekanyetso ena"
   ask_submission_mailer:
     confirmation_subject: "Datha ya hao ya Verto e rometswe ho Ask Verto"
     confirmation_heading: "E rometswe bakeng sa tlhahlobo"
@@ -732,6 +736,8 @@ st:
           range: "E sebetsa feela ha karabo e fokotseha ho ba tekanyo e le nngwe — hangata e lahlehelwa ke sepheo sa ho ba mongolo o mahala."
         welcome_card:
           welcome_card: "E beha boemo pele ho dipotso dife kapa dife — karete e ntle ya pele bakeng sa bamameli ba sa tsejaneng le Verto, ba hlokang tsebo ya semmuso."
+      rich_ink_dark: "Mongolo o lefifi kareteng ena (tobetsa hape bakeng sa ya iketsang)"
+      rich_ink_light: "Mongolo o kganyang kareteng ena (tobetsa hape bakeng sa ya iketsang)"
     wizard:
       step_counter: "Mohato %{n} ho tse %{total}"
     results:

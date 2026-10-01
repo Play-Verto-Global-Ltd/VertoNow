@@ -166,6 +166,10 @@ sw:
     location_cities_add: "Tafuta jiji…"
     location_cities_note: "Maeneo yaliyo ndani ya majiji haya pekee ndiyo yanaonyeshwa."
     location_remove: "Ondoa"
+    other_add: "Ongeza"
+    other_edit: "Hariri jibu lako"
+    other_clear: "Ondoa jibu lako"
+    rating_icon: "Chagua emoji ya ukadiriaji huu"
   ask_submission_mailer:
     confirmation_subject: "Data yako ya Verto imewasilishwa kwa Ask Verto"
     confirmation_heading: "Imewasilishwa kwa ukaguzi"
@@ -716,6 +720,8 @@ sw:
           range: "Hufanya kazi tu ikiwa jibu linajumlishwa kuwa kipimo kimoja — mara nyingi hupoteza sababu ya kuwa swali huru."
         welcome_card:
           welcome_card: "Huweka mazingira kabla ya maswali yoyote — kadi bora ya kwanza kwa hadhira mpya inayohitaji muktadha."
+      rich_ink_dark: "Maandishi ya rangi nyeusi kwenye kadi hii (bonyeza tena kwa otomatiki)"
+      rich_ink_light: "Maandishi ya rangi nyeupe kwenye kadi hii (bonyeza tena kwa otomatiki)"
     wizard:
       step_counter: Hatua %{n} kati ya %{total}
     results:

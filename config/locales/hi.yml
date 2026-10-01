@@ -166,6 +166,10 @@ hi:
     location_cities_add: "शहर खोजें…"
     location_cities_note: "केवल इन शहरों के भीतर की जगहें दिखाई जाती हैं।"
     location_remove: "हटाएँ"
+    other_add: "जोड़ें"
+    other_edit: "अपना उत्तर संपादित करें"
+    other_clear: "अपना उत्तर हटाएँ"
+    rating_icon: "इस रेटिंग के लिए इमोजी चुनें"
   ask_submission_mailer:
     confirmation_subject: "आपका Verto डेटा Ask Verto को सबमिट हुआ"
     confirmation_heading: "समीक्षा के लिए भेजा गया"
@@ -716,6 +720,8 @@ hi:
           range: "तभी काम करता है जब उत्तर एक ही स्केल में सिमट जाए — आमतौर पर खुले प्रश्न का मतलब ही खो जाता है।"
         welcome_card:
           welcome_card: "किसी भी प्रश्न से पहले माहौल बनाता है — जिन नए दर्शकों को संदर्भ चाहिए, उनके लिए आदर्श पहला कार्ड।"
+      rich_ink_dark: "इस कार्ड पर गहरा टेक्स्ट (स्वचालित के लिए फिर से दबाएँ)"
+      rich_ink_light: "इस कार्ड पर हल्का टेक्स्ट (स्वचालित के लिए फिर से दबाएँ)"
     wizard:
       step_counter: चरण %{n} / %{total}
     results:

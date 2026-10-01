@@ -79,6 +79,18 @@ class CommonQuestionAggregatorTest < ActiveSupport::TestCase
     assert_equal 0, per_question.first[:total]
   end
 
+  # The Other box is an answer on its own, and it combines with a tick: the
+  # set's roll-up counts the same people the Verto's own results page counts,
+  # once each.
+  test "a write-in alone is an answer, and a write-in beside a tick is one respondent" do
+    s = survey_with_set(title: "A")
+    s.responses.create!(session_token: SecureRandom.uuid, answers: { "1" => { "value" => nil, "other" => "Mostly" } })
+    s.responses.create!(session_token: SecureRandom.uuid, answers: { "1" => { "value" => "Yes", "other" => "but not at night" } })
+
+    per_question, = aggregate([ s ])
+    assert_equal 2, per_question.first[:total]
+  end
+
   test "an empty survey list aggregates to zero rather than raising" do
     per_question, _v, total_surveys, total_responses = aggregate([])
     assert_equal 0, total_surveys

@@ -166,6 +166,10 @@ ar:
     location_cities_add: "ابحث عن مدينة…"
     location_cities_note: "تُعرض الأماكن داخل هذه المدن فقط."
     location_remove: "إزالة"
+    other_add: "إضافة"
+    other_edit: "تعديل إجابتك"
+    other_clear: "إزالة إجابتك"
+    rating_icon: "اختر الرمز التعبيري لهذا التقييم"
   ask_submission_mailer:
     confirmation_subject: "تم تقديم بيانات Verto الخاصة بك إلى Ask Verto"
     confirmation_heading: "قُدّم للمراجعة"
@@ -716,6 +720,8 @@ ar:
           range: "لا يصلح إلا إذا كانت الإجابة تُختزل في مقياس واحد — وغالبًا ما يضيع معه الغرض من السؤال المفتوح."
         welcome_card:
           welcome_card: "يضبط النبرة قبل أي سؤال — البطاقة الأولى المثالية للجمهور الجديد الذي يحتاج إلى سياق."
+      rich_ink_dark: "نص داكن على هذه البطاقة (اضغط مرة أخرى للوضع التلقائي)"
+      rich_ink_light: "نص فاتح على هذه البطاقة (اضغط مرة أخرى للوضع التلقائي)"
     wizard:
       step_counter: الخطوة %{n} من %{total}
     results:

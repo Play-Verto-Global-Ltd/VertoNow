@@ -161,6 +161,10 @@ cs:
       points_intro: "Úvod k bodům"
       prioritise: "Seřadit podle priority"
       scenario: "Scénář"
+    other_add: "Přidat"
+    other_edit: "Upravit svou odpověď"
+    other_clear: "Odstranit svou odpověď"
+    rating_icon: "Vyberte emoji pro toto hodnocení"
   ask_submission_mailer:
     confirmation_subject: "Vaše data Verto byla odeslána do Ask Verto"
     confirmation_heading: "Odesláno k posouzení"
@@ -761,6 +765,8 @@ cs:
           range: "Funguje jen tehdy, když se odpověď dá zredukovat na jednu škálu – obvykle tím otevřená otázka ztrácí smysl."
         welcome_card:
           welcome_card: "Nastavuje tón ještě před otázkami – ideální první karta pro publikum, které vás nezná a potřebuje kontext."
+      rich_ink_dark: "Tmavý text na této kartě (stiskněte znovu pro automatický režim)"
+      rich_ink_light: "Světlý text na této kartě (stiskněte znovu pro automatický režim)"
     wizard:
       step_counter: "Krok %{n} z %{total}"
     results:

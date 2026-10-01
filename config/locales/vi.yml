@@ -166,6 +166,10 @@ vi:
     location_cities_add: "Tìm thành phố…"
     location_cities_note: "Chỉ hiện những nơi trong các thành phố này."
     location_remove: "Xóa"
+    other_add: "Thêm"
+    other_edit: "Chỉnh sửa câu trả lời của bạn"
+    other_clear: "Xóa câu trả lời của bạn"
+    rating_icon: "Chọn emoji cho đánh giá này"
   ask_submission_mailer:
     confirmation_subject: "Dữ liệu Verto của bạn đã được gửi tới Ask Verto"
     confirmation_heading: "Đã gửi để duyệt"
@@ -716,6 +720,8 @@ vi:
           range: "Chỉ hiệu quả nếu câu trả lời quy về một thang đo duy nhất — thường làm mất ý nghĩa của câu hỏi mở."
         welcome_card:
           welcome_card: "Định hình không khí trước khi có bất kỳ câu hỏi nào — thẻ mở đầu lý tưởng cho khán giả mới cần bối cảnh."
+      rich_ink_dark: "Chữ tối trên thẻ này (nhấn lại để tự động)"
+      rich_ink_light: "Chữ sáng trên thẻ này (nhấn lại để tự động)"
     wizard:
       step_counter: Bước %{n} / %{total}
     results:
