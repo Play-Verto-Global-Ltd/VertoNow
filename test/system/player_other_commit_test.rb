@@ -62,13 +62,26 @@ class PlayerOtherCommitTest < ApplicationSystemTestCase
                  "folding the panel moves the list; the pick must not be lost to that"
   end
 
-  test "losing focus with no tap at all still commits" do
+  test "tabbing away commits; putting the keyboard down does not" do
     play(survey_with(type: "multiple_choice"))
 
     open_other
     type_other "Teal"
-    # Tab away, or the phone keyboard's Done: a blur that no click follows.
+    # A phone keyboard's Done (or any blur that goes nowhere) is the respondent
+    # pausing, not leaving: the box stays open with their words in it.
     page.execute_script("document.querySelector('.preview-card.active .other-textarea').blur()")
+    sleep 0.4
+    assert_selector ".preview-card.active .other-panel:not([hidden])"
+    assert_equal "Teal", textarea.value
+
+    # Focus moving to something else on the page — Tab onward — is leaving.
+    # (The font-size control, not Next: a one-card deck shows Finish and hides
+    # Next, and a hidden button takes no focus, so the blur would go nowhere.)
+    page.execute_script(<<~JS)
+      const ta = document.querySelector('.preview-card.active .other-textarea')
+      ta.focus()
+      document.querySelector('.font-scale-btn').focus()
+    JS
 
     assert_committed "Teal"
   end

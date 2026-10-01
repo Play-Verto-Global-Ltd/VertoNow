@@ -127,10 +127,15 @@ export default class extends Controller {
     this.commit({ explicit: true })
   }
 
-  // Tapping or tabbing away commits. Not immediately — see BLUR_COMMIT_MS.
+  // Tabbing away commits — focus went to something else on the page. Not
+  // immediately: see BLUR_COMMIT_MS. A blur that goes NOWHERE (no
+  // relatedTarget: a phone keyboard's Done, a programmatic blur) is the
+  // respondent putting the keyboard down, not leaving the box — it stays
+  // open with their words in it, and the next tap, Enter or Add commits.
+  // Tapping away is the document click listener's, not this one's.
   focusout(event) {
     if (this._state() !== "editing") return
-    if (event.relatedTarget && this.element.contains(event.relatedTarget)) return
+    if (!event.relatedTarget || this.element.contains(event.relatedTarget)) return
     clearTimeout(this._blurTimer)
     this._blurTimer = setTimeout(() => this.commit(), this.constructor.BLUR_COMMIT_MS)
   }
