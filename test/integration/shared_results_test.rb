@@ -305,6 +305,7 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
     get shared_results_path(token)
     assert_response :success
     assert_no_match(/RA Sam/, response.body)
+    assert_no_match(/#{link.slug}/, response.body, "a link's address is as much the owner's own as its name")
     assert_select "a.seg-pill[href*='segment=link_']", false
 
     get shared_results_path(token, segment: "link_#{link.id}")

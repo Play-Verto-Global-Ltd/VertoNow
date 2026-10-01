@@ -410,8 +410,13 @@
             <span class="rh-group-label" style="color:<%= group[:accent] %>;"><%= group[:key] %></span>
             <div class="rh-group-rail">
               <% group[:segments].each do |seg| %>
+                <%# A link's pill already names its address in the text; the title
+                    carries the whole of it, so a creator can match a pill to the
+                    poster or QR they printed without opening Share. Only links
+                    have one — nil drops the attribute for every other kind. %>
                 <%= link_to survey_results_path(@survey, segment: segment_toggle_param(@segments, @active_segment, seg[:id]), range: @date_range),
                       class: "seg-pill rh-seg", style: "--seg-accent:#{group[:accent]}",
+                      title: (play_survey_url(seg[:slug]) if seg[:slug]),
                       aria: { current: segment_selected?(@active_segment, seg[:id]).to_s } do %>
                   <span class="rh-seg-dot"></span><%= seg[:label] %><span class="seg-pill-count"><%= seg[:count] %></span>
                 <% end %>

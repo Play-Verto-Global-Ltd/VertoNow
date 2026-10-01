@@ -53,14 +53,40 @@ class ResultsFiltersTest < ActionDispatch::IntegrationTest
     links = segments.select { |s| s[:id].start_with?("link_") }
     assert_equal [ "link_#{a.id}", "link_#{b.id}" ], links.map { |s| s[:id] }
     assert_equal [ 2, 0 ], links.map { |s| s[:count] }
-    assert_equal [ "🔗 RA Ana", "🔗 RA Ben" ], links.map { |s| s[:label] }
+    assert_equal [ "🔗 RA Ana (#{a.slug})", "🔗 RA Ben (#{b.slug})" ], links.map { |s| s[:label] },
+      "a pill names the link's address — the one thing about a link that is unique"
+    assert_equal [ a.slug, b.slug ], links.map { |s| s[:slug] }
 
     b.update!(active: false)
     assert_includes segment_ids, "link_#{b.id}", "a recalled link keeps its segment — its old responses still point at it"
 
     get survey_results_path(@survey, segment: "link_#{a.id}")
     assert_response :success
-    assert_select "a.seg-pill[aria-current='true']", text: /🔗 RA Ana/
+    assert_select "a.seg-pill[aria-current='true']", text: /🔗 RA Ana \(#{Regexp.escape(a.slug)}\)/
+    # The tooltip is the whole address, so a pill can be matched to a poster
+    # without opening Share.
+    assert_select "a.seg-pill[aria-current='true'][title=?]", play_survey_url(a.slug)
+    assert_select ".rh-segments summary .rh-picker-active", text: "🔗 RA Ana (#{a.slug})"
+    assert_select "a.seg-pill.rh-picker-wide[title]", false, "Overall has no address to carry"
+  end
+
+  # Three links the owner never named is the ordinary case — the share panel
+  # mints them all as "New link" — and three identical pills told apart only
+  # by their counts is no filter at all. The address is what makes each one.
+  test "two links with the same name are told apart by their address" do
+    a = @survey.survey_links.create!(name: "New link", slug: SurveyLink.mint_slug(nil, fallback: "New link"))
+    b = @survey.survey_links.create!(name: "New link", slug: SurveyLink.mint_slug(nil, fallback: "New link"))
+    refute_equal a.slug, b.slug
+
+    _base, segments, = resolve_result_segments(@survey, nil, nil)
+    labels = segments.select { |s| s[:id].start_with?("link_") }.map { |s| s[:label] }
+    assert_equal [ "🔗 New link (#{a.slug})", "🔗 New link (#{b.slug})" ], labels
+    assert_equal labels, labels.uniq
+
+    get survey_results_path(@survey, segment: "link_#{b.id}")
+    assert_response :success
+    assert_select "a.seg-pill[aria-current='true']", text: /\(#{Regexp.escape(b.slug)}\)/
+    assert_select "a.seg-pill[aria-current='true'][title=?]", play_survey_url(b.slug)
   end
 
   test "a gender with enough responses becomes a segment" do

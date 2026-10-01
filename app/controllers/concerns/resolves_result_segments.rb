@@ -100,10 +100,20 @@ module ResolvesResultSegments
     # counts link responses, matching SurveyLink's own contract that a link's
     # answers are the Verto's own — the export names the link, the pill does
     # not subtract it.
+    # The address is part of the label — "🔗 Newsletter (newsletter)" — because
+    # the name is the owner's own word for an audience and nothing stops two
+    # links sharing it: three untouched "New link"s is the ordinary case, and
+    # three identical pills told apart only by their counts is no filter at
+    # all. The slug is the one thing about a link that is unique, and it is the
+    # /play/<slug> address already on the poster, so it is what a creator can
+    # match a pill against. Parentheses rather than " · ", which is the joiner
+    # combination_label puts between kinds. `slug` rides along so the pill can
+    # carry the whole address as its title.
     if links
       survey.survey_links.ordered.each do |link|
         scope = base.where(survey_link_id: link.id)
-        segments << { id: "link_#{link.id}", label: "🔗 #{link.name}", scope: scope, count: scope.count }
+        segments << { id: "link_#{link.id}", label: "🔗 #{link.name} (#{link.slug})",
+                      slug: link.slug, scope: scope, count: scope.count }
       end
     end
 

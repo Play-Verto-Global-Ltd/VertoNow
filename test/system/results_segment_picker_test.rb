@@ -89,4 +89,22 @@ class ResultsSegmentPickerTest < ApplicationSystemTestCase
     assert_selector ".rh-segments summary .rh-picker-active", text: "Overall", wait: 5
     refute picker_open?, "Overall is 'I am done' — the panel would sit over the numbers just asked for"
   end
+
+  # A link's pill carries its address, because its name need not be unique —
+  # three untouched "New link"s is the ordinary case — and the address is what
+  # a creator can match against the poster. Found BY the address here for the
+  # same reason: Capybara's text: is a substring match, and a name is not
+  # unique.
+  test "a link pill names its address, and carries the whole of it as a tooltip" do
+    link = @survey.survey_links.create!(name: "New link", slug: SurveyLink.mint_slug(nil, fallback: "New link"))
+    open_results
+    find(".rh-segments summary").click
+
+    pill = find(".rh-segments-panel a.rh-seg", text: "(#{link.slug})")
+    assert_match %r{/play/#{link.slug}\z}, pill["title"]
+    pill.click
+
+    assert_current_path survey_results_path(@survey, segment: "link_#{link.id}"), wait: 5
+    assert_selector ".rh-segments summary .rh-picker-active", text: "🔗 New link (#{link.slug})", wait: 5
+  end
 end

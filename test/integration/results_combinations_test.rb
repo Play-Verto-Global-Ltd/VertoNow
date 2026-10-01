@@ -123,6 +123,16 @@ class ResultsCombinationsTest < ActionDispatch::IntegrationTest
       "a kind's emoji is said once per run"
   end
 
+  test "a link keeps its address in a combination label" do
+    a = @survey.survey_links.create!(name: "RA Ana", slug: "ra-ana-#{SecureRandom.hex(2)}")
+    b = @survey.survey_links.create!(name: "RA Ben", slug: "ra-ben-#{SecureRandom.hex(2)}")
+    add(MIN + 1, country: "AT", link: a)
+
+    assert_equal "🔗 RA Ana (#{a.slug}) · 🌍 Austria", active_for("link_#{a.id},region_AT")[:label]
+    assert_equal "🔗 RA Ana (#{a.slug}) or RA Ben (#{b.slug})", active_for("link_#{a.id},link_#{b.id}")[:label],
+      "the address stays with each alternative; only the kind's emoji is said once"
+  end
+
   # ── Small cells ────────────────────────────────────────────────────────────
 
   test "a combination of identity slices under the threshold is suppressed — count, rows and all" do
