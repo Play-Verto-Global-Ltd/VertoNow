@@ -638,47 +638,9 @@ class PlayerController < ApplicationController
 
     # Cached like #results: every finisher's score screen re-graded every
     # response per graded card per request; now the O(responses × graded)
-    # pass runs at most once per cache window.
-    payload = cached_aggregate(:scores) do
-      max    = QuizGrading.graded_indices(@survey.cards).size
-      graded = Array(@survey.cards).each_with_index.select { |card, _idx| QuizGrading.graded?(card) }
-
-      # Small-cell suppression (P1-14), as on #results. A per-question
-      # correct-rate over one other person is that person's answer sheet: "100%
-      # got Q3 right" with a total of 1 says exactly what they scored.
-      scored = @survey.responses.where(status: "completed").where.not(score: nil)
-      if scored.count < Response::MIN_REGION_SAMPLE_SIZE
-        { suppressed: true, total: scored.count, max: max,
-          average: 0.0, distribution: [], per_question: [] }
-      else
-        # One batched pass: score histogram, total/average, and per-question
-        # correct counts together — instead of loading every scored response
-        # into memory and re-scanning the set once per graded card.
-        dist        = Hash.new(0)
-        correct_by  = Hash.new(0)
-        total       = 0
-        score_sum   = 0
-        scored.select(:id, :score, :answers).find_each(batch_size: 500) do |r|
-          total     += 1
-          score_sum += r.score
-          dist[r.score] += 1
-          answers = r.answers || {}
-          graded.each do |card, idx|
-            correct_by[idx] += 1 if QuizGrading.correct?(card, answers[idx.to_s]&.dig("value"))
-          end
-        end
-        avg = total.positive? ? (score_sum.to_f / total).round(1) : 0.0
-
-        per_question = graded.map do |card, idx|
-          { index: idx, prompt: card["text"], correct: correct_by[idx],
-            pct: total.positive? ? (correct_by[idx] * 100.0 / total).round : 0 }
-        end
-
-        { total: total, max: max, average: avg,
-          distribution: (0..max).map { |s| { score: s, count: dist[s] } },
-          per_question: per_question }
-      end
-    end
+    # pass runs at most once per cache window. The payload itself is
+    # AggregatesSurveyResults#survey_scores_payload — /you reads the same entry.
+    payload = cached_aggregate(:scores) { survey_scores_payload(@survey) }
 
     render json: { ok: true }.merge(payload)
   end

@@ -349,6 +349,116 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # ── A quiz's score ────────────────────────────────────────────────────────
+  #
+  # On the end screen "How you compare" is asked of the Verto being a quiz and
+  # of nothing else — it was never behind show_results_comparison, which is
+  # about everyone's ANSWERS. The account's copy follows it.
+
+  QUIZ = [
+    { "type" => "welcome_card", "cid" => "w", "text" => "Hello" },
+    { "type" => "multiple_choice", "cid" => "a", "text" => "Capital of France?",
+      "options" => %w[Paris London], "correct" => "Paris" },
+    { "type" => "multiple_choice", "cid" => "b", "text" => "Capital of Spain?",
+      "options" => %w[Madrid Rome], "correct" => "Madrid" }
+  ].freeze
+
+  def scored(s, score)
+    s.responses.create!(session_token: SecureRandom.uuid, status: "completed", answered: true,
+                        completed_at: 1.day.ago, score: score, quiz_max: 2,
+                        answers: { "1" => { "type" => "multiple_choice", "value" => "Paris" } })
+  end
+
+  def quiz_verto(**attrs)
+    s = survey(cards: QUIZ, quiz: true, **attrs)
+    [ 0, 1, 1, 2, 2, 2 ].each { |n| scored(s, n) }
+    s
+  end
+
+  test "a quiz shows your score against everyone's, with your own bucket marked" do
+    s = quiz_verto
+    sign_in_with([ scored(s, 1) ])
+
+    get you_verto_path(s)
+
+    assert_response :success
+    assert_select "#score .you-h2", text: I18n.t("player.quiz_compare_title")
+    # 7 scored: one scored 0, so 1 of 7 is below a score of 1; mean is 9/7.
+    assert_select "#score .you-score-meta",
+                  text: I18n.t("js.player.quiz_compare_meta", score: 1, max: 2, beat: 14, avg: 1.3)
+    labels = css_select("#score .you-bar-row .you-bar-label").map { |n| n.text.strip }
+    assert_equal %w[0/2 1/2 2/2], labels
+    assert_equal [ "1/2" ], css_select("#score .you-bar-row.is-mine .you-bar-label").map { |n| n.text.strip }
+    assert_equal %w[14% 43% 43%], css_select("#score .you-bar-pct").map { |n| n.text.strip }
+  end
+
+  test "the score is there whether or not the creator opened the answers comparison" do
+    s = quiz_verto(show_results_comparison: false)
+    sign_in_with([ scored(s, 2) ])
+
+    get you_verto_path(s)
+
+    assert_select "#score .you-bar-row", 3
+    assert_select "#compare .you-sub", text: I18n.t("you.comparison_off", org: s.organisation.name),
+      msg: "the answers stay the creator's to open; the score was never theirs to close"
+  end
+
+  test "under the floor the score is refused, and says how many more it needs" do
+    s = survey(cards: QUIZ, quiz: true)
+    [ 0, 1, 2 ].each { |n| scored(s, n) }
+    mine = scored(s, 1)
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+
+    assert_select "#score .you-bar-row", 0
+    assert_select "#score .you-sub", text: I18n.t("you.comparison_too_few")
+    assert_select "#score .you-fine",
+                  text: I18n.t("you.compare_pending", needed: Response::MIN_REGION_SAMPLE_SIZE, have: 4)
+  end
+
+  test "a Verto that is not a quiz has no score card, and a run that was never graded has none" do
+    plain = survey
+    crowd(plain, 6)
+    sign_in_with([ answered(plain) ])
+    get you_verto_path(plain)
+    assert_select "#score", 0
+
+    q = quiz_verto
+    ungraded = q.responses.create!(session_token: SecureRandom.uuid, status: "completed",
+                                   answered: true, completed_at: 1.hour.ago, answers: {})
+    sign_in_with([ ungraded ])
+    get you_verto_path(q)
+    assert_select "#score", 0
+  end
+
+  test "the list offers a quiz's comparison even when the answers switch is off" do
+    s = quiz_verto(show_results_comparison: false)
+    sign_in_with([ scored(s, 2) ])
+
+    get you_path
+
+    assert_select ".you-cta-compare", 1
+    assert_select ".you-verto-note", text: I18n.t("you.compare_closed", org: s.organisation.name), count: 0
+  end
+
+  test "the account fills the player's score cache with what the player reads" do
+    s = quiz_verto
+    sign_in_with([ scored(s, 1) ])
+
+    stub_method(Rails, :cache, ActiveSupport::Cache::MemoryStore.new) do
+      get you_verto_path(s)
+      assert_response :success
+
+      get player_scores_path(s.publish_token)
+      body = JSON.parse(response.body)
+
+      assert_equal 7, body["total"]
+      assert_equal 2, body["per_question"].size, "the per-question rates the end screen draws"
+      assert_equal 3, body["distribution"].size
+    end
+  end
+
   # ── Whose Verto is it ─────────────────────────────────────────────────────
 
   test "a Verto this account has not kept is not found, whether or not it exists" do

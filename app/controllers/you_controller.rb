@@ -151,6 +151,7 @@ class YouController < ApplicationController
     @piles     = piles_for(@survey, @claims)
     @standing  = standing_for(@survey, @claims)
     @comparison = comparison_for(@survey, @answered)
+    @scores     = scores_for(@survey, @answered)
     @follow_ups = @survey.follow_up_surveys
   end
 
@@ -292,7 +293,10 @@ class YouController < ApplicationController
   # and a respondent has no way to tell them apart from the outside:
   #
   #   :closed  — show_results_comparison is the creator's switch and defaults
-  #              to false, so this is the commonest answer by a distance.
+  #              to false, so this is the commonest answer by a distance. A quiz
+  #              is never :closed: its score comparison was never behind that
+  #              switch on the end screen (PlayerController#scores asks only
+  #              whether it is a quiz), so there is always something to open.
   #   { have: } — under MIN_REGION_SAMPLE_SIZE. Deliberately says the floor and
   #              the count rather than "not enough yet": a respondent who can
   #              see it is 2 of 5 knows to come back, and one who is told
@@ -306,7 +310,7 @@ class YouController < ApplicationController
 
     surveys.each_with_object({}) do |survey, out|
       out[survey.id] =
-        if !survey.compare_results?
+        if !survey.compare_results? && !survey.quiz?
           :closed
         elsif answered[survey.id].to_i < Response::MIN_REGION_SAMPLE_SIZE
           { have: answered[survey.id].to_i }
@@ -500,6 +504,39 @@ class YouController < ApplicationController
 
     { state: :rows, total: payload[:total_responses],
       rows: ResultsComparison.rows(payload[:results], response.answers) }
+  end
+
+  # How they did, for a quiz — the account's copy of the end screen's "How you
+  # compare" (_renderScores in player_controller.js), off the same cached
+  # payload. Not behind show_results_comparison, for the same reason the end
+  # screen's isn't: that switch is about everyone's ANSWERS, and a score is the
+  # respondent's own result set against an anonymous histogram.
+  #
+  # nil when there is nothing to say (not a quiz, or this run was never
+  # graded). Otherwise one of two states:
+  #
+  #   :suppressed — under MIN_REGION_SAMPLE_SIZE scored responses, as #scores
+  #                 refuses it: a per-question correct-rate over one other
+  #                 person is that person's answer sheet.
+  #   :rows       — their score, the share of players they beat, the average,
+  #                 and the histogram with their own bucket marked.
+  def scores_for(survey, response)
+    return unless survey.quiz? && response.score
+
+    payload = cached_survey_aggregate(:scores, survey) { survey_scores_payload(survey) }
+    return { state: :suppressed, total: payload[:total] } if payload[:suppressed]
+
+    total        = payload[:total].to_i
+    mine         = response.score
+    distribution = Array(payload[:distribution])
+    below        = distribution.sum { |d| d[:score] < mine ? d[:count] : 0 }
+
+    { state: :rows, score: mine, max: payload[:max], total: total, average: payload[:average],
+      beat: total.positive? ? (below * 100.0 / total).round : 0,
+      bars: distribution.map do |d|
+        { label: I18n.t("js.player.quiz_score_bucket", score: d[:score], max: payload[:max]),
+          pct: total.positive? ? (d[:count] * 100.0 / total).round : 0, mine: d[:score] == mine }
+      end }
   end
 
   # A page listing what one person has answered must not be written to a

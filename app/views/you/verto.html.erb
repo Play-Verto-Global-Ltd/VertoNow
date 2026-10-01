@@ -21,6 +21,36 @@
       </div>
     </div>
 
+    <%# A quiz's score against everyone's. Above the answers because it is the
+        number they came for, and not behind the creator's comparison switch:
+        the end screen never put it there either (PlayerController#scores). %>
+    <% if @scores %>
+      <div class="you-card" id="score">
+        <h2 class="you-h2"><%= t("player.quiz_compare_title") %></h2>
+        <% if @scores[:state] == :suppressed %>
+          <p class="you-sub"><%= t("you.comparison_too_few") %></p>
+          <p class="you-fine">
+            <%= t("you.compare_pending", needed: Response::MIN_REGION_SAMPLE_SIZE,
+                  have: @scores[:total].to_i) %>
+          </p>
+        <% else %>
+          <p class="you-sub you-score-meta">
+            <%= t("js.player.quiz_compare_meta", score: @scores[:score], max: @scores[:max],
+                  beat: @scores[:beat], avg: @scores[:average]) %>
+          </p>
+          <% @scores[:bars].each do |bar| %>
+            <div class="you-bar-row<%= " is-mine" if bar[:mine] %>">
+              <div class="you-bar-label"><%= bar[:label] %></div>
+              <div class="you-bar-track">
+                <span class="you-bar-fill" style="width:<%= bar[:pct] %>%;"></span>
+              </div>
+              <div class="you-bar-pct"><%= bar[:pct] %>%</div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
     <div class="you-card" id="compare">
       <% case @comparison[:state] %>
       <% when :off %>
