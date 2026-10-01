@@ -7,22 +7,10 @@ st:
     heading: "Puo"
   layout:
     studio_tagline: "Verto Studio"
-  cookie_consent:
-    banner_text_html: "Re sebedisa dikuki ho tsamaisa sebaka sena mme, ha o dumela, ho utlwisisa kamoo se sebediswang kateng. Bona <a href=\"%{privacy_url}\">Leano la Rona la Lekunutu</a> le <a href=\"%{cookie_url}\">Leano la Dikuki</a>."
-    necessary_title: "Tsa Bohlokwa"
-    necessary_description: "Di hlokahala hore sebaka se sebetse — di dula di sebetsa."
-    analytics_title: "Tlhahlobo"
-    analytics_description: "Di re thusa ho utlwisisa kamoo sebaka se sebediswang kateng, ka Microsoft Clarity."
-    accept_all: "Amohela tsohle"
-    reject_all: "Hana tse sa hlokahaleng"
-    manage_preferences: "Laola dikgetho"
-    save_preferences: "Boloka dikgetho"
-    back: "Morao"
   legal:
     footer_privacy: "Leano la Lekunutu"
     footer_terms: "Melawana le Maemo"
     footer_cookie_policy: "Leano la Dikuki"
-    footer_cookie_settings: "Ditlhophiso tsa Dikuki"
     draft_notice: "Moralo — o emetse tlhahlobo ya molao. Leqephe lena ke moralo o ntseng o sebediswa mme ha o so qetellwe kapa ho netefatswa ke baeletsi ba molao."
     privacy_title: "Leano la Lekunutu"
     terms_title: "Melawana le Maemo"

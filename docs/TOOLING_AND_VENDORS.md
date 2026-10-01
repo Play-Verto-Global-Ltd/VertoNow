@@ -31,7 +31,7 @@ is live.
 | Uptime/status (free supplement) | P0-2, P1-3 | **Render notifications** (on) + **Better Stack** free status page | $0 | External |
 | Billing / subscriptions | CT-2, P0-4 | **Paddle** (Merchant of Record) via the **`pay`** gem | % of revenue | External |
 | Legal policies | P0-6 | **iubenda** (~$7/mo) or **Termly** ($14/mo) | ~$7–14/mo | External |
-| Cookie consent | P0-6 | **orestbida/cookieconsent** (open-source) — **now required, see below** | $0 | No |
+| Cookie consent | P0-6 | **Not needed** since Clarity was removed (2026-10-01) — only strictly necessary cookies remain; **orestbida/cookieconsent** (open-source) if a tracker ever comes back, see below | $0 | No |
 | GDPR export/erasure | P0-7 | **Build in Rails**, optionally on the **gdpr_admin** gem | $0 | No |
 | Rate limiting | P0-4 | Keep Rails 8 **`rate_limit`**; add **rack-attack** only if abused | $0 | No |
 
@@ -202,13 +202,14 @@ a launch requirement (plan P0-6/P0-7), not optional.
 
 **Concrete findings from the codebase that raise the stakes:**
 
-- ⚠️ **The app loads Microsoft Clarity** (session-recording analytics, tag
-  `wyq1mb82dv`) **unconditionally on every page**, including the public player where
-  respondents are — `app/views/layouts/_head.html.erb:10`. Clarity sets tracking
-  cookies and records sessions; under GDPR/ePrivacy this is **non-essential and
-  requires prior consent**. Today it fires before any consent → a real compliance
-  gap. **This means a cookie-consent banner is required, and Clarity must be gated
-  behind it** (or removed).
+- ✅ **Microsoft Clarity is gone** (removed 2026-10-01). It used to load
+  unconditionally on every page, including the public player where respondents
+  are (session-recording analytics, tag `wyq1mb82dv`); Clarity sets tracking
+  cookies and records sessions, which under GDPR/ePrivacy is **non-essential and
+  requires prior consent**. It was first gated behind a cookie-consent banner,
+  then removed along with the banner: with no non-essential cookies left there
+  was nothing to consent to. **Any future tracker brings the whole requirement
+  back** — prior consent, a banner to collect it, and its hosts in the CSP.
 - ⚠️ **Google Fonts are loaded from Google's CDN** (`fonts.googleapis.com` /
   `gstatic.com`, same file). German courts have ruled that serving Google Fonts from
   Google's servers (transmitting visitor IPs to Google) violates GDPR.
@@ -220,9 +221,10 @@ a launch requirement (plan P0-6/P0-7), not optional.
   legal text you shouldn't hand-roll.** **iubenda** (~$7/mo, EU-focused,
   auto-updating clauses) or **Termly** ($14/mo, bundles a cookie banner). Clear
   "pay for it."
-- **Cookie consent — free open-source.** Use **orestbida/cookieconsent**
-  (self-hosted, importmap/Tailwind-friendly) to gate Clarity (and any future
-  tracker) behind granular consent. **Do not** buy Cookiebot/Osano — a paid CMP
+- **Cookie consent — none needed today.** With Clarity gone the site sets only
+  strictly necessary cookies, which need no consent. If a tracker is ever added,
+  gate it behind **orestbida/cookieconsent** (self-hosted, importmap/Tailwind-
+  friendly) with granular consent. **Do not** buy Cookiebot/Osano — a paid CMP
   solves a problem you don't have at this scale. Clear "use free."
 - **Data-subject rights (export/erasure) — build in Rails**, optionally scaffolded
   by the **gdpr_admin** gem (async export/erasure + audit trail; you implement
@@ -265,7 +267,7 @@ open-source for everything else.**
 3. **Solid gems** on the existing Postgres; move AI to background jobs; set Solid
    Cache. → unblocks P0-3 and P0-5.
 4. **Postmark** (or Resend) for email. → supports P0-8.
-5. **Compliance:** self-host fonts, gate/remove Clarity behind
-   orestbida/cookieconsent, buy iubenda/Termly policies, build the Rails DSAR flow.
-   → unblocks P0-6/P0-7.
+5. **Compliance:** self-host fonts (done), remove Clarity (done 2026-10-01 —
+   no consent banner is needed while nothing non-essential is set), buy
+   iubenda/Termly policies, build the Rails DSAR flow. → unblocks P0-6/P0-7.
 6. **Billing (Paddle + `pay`)** once pricing/packaging is decided. → Commercial track.

@@ -18,12 +18,6 @@ class LegalPagesTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: I18n.t("legal.cookie_policy_title")
   end
 
-  test "the cookie policy page can reopen the cookie-consent banner" do
-    get cookie_policy_path
-    assert_response :success
-    assert_match "cookie-consent:reopen", response.body
-  end
-
   test "an unauthenticated page (sign-in) links to the legal pages" do
     get new_session_path
     assert_response :success
@@ -32,6 +26,9 @@ class LegalPagesTest < ActionDispatch::IntegrationTest
       assert_select "a[href=?]", privacy_path
       assert_select "a[href=?]", terms_path
       assert_select "a[href=?]", cookie_policy_path
+      # No "Cookie settings" any more: the site sets only strictly necessary
+      # cookies, so there is no choice to offer (NoThirdPartyTrackingTest).
+      assert_select "button", false
     end
   end
 

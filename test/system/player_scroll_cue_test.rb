@@ -95,10 +95,10 @@ class PlayerScrollCueTest < ApplicationSystemTestCase
     survey
   end
 
-  # The recorder goes in immediately after the visit and BEFORE the cookie
-  # banner is dealt with — dismiss_cookie_banner waits for every controller on
-  # the page to connect, which is roughly when the cue arms, so a recorder
-  # installed after it can miss the whole thing.
+  # The recorder goes in immediately after the visit and BEFORE
+  # dismiss_cookie_banner — that waits for every controller on the page to
+  # connect, which is roughly when the cue arms, so a recorder installed after
+  # it can miss the whole thing.
   def open_player(survey, width, height, consent: false)
     page.driver.browser.resize(width: width, height: height)
     visit "/play/#{survey.publish_token}"

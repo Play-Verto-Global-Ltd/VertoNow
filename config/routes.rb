@@ -174,8 +174,8 @@ Rails.application.routes.draw do
   # UI language switcher (works on public pages too)
   post "locale", to: "locales#update", as: :locale
 
-  # Legal pages (public, no auth) — linked from the cookie-consent banner and
-  # the footer on every unauthenticated page.
+  # Legal pages (public, no auth) — linked from the footer on every
+  # unauthenticated page.
   get "privacy",       to: "legal#privacy",       as: :privacy
   get "terms",         to: "legal#terms",         as: :terms
   get "cookie-policy", to: "legal#cookie_policy", as: :cookie_policy

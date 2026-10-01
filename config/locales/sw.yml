@@ -5,22 +5,10 @@ sw:
     heading: Lugha
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "Tunatumia vidakuzi (cookies) kuendesha tovuti hii na, ukikubali, kuelewa jinsi inavyotumika. Tazama <a href=\"%{privacy_url}\">Sera yetu ya Faragha</a> na <a href=\"%{cookie_url}\">Sera ya Vidakuzi</a>."
-    necessary_title: "Muhimu"
-    necessary_description: "Zinahitajika ili tovuti ifanye kazi — huwashwa daima."
-    analytics_title: "Uchambuzi"
-    analytics_description: "Zinatusaidia kuelewa jinsi tovuti inavyotumika, kupitia Microsoft Clarity."
-    accept_all: "Kubali zote"
-    reject_all: "Kataa zisizo za lazima"
-    manage_preferences: "Simamia mapendeleo"
-    save_preferences: "Hifadhi mapendeleo"
-    back: "Rudi"
   legal:
     footer_privacy: "Sera ya Faragha"
     footer_terms: "Vigezo na Masharti"
     footer_cookie_policy: "Sera ya Vidakuzi"
-    footer_cookie_settings: "Mipangilio ya vidakuzi"
     draft_notice: "Rasimu — inasubiri ukaguzi wa kisheria. Ukurasa huu ni rasimu ya kazi na bado haujakamilishwa au kuidhinishwa na washauri wa kisheria."
     privacy_title: "Sera ya Faragha"
     terms_title: "Vigezo na Masharti"

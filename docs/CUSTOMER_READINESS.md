@@ -134,9 +134,9 @@ ticket.
 ## CR-8 · Feedback & product analytics (MEDIUM — you can't improve what you can't see)
 
 - [ ] **Activation/retention funnel analytics** — instrument signup → first Verto →
-  publish → first response → return. (You already load Microsoft Clarity — but fix
-  the consent issue from P0-6 first, and consider a privacy-respecting product
-  analytics tool for funnel data.)
+  publish → first response → return. (Microsoft Clarity was removed 2026-10-01;
+  pick a privacy-respecting product analytics tool for funnel data, and note that
+  anything setting non-essential cookies brings back the consent banner from P0-6.)
 - [ ] **In-app feedback / feature requests** — a lightweight "give feedback" widget.
 - [ ] **NPS or satisfaction pulse** — dogfood your own product on your customers.
 

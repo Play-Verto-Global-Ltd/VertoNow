@@ -4,22 +4,10 @@ sn:
     heading: "Mutauro"
   layout:
     studio_tagline: "Verto Studio"
-  cookie_consent:
-    banner_text_html: "Tinoshandisa makuki kuti tichengetedze webhusaiti ino uye, kana mabvuma, kunzwisisa kuti inoshandiswa sei. Ona <a href=\"%{privacy_url}\">Mutemo Wezvakavanzika</a> uye <a href=\"%{cookie_url}\">Mutemo weMakuki</a> wedu."
-    necessary_title: "Zvinodikanwa"
-    necessary_description: "Zvinodikanwa kuti webhusaiti ishande — zvinogara zvakabatidzwa."
-    analytics_title: "Ongororo"
-    analytics_description: "Zvinotibatsira kunzwisisa kuti webhusaiti inoshandiswa sei, kuburikidza neMicrosoft Clarity."
-    accept_all: "Bvuma Zvose"
-    reject_all: "Ramba Zvisiri Zvinodikanwa"
-    manage_preferences: "Ronga Zvaunosarudza"
-    save_preferences: "Chengetedza Zvasarudzwa"
-    back: "Dzokera"
   legal:
     footer_privacy: "Mutemo Wezvakavanzika"
     footer_terms: "Mitemo Nezvibvumirano"
     footer_cookie_policy: "Mutemo weMakuki"
-    footer_cookie_settings: "Zvirongwa zveMakuki"
     draft_notice: "Dhirafiti — ichiri kumirira kuongororwa nemutemo. Peji rino ndiro basa riri kuchiri kuitwa uye harisati rapedzwa kana kubvumirwa nevanozivi vemutemo."
     privacy_title: "Mutemo Wezvakavanzika"
     terms_title: "Mitemo Nezvibvumirano"

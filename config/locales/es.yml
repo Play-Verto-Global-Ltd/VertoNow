@@ -5,22 +5,10 @@ es:
     heading: Idioma
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "Utilizamos cookies para que este sitio funcione y, si lo aceptas, para entender cómo se usa. Consulta nuestra <a href=\"%{privacy_url}\">Política de privacidad</a> y nuestra <a href=\"%{cookie_url}\">Política de cookies</a>."
-    necessary_title: "Necesarias"
-    necessary_description: "Necesarias para que el sitio funcione — siempre activas."
-    analytics_title: "Analíticas"
-    analytics_description: "Nos ayudan a entender cómo se usa el sitio, mediante Microsoft Clarity."
-    accept_all: "Aceptar todo"
-    reject_all: "Rechazar no esenciales"
-    manage_preferences: "Gestionar preferencias"
-    save_preferences: "Guardar preferencias"
-    back: "Atrás"
   legal:
     footer_privacy: "Política de privacidad"
     footer_terms: "Términos y condiciones"
     footer_cookie_policy: "Política de cookies"
-    footer_cookie_settings: "Configuración de cookies"
     draft_notice: "Borrador — pendiente de revisión legal. Esta página es un borrador de trabajo y aún no ha sido finalizada ni aprobada por asesoría legal."
     privacy_title: "Política de privacidad"
     terms_title: "Términos y condiciones"

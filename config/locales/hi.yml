@@ -5,22 +5,10 @@ hi:
     heading: भाषा
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "हम इस साइट को चलाने के लिए कुकीज़ का उपयोग करते हैं, और यदि आप सहमत हों, तो यह समझने के लिए कि इसका उपयोग कैसे किया जाता है। हमारी <a href=\"%{privacy_url}\">गोपनीयता नीति</a> और <a href=\"%{cookie_url}\">कुकी नीति</a> देखें।"
-    necessary_title: "आवश्यक"
-    necessary_description: "साइट के काम करने के लिए ज़रूरी — हमेशा चालू।"
-    analytics_title: "एनालिटिक्स"
-    analytics_description: "Microsoft Clarity के माध्यम से यह समझने में हमारी मदद करता है कि साइट का उपयोग कैसे किया जाता है।"
-    accept_all: "सभी स्वीकार करें"
-    reject_all: "गैर-ज़रूरी अस्वीकार करें"
-    manage_preferences: "प्राथमिकताएं प्रबंधित करें"
-    save_preferences: "प्राथमिकताएं सहेजें"
-    back: "वापस"
   legal:
     footer_privacy: "गोपनीयता नीति"
     footer_terms: "नियम व शर्तें"
     footer_cookie_policy: "कुकी नीति"
-    footer_cookie_settings: "कुकी सेटिंग्स"
     draft_notice: "मसौदा — कानूनी समीक्षा लंबित। यह पृष्ठ एक कार्यशील मसौदा है और अभी तक कानूनी सलाहकार द्वारा अंतिम रूप या अनुमोदित नहीं किया गया है।"
     privacy_title: "गोपनीयता नीति"
     terms_title: "नियम व शर्तें"

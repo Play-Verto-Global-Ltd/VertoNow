@@ -5,22 +5,10 @@ ar:
     heading: اللغة
   layout:
     studio_tagline: استوديو فيرتو
-  cookie_consent:
-    banner_text_html: "نستخدم ملفات تعريف الارتباط (كوكيز) لتشغيل هذا الموقع، وإذا وافقت، لفهم كيفية استخدامه. راجع <a href=\"%{privacy_url}\">سياسة الخصوصية</a> و<a href=\"%{cookie_url}\">سياسة ملفات تعريف الارتباط</a> الخاصة بنا."
-    necessary_title: "ضرورية"
-    necessary_description: "ضرورية لعمل الموقع — مفعّلة دائمًا."
-    analytics_title: "تحليلات"
-    analytics_description: "تساعدنا على فهم كيفية استخدام الموقع، عبر Microsoft Clarity."
-    accept_all: "قبول الكل"
-    reject_all: "رفض غير الضروري"
-    manage_preferences: "إدارة التفضيلات"
-    save_preferences: "حفظ التفضيلات"
-    back: "رجوع"
   legal:
     footer_privacy: "سياسة الخصوصية"
     footer_terms: "الشروط والأحكام"
     footer_cookie_policy: "سياسة ملفات تعريف الارتباط"
-    footer_cookie_settings: "إعدادات ملفات تعريف الارتباط"
     draft_notice: "مسودة — قيد المراجعة القانونية. هذه الصفحة مسودة عمل ولم تُعتمد بعد من المستشار القانوني."
     privacy_title: "سياسة الخصوصية"
     terms_title: "الشروط والأحكام"

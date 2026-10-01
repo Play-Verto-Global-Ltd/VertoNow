@@ -3,20 +3,15 @@ require "application_system_test_case"
 # The results page's Ask Verto chat, which stopped being a permanent 320px
 # column and became a floating pill that opens a panel OVER the feed.
 #
-# Three of the four assertions here exist because nothing else in the suite
+# Two of the three assertions here exist because nothing else in the suite
 # can see them: the panel is positioned (absolute inside the stage below the
-# header, so it holds still while the feed scrolls), it is hidden in a way that also takes it out of the tab order
-# rather than merely moving it off screen, and the pill has to be clickable on
-# a phone — where the consent banner is full width and lands exactly on it.
-# The fourth is the guard for the change before it: the global nav is gone
-# from this page, and only @hide_main_nav keeps it gone.
+# header, so it holds still while the feed scrolls), and it is hidden in a way
+# that also takes it out of the tab order rather than merely moving it off
+# screen. The third is the guard for the change before it: the global nav is
+# gone from this page, and only @hide_main_nav keeps it gone. (A fourth — the
+# pill staying clickable on a phone with the cookie-consent banner covering
+# it — went with the banner, 2026-10-01.)
 class ResultsAskPanelTest < ApplicationSystemTestCase
-  # The real banner, not the preset cookie: the phone case below is ABOUT the
-  # banner being on screen, and a class attribute is the suite's own way in.
-  # The three desktop tests pay one Accept-all click each for it, which is
-  # what dismiss_cookie_banner does in this mode anyway.
-  self.real_cookie_banner = true
-
   def setup
     super
     @org  = Organisation.create!(name: "O", slug: "ask-#{SecureRandom.hex(3)}")
@@ -120,26 +115,6 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
     assert close_with_escape, "PANEL STILL OPEN — #{escape_diagnostics}"
     assert evaluate_script("document.activeElement.classList.contains('results-ask-fab')"),
       "focus was left on the page instead of the pill that opened the panel"
-  end
-
-  # The consent banner's panel is centred with a 560px cap, so it clears the
-  # pill on a desktop and covers it on a phone. The pill docks to the top
-  # while the banner is up for exactly this reason; without that rule this
-  # click fails with the banner intercepting it.
-  test "the pill is clickable on a phone with the consent banner still up" do
-    resize_to(390, 844) do
-      sign_in_as(@user)
-      visit survey_results_path(@survey)
-      assert_selector ".cookie-consent-banner", wait: 5
-      assert_selector ".results-ask-fab"
-      # This is the one test here that keeps the banner, so it never calls
-      # dismiss_cookie_banner and never inherits its wait. The pill is
-      # server-rendered; the controller that makes it do anything is not.
-      wait_for_stimulus
-
-      find(".results-ask-fab").click
-      assert_selector "#results-ask-panel", visible: true
-    end
   end
 
   private

@@ -5,22 +5,10 @@ xh:
     heading: "Ulwimi"
   layout:
     studio_tagline: "Verto Studio"
-  cookie_consent:
-    banner_text_html: "Sisebenzisa ii-cookie ukuqhuba le webhusayithi kwaye, ukuba uyavuma, ukuqonda indlela esetyenziswa ngayo. Bona <a href=\"%{privacy_url}\">uMgaqo-nkqubo weThu woBumfihlo</a> kunye <a href=\"%{cookie_url}\">noMgaqo-nkqubo weeCookie</a>."
-    necessary_title: "Ezibalulekileyo"
-    necessary_description: "Ziyimfuneko ukuze le webhusayithi isebenze — zihlala zivuliwe."
-    analytics_title: "Uhlalutyo"
-    analytics_description: "Zisinceda siqonde indlela le webhusayithi esetyenziswa ngayo, ngeMicrosoft Clarity."
-    accept_all: "Yamkela zonke"
-    reject_all: "Yala ezingabalulekanga"
-    manage_preferences: "Lawula ukhetho"
-    save_preferences: "Gcina ukhetho"
-    back: "Emva"
   legal:
     footer_privacy: "UMgaqo-nkqubo woBumfihlo"
     footer_terms: "Imigaqo neMiqathango"
     footer_cookie_policy: "UMgaqo-nkqubo weeCookie"
-    footer_cookie_settings: "Useto lweeCookie"
     draft_notice: "Uyilo — kulindwe uhlolo lwezomthetho. Eli phepha luluyilo oluqhubekayo kwaye alukagqitywa okanye lungavunywanga ngabameli bezomthetho."
     privacy_title: "UMgaqo-nkqubo woBumfihlo"
     terms_title: "Imigaqo neMiqathango"

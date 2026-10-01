@@ -19,13 +19,6 @@
 <%= csrf_meta_tags %>
 <%= csp_meta_tag %>
 
-<%# Microsoft Clarity analytics — NOT loaded here. It's non-essential
-    (session-replay) analytics, so it must not run before the visitor has
-    given cookie consent. cookie_consent_controller.js injects this same tag
-    itself, only once the Analytics category is accepted (or was already
-    accepted on a prior visit). See app/javascript/controllers/
-    cookie_consent_controller.js and app/views/shared/_cookie_consent_banner. %>
-
 <%= yield :head %>
 
 <%# @pwa_manifest_url (PlayerController#show) swaps in the per-Verto

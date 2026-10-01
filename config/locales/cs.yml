@@ -6,22 +6,10 @@ cs:
     heading: "Jazyk"
   layout:
     studio_tagline: "Verto Studio"
-  cookie_consent:
-    banner_text_html: "Používáme soubory cookie, aby tento web fungoval, a pokud souhlasíte, i k pochopení toho, jak se používá. Přečtěte si naše <a href=\"%{privacy_url}\">Zásady ochrany osobních údajů</a> a <a href=\"%{cookie_url}\">Zásady používání souborů cookie</a>."
-    necessary_title: "Nezbytné"
-    necessary_description: "Nutné pro fungování webu – vždy zapnuté."
-    analytics_title: "Analytické"
-    analytics_description: "Pomáhají nám pochopit, jak se web používá, prostřednictvím Microsoft Clarity."
-    accept_all: "Přijmout vše"
-    reject_all: "Odmítnout nepovinné"
-    manage_preferences: "Spravovat předvolby"
-    save_preferences: "Uložit předvolby"
-    back: "Zpět"
   legal:
     footer_privacy: "Zásady ochrany osobních údajů"
     footer_terms: "Obchodní podmínky"
     footer_cookie_policy: "Zásady používání souborů cookie"
-    footer_cookie_settings: "Nastavení souborů cookie"
     draft_notice: "Koncept – čeká na právní posouzení. Tato stránka je pracovní koncept a dosud nebyla dokončena ani schválena právním poradcem."
     privacy_title: "Zásady ochrany osobních údajů"
     terms_title: "Obchodní podmínky"

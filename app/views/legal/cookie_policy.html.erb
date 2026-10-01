@@ -9,38 +9,24 @@
   <h2>What are cookies</h2>
   <p>
     Cookies are small text files a website stores in your browser. We use them
-    to run the site and, only if you agree, to understand how it's used.
+    only to run the site.
   </p>
 
-  <h2>Your choice</h2>
+  <h2>No analytics or tracking cookies</h2>
   <p>
-    A banner asks you to accept, reject, or choose which of the categories
-    below to allow the first time you visit. You can change your choice at
-    any time:
-  </p>
-  <p>
-    <button type="button" class="cookie-consent-btn-primary"
-            onclick="window.dispatchEvent(new CustomEvent('cookie-consent:reopen'))">
-      <%= t("legal.footer_cookie_settings") %>
-    </button>
+    We don't use analytics, advertising, or session-recording cookies, and no
+    third party sets cookies through this site. Every cookie we set is strictly
+    necessary for the site to work, so there is nothing to opt in to or out of
+    — which is why you won't see a cookie banner.
   </p>
 
   <h2>Necessary cookies — always on</h2>
-  <p><%= t("cookie_consent.necessary_description") %> These can't be switched off because the site can't function without them:</p>
+  <p>These can't be switched off because the site can't function without them:</p>
   <ul>
     <li><code>session_id</code> — keeps you signed in (creator accounts).</li>
+    <li><code>player_session_id</code> — keeps you signed in to your respondent account, if you create one.</li>
     <li><code>locale</code> — remembers your chosen UI language.</li>
-    <li><code>verto_cookie_consent</code> — remembers the choice you make on this page.</li>
-  </ul>
-
-  <h2>Analytics cookies — opt-in</h2>
-  <p><%= t("cookie_consent.analytics_description") %></p>
-  <ul>
-    <li>
-      <strong>Microsoft Clarity</strong> — session-replay and heatmap analytics. May
-      collect your IP address, browser/OS version, and pages visited. Only loaded
-      once you accept this category.
-    </li>
+    <li><code>language_check_name_…</code> — on a shared translation-review link, remembers the name you chose to give (for 90 days, and only if you gave one).</li>
   </ul>
 
   <h2>Questions</h2>

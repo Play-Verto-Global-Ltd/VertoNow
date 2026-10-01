@@ -5,22 +5,10 @@ ja:
     heading: 言語
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "本サイトの運営、および同意いただいた場合は利用状況の把握のためにクッキーを使用しています。詳しくは<a href=\"%{privacy_url}\">プライバシーポリシー</a>および<a href=\"%{cookie_url}\">クッキーポリシー</a>をご覧ください。"
-    necessary_title: "必須"
-    necessary_description: "サイトの動作に必要です — 常にオンです。"
-    analytics_title: "アナリティクス"
-    analytics_description: "Microsoft Clarityを使用して、サイトの利用状況を把握するのに役立ちます。"
-    accept_all: "すべて同意"
-    reject_all: "必須以外を拒否"
-    manage_preferences: "設定を管理"
-    save_preferences: "設定を保存"
-    back: "戻る"
   legal:
     footer_privacy: "プライバシーポリシー"
     footer_terms: "利用規約"
     footer_cookie_policy: "クッキーポリシー"
-    footer_cookie_settings: "クッキー設定"
     draft_notice: "下書き — 法務レビュー待ち。このページは作業中の下書きであり、まだ法務担当者による最終確認・承認を受けていません。"
     privacy_title: "プライバシーポリシー"
     terms_title: "利用規約"

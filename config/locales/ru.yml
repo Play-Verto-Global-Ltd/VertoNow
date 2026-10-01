@@ -5,22 +5,10 @@ ru:
     heading: Язык
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "Мы используем файлы cookie для работы сайта и, если вы согласны, для понимания того, как он используется. См. нашу <a href=\"%{privacy_url}\">Политику конфиденциальности</a> и <a href=\"%{cookie_url}\">Политику использования файлов cookie</a>."
-    necessary_title: "Необходимые"
-    necessary_description: "Необходимы для работы сайта — всегда включены."
-    analytics_title: "Аналитика"
-    analytics_description: "Помогают нам понять, как используется сайт, с помощью Microsoft Clarity."
-    accept_all: "Принять все"
-    reject_all: "Отклонить необязательные"
-    manage_preferences: "Настроить предпочтения"
-    save_preferences: "Сохранить настройки"
-    back: "Назад"
   legal:
     footer_privacy: "Политика конфиденциальности"
     footer_terms: "Условия использования"
     footer_cookie_policy: "Политика использования файлов cookie"
-    footer_cookie_settings: "Настройки файлов cookie"
     draft_notice: "Черновик — ожидает юридической проверки. Эта страница является рабочим черновиком и ещё не утверждена и не одобрена юридическим отделом."
     privacy_title: "Политика конфиденциальности"
     terms_title: "Условия использования"

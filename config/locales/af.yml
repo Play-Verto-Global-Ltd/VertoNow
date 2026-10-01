@@ -6,22 +6,10 @@ af:
     heading: "Taal"
   layout:
     studio_tagline: "Verto Studio"
-  cookie_consent:
-    banner_text_html: "Ons gebruik koekies om hierdie webwerf te laat werk en, as jy instem, om te verstaan hoe dit gebruik word. Sien ons <a href=\"%{privacy_url}\">Privaatheidsbeleid</a> en <a href=\"%{cookie_url}\">Koekiebeleid</a>."
-    necessary_title: "Noodsaaklik"
-    necessary_description: "Nodig sodat die werf kan werk — altyd aan."
-    analytics_title: "Analise"
-    analytics_description: "Help ons verstaan hoe die werf gebruik word, via Microsoft Clarity."
-    accept_all: "Aanvaar alles"
-    reject_all: "Verwerp nie-noodsaaklike"
-    manage_preferences: "Bestuur voorkeure"
-    save_preferences: "Stoor voorkeure"
-    back: "Terug"
   legal:
     footer_privacy: "Privaatheidsbeleid"
     footer_terms: "Bepalings & Voorwaardes"
     footer_cookie_policy: "Koekiebeleid"
-    footer_cookie_settings: "Koekie-instellings"
     draft_notice: "Konsep — wag op regsoorsig. Hierdie bladsy is 'n werkskonsep en is nog nie deur regsadviseurs afgehandel of goedgekeur nie."
     privacy_title: "Privaatheidsbeleid"
     terms_title: "Bepalings & Voorwaardes"

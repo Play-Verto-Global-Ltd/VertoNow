@@ -5,22 +5,10 @@ zu:
     heading: "Ulimi"
   layout:
     studio_tagline: "Verto Studio"
-  cookie_consent:
-    banner_text_html: "Sisebenzisa amakhukhi ukuqhuba le sayithi futhi, uma uvuma, ukuqonda ukuthi isetshenziswa kanjani. Bheka <a href=\"%{privacy_url}\">Inqubomgomo Yethu Yobumfihlo</a> ne-<a href=\"%{cookie_url}\">Nqubomgomo Yamakhukhi</a>."
-    necessary_title: "Okudingekayo"
-    necessary_description: "Kudingekela ukuthi isayithi isebenze — kuhlala kuvuliwe."
-    analytics_title: "Ukuhlaziya"
-    analytics_description: "Kusisiza ukuqonda ukuthi isayithi isetshenziswa kanjani, ngokusebenzisa i-Microsoft Clarity."
-    accept_all: "Yamukela konke"
-    reject_all: "Yenqaba okungabalulekile"
-    manage_preferences: "Phatha okuthandwayo"
-    save_preferences: "Londoloza okuthandwayo"
-    back: "Emuva"
   legal:
     footer_privacy: "Inqubomgomo Yobumfihlo"
     footer_terms: "Imigomo Nemibandela"
     footer_cookie_policy: "Inqubomgomo Yamakhukhi"
-    footer_cookie_settings: "Izilungiselelo zamakhukhi"
     draft_notice: "Uhlaka — kulindwe ukubuyekezwa ngokomthetho. Leli khasi liwuhlaka lomsebenzi futhi alikagcinwa noma ligunyazwa ngabameli bomthetho."
     privacy_title: "Inqubomgomo Yobumfihlo"
     terms_title: "Imigomo Nemibandela"

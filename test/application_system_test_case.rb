@@ -95,8 +95,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       # flake here doesn't just annoy, it stops a ship.
       #
       # Blocked by "isn't the local server" rather than by naming hosts, so the
-      # next fixture reaching for a CDN can't reintroduce it — and it covers
-      # Clarity, which dismiss_cookie_banner activates by clicking Accept all.
+      # next fixture reaching for a CDN can't reintroduce it.
       # file:// is untouched by the pattern; the one-pager embed tests need it.
       # A blocked request fails instantly, which is what a fake URL should do:
       # these assertions are about the DOM carrying the right image, never about
@@ -144,19 +143,6 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     path.write(html)
     path
   end
-
-  # The cookie banner overlays the bottom of every page and swallows clicks
-  # aimed at anything under it, so every test used to click Accept all — a
-  # lazy module import plus a click on every page, and the full 2s wait
-  # wherever the banner was absent: about 330 executions a run. The cookie the
-  # banner's controller reads (cookie_consent_controller.js) is preset instead,
-  # before the first visit, in the same shape Accept all would write minus the
-  # analytics opt-in. A test OF the banner opts out with
-  # `self.real_cookie_banner = true` and gets the real thing.
-  class_attribute :real_cookie_banner, default: false
-
-  CONSENT_COOKIE_NAME  = "verto_cookie_consent"
-  CONSENT_COOKIE_VALUE = ERB::Util.url_encode({ necessary: true, analytics: false }.to_json).freeze
 
   def before_setup
     @started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -328,24 +314,6 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   def setup
     super
     page.driver.clear_memory_cache if page.driver.respond_to?(:clear_memory_cache)
-    # Set it, or REMOVE it — never neither. The opt-out used to only skip the
-    # set and rely on Capybara's between-test session reset to have cleared
-    # what the previous test left, which is an ordering assumption rather than
-    # a guarantee: a banner test that lands after a preset one in the same
-    # browser sees the preset cookie, finds no banner to click, and fails
-    # saying so. Measured 2026-09-13 — the diagnostics CookieBannerTest carries
-    # for exactly this caught the cookie ({"necessary":true,"analytics":false},
-    # the preset's own shape) on the page that should have had none. Removing
-    # it here makes the opt-out true by itself, whatever ran before.
-    # clear_cookies rather than remove_cookie: the latter demands a :domain or
-    # :url, and setup runs before this test has set anything of its own (the
-    # session cookie is minted later, by sign_in_as), so there is nothing here
-    # worth keeping.
-    if real_cookie_banner
-      page.driver.clear_cookies
-    else
-      page.driver.set_cookie(CONSENT_COOKIE_NAME, CONSENT_COOKIE_VALUE, path: "/")
-    end
   end
 
   # Sign in by minting exactly what a successful form login leaves behind
@@ -371,24 +339,16 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     assert_no_current_path new_session_path, wait: 5
   end
 
-  # With the consent cookie preset (see setup) there is no banner to dismiss —
-  # but the Accept-all click was, by accident, the wait every test relied on:
-  # the banner only shows once ITS controller connects, so by the time the
-  # click landed the page's module graph had loaded. Keep that wait, and make
-  # it explicit: every controller named on the page, connected. It costs the
-  # real load time and nothing more. A test that opted into the real banner
-  # still clicks it — AND then waits, because the accident it inherited is
-  # weaker than it looks: the Accept-all click proves the COOKIE-CONSENT
-  # controller has connected and nothing else. Every other controller on the
-  # page is still racing importmap, so a real-banner test that reaches for a
-  # Stimulus-driven control next is making exactly the bet this method was
-  # written to stop making. ResultsAskPanelTest is the first test to take it
-  # (real banner, then a click on the Ask pill), and it flaked in CI within
-  # half an hour of being written. Both paths now end the same way: every
-  # controller named on the page, connected. Kept under this name so the ~160
-  # call sites read as they always did.
+  # There is no cookie banner any more: Microsoft Clarity left the platform on
+  # 2026-10-01 and took with it the consent banner whose only job was gating
+  # it — the cookies left (session, locale) are strictly necessary and need no
+  # consent. But the Accept-all click every test used to make was, by
+  # accident, the wait every test relied on: the banner only showed once ITS
+  # controller connected, so by the time the click landed the page's module
+  # graph had loaded. That wait is what this is now — every controller named
+  # on the page, connected — and it costs the real load time and nothing
+  # more. Kept under this name so the ~200 call sites read as they always did.
   def dismiss_cookie_banner
-    click_button "Accept all" if real_cookie_banner && has_button?("Accept all", wait: 2)
     wait_for_stimulus
   end
 

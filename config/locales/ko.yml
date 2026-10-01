@@ -5,22 +5,10 @@ ko:
     heading: 언어
   layout:
     studio_tagline: Verto 스튜디오
-  cookie_consent:
-    banner_text_html: "이 사이트를 운영하고, 동의하실 경우 사용 방식을 파악하기 위해 쿠키를 사용합니다. 자세한 내용은 <a href=\"%{privacy_url}\">개인정보 처리방침</a> 및 <a href=\"%{cookie_url}\">쿠키 정책</a>을 참고하세요."
-    necessary_title: "필수"
-    necessary_description: "사이트 작동에 필요합니다 — 항상 켜져 있습니다."
-    analytics_title: "분석"
-    analytics_description: "Microsoft Clarity를 통해 사이트 사용 방식을 파악하는 데 도움이 됩니다."
-    accept_all: "모두 동의"
-    reject_all: "필수 외 거부"
-    manage_preferences: "환경설정 관리"
-    save_preferences: "환경설정 저장"
-    back: "뒤로"
   legal:
     footer_privacy: "개인정보 처리방침"
     footer_terms: "이용약관"
     footer_cookie_policy: "쿠키 정책"
-    footer_cookie_settings: "쿠키 설정"
     draft_notice: "초안 — 법률 검토 대기 중. 이 페이지는 작업용 초안이며 아직 법률 자문을 통해 최종 확정되거나 승인되지 않았습니다."
     privacy_title: "개인정보 처리방침"
     terms_title: "이용약관"

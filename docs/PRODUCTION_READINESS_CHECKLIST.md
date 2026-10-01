@@ -61,8 +61,8 @@ CR-x items live in `CUSTOMER_READINESS.md`._
 ### P0-6 · Legal + consent baseline
 - [ ] Buy policy generation — **iubenda** (~$7/mo) or **Termly** ($14/mo); add `/terms` + `/privacy` routes/pages
 - [ ] Persistent footer with Terms/Privacy links across **app AND player** layouts
-- [ ] **Gate Microsoft Clarity behind consent** (`_head.html.erb:10` — currently fires before consent) or remove it
-- [ ] Add cookie-consent banner — **orestbida/cookieconsent** (free, self-hosted)
+- [x] ~~**Gate Microsoft Clarity behind consent** or remove it~~ — **removed** (2026-10-01): Clarity is gone from the platform, and so is the cookie-consent banner that existed to gate it
+- [x] ~~Add cookie-consent banner~~ — shipped, then retired with Clarity: only strictly necessary cookies remain, which need no consent. Reinstate (**orestbida/cookieconsent**, free, self-hosted) before any tracker is added
 - [ ] **Self-host Google Fonts** (stop loading from `fonts.googleapis.com`/`gstatic.com` — EU GDPR issue)
 - [ ] **Enforce** a baseline consent + privacy-link gate on any Verto collecting demographic/PII data (`survey.rb:241` makes it optional today)
 

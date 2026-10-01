@@ -5,22 +5,10 @@ vi:
     heading: Ngôn ngữ
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "Chúng tôi sử dụng cookie để vận hành trang web này và, nếu bạn đồng ý, để hiểu cách trang web được sử dụng. Xem <a href=\"%{privacy_url}\">Chính sách quyền riêng tư</a> và <a href=\"%{cookie_url}\">Chính sách cookie</a> của chúng tôi."
-    necessary_title: "Cần thiết"
-    necessary_description: "Cần thiết để trang web hoạt động — luôn bật."
-    analytics_title: "Phân tích"
-    analytics_description: "Giúp chúng tôi hiểu cách trang web được sử dụng, thông qua Microsoft Clarity."
-    accept_all: "Chấp nhận tất cả"
-    reject_all: "Từ chối mục không cần thiết"
-    manage_preferences: "Quản lý tùy chọn"
-    save_preferences: "Lưu tùy chọn"
-    back: "Quay lại"
   legal:
     footer_privacy: "Chính sách quyền riêng tư"
     footer_terms: "Điều khoản & Điều kiện"
     footer_cookie_policy: "Chính sách cookie"
-    footer_cookie_settings: "Cài đặt cookie"
     draft_notice: "Bản nháp — đang chờ xem xét pháp lý. Trang này là bản nháp đang thực hiện và chưa được bộ phận pháp lý hoàn thiện hoặc phê duyệt."
     privacy_title: "Chính sách quyền riêng tư"
     terms_title: "Điều khoản & Điều kiện"

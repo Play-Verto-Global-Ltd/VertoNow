@@ -827,7 +827,6 @@ module ApplicationHelper
     controllers/location_search_controller
     controllers/other_controller
     controllers/locale_switcher_controller
-    controllers/cookie_consent_controller
     controllers/bg_image_healer_controller
     controllers/autoplay_video_controller
     controllers/lottie_player_controller

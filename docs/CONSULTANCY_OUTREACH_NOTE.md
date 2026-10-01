@@ -65,7 +65,7 @@ MattersGraph and it works there too.
   that out. NASVI is on the page as a reach story — two languages, mobile-first,
   low literacy, live dashboard — all of which stands up.
 - **Two things need you before this goes out:** enable a Test Mode link for the
-  demo Verto (`/test/:token` records nothing and skips the cookie banner —
+  demo Verto (`/test/:token` records nothing —
   right now the page points at the live `/play/` link, so anyone trying it
   meets a consent gate and lands in the real results), and confirm whether the
   Chilean mining-foundation programme can be named. It's the closest thing we

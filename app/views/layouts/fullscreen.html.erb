@@ -39,20 +39,11 @@
       <% end %>
       <%= yield %>
       <%# Same non-player, non-chromeless gate as the locale switcher above —
-          the player's own consent gate / cookie banner is enough there; a
-          second links footer would clutter its full-viewport experience. %>
+          the player's own consent gate is enough there; a second links footer
+          would clutter its full-viewport experience. %>
       <% unless controller_name == "player" || @chromeless %>
         <%= render "shared/legal_footer" %>
       <% end %>
-    <% end %>
-
-    <%# Test Mode (/test/:token) records nothing and never activates analytics —
-        the banner's whole job is gating Clarity, and there is no Clarity here to
-        gate. It's also the link that gets embedded (e.g. public/vertonow.html),
-        where a banner inside the frame just intercepts the first tap. Every
-        other page, the live player included, still shows it. %>
-    <% unless @test_mode %>
-      <%= render "shared/cookie_consent_banner" %>
     <% end %>
   </body>
 </html>

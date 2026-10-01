@@ -296,9 +296,11 @@ The switch itself (dashboard, `render.yaml`) is in `docs/DEPLOYMENT_RUNBOOK.md`
   keep it that way — `agree_to_consent_gate` (reads the server-rendered gate,
   never waits for a button that isn't coming; `SystemTestHygieneTest` bans the
   old three-second guard), `sign_in_as` (mints the session cookie; the form
-  has its own test), `dismiss_cookie_banner` (the cookie is preset; the call
-  now waits for the page's Stimulus controllers to connect, which the
-  Accept-all click used to do by accident), `wait_until` for a server-side
+  has its own test), `dismiss_cookie_banner` (there is no banner any more —
+  Microsoft Clarity and the consent banner that gated it left 2026-10-01 —
+  but the call waits for the page's Stimulus controllers to connect, which
+  the Accept-all click used to do by accident, and ~200 call sites keep the
+  name), `wait_until` for a server-side
   state, `settle_box` before reading geometry. A fixed `sleep` is for proving
   nothing happens; for anything that does happen, wait for it.
 - The PDF renders (report + share card) exec wkhtmltopdf from the

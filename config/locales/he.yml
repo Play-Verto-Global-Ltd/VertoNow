@@ -5,22 +5,10 @@ he:
     heading: שפה
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "אנו משתמשים בעוגיות (cookies) כדי להפעיל אתר זה, ואם תאשרו, גם כדי להבין כיצד הוא בשימוש. ראו את <a href=\"%{privacy_url}\">מדיניות הפרטיות</a> ואת <a href=\"%{cookie_url}\">מדיניות העוגיות</a> שלנו."
-    necessary_title: "הכרחיות"
-    necessary_description: "נחוצות לתפקוד האתר — פעילות תמיד."
-    analytics_title: "אנליטיקה"
-    analytics_description: "עוזרות לנו להבין כיצד האתר בשימוש, באמצעות Microsoft Clarity."
-    accept_all: "קבל הכול"
-    reject_all: "דחה לא־הכרחיות"
-    manage_preferences: "ניהול העדפות"
-    save_preferences: "שמירת העדפות"
-    back: "חזרה"
   legal:
     footer_privacy: "מדיניות פרטיות"
     footer_terms: "תנאים והגבלות"
     footer_cookie_policy: "מדיניות עוגיות"
-    footer_cookie_settings: "הגדרות עוגיות"
     draft_notice: "טיוטה — ממתינה לבדיקה משפטית. עמוד זה הוא טיוטת עבודה וטרם אושר סופית על ידי היועץ המשפטי."
     privacy_title: "מדיניות פרטיות"
     terms_title: "תנאים והגבלות"

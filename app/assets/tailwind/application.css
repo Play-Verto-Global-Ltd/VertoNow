@@ -6257,19 +6257,6 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
    a 390px viewport leaves a chat you cannot read. */
 @media (max-width: 640px) {
   .results-ask-panel { inset-block: 12px 12px; inset-inline: 12px; width: auto; }
-  /* The consent banner's strip is pointer-events:none and its panel is
-     centred with a 560px cap, so at desktop the pill sits clear of it. At
-     phone width that panel IS the width, and it lands on the pill: measured
-     at 390x844, the panel occupies y 618-833 and the pill 786-826, so the
-     pill is simply unclickable until the banner is answered. Lifting it by
-     the panel's height would be a guess that the longest translation breaks
-     — the panel is four lines of prose plus a button row — so while the
-     banner is up the pill docks at the top instead, where this page has
-     nothing below the bar. It drops back the moment consent is given
-     (cookie_consent_controller adds .hidden to the banner root). */
-  body:has(.cookie-consent-banner:not(.hidden)) .results-ask-fab {
-    top: 14px; bottom: auto;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .results-ask-panel { transition: visibility 0s; }
@@ -13768,80 +13755,21 @@ body.generating-overlay-active .bottom-bar { display: none; }
 .token-tap-row .token-inputs { margin-left: auto; }
 
 /* ──────────────────────────────────────────────────────
-   GDPR: cookie-consent banner, legal footer, legal pages
+   GDPR: legal footer, legal pages
    ────────────────────────────────────────────────────── */
 
-/* Cookie-consent banner — fixed to the viewport bottom on every page
-   (dashboard, auth, and the /play/:token player), so it sits above the
-   player's own position:fixed overlay via z-index rather than layout order. */
-.cookie-consent-banner {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147483000;
-  display: flex; justify-content: center;
-  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-  pointer-events: none;
-}
-.cookie-consent-panel {
-  pointer-events: auto;
-  width: 100%; max-width: 560px;
-  background: #1C2034; color: #F7F7F7;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 16px;
-  padding: 18px 20px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-  font-family: "ABeeZee", sans-serif;
-}
-.cookie-consent-text {
-  font-size: var(--text-md, 14px); line-height: 1.6; color: rgba(247,247,247,0.85);
-  margin: 0 0 14px;
-}
-.cookie-consent-text a { color: #01EACB; text-decoration: underline; text-underline-offset: 2px; }
-.cookie-consent-actions {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-}
-.cookie-consent-btn-primary {
-  padding: 10px 20px; border-radius: 100px; border: none; cursor: pointer;
-  background: #01EACB; color: #1C2034;
-  font-family: "Alata", sans-serif; font-size: var(--text-base, 13px); letter-spacing: 0.03em;
-}
-.cookie-consent-btn-secondary {
-  padding: 9px 18px; border-radius: 100px; cursor: pointer;
-  background: transparent; color: rgba(247,247,247,0.85);
-  border: 1px solid rgba(255,255,255,0.25);
-  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm, 13px);
-}
-.cookie-consent-link-btn {
-  background: none; border: none; cursor: pointer; padding: 6px 4px;
-  color: rgba(247,247,247,0.65); text-decoration: underline; text-underline-offset: 2px;
-  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm, 13px);
-  margin-right: auto;
-}
-.cookie-consent-category {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
-  padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.08);
-}
-.cookie-consent-category:first-child { border-top: none; }
-.cookie-consent-category-title {
-  font-family: "Alata", sans-serif; font-size: var(--text-base, 13px); letter-spacing: 0.03em;
-  margin: 0 0 4px;
-}
-.cookie-consent-category-desc {
-  font-size: var(--text-sm, 12px); line-height: 1.5; color: rgba(247,247,247,0.6); margin: 0;
-  max-width: 380px;
-}
-.cookie-consent-toggle { flex-shrink: 0; width: 18px; height: 18px; margin-top: 2px; accent-color: #01EACB; }
-
-/* Legal footer — Privacy/Terms/Cookie Policy links on unauthenticated pages. */
+/* Legal footer — Privacy/Terms/Cookie Policy links on unauthenticated pages.
+   (The cookie-consent banner and its "Cookie settings" button that used to
+   live here went with Microsoft Clarity, 2026-10-01: the site sets only
+   strictly necessary cookies now, so there is no choice to offer.) */
 .legal-footer {
   display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
   gap: 6px 14px; padding: 20px 16px 28px;
   font-family: "ABeeZee", sans-serif; font-size: var(--text-sm, 12px);
   color: rgba(247,247,247,0.45);
 }
-.legal-footer a, .legal-footer button {
-  color: inherit; text-decoration: none; background: none; border: none;
-  cursor: pointer; padding: 0; font: inherit;
-}
-.legal-footer a:hover, .legal-footer button:hover { color: rgba(247,247,247,0.8); text-decoration: underline; }
+.legal-footer a { color: inherit; text-decoration: none; }
+.legal-footer a:hover { color: rgba(247,247,247,0.8); text-decoration: underline; }
 
 /* Legal pages (Privacy Policy / Terms & Conditions / Cookie Policy) — a plain
    readable prose column, independent of the dashboard/player chrome. */

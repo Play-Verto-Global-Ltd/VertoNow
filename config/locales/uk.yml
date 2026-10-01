@@ -5,22 +5,10 @@ uk:
     heading: Мова
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "Ми використовуємо файли cookie для роботи цього сайту та, якщо ви погодитесь, для розуміння того, як він використовується. Див. нашу <a href=\"%{privacy_url}\">Політику конфіденційності</a> та <a href=\"%{cookie_url}\">Політику використання файлів cookie</a>."
-    necessary_title: "Необхідні"
-    necessary_description: "Необхідні для роботи сайту — завжди увімкнені."
-    analytics_title: "Аналітика"
-    analytics_description: "Допомагають зрозуміти, як використовується сайт, за допомогою Microsoft Clarity."
-    accept_all: "Прийняти всі"
-    reject_all: "Відхилити необов'язкові"
-    manage_preferences: "Керувати налаштуваннями"
-    save_preferences: "Зберегти налаштування"
-    back: "Назад"
   legal:
     footer_privacy: "Політика конфіденційності"
     footer_terms: "Умови використання"
     footer_cookie_policy: "Політика використання файлів cookie"
-    footer_cookie_settings: "Налаштування файлів cookie"
     draft_notice: "Чернетка — очікує на юридичну перевірку. Ця сторінка є робочою чернеткою і ще не затверджена та не схвалена юридичним відділом."
     privacy_title: "Політика конфіденційності"
     terms_title: "Умови використання"

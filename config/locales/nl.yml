@@ -5,22 +5,10 @@ nl:
     heading: Taal
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "We gebruiken cookies om deze site te laten werken en, als je akkoord gaat, om te begrijpen hoe de site wordt gebruikt. Bekijk ons <a href=\"%{privacy_url}\">Privacybeleid</a> en <a href=\"%{cookie_url}\">Cookiebeleid</a>."
-    necessary_title: "Noodzakelijk"
-    necessary_description: "Nodig om de site te laten werken — altijd actief."
-    analytics_title: "Analytics"
-    analytics_description: "Helpt ons begrijpen hoe de site wordt gebruikt, via Microsoft Clarity."
-    accept_all: "Alles accepteren"
-    reject_all: "Niet-essentiële weigeren"
-    manage_preferences: "Voorkeuren beheren"
-    save_preferences: "Voorkeuren opslaan"
-    back: "Terug"
   legal:
     footer_privacy: "Privacybeleid"
     footer_terms: "Algemene voorwaarden"
     footer_cookie_policy: "Cookiebeleid"
-    footer_cookie_settings: "Cookie-instellingen"
     draft_notice: "Concept — juridische toetsing in afwachting. Deze pagina is een werkconcept en is nog niet definitief vastgesteld of goedgekeurd door de juridische afdeling."
     privacy_title: "Privacybeleid"
     terms_title: "Algemene voorwaarden"

@@ -7,22 +7,10 @@ tn:
     heading: "Puo"
   layout:
     studio_tagline: "Verto Studio"
-  cookie_consent:
-    banner_text_html: "Re dirisa dikuki go tsamaisa sebaka se, mme fa o dumela, go tlhaloganya kafa se dirisiwang ka teng. Bona <a href=\"%{privacy_url}\">Molawana wa rona wa Sephiri</a> le <a href=\"%{cookie_url}\">Molawana wa Dikuki</a>."
-    necessary_title: "Tse di Tlhokegang"
-    necessary_description: "Di tlhokega gore sebaka se se dire — di dula di le teng."
-    analytics_title: "Tshekatsheko"
-    analytics_description: "Di re thusa go tlhaloganya kafa sebaka se dirisiwang ka teng, ka Microsoft Clarity."
-    accept_all: "Amogela Tsotlhe"
-    reject_all: "Gana tse di sa Tlhokegeng"
-    manage_preferences: "Laola Dikgatlhego"
-    save_preferences: "Boloka Dikgatlhego"
-    back: "Morago"
   legal:
     footer_privacy: "Molawana wa Sephiri"
     footer_terms: "Melawana le Maemo"
     footer_cookie_policy: "Molawana wa Dikuki"
-    footer_cookie_settings: "Dipeakanyo tsa Dikuki"
     draft_notice: "Ntlhamo — e sa ntse e emetse tlhatlhobo ya semolao. Tsebe e ke ntlhamo e e santseng e diriwa mme ga e ise e fetsiwe kgotsa go dumelelwa ke baeletsi ba semolao."
     privacy_title: "Molawana wa Sephiri"
     terms_title: "Melawana le Maemo"

@@ -5,22 +5,10 @@ id:
     heading: Bahasa
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "Kami menggunakan cookie untuk menjalankan situs ini dan, jika Anda setuju, untuk memahami cara situs ini digunakan. Lihat <a href=\"%{privacy_url}\">Kebijakan Privasi</a> dan <a href=\"%{cookie_url}\">Kebijakan Cookie</a> kami."
-    necessary_title: "Penting"
-    necessary_description: "Diperlukan agar situs berfungsi — selalu aktif."
-    analytics_title: "Analitik"
-    analytics_description: "Membantu kami memahami cara situs digunakan, melalui Microsoft Clarity."
-    accept_all: "Terima semua"
-    reject_all: "Tolak non-esensial"
-    manage_preferences: "Kelola preferensi"
-    save_preferences: "Simpan preferensi"
-    back: "Kembali"
   legal:
     footer_privacy: "Kebijakan Privasi"
     footer_terms: "Syarat & Ketentuan"
     footer_cookie_policy: "Kebijakan Cookie"
-    footer_cookie_settings: "Pengaturan cookie"
     draft_notice: "Draf — menunggu tinjauan hukum. Halaman ini adalah draf kerja dan belum difinalisasi atau disetujui oleh penasihat hukum."
     privacy_title: "Kebijakan Privasi"
     terms_title: "Syarat & Ketentuan"

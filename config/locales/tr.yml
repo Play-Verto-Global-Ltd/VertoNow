@@ -5,22 +5,10 @@ tr:
     heading: Dil
   layout:
     studio_tagline: Verto Studio
-  cookie_consent:
-    banner_text_html: "Bu siteyi çalıştırmak ve, onay verirseniz, nasıl kullanıldığını anlamak için çerezler kullanıyoruz. <a href=\"%{privacy_url}\">Gizlilik Politikamıza</a> ve <a href=\"%{cookie_url}\">Çerez Politikamıza</a> bakın."
-    necessary_title: "Gerekli"
-    necessary_description: "Sitenin çalışması için gereklidir — her zaman açık."
-    analytics_title: "Analitik"
-    analytics_description: "Microsoft Clarity aracılığıyla sitenin nasıl kullanıldığını anlamamıza yardımcı olur."
-    accept_all: "Tümünü kabul et"
-    reject_all: "Gerekli olmayanları reddet"
-    manage_preferences: "Tercihleri yönet"
-    save_preferences: "Tercihleri kaydet"
-    back: "Geri"
   legal:
     footer_privacy: "Gizlilik Politikası"
     footer_terms: "Şartlar ve Koşullar"
     footer_cookie_policy: "Çerez Politikası"
-    footer_cookie_settings: "Çerez ayarları"
     draft_notice: "Taslak — hukuki incelemesi bekliyor. Bu sayfa çalışma taslağıdır ve henüz hukuk müşavirliği tarafından kesinleştirilmemiş veya onaylanmamıştır."
     privacy_title: "Gizlilik Politikası"
     terms_title: "Şartlar ve Koşullar"
