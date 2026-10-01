@@ -187,6 +187,10 @@ xh:
     location_cities_add: "Khangela isixeko…"
     location_cities_note: "Kunikezelwa kuphela iindawo ezingaphakathi kwezi zixeko."
     location_remove: "Susa"
+    other_add: "Yongeza"
+    other_edit: "Hlela impendulo yakho"
+    other_clear: "Susa impendulo yakho"
+    rating_icon: "Khetha i-emoji yolu hlolo"
   ask_submission_mailer:
     confirmation_subject: "Idatha yakho yeVerto ithunyelwe kwiAsk Verto"
     confirmation_heading: "Ithunyelwe ukuze ihlolwe"
@@ -744,6 +748,8 @@ xh:
           range: "Isebenza kuphela ukuba impendulo ihlanganiselwa kumda omnye — ngokuqhelekileyo iphulukana nengongoma yokuba yivulekile."
         welcome_card:
           welcome_card: "Iseta umoya phambi kwayo nayiphi na imibuzo — ikhadi elilona lifanelekileyo lokuqala kubaphulaphuli abatsha abadinga umxholo."
+      rich_ink_dark: "Umbhalo omnyama kweli khadi (cofa kwakhona ukuze uzenzekele)"
+      rich_ink_light: "Umbhalo okhanyayo kweli khadi (cofa kwakhona ukuze uzenzekele)"
     wizard:
       step_counter: "Inyathelo %{n} kwi-%{total}"
     results:

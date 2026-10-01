@@ -174,30 +174,47 @@ module AggregatesSurveyResults
         a = answers[idx.to_s]
         next unless a.is_a?(Hash)
 
-        st    = states[idx]
-        value = a["value"]
-        # Mirror the old `filter_map { ...dig("value") }`: drop nil/false only
-        # (so 0 and "" are kept, exactly as before).
-        unless value.nil? || value == false
-          # Counted only if it was banked: a wrong-shaped answer at a scale
-          # index (see scalar_answer?) is dropped from the tallies AND from the
-          # card's total, so the header never says "2 answers" over one bar.
-          st[:value_count] += 1 if accumulate_value(st, types[idx], value)
-        end
-        other = a["other"]
-        st[:other_texts] << other if other.respond_to?(:presence) && other.presence
-        # Free text the moderator is holding (or removed): answered, so it
-        # counts toward the card's total exactly as the text would have, but
-        # there is nothing to list — see Moderation::Hold for the marker.
-        held = a["held"]
-        if held.is_a?(Hash)
-          st[:held_values] += 1 if held["value"]
-          st[:held_others] += 1 if held["other"]
-        end
+        accumulate_entry(states[idx], types[idx], a)
       end
     end
 
     cards.map.with_index { |card, idx| finalize_card(card, types[idx], states[idx], total) }
+  end
+
+  # One response's entry for one card, into that card's running state. Shared
+  # with AnswerTimeline, which tallies the same entries per period.
+  #
+  # A response counts ONCE toward the card's total (`answered`) — whether it
+  # banked a value, wrote an Other, held text for moderation, or any mix of
+  # those. The Other box combines with the picks now (a respondent can tick two
+  # answers and write a third), and `value_count + other_count` counted that
+  # respondent twice: a card with three respondents said "4 answers".
+  def accumulate_entry(st, type, a)
+    value = a["value"]
+    # Mirror the old `filter_map { ...dig("value") }`: drop nil/false only
+    # (so 0 and "" are kept, exactly as before). Counted only if it was banked:
+    # a wrong-shaped answer at a scale index (see scalar_answer?) is dropped
+    # from the tallies AND from the card's total, so the header never says
+    # "2 answers" over one bar.
+    banked = !(value.nil? || value == false) && accumulate_value(st, type, value)
+    st[:value_count] += 1 if banked
+
+    other = a["other"]
+    wrote = other.respond_to?(:presence) && other.presence ? true : false
+    st[:other_texts] << other if wrote
+
+    # Free text the moderator is holding (or removed): answered, so it counts
+    # toward the card's total exactly as the text would have, but there is
+    # nothing to list — see Moderation::Hold for the marker.
+    held = a["held"]
+    held_any = false
+    if held.is_a?(Hash)
+      st[:held_values] += 1 if held["value"]
+      st[:held_others] += 1 if held["other"]
+      held_any = held["value"] || held["other"] ? true : false
+    end
+
+    st[:answered] += 1 if banked || wrote || held_any
   end
 
   # Yield each response's answers Hash (and, second, when it arrived). For
@@ -224,8 +241,11 @@ module AggregatesSurveyResults
     # sum_count is the number of answers actually banked into sum — the same as
     # value_count except when a wrong-shaped answer is skipped (scalar_answer?),
     # so a rating average never divides by an answer it didn't add.
-    st = { value_count: 0, other_texts: [], counts: Hash.new(0), texts: [], sum: 0.0, sum_count: 0,
-           held_values: 0, held_others: 0 }
+    # answered is the number of responses that gave this card anything at all —
+    # the card's total — where value_count is only those that banked a value
+    # (see accumulate_entry).
+    st = { value_count: 0, answered: 0, other_texts: [], counts: Hash.new(0), texts: [], sum: 0.0,
+           sum_count: 0, held_values: 0, held_others: 0 }
     st[:response_keys] = TapScales.keys_for(card) if type == "tap_card"
     st
   end
@@ -291,6 +311,12 @@ module AggregatesSurveyResults
     # A held "Other" write-in still chose Other, so it is in the Other bar and
     # the total; a held open_ended value is in that card's total. `held` says
     # how many of a card's answers are not being shown, for the results page.
+    #
+    # `total` is st[:answered] — respondents, not answers. The Other bar counts
+    # every write-in, but a respondent who ticked AND wrote is one respondent,
+    # and a percentage over anything else is a percentage of nobody. prioritise
+    # and contact_form stay on value_count on purpose: a mean rank is divided
+    # by the people who ranked, and a lead table has no Other.
     other_count = st[:other_texts].size + st[:held_others]
     held        = st[:held_values] + st[:held_others]
     base = { type:, card:, other_texts: st[:other_texts], held: }
@@ -299,20 +325,20 @@ module AggregatesSurveyResults
     when "multiple_choice", "yes_no", "select_one_grid", "select_many", "select_many_grid", "scenario"
       counts = st[:counts]
       counts["Other"] = other_count if other_count.positive?
-      base.merge(total: st[:value_count] + other_count, counts:)
+      base.merge(total: st[:answered], counts:)
     when "tap_card"
-      base.merge(total: st[:value_count] + other_count, counts: st[:counts])
+      base.merge(total: st[:answered], counts: st[:counts])
     when "prioritise"
       # counts[label] = sum of ranks; total = responders, so mean rank =
       # counts[label] / total. Lower mean = higher priority.
       base.merge(total: st[:value_count], counts: st[:counts])
     when "range", "nps"
-      base.merge(total: st[:value_count] + other_count, counts: st[:counts])
+      base.merge(total: st[:answered], counts: st[:counts])
     when "rating"
       avg = st[:sum_count].positive? ? (st[:sum] / st[:sum_count]).round(1) : 0.0
-      base.merge(total: st[:value_count] + other_count, counts: st[:counts], avg:)
+      base.merge(total: st[:answered], counts: st[:counts], avg:)
     when "open_ended"
-      base.merge(total: st[:value_count] + st[:held_values] + other_count, texts: st[:texts])
+      base.merge(total: st[:answered], texts: st[:texts])
     when "contact_form"
       base.merge(total: st[:value_count], entries: st[:texts])
     else

@@ -182,4 +182,62 @@ class AggregatesSurveyResultsTest < ActiveSupport::TestCase
     assert_equal 0, rows[0][:total]
     assert_equal 0.0, rows[2][:avg]
   end
+
+  # The Other box combines with the picks: a respondent can tick an answer AND
+  # write one in. That respondent is one respondent. The old total was
+  # value_count + other_count, which said "2 answers" over one person and
+  # pushed every percentage on the card down.
+  test "a respondent who picks AND writes in counts once toward the total, on every type" do
+    responses = [
+      resp({
+        "0" => { "value" => "A", "other" => "Custom" },
+        "1" => { "value" => %w[X], "other" => "Custom" },
+        "2" => { "value" => 4, "other" => "a note" },
+        "3" => { "value" => 2, "other" => "a note" },
+        "4" => { "value" => { "Statement 1" => "yes" }, "other" => "a note" },
+        "5" => { "value" => "Loved it", "other" => "and this" },
+        "8" => { "value" => "Left", "other" => "Custom" }
+      }),
+      resp({ "0" => { "value" => "B" }, "1" => { "value" => %w[Y] }, "2" => { "value" => 2 },
+             "3" => { "value" => 5 }, "4" => { "value" => { "Statement 1" => "no" } },
+             "5" => { "value" => "Fine" }, "8" => { "value" => "Right" } })
+    ]
+    rows = @agg.run(CARDS, responses)
+
+    mc = rows[0]
+    assert_equal 2, mc[:total], "two people answered, one of them twice over"
+    assert_equal({ "A" => 1, "B" => 1, "Other" => 1 }, mc[:counts].to_h, "the write-in is still its own bar")
+    assert_equal [ "Custom" ], mc[:other_texts]
+
+    assert_equal 2, rows[1][:total]
+    assert_equal({ "X" => 1, "Y" => 1, "Other" => 1 }, rows[1][:counts].to_h)
+    assert_equal 2, rows[2][:total]
+    assert_equal 3.0, rows[2][:avg], "the note does not dilute the average"
+    assert_equal 2, rows[3][:total]
+    assert_equal 2, rows[4][:total]
+    assert_equal 2, rows[5][:total]
+    assert_equal 2, rows[8][:total]
+  end
+
+  test "a write-in alone still counts, and a held write-in beside a pick counts once" do
+    responses = [
+      resp({ "0" => { "value" => nil, "other" => "Custom" } }),
+      resp({ "0" => { "value" => "A", "other" => nil, "held" => { "other" => true } } }),
+      resp({ "0" => { "value" => "B" } })
+    ]
+    row = @agg.run(CARDS, responses)[0]
+
+    assert_equal 3, row[:total], "three respondents: Other only, A plus a held write-in, B"
+    assert_equal 2, row[:counts]["Other"], "both write-ins are in the Other bar, the held one included"
+    assert_equal 1, row[:held]
+  end
+
+  test "prioritise keeps totalling the people who ranked" do
+    responses = [
+      resp({ "7" => { "value" => %w[A B C], "other" => "D too" } }),
+      resp({ "7" => { "value" => nil, "other" => "none of these" } })
+    ]
+    row = @agg.run(CARDS, responses)[7]
+    assert_equal 1, row[:total], "a mean rank is divided by the people who ranked, not by the write-ins"
+  end
 end

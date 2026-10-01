@@ -178,6 +178,10 @@ it:
     location_cities_add: "Cerca una città…"
     location_cities_note: "Vengono proposti solo luoghi all'interno di queste città."
     location_remove: "Rimuovi"
+    other_add: "Aggiungi"
+    other_edit: "Modifica la tua risposta"
+    other_clear: "Rimuovi la tua risposta"
+    rating_icon: "Scegli l’emoji per questa valutazione"
   ask_submission_mailer:
     confirmation_subject: "I tuoi dati Verto sono stati inviati ad Ask Verto"
     confirmation_heading: "Inviato per la revisione"
@@ -728,6 +732,8 @@ it:
           range: "Funziona solo se la risposta si riduce a un'unica scala — di solito vanifica il senso della domanda aperta."
         welcome_card:
           welcome_card: "Dà il tono prima di qualsiasi domanda — la prima scheda ideale per un pubblico freddo che ha bisogno di contesto."
+      rich_ink_dark: "Testo scuro su questa scheda (premi di nuovo per automatico)"
+      rich_ink_light: "Testo chiaro su questa scheda (premi di nuovo per automatico)"
     wizard:
       step_counter: Passo %{n} di %{total}
     results:

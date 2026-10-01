@@ -186,6 +186,10 @@ zu:
     location_cities_add: "Sesha idolobha…"
     location_cities_note: "Kunikezwa izindawo ezingaphakathi kwala madolobha kuphela."
     location_remove: "Susa"
+    other_add: "Engeza"
+    other_edit: "Hlela impendulo yakho"
+    other_clear: "Susa impendulo yakho"
+    rating_icon: "Khetha i-emoji yalesi silinganiso"
   ask_submission_mailer:
     confirmation_subject: "Idatha yakho ye-Verto ithunyelwe ku-Ask Verto"
     confirmation_heading: "Kuthunyelwe ukuze kubuyekezwe"
@@ -742,6 +746,8 @@ zu:
           range: "Kusebenza kuphela uma impendulo ihlangana ibe isikali esisodwa — ngokuvamile kulahleka inhloso yokuba nombuzo ovulekile."
         welcome_card:
           welcome_card: "Kubeka isimo ngaphambi kwanoma yimuphi umbuzo — ikhadi lokuqala elihle kakhulu ngezethameli ezintsha ezidinga umongo."
+      rich_ink_dark: "Umbhalo omnyama kuleli khadi (cindezela futhi ukuze kuzenzakalele)"
+      rich_ink_light: "Umbhalo okhanyayo kuleli khadi (cindezela futhi ukuze kuzenzakalele)"
     wizard:
       step_counter: "Isinyathelo %{n} kwangu-%{total}"
     results:

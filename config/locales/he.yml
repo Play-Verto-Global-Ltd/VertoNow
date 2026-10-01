@@ -178,6 +178,10 @@ he:
     location_cities_add: "חיפוש עיר…"
     location_cities_note: "מוצגים רק מקומות בתוך הערים האלה."
     location_remove: "הסרה"
+    other_add: "הוספה"
+    other_edit: "עריכת התשובה שלך"
+    other_clear: "הסרת התשובה שלך"
+    rating_icon: "בחרו את האימוג׳י לדירוג הזה"
   ask_submission_mailer:
     confirmation_subject: "נתוני ה-Verto שלכם נשלחו ל-Ask Verto"
     confirmation_heading: "נשלח לבדיקה"
@@ -728,6 +732,8 @@ he:
           range: "עובד רק אם התשובה מצטמצמת לסולם יחיד — בדרך כלל מאבד את הטעם שבשאלה פתוחה."
         welcome_card:
           welcome_card: "קובע את הטון לפני כל שאלה — כרטיס פתיחה אידיאלי לקהל קר שזקוק להקשר."
+      rich_ink_dark: "טקסט כהה בכרטיס הזה (לחצו שוב למצב אוטומטי)"
+      rich_ink_light: "טקסט בהיר בכרטיס הזה (לחצו שוב למצב אוטומטי)"
     wizard:
       step_counter: שלב %{n} מתוך %{total}
     results:

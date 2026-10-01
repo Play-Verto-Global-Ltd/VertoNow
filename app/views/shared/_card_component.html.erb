@@ -1437,31 +1437,64 @@
           hint: logic_hint %>
   <% end %>
 
-  <%# "Other" free-text — a standalone answer the creator can toggle per card.
-      Rendered for every question type (not welcome). In the editor it's always
-      present (hidden on welcome) so the toggle survives a type switch. The
-      "Allow other"/"Required" switches themselves live in the Answer Type
-      tab's Card settings (show.html.erb .card-flags), not here — so they
-      don't distort the card's visual design; only the respondent-facing
-      "+Other" CTA/panel stays in the card itself. %>
+  <%# "Other" free-text — a write-in the creator can toggle per card, which
+      combines with whatever the respondent picks (other_controller.js has the
+      states). Rendered for every question type (not welcome). In the editor
+      it's always present (hidden on welcome) so the toggle survives a type
+      switch. The "Allow other"/"Required" switches themselves live in the
+      Answer Type tab's Card settings (show.html.erb .card-flags), not here —
+      so they don't distort the card's visual design; only the respondent-facing
+      CTA / panel / committed row stays in the card itself. Everything below is
+      inside .other-cta-wrap, which is the element the editor's "Allow other"
+      switch shows and hides. %>
   <% if editable || (is_q && card["allow_other"]) %>
     <div class="other-block" data-controller="other"<%= ' hidden'.html_safe if (editable && !is_q) %>>
       <div class="other-cta-wrap" data-other-target="wrap"<%= ' hidden'.html_safe unless card["allow_other"] %>>
+        <%# Idle: the floating CTA. Every button here is disabled in the editor,
+            where the card is a preview — the Preview overlay re-enables them. %>
         <button type="button" class="other-cta-btn" data-other-target="btn"
                 data-action="click->other#toggle"<%= ' disabled'.html_safe if editable %>>＋ <%= t("card.other") %></button>
+
+        <%# Committed: the write-in as a selected-looking row under the options.
+            NOT a picker item (no data-picker-target) — it must never count
+            toward max_choices or leak into the picked value. Two sibling
+            buttons rather than one inside the other: the row re-opens the
+            panel to edit, the × clears. %>
+        <div class="other-chip" data-other-target="chip" hidden>
+          <button type="button" class="other-chip-main" data-other-target="chipMain"
+                  data-action="click->other#edit"
+                  title="<%= t("card.other_edit") %>"<%= ' disabled'.html_safe if editable %>>
+            <span class="other-chip-dot" aria-hidden="true">✓</span>
+            <span class="other-chip-text" data-other-target="chipText"></span>
+          </button>
+          <button type="button" class="other-chip-clear" data-other-target="clear"
+                  data-action="click->other#clear"
+                  aria-label="<%= t("card.other_clear") %>"<%= ' disabled'.html_safe if editable %>>×</button>
+        </div>
+
         <%# The Other box is free text by another name, so it takes the card's
             limit too — and the server clamps it alongside the answer value. %>
         <% other_limit = card["char_limit"].to_i %>
         <% other_limit = Survey::DEFAULT_FREE_TEXT_LIMIT unless other_limit.positive? %>
+        <%# Editing: the panel. The textarea stays the single source of truth —
+            player#_answerOf reads [data-other-input] whether the panel is open
+            or folded into the row above. Enter commits (enterkeyhint tells a
+            phone keyboard to say so); so does the Add button and tapping away. %>
         <div class="other-panel" data-other-target="panel" hidden
              data-controller="freeform" data-freeform-max-value="<%= other_limit %>">
           <textarea class="freeform-textarea other-textarea"
                     placeholder="<%= t("card.other_placeholder") %>"
                     maxlength="<%= other_limit %>"
+                    rows="2" enterkeyhint="done"
                     data-other-input
+                    data-other-target="input"
                     data-freeform-target="input"
-                    data-action="input->freeform#update"></textarea>
-          <div class="freeform-counter" data-freeform-target="counter">0/<%= other_limit %> <%= t("card.characters") %></div>
+                    data-action="input->freeform#update keydown->other#keydown focusout->other#focusout"></textarea>
+          <div class="other-panel-foot">
+            <div class="freeform-counter" data-freeform-target="counter">0/<%= other_limit %> <%= t("card.characters") %></div>
+            <button type="button" class="other-add-btn" data-other-target="add"
+                    data-action="pointerdown->other#holdFocus mousedown->other#holdFocus click->other#commitExplicit"<%= ' disabled'.html_safe if editable %>><%= t("card.other_add") %></button>
+          </div>
         </div>
       </div>
     </div>

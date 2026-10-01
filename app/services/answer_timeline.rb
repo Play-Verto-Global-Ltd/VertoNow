@@ -64,16 +64,7 @@ class AnswerTimeline
       date = created_at.to_date
       next if date < @from || date > @to
 
-      st    = states[bucket(date, granularity)]
-      value = a["value"]
-      st[:value_count] += 1 if !(value.nil? || value == false) && accumulate_value(st, @type, value)
-      other = a["other"]
-      st[:other_texts] << other if other.respond_to?(:presence) && other.presence
-      held = a["held"]
-      if held.is_a?(Hash)
-        st[:held_values] += 1 if held["value"]
-        st[:held_others] += 1 if held["other"]
-      end
+      accumulate_entry(states[bucket(date, granularity)], @type, a)
     end
 
     finalized = starts.index_with { |d| states.key?(d) ? finalize_card(@card, @type, states[d], 0) : nil }

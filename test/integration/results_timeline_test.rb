@@ -119,6 +119,21 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
     assert_includes data["series"].map { |s| s["key"] }, "Other"
   end
 
+  # The Other box combines with the picks, so one respondent can be a pick AND
+  # a write-in. The small-cell line counts respondents: a day with MIN - 1 of
+  # them is under it however many of them also wrote something — the old
+  # value_count + other_count read that day as 2 × (MIN - 1) and showed it.
+  test "a period's small-cell line counts respondents, not picks plus write-ins" do
+    (MIN - 1).times { |i| add(20.days, i, extra: { "0" => { "type" => "multiple_choice", "value" => "Blue", "other" => "Teal" } }) }
+    sign_in @admin
+    data = timeline(range: "30d")
+
+    day = (Time.current.utc.change(hour: 12) - 20.days).to_date.iso8601
+    period = data["periods"].find { |p| p["start"] == day }
+    assert period, "the day the combined answers landed on is in the window"
+    assert period["thin"], "#{MIN - 1} respondents is under the line, whatever else they each wrote"
+  end
+
   # ── Windows ───────────────────────────────────────────────────────────────
 
   test "a custom window picks its own buckets and refuses nonsense" do

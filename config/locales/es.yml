@@ -178,6 +178,10 @@ es:
     location_cities_add: "Buscar una ciudad…"
     location_cities_note: "Solo se ofrecen lugares dentro de estas ciudades."
     location_remove: "Quitar"
+    other_add: "Añadir"
+    other_edit: "Editar tu respuesta"
+    other_clear: "Quitar tu respuesta"
+    rating_icon: "Elige el emoji para esta valoración"
   ask_submission_mailer:
     confirmation_subject: "Tus datos de Verto se enviaron a Ask Verto"
     confirmation_heading: "Enviado a revisión"
@@ -728,6 +732,8 @@ es:
           range: "Solo funciona si la respuesta se reduce a una única escala — normalmente pierde el sentido de la pregunta abierta."
         welcome_card:
           welcome_card: "Marca el tono antes de cualquier pregunta — la primera tarjeta ideal para audiencias frías que necesitan contexto."
+      rich_ink_dark: "Texto oscuro en esta tarjeta (pulsa de nuevo para automático)"
+      rich_ink_light: "Texto claro en esta tarjeta (pulsa de nuevo para automático)"
     wizard:
       step_counter: Paso %{n} de %{total}
     results:

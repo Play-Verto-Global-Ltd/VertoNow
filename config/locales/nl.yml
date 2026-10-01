@@ -178,6 +178,10 @@ nl:
     location_cities_add: "Zoek een stad…"
     location_cities_note: "Alleen plekken binnen deze steden worden aangeboden."
     location_remove: "Verwijderen"
+    other_add: "Toevoegen"
+    other_edit: "Je antwoord bewerken"
+    other_clear: "Je antwoord verwijderen"
+    rating_icon: "Kies de emoji voor deze beoordeling"
   ask_submission_mailer:
     confirmation_subject: "Je Verto-data is ingediend bij Ask Verto"
     confirmation_heading: "Ingediend voor beoordeling"
@@ -728,6 +732,8 @@ nl:
           range: "Werkt alleen als het antwoord samenvalt tot één schaal — meestal gaat de kern van de open vraag verloren."
         welcome_card:
           welcome_card: "Zet de toon vóór de eerste vraag — de ideale eerste kaart voor een koud publiek dat context nodig heeft."
+      rich_ink_dark: "Donkere tekst op deze kaart (druk nogmaals voor automatisch)"
+      rich_ink_light: "Lichte tekst op deze kaart (druk nogmaals voor automatisch)"
     wizard:
       step_counter: Stap %{n} van %{total}
     results:

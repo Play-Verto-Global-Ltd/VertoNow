@@ -178,6 +178,10 @@ id:
     location_cities_add: "Cari kota…"
     location_cities_note: "Hanya tempat di dalam kota-kota ini yang ditawarkan."
     location_remove: "Hapus"
+    other_add: "Tambah"
+    other_edit: "Ubah jawaban Anda"
+    other_clear: "Hapus jawaban Anda"
+    rating_icon: "Pilih emoji untuk penilaian ini"
   ask_submission_mailer:
     confirmation_subject: "Data Verto Anda dikirim ke Ask Verto"
     confirmation_heading: "Dikirim untuk ditinjau"
@@ -728,6 +732,8 @@ id:
           range: "Hanya berhasil jika jawabannya bisa diringkas ke satu skala — biasanya menghilangkan gunanya pertanyaan terbuka."
         welcome_card:
           welcome_card: "Mengatur suasana sebelum pertanyaan dimulai — kartu pertama yang ideal untuk audiens baru yang butuh konteks."
+      rich_ink_dark: "Teks gelap di kartu ini (tekan lagi untuk otomatis)"
+      rich_ink_light: "Teks terang di kartu ini (tekan lagi untuk otomatis)"
     wizard:
       step_counter: Langkah %{n} dari %{total}
     results:

@@ -188,6 +188,10 @@ tn:
     location_cities_add: "Batla toropo…"
     location_cities_note: "Go neelwa fela mafelo a a mo teng ga ditoropo tseno."
     location_remove: "Tlosa"
+    other_add: "Tsenya"
+    other_edit: "Fetola karabo ya gago"
+    other_clear: "Tlosa karabo ya gago"
+    rating_icon: "Tlhopha emoji ya tekanyetso e"
   ask_submission_mailer:
     confirmation_subject: "Data ya gago ya Verto e rometswe go Ask Verto"
     confirmation_heading: "E rometswe go sekasekwa"
@@ -744,6 +748,8 @@ tn:
           range: "E dira fela fa karabo e fokotsega go nna tekanyo e le nngwe — gantsi e latlhegelwa ke ntlha ya go tswelela go bo go se na selekanyo."
         welcome_card:
           welcome_card: "E tlhoma seemo pele ga dipotso dipe fela — karata e siameng ya ntlha bakeng sa baarabi ba ba iseng ba itse, ba ba tlhokang seemo."
+      rich_ink_dark: "Mokwalo o o lefifi mo karateng e (tobetsa gape go dira ka boyone)"
+      rich_ink_light: "Mokwalo o o phatsimang mo karateng e (tobetsa gape go dira ka boyone)"
     wizard:
       step_counter: "Kgato %{n} ya %{total}"
     results:

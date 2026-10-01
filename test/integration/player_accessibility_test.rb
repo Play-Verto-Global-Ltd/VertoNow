@@ -200,7 +200,12 @@ class PlayerAccessibilityTest < ActionDispatch::IntegrationTest
       assert_not_includes html, 'role="slider"'
       assert_not_includes html, 'role="radio"'
       assert_not_includes html, "aria-checked"
-      assert_not_includes html, "keydown->"
+      # The two controls' own activators. The Other box's Enter-commits binding
+      # (keydown->other#keydown) is deliberately in every mode: the Preview
+      # overlay is a clone of the editor DOM, and a respondent previewing there
+      # presses Enter like any other.
+      assert_not_includes html, "keydown->slider#"
+      assert_not_includes html, "keydown->rating#"
       assert_equal 0, html.scan(/tabindex="0"/).size
     end
   end

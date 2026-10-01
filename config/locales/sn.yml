@@ -180,6 +180,10 @@ sn:
     location_cities_add: "Tsvaga guta…"
     location_cities_note: "Nzvimbo dziri mukati memaguta aya chete ndidzo dzinopihwa."
     location_remove: "Bvisa"
+    other_add: "Wedzera"
+    other_edit: "Gadzirisa mhinduro yako"
+    other_clear: "Bvisa mhinduro yako"
+    rating_icon: "Sarudza emoji yechiyero ichi"
   ask_submission_mailer:
     confirmation_subject: "Dhata reVerto yako yatumirwa kuAsk Verto"
     confirmation_heading: "Yatumirwa Kuti Iongororwe"
@@ -732,6 +736,8 @@ sn:
           range: "Zvinoshanda chete kana mhinduro ichidzikisira kuchiyero chimwe chete — kazhinji zvinorasikirwa nechinangwa chekusununguka."
         welcome_card:
           welcome_card: "Zvinotara mumhanzi mubvunzo usati wavapo — kadhi rekutanga rakakodzera kuvateereri vasingazivi vanoda mamiriro."
+      rich_ink_dark: "Mavara akasviba pakadhi iri (dzvanya zvakare kuti zviite zvoga)"
+      rich_ink_light: "Mavara akajeka pakadhi iri (dzvanya zvakare kuti zviite zvoga)"
     wizard:
       step_counter: "Danho %{n} re%{total}"
     results:
