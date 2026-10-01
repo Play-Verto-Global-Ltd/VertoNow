@@ -2182,6 +2182,7 @@ tr:
     confirm_body: "%{email} adresini doğrulayana kadar, sakladığın Vertos'ların kurumları sana sonrasında ne olduğunu anlatamaz."
     confirm_blocked: "%{email} adresine giden e-postalar geri döndü ya da kapatıldı, bu yüzden doğrulayamıyoruz. Hesabında başka hiçbir şey değişmez."
     confirm_resend: "Bağlantıyı bana gönder"
+    avg_position: "ort %{n}"
   player_notification_mailer:
     via: "%{org} · Playverto aracılığıyla"
     why: "Bunu alıyorsun çünkü Vertos'larını yanıtladığın kuruluşlardan haber almak istedin."

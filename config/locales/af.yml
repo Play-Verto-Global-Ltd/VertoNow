@@ -2185,6 +2185,7 @@ af:
     confirm_body: "Totdat jy %{email} bevestig, kan die organisasies van die Vertos wat jy gehou het jou nie vertel wat volgende gebeur nie."
     confirm_blocked: "E-posse na %{email} het teruggebons of is afgeskakel, so ons kan dit nie bevestig nie. Niks anders aan jou rekening verander nie."
     confirm_resend: "Stuur vir my die skakel"
+    avg_position: "gem. %{n}"
   player_notification_mailer:
     via: "%{org} · via Playverto"
     why: "Jy kry dit omdat jy gevra het om te hoor van organisasies wie se Vertos jy beantwoord het."

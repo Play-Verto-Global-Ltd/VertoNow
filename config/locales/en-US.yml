@@ -1615,6 +1615,8 @@ en-US:
     comparison_too_few: "Not enough answers to compare yet — come back when a few more people have taken part."
     comparison_off: "%{org} hasn't opened the results of this Verto. You'll still hear from them when there's news."
     comparison_none: "Nothing to chart on this one — the questions you answered don't have set options to compare."
+    # A ranking's figure is where the group put the option on average, not a share.
+    avg_position: "avg %{n}"
     # Why a Verto can't be compared, said on the list rather than behind a tap.
     # The floor and the count, not "not enough yet": 2 of 5 tells a respondent
     # whether to come back tomorrow or never.

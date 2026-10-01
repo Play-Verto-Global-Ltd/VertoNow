@@ -2180,6 +2180,7 @@ ja:
     confirm_body: "%{email} を確認するまで、あなたが保存した Vertos の団体はこの先どうなったかをお知らせできません。"
     confirm_blocked: "%{email} 宛てのメールが不達になったか停止されているため、確認できません。アカウントのほかの部分は何も変わりません。"
     confirm_resend: "リンクを送る"
+    avg_position: "平均 %{n}"
   player_notification_mailer:
     via: "%{org} · Playverto 経由"
     why: "回答した Vertos の団体からの知らせを希望されたため、このメールをお送りしています。"

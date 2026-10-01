@@ -2190,6 +2190,7 @@ sn:
     confirm_body: "Kusvika wasimbisa %{email}, masangano eVertos awakachengeta haakwanise kukuudza zvinotevera."
     confirm_blocked: "Maemail anoenda ku%{email} adzoka kana kudzimwa, saka hatikwanise kuisimbisa. Hapana chimwe chinoshanduka paaccount yako."
     confirm_resend: "Nditumire link"
+    avg_position: "avhareji %{n}"
   player_notification_mailer:
     via: "%{org} · kuburikidza nePlayverto"
     why: "Uri kuwana izvi nekuti wakakumbira kunzwa kubva kumasangano awakapindura maVerto awo."

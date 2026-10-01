@@ -2182,6 +2182,7 @@ it:
     confirm_body: "Finché non confermi %{email}, le organizzazioni dei Vertos che hai conservato non possono dirti cosa succede dopo."
     confirm_blocked: "Le e-mail a %{email} sono state respinte o disattivate, quindi non possiamo confermarla. Nient'altro cambia nel tuo account."
     confirm_resend: "Inviami il link"
+    avg_position: "media %{n}"
   player_notification_mailer:
     via: "%{org} · tramite Playverto"
     why: "Ricevi questo messaggio perché hai chiesto di avere notizie dalle organizzazioni ai cui Verto hai risposto."

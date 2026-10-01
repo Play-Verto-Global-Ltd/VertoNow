@@ -50,12 +50,14 @@
             <div class="you-q-prompt"><%= row[:prompt] %></div>
             <div class="you-q-mine"><%= t("you.your_answer", answer: row[:mine]) %></div>
             <% row[:bars].each do |bar| %>
+              <% if bar[:heading] %><div class="you-bar-group"><%= bar[:heading] %></div><% end %>
               <div class="you-bar-row<%= " is-mine" if bar[:mine] %>">
-                <div class="you-bar-label"><%= bar[:label] %></div>
+                <div class="you-bar-label" title="<%= bar[:label] %>"><%= bar[:label] %></div>
                 <div class="you-bar-track">
                   <span class="you-bar-fill" style="width:<%= bar[:pct] %>%;"></span>
                 </div>
-                <div class="you-bar-pct"><%= bar[:pct] %>%</div>
+                <%# A ranking's figure is a mean position, not a share (ResultsComparison). %>
+                <div class="you-bar-pct"><%= bar[:text] || "#{bar[:pct]}%" %></div>
               </div>
             <% end %>
           </div>

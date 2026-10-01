@@ -2182,6 +2182,7 @@ nl:
     confirm_body: "Tot je %{email} bevestigt, kunnen de organisaties van de Vertos die je hebt bewaard je niet vertellen wat er daarna gebeurt."
     confirm_blocked: "E-mails naar %{email} zijn teruggekomen of uitgezet, dus we kunnen het niet bevestigen. Verder verandert er niets aan je account."
     confirm_resend: "Stuur me de link"
+    avg_position: "gem. %{n}"
   player_notification_mailer:
     via: "%{org} · via Playverto"
     why: "Je krijgt dit omdat je hebt gevraagd om te horen van organisaties waarvan je een Verto hebt beantwoord."

@@ -928,26 +928,10 @@ class PlayerController < ApplicationController
     # and at burst scale computing per request made it O(total responses) per
     # viewer. The access guards above stay OUTSIDE the cache — the link still
     # decides who may read; only the link-independent payload is shared.
-    payload = cached_aggregate(:results) do
-      # Every responder (answered ≥1 question), not only those who reached
-      # Submit — so a respondent compares against all the answers collected per
-      # question, matching the creator Results screen. Each row is tallied off
-      # its own answers, so partial responses count toward what they reached.
-      responses = @survey.responses.where(answered: true)
-      total     = responses.count
-
-      # Small-cell suppression (P1-14). #regions has enforced this from the
-      # start; #results did not, so on a Verto with one or two responders the
-      # comparison a respondent is shown IS the other respondent's answers,
-      # attributable to them by anyone who knows who else was asked. Same
-      # threshold and same reasoning as the map — Response::MIN_REGION_SAMPLE_SIZE.
-      if total < Response::MIN_REGION_SAMPLE_SIZE
-        { suppressed: true, total_responses: total, results: [] }
-      else
-        { total_responses: total,
-          results: aggregate_rows(responses) + token_comparison_rows(responses) }
-      end
-    end
+    # What goes in it — every responder, small-cell suppression, the token rows
+    # — is AggregatesSurveyResults#survey_results_payload, because /you reads
+    # the same cache entry and must find the same thing in it.
+    payload = cached_aggregate(:results) { survey_results_payload(@survey) }
 
     render json: { ok: true }.merge(payload)
   end
@@ -991,7 +975,7 @@ class PlayerController < ApplicationController
           country:      country,
           country_name: WorldRegions.name_for(country),
           responders:   responders,
-          results:      aggregate_rows(tagged.where(region_country: country))
+          results:      aggregate_rows(@survey, tagged.where(region_country: country))
         }
       end.sort_by { |r| -r[:responders] }
 
@@ -1570,7 +1554,6 @@ class PlayerController < ApplicationController
     resp.token_totals = TokenGrading.totals(@survey.cards, resp.answers, @survey.token_type_ids)
   end
 
-  # The flat row shape the player JS renders comparisons from.
   # A short shared cache over the public aggregate endpoints (#results,
   # #regions, #scores). These recompute over every answered/completed response
   # and are hit by respondents, so at burst scale the compute must be per
@@ -1674,55 +1657,6 @@ class PlayerController < ApplicationController
       @survey.current_wave&.position,
       (@survey.chrome_follows_verto_language? ? nil : Current.locale),
       @survey_link&.updated_at&.to_f ]
-  end
-
-  def aggregate_rows(responses)
-    aggregate_results(Array(@survey.cards), responses).map.with_index do |row, idx|
-      {
-        index:  idx,
-        type:   row[:type],
-        prompt: row[:card]["text"] || row[:card]["prompt"] || row[:card]["title"],
-        options: row[:card]["options"],
-        total:  row[:total],
-        counts: row[:counts],
-        avg:    row[:avg],
-        # A tap card's counts are keyed by response key; the bars need the words
-        # and the order that go with them, and the client has no other way to
-        # learn a scale the creator wrote. Key + label only — the colours are
-        # already on the card the respondent just answered.
-        responses: (TapScales.for_card(row[:card]).map { |r| r.slice("key", "label") } if row[:type] == "tap_card")
-      }.compact
-    end
-  end
-
-  # Tokenisation: one synthetic row per token type, appended after the
-  # per-question rows — this is how "compare your tokens" folds into the
-  # existing results-comparison panel instead of a separate endpoint/panel.
-  # A histogram of each response's cached token_totals[id], the same shape
-  # `scores`' score histogram uses.
-  def token_comparison_rows(responses)
-    return [] unless @survey.tokenisation_enabled?
-    token_types = Array(@survey.token_types)
-    return [] if token_types.empty?
-
-    dist  = Hash.new { |h, k| h[k] = Hash.new(0) }
-    total = 0
-    responses.reorder(nil).select(:id, :token_totals).find_each(batch_size: 500) do |r|
-      total += 1
-      totals = r.token_totals || {}
-      token_types.each { |t| dist[t["id"]][totals[t["id"]].to_i] += 1 }
-    end
-
-    token_types.map do |t|
-      {
-        index:    "token:#{t['id']}",
-        type:     "token_total",
-        token_id: t["id"],
-        prompt:   [ t["icon"], t["name"] ].compact_blank.join(" "),
-        total:    total,
-        counts:   dist[t["id"]]
-      }
-    end
   end
 
   # Region data comes from one universal source: the "Where do you live?"

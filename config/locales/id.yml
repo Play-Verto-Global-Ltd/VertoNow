@@ -2181,6 +2181,7 @@ id:
     confirm_body: "Sampai kamu mengonfirmasi %{email}, organisasi dari Vertos yang kamu simpan tidak bisa memberi tahu apa yang terjadi selanjutnya."
     confirm_blocked: "Email ke %{email} terpental atau dimatikan, jadi kami tidak bisa mengonfirmasinya. Tidak ada hal lain yang berubah di akunmu."
     confirm_resend: "Kirimi saya tautannya"
+    avg_position: "rata-rata %{n}"
   player_notification_mailer:
     via: "%{org} · lewat Playverto"
     why: "Kamu menerima ini karena kamu minta mendengar dari organisasi yang Vertos-nya sudah kamu jawab."

@@ -2189,6 +2189,7 @@ he:
     confirm_body: "עד שתאשר/י את %{email}, הארגונים של ה-Vertos ששמרת לא יכולים לספר לך מה קורה הלאה."
     confirm_blocked: "מיילים אל %{email} חזרו או כובו, ולכן איננו יכולים לאשר אותה. שום דבר אחר בחשבון לא משתנה."
     confirm_resend: "שלחו לי את הקישור"
+    avg_position: "ממוצע %{n}"
   player_notification_mailer:
     via: "%{org} · באמצעות Playverto"
     why: "אתם מקבלים את זה כי ביקשתם לשמוע מארגונים שענִיתם ל-Vertos שלהם."

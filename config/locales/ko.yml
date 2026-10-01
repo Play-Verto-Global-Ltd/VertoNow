@@ -2180,6 +2180,7 @@ ko:
     confirm_body: "%{email}을(를) 확인하기 전까지는, 보관한 Vertos의 기관들이 이후 소식을 알려 드릴 수 없습니다."
     confirm_blocked: "%{email}(으)로 보낸 이메일이 반송되었거나 수신이 중지되어 확인할 수 없습니다. 계정의 다른 부분은 바뀌지 않습니다."
     confirm_resend: "링크 보내기"
+    avg_position: "평균 %{n}"
   player_notification_mailer:
     via: "%{org} · Playverto를 통해"
     why: "답한 Vertos의 단체로부터 소식을 받기로 하셨기에 이 메일을 보냅니다."

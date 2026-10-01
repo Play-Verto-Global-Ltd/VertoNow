@@ -24,6 +24,89 @@ module AggregatesSurveyResults
                       race_condition_ttl: 30.seconds, &block)
   end
 
+  # The payload the end-of-Verto comparison and the account's copy of it both
+  # read, built in one place because they share a cache entry (above) and an
+  # entry two builders fill differently is one whose contents depend on which
+  # page was opened first. YouController used to build its own, without the
+  # swipe scale, the rating average or the token rows, so a respondent who
+  # opened their account moments after finishing could starve the player of
+  # them for the rest of the window.
+  #
+  # Every responder (answered ≥1 question), not only those who reached Submit —
+  # so a respondent compares against all the answers collected per question,
+  # matching the creator Results screen. Each row is tallied off its own
+  # answers, so partial responses count toward what they reached.
+  #
+  # Small-cell suppression (P1-14): with only a handful of responders the
+  # "comparison" IS the other respondent's answers, attributable to them by
+  # anyone who knows who else was asked. Same threshold and reasoning as the
+  # map — Response::MIN_REGION_SAMPLE_SIZE. Both surfaces refuse here.
+  def survey_results_payload(survey)
+    responses = survey.responses.where(answered: true)
+    total     = responses.count
+
+    if total < Response::MIN_REGION_SAMPLE_SIZE
+      { suppressed: true, total_responses: total, results: [] }
+    else
+      { total_responses: total,
+        results: aggregate_rows(survey, responses) + token_comparison_rows(survey, responses) }
+    end
+  end
+
+  # The flat row shape the player JS renders comparisons from, and the account
+  # page pairs a respondent's answers against (ResultsComparison).
+  def aggregate_rows(survey, responses)
+    aggregate_results(Array(survey.cards), responses).map.with_index do |row, idx|
+      {
+        index:  idx,
+        type:   row[:type],
+        prompt: row[:card]["text"] || row[:card]["prompt"] || row[:card]["title"],
+        options: row[:card]["options"],
+        # What a free-text card is FOR ("location" packs "CC|Label"), so the
+        # account page can say "Gauteng" rather than the stored "ZA|Gauteng".
+        input:  row[:card]["input"],
+        total:  row[:total],
+        counts: row[:counts],
+        avg:    row[:avg],
+        # A tap card's counts are keyed by response key; the bars need the words
+        # and the order that go with them, and the client has no other way to
+        # learn a scale the creator wrote. Key + label only — the colours are
+        # already on the card the respondent just answered.
+        responses: (TapScales.for_card(row[:card]).map { |r| r.slice("key", "label") } if row[:type] == "tap_card")
+      }.compact
+    end
+  end
+
+  # Tokenisation: one synthetic row per token type, appended after the
+  # per-question rows — this is how "compare your tokens" folds into the
+  # existing results-comparison panel instead of a separate endpoint/panel.
+  # A histogram of each response's cached token_totals[id], the same shape
+  # `scores`' score histogram uses.
+  def token_comparison_rows(survey, responses)
+    return [] unless survey.tokenisation_enabled?
+    token_types = Array(survey.token_types)
+    return [] if token_types.empty?
+
+    dist  = Hash.new { |h, k| h[k] = Hash.new(0) }
+    total = 0
+    responses.reorder(nil).select(:id, :token_totals).find_each(batch_size: 500) do |r|
+      total += 1
+      totals = r.token_totals || {}
+      token_types.each { |t| dist[t["id"]][totals[t["id"]].to_i] += 1 }
+    end
+
+    token_types.map do |t|
+      {
+        index:    "token:#{t['id']}",
+        type:     "token_total",
+        token_id: t["id"],
+        prompt:   [ t["icon"], t["name"] ].compact_blank.join(" "),
+        total:    total,
+        counts:   dist[t["id"]]
+      }
+    end
+  end
+
   # Builds the per-card results distribution. Iterates the responses ONCE
   # (batched, answers-column only, for AR relations) and accumulates every
   # card's tallies in the same pass — instead of re-enumerating the full

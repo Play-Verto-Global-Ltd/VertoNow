@@ -16348,13 +16348,15 @@ a.you-tile:focus-visible { outline: 2px solid #01EACB; outline-offset: 2px; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .you-bar-row.is-mine .you-bar-label { color: #fff; }
+/* A swipe card's statement: a line of its own over its bars. */
+.you-bar-group { margin: 12px 0 2px; font-size: 13px; line-height: 1.35; color: rgba(255,255,255,.88); }
 .you-bar-track {
   flex: 1; height: 8px; border-radius: 100px; background: rgba(255,255,255,.09);
   overflow: hidden;
 }
 .you-bar-fill { display: block; height: 100%; border-radius: 100px; background: rgba(255,255,255,.32); }
 .you-bar-row.is-mine .you-bar-fill { background: #01EACB; }
-.you-bar-pct { flex: 0 0 34px; text-align: end; color: rgba(255,255,255,.6); }
+.you-bar-pct { flex: 0 0 auto; min-width: 34px; text-align: end; color: rgba(255,255,255,.6); }
 .you-bar-row.is-mine .you-bar-pct { color: #fff; }
 
 /* Narrow phones: the label column at 38% leaves too little track to read, so

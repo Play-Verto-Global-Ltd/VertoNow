@@ -2181,6 +2181,7 @@ vi:
     confirm_body: "Cho đến khi bạn xác nhận %{email}, các tổ chức của những Vertos bạn đã lưu không thể cho bạn biết điều gì xảy ra tiếp theo."
     confirm_blocked: "Email gửi tới %{email} đã bị trả lại hoặc bị tắt, nên chúng tôi không thể xác nhận. Không có gì khác trong tài khoản của bạn thay đổi."
     confirm_resend: "Gửi liên kết cho tôi"
+    avg_position: "TB %{n}"
   player_notification_mailer:
     via: "%{org} · qua Playverto"
     why: "Bạn nhận được thư này vì bạn đã xin nghe tin từ các tổ chức có Vertos mà bạn đã trả lời."

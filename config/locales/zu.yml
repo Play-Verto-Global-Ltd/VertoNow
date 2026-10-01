@@ -2211,6 +2211,7 @@ zu:
     confirm_body: "Uze uqinisekise i-%{email}, izinhlangano zama-Vertos owagcinile azikwazi ukukutshela ukuthi kwenzekeni ngokulandelayo."
     confirm_blocked: "Ama-imeyili aya ku-%{email} abuyile noma avaliwe, ngakho asikwazi ukuliqinisekisa. Akukho okunye okushintshayo ku-akhawunti yakho."
     confirm_resend: "Ngithumelele isixhumanisi"
+    avg_position: "isilinganiso %{n}"
   player_notification_mailer:
     via: "%{org} · nge-Playverto"
     why: "Uthola lokhu ngoba ucele ukuzwa kuzinhlangano oziphendule ama-Verto azo."

@@ -2182,6 +2182,7 @@ sw:
     confirm_body: "Hadi uthibitishe %{email}, mashirika ya Vertos ulizohifadhi hayawezi kukueleza kitakachofuata."
     confirm_blocked: "Barua pepe kwenda %{email} zimerudishwa au zimezimwa, kwa hiyo hatuwezi kuithibitisha. Hakuna kingine kinachobadilika kwenye akaunti yako."
     confirm_resend: "Nitumie kiungo"
+    avg_position: "wast. %{n}"
   player_notification_mailer:
     via: "%{org} · kupitia Playverto"
     why: "Unapata hii kwa sababu uliomba kusikia kutoka kwa mashirika ambayo umejibu Vertos zao."

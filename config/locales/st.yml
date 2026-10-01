@@ -2213,6 +2213,7 @@ st:
     confirm_body: "Ho fihlela o netefatsa %{email}, mekhatlo ea li-Vertos tseo o li bolokileng e ke ke ea o bolella se etsahalang ka mor'a moo."
     confirm_blocked: "Mangolo-tsoibila a eang ho %{email} a khutlile kapa a tima, kahoo re ke ke ra e netefatsa. Ha ho letho le leng le fetohang ak'haonteng ea hao."
     confirm_resend: "Nthomelle lehokela"
+    avg_position: "kelello %{n}"
   player_notification_mailer:
     via: "%{org} · ka Playverto"
     why: "O fumana sena hobane o kopile ho utlwa ho mekgatlo eo o arabileng di-Verto tsa yona."

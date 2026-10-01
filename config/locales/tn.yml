@@ -2213,6 +2213,7 @@ tn:
     confirm_body: "Go fitlha o netefatsa %{email}, ditlamo tsa di-Vertos tse o di bolokileng ga di kgone go go bolelela se se diragalang morago."
     confirm_blocked: "Diimeile tse di yang kwa %{email} di boetse kgotsa di timilwe, ka jalo ga re kgone go e netefatsa. Ga go sepe se sengwe se se fetogang mo akhaontong ya gago."
     confirm_resend: "Nthomelela kgokagano"
+    avg_position: "palogare %{n}"
   player_notification_mailer:
     via: "%{org} · ka Playverto"
     why: "O amogela seno ka gonne o kopile go utlwa go mekgatlho e o arabileng di-Verto tsa yona."

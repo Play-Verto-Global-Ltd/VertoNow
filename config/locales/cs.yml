@@ -1693,6 +1693,7 @@ cs:
     save_prefs: "Uložit předvolby"
     prefs_saved: "Předvolby uloženy."
     delete_body: "Tím smažete svůj účet a seznam Verto, která jste si uložili. Vaše odpovědi zůstanou organizacím, které se ptaly – byly dány anonymně a není na nás je odstraňovat."
+    avg_position: "prům. %{n}"
   player_notification_mailer:
     via: "%{org} · přes Playverto"
     why: "Tento e-mail dostáváte, protože jste chtěli dostávat zprávy od organizací, na jejichž průzkumy Verto jste odpověděli."

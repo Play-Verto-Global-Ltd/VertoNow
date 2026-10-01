@@ -491,59 +491,15 @@ class YouController < ApplicationController
   def comparison_for(survey, response)
     return { state: :off } unless survey.compare_results?
 
-    payload = cached_survey_aggregate(:results, survey) do
-      responses = survey.responses.where(answered: true)
-      total     = responses.count
-      if total < Response::MIN_REGION_SAMPLE_SIZE
-        { suppressed: true, total_responses: total, results: [] }
-      else
-        { total_responses: total, results: aggregate_rows(survey, responses) }
-      end
-    end
+    # The payload is the player's own, built by the same method behind the same
+    # cache entry: what the two read must be one thing, not two things that
+    # happen to share a key.
+    payload = cached_survey_aggregate(:results, survey) { survey_results_payload(survey) }
 
     return { state: :suppressed, total: payload[:total_responses] } if payload[:suppressed]
 
     { state: :rows, total: payload[:total_responses],
-      rows: comparison_rows(payload[:results], response) }
-  end
-
-  # Pair each aggregated card with what THIS person said. Rows the account can
-  # draw a fair bar for are the option-shaped ones; for the rest — a written
-  # answer, a rating, a ranking — their own answer is shown without a
-  # distribution rather than with a chart that means something else.
-  def comparison_rows(results, response)
-    answers = response.answers.to_h
-    Array(results).filter_map do |row|
-      mine = answers[row[:index].to_s]
-      mine = mine["value"] if mine.is_a?(Hash)
-      next if mine.nil? || mine == "" || mine == false
-
-      options = Array(row[:options])
-      counts  = row[:counts].to_h
-      total   = row[:total].to_i
-      bars = if options.any? && total.positive?
-        options.map do |option|
-          n = counts[option].to_i
-          { label: option, pct: (n * 100.0 / total).round,
-            mine: Array(mine).map(&:to_s).include?(option.to_s) }
-        end
-      else
-        []
-      end
-
-      { prompt: row[:prompt], mine: Array(mine).join(", "), bars: bars }
-    end
-  end
-
-  # aggregate_rows lives on PlayerController and carries the tap-card scale the
-  # client needs; here the rows are rendered server-side and only the option
-  # tallies are used, so this is the same shape without that extra.
-  def aggregate_rows(survey, responses)
-    aggregate_results(Array(survey.cards), responses).map.with_index do |row, idx|
-      { index: idx, type: row[:type],
-        prompt: row[:card]["text"] || row[:card]["prompt"] || row[:card]["title"],
-        options: row[:card]["options"], total: row[:total], counts: row[:counts] }
-    end
+      rows: ResultsComparison.rows(payload[:results], response.answers) }
   end
 
   # A page listing what one person has answered must not be written to a

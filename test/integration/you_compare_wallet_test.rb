@@ -115,6 +115,240 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     assert_select ".you-bar-row", 0
   end
 
+  # ── Every kind of question ────────────────────────────────────────────────
+  #
+  # The aggregator stores each type its own way — rank SUMS for a ranking,
+  # integer-keyed tallies for a scale, a Hash per statement for a swipe card —
+  # and the page used to read every one of them as a flat label => count map.
+  # A swipe card therefore 500ed the whole page for anyone who had answered one
+  # (Hash#to_i), a scale drew only 0% bars, and a ranking drew 100/200/300%.
+  # The decks below have the shapes the editor and the demo seeder write.
+
+  MIXED = [
+    { "type" => "welcome_card", "cid" => "w", "text" => "Hello" },                                # 0
+    { "type" => "select_many", "cid" => "m", "text" => "How do you get here?",
+      "options" => %w[Bus Bike Walk] },                                                           # 1
+    { "type" => "rating", "cid" => "r", "text" => "Rate the street",
+      "options" => %w[Poor Fair Good Great Excellent] },                                          # 2
+    { "type" => "range", "cid" => "g", "text" => "How confident are you?",
+      "options" => %w[Low Middling High] },                                                       # 3
+    { "type" => "nps", "cid" => "n", "text" => "Would you recommend it?",
+      "options" => (0..10).map(&:to_s) },                                                         # 4
+    { "type" => "prioritise", "cid" => "p", "text" => "Rank these",
+      "options" => %w[Homes Jobs Parks] },                                                        # 5
+    { "type" => "tap_card", "cid" => "t", "text" => "Swipe each one",
+      "options" => [ "Cars belong here", "Trees belong here" ] },                                 # 6
+    { "type" => "yes_no", "cid" => "y", "text" => "Do you live nearby?" },                        # 7
+    { "type" => "contact_form", "cid" => "c", "text" => "Leave your details" },                   # 8
+    { "type" => "open_ended", "cid" => "l", "input" => "location", "demographic" => true,
+      "text" => "Where do you live?" }                                                            # 9
+  ].freeze
+
+  OTHERS_ANSWER = {
+    "1" => { "type" => "select_many", "value" => %w[Bus] },
+    "2" => { "type" => "rating", "value" => 5 },
+    "3" => { "type" => "range", "value" => 2 },
+    "4" => { "type" => "nps", "value" => 9 },
+    "5" => { "type" => "prioritise", "value" => %w[Homes Jobs Parks] },
+    "6" => { "type" => "tap_card", "value" => { "Cars belong here" => "yes", "Trees belong here" => "no" } },
+    "7" => { "type" => "yes_no", "value" => "Yes" },
+    "8" => { "type" => "contact_form", "value" => { "email" => "someone-else@example.test" } },
+    "9" => { "type" => "open_ended", "value" => "ZA|Gauteng" }
+  }.freeze
+
+  MY_ANSWER = {
+    "1" => { "type" => "select_many", "value" => %w[Bike Walk] },
+    "2" => { "type" => "rating", "value" => 2 },
+    "3" => { "type" => "range", "value" => 0 },
+    "4" => { "type" => "nps", "value" => 3 },
+    "5" => { "type" => "prioritise", "value" => %w[Parks Jobs Homes] },
+    "6" => { "type" => "tap_card", "value" => { "Cars belong here" => "no", "Trees belong here" => "no" } },
+    "7" => { "type" => "yes_no", "value" => "No" },
+    "8" => { "type" => "contact_form", "value" => { "email" => "me@example.test" } },
+    "9" => { "type" => "open_ended", "value" => "GB|London" }
+  }.freeze
+
+  def mixed_verto(**attrs)
+    s = survey(cards: MIXED, **attrs)
+    6.times do
+      s.responses.create!(session_token: SecureRandom.uuid, status: "completed", answered: true,
+                          completed_at: 1.day.ago, answers: OTHERS_ANSWER.deep_dup)
+    end
+    mine = s.responses.create!(session_token: SecureRandom.uuid, status: "completed", answered: true,
+                               completed_at: 1.hour.ago, answers: MY_ANSWER.deep_dup)
+    [ s, mine ]
+  end
+
+  # One question's block on the page, found by what it asks.
+  def question(prompt)
+    css_select(".you-q").find { |q| q.at_css(".you-q-prompt")&.text.to_s.strip == prompt } or
+      flunk("no block asks #{prompt.inspect}; the page asks #{css_select('.you-q-prompt').map(&:text).inspect}")
+  end
+
+  def bars_of(block)
+    block.css(".you-bar-row").map do |row|
+      { label: row.at_css(".you-bar-label").text.strip, pct: row.at_css(".you-bar-pct").text.strip,
+        mine: row["class"].to_s.include?("is-mine") }
+    end
+  end
+
+  def headings_of(block) = block.css(".you-bar-group").map { |h| h.text.strip }
+
+  test "a swipe card does not take the page down for the person who answered it" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+
+    assert_response :success
+  end
+
+  test "a swipe card shows each statement on the card's own scale, with their pick marked" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+    scale = TapScales.for_card(MIXED[6])
+    captions = scale.map { |r| r["label"] }
+
+    get you_verto_path(s)
+    block = question("Swipe each one")
+    bars  = bars_of(block)
+
+    assert_equal [ "Cars belong here", "Trees belong here" ], headings_of(block),
+      "the statement heads its own group; folded into each bar's label it truncated before the answer"
+    assert_equal captions * 2, bars.map { |b| b[:label] }, "one bar per response, per statement"
+    assert_match(/Cars belong here: .+, Trees belong here: .+/, block.at_css(".you-q-mine").text,
+                 "their answer names each statement and what they said, not Hash#inspect")
+    assert_equal 2, bars.count { |b| b[:mine] }, "exactly one marked bar per statement"
+    no = captions[scale.index { |r| r["key"] == "no" }]
+    assert_equal [ no, no ], bars.select { |b| b[:mine] }.map { |b| b[:label] }
+    # 6 of 7 said yes to the first statement — a share of that statement, not of the card.
+    yes = scale.index { |r| r["key"] == "yes" }
+    assert_equal "86%", bars[yes][:pct]
+  end
+
+  test "a rating is drawn on its stars, with their own number marked" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+    block = question("Rate the street")
+    bars  = bars_of(block)
+
+    assert_match "2 ★", block.at_css(".you-q-mine").text
+    assert_equal (1..5).map { |i| "#{i} ★" }, bars.map { |b| b[:label] }
+    assert_equal [ "2 ★" ], bars.select { |b| b[:mine] }.map { |b| b[:label] }
+    assert_equal "86%", bars.find { |b| b[:label] == "5 ★" }[:pct]
+    assert_equal "14%", bars.find { |b| b[:label] == "2 ★" }[:pct]
+    assert_equal "0%",  bars.find { |b| b[:label] == "1 ★" }[:pct]
+  end
+
+  test "a range or NPS is drawn on the card's own labels, indexed by step" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+
+    range = question("How confident are you?")
+    assert_match "Low", range.at_css(".you-q-mine").text,
+      "stored as step 0, shown as the word the card gave that step"
+    assert_equal %w[Low Middling High], bars_of(range).map { |b| b[:label] }
+    assert_equal [ "Low" ], bars_of(range).select { |b| b[:mine] }.map { |b| b[:label] }
+    assert_equal "86%", bars_of(range).find { |b| b[:label] == "High" }[:pct]
+
+    nps = question("Would you recommend it?")
+    assert_equal (0..10).map(&:to_s), bars_of(nps).map { |b| b[:label] }
+    assert_equal [ "3" ], bars_of(nps).select { |b| b[:mine] }.map { |b| b[:label] }
+    assert_equal "86%", bars_of(nps).find { |b| b[:label] == "9" }[:pct]
+  end
+
+  test "a ranking shows the group's order by average position, never a percentage over 100" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+    block = question("Rank these")
+    bars  = bars_of(block)
+
+    assert_match "Parks › Jobs › Homes", block.at_css(".you-q-mine").text
+    assert_equal [ "1. Homes", "2. Jobs", "3. Parks" ], bars.map { |b| b[:label] },
+                 "6 of 7 put Homes first, so the group's order is Homes, Jobs, Parks"
+    assert_equal [ "avg 1.3", "avg 2.0", "avg 2.7" ],
+                 bars.map { |b| b[:pct] }, "the figure is the mean position, as the player prints it"
+    assert bars.none? { |b| b[:mine] },
+      "their answer is the WHOLE list, so marking any bar as theirs says nothing"
+    block.css(".you-bar-fill").each do |fill|
+      assert_operator fill["style"][/width:\s*(\d+)/, 1].to_i, :<=, 100
+    end
+  end
+
+  test "select-many marks every option they picked" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+    bars = bars_of(question("How do you get here?"))
+
+    assert_equal %w[Bike Walk], bars.select { |b| b[:mine] }.map { |b| b[:label] }.sort
+    assert_equal "86%", bars.find { |b| b[:label] == "Bus" }[:pct]
+  end
+
+  test "a yes/no card that stores no options still gets its bars, from what was answered" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+    bars = bars_of(question("Do you live nearby?"))
+
+    assert_equal %w[Yes No], bars.map { |b| b[:label] }, "most chosen first, as the player draws it"
+    assert_equal [ "No" ], bars.select { |b| b[:mine] }.map { |b| b[:label] }
+  end
+
+  test "a location answer is said as the place, not as the stored CC|Label" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+    block = question("Where do you live?")
+
+    assert_match "London", block.at_css(".you-q-mine").text
+    assert_no_match(/GB\|/, block.at_css(".you-q-mine").text)
+    assert_empty bars_of(block)
+  end
+
+  test "a contact form is never put on the page, theirs or anyone else's" do
+    s, mine = mixed_verto
+    sign_in_with([ mine ])
+
+    get you_verto_path(s)
+
+    assert_no_match(/example\.test/, response.body)
+    assert_select ".you-q-prompt", text: "Leave your details", count: 0
+  end
+
+  test "the account and the player read one payload, so neither can starve the other" do
+    # They share a cache entry on purpose (AggregatesSurveyResults), which is
+    # only safe if both build the SAME payload. The account's used to lack the
+    # swipe scale and the token rows, so whichever page was opened first decided
+    # what the other got for the next ten seconds. The suite's cache is a null
+    # store, which is why no test could see it.
+    s, mine = mixed_verto(tokenisation_enabled: true,
+                          token_types: [ { "id" => "leaf", "name" => "Leaves", "icon" => "🍃" } ])
+    sign_in_with([ mine ])
+
+    stub_method(Rails, :cache, ActiveSupport::Cache::MemoryStore.new) do
+      get you_verto_path(s)
+      assert_response :success
+
+      get player_results_path(s.publish_token)
+      rows = JSON.parse(response.body)["results"]
+
+      tap = rows.find { |r| r["type"] == "tap_card" }
+      assert tap["responses"].present?, "the swipe scale the player draws its bars from"
+      assert rows.any? { |r| r["type"] == "token_total" }, "the token rows the player folds in"
+      assert rows.find { |r| r["type"] == "rating" }.key?("avg")
+    end
+  end
+
   # ── Whose Verto is it ─────────────────────────────────────────────────────
 
   test "a Verto this account has not kept is not found, whether or not it exists" do

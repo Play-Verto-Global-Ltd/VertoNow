@@ -2215,6 +2215,7 @@ xh:
     confirm_body: "Ude uqinisekise i-%{email}, imibutho yee-Vertos ozigcinileyo ayinakukuxelela okwenzekayo emva koko."
     confirm_blocked: "Ii-imeyile eziya ku-%{email} zibuyile okanye zicinyiwe, ngoko asinakuyiqinisekisa. Akukho nto enye itshintshayo kwi-akhawunti yakho."
     confirm_resend: "Ndithumelele ikhonkco"
+    avg_position: "umlinganiselo %{n}"
   player_notification_mailer:
     via: "%{org} · nge-Playverto"
     why: "Ufumana oku kuba ucele ukuva kwimibutho oyiphendulileyo ii-Verto zayo."
