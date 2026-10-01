@@ -387,7 +387,12 @@ const COMPONENTS = {
   nps: (opts, ctx = {}) => npsHtml(opts, ctx),
 
   rating: (opts, ctx = {}) => {
-    const icon = ctx.ratingIcon || { on: "★", off: "☆", kind: "star" }
+    // The card's own emoji beats the themed icon, as it does in the server
+    // render (ApplicationHelper#rating_icon) — a switch away and back must not
+    // lose the creator's pick.
+    const icon = ctx.ratingEmoji
+      ? { on: ctx.ratingEmoji, off: ctx.ratingEmoji, kind: "emoji" }
+      : (ctx.ratingIcon || { on: "★", off: "☆", kind: "star" })
     const fallback = defaultOptionsFor("rating")
     const labels = opts.length >= 2 ? opts : fallback
     // One star and one caption per label — mirrors the `when "rating"` branch of
@@ -400,16 +405,29 @@ const COMPONENTS = {
     const mids  = labels.length >= stars
       ? labels.map((lbl, i) => ({ lbl, i })).filter(({ i }) => i > 0 && i < stars - 1)
       : []
+    // The 🎨 slot mirrors the `editable` branch of _card_component.html.erb:
+    // the shared picker writes into the hidden input beside the button and the
+    // editor's setRatingEmoji repaints off that input's `input` event.
     return `
       <div class="rating-wrap rating-kind-${icon.kind}" data-controller="rating">
+        <span class="rating-style-slot">
+          <button type="button" class="option-style-btn rating-style-btn"
+                  data-emoji-picker-trigger
+                  data-action="click->emoji-picker#open"
+                  title="${esc(t("card.rating_icon"))}"
+                  aria-label="${esc(t("card.rating_icon"))}">🎨</button>
+          <input type="text" class="rating-emoji-input" tabindex="-1" aria-hidden="true"
+                 value="${esc(ctx.ratingEmoji || "")}"
+                 data-action="input->survey-editor#setRatingEmoji" />
+        </span>
         <div class="rating-stars">
           ${[...Array(stars)].map((_, i) => `
             <span class="rating-star"
                   data-rating-target="star"
                   data-rating-index="${i}"
-                  data-rating-on="${icon.on}"
-                  data-rating-off="${icon.off}"
-                  data-action="click->rating#pick mouseover->rating#hover mouseout->rating#unhover">${icon.off}</span>
+                  data-rating-on="${esc(icon.on)}"
+                  data-rating-off="${esc(icon.off)}"
+                  data-action="click->rating#pick mouseover->rating#hover mouseout->rating#unhover">${esc(icon.off)}</span>
           `).join("")}
         </div>
         <div class="rating-labels">
@@ -1338,6 +1356,7 @@ export default class extends Controller {
       const builder = COMPONENTS[type] || (() => "")
       slot.innerHTML = builder(opts, {
         ratingIcon:      this._ratingIcon(),
+        ratingEmoji:     card.dataset.cardRatingEmoji || "",
         npsShape:        this._npsShape(card),
         npsShapeGroups:  this._npsShapePicker.groups,
         npsShapeLabel:   this._npsShapePicker.label,

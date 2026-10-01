@@ -988,10 +988,29 @@
           the two apart, and only a full ladder has a caption to show per star. %>
       <% stars       = Survey::RATING_STARS %>
       <% full_ladder = labels.size >= stars %>
-      <% icon      = rating_icon(@survey) %>
+      <% icon      = rating_icon(@survey, card) %>
       <% rating_actions = (editable ? "click->rating#pick mouseover->rating#hover mouseout->rating#unhover" :
                                        "click->rating#pick mouseover->rating#hover mouseout->rating#unhover keydown->rating#pickOnKey").html_safe %>
       <div class="rating-wrap rating-kind-<%= icon[:kind] %>" data-controller="rating">
+        <% if editable %>
+          <%# The creator's one 🎨 for the whole set — the select options' paint
+              button, on a rating. It opens the shared emoji picker, which
+              writes into the hidden text input beside it (emoji_picker#open
+              finds the nearest input[type=text]) and that input's `input`
+              event is what repaints every star and marks the deck dirty
+              (survey-editor#setRatingEmoji). Outside .rating-stars, whose
+              overflow: clip would cut it off. Preview strips the whole slot. %>
+          <span class="rating-style-slot">
+            <button type="button" class="option-style-btn rating-style-btn"
+                    data-emoji-picker-trigger
+                    data-action="click->emoji-picker#open"
+                    title="<%= t("card.rating_icon") %>"
+                    aria-label="<%= t("card.rating_icon") %>">🎨</button>
+            <input type="text" class="rating-emoji-input" tabindex="-1" aria-hidden="true"
+                   value="<%= card["rating_emoji"].to_s %>"
+                   data-action="input->survey-editor#setRatingEmoji" />
+          </span>
+        <% end %>
         <div class="rating-stars" <%= editable ? "".html_safe : tag.attributes(role: "radiogroup") %>>
           <% stars.times do |i| %>
             <%# Radio rather than slider semantics: discrete, individually

@@ -3036,8 +3036,13 @@ export default class extends Controller {
       }
       const el = card.querySelector("textarea, input[type='date']"); if (el) el.value = value
     } else if (type === "rating") {
+      // The star's own glyphs, not ★/☆: a themed Verto's rating wears an emoji
+      // and a creator can give a card its own, so a restore in literal stars
+      // put the wrong picture on every locked rating card.
       card.querySelectorAll(".rating-star").forEach((s, i) => {
-        const on = i < Number(value); s.classList.toggle("active", on); s.textContent = on ? "★" : "☆"
+        const on = i < Number(value)
+        s.classList.toggle("active", on)
+        s.textContent = on ? (s.dataset.ratingOn || "★") : (s.dataset.ratingOff || "☆")
       })
     }
   }

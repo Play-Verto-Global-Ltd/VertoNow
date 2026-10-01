@@ -592,6 +592,51 @@ class SurveyImageSanitizeTest < ActiveSupport::TestCase
   end
 
   # ── NPS anchor lines (nps_low_label / nps_high_label) ──────────────────
+  # A rating card's own emoji for its five points — the creator's pick over the
+  # Verto-themed glyph. Allowlist-or-drop, like nps_shape above: a rating card,
+  # one emoji cluster, no longer than a token icon.
+  def rating_card(extra = {})
+    { "type" => "rating", "cid" => "r1", "text" => "How was it?", "options" => %w[Poor Great] }.merge(extra)
+  end
+
+  test "a rating emoji is kept, trimmed, on a rating card" do
+    assert_equal "🎲", Survey.sanitize_cards_images!([ rating_card("rating_emoji" => " 🎲 ") ]).first["rating_emoji"]
+  end
+
+  test "a flag, a skin tone, a ZWJ family, a keycap and a picker glyph outside the hoisting ranges are each one emoji" do
+    %w[🇪🇺 👍🏽 👨‍👩‍👧 1️⃣ ⏰ ⌚ 🏴󠁧󠁢󠁥󠁮󠁧󠁿].each do |one|
+      out = Survey.sanitize_cards_images!([ rating_card("rating_emoji" => one) ]).first
+      assert_equal one, out["rating_emoji"], "#{one.inspect} is a single cluster and should be kept"
+    end
+  end
+
+  test "two emoji, words, junk and an over-long value are dropped rather than stored" do
+    [ "🎉🎊", "🎲 🎲", "🎲\n🎲", "books", "📚 books", "a", "", "   ", 12, [ "🎲" ], { "on" => "🎲" },
+      "👨‍👩‍👧‍👦👨‍👩‍👧‍👦", "👩🏽‍❤️‍💋‍👨🏼‍👩🏽‍❤️‍💋‍👨🏼" ].each do |bad|
+      out = Survey.sanitize_cards_images!([ rating_card("rating_emoji" => bad) ]).first
+      refute out.key?("rating_emoji"), "#{bad.inspect} should have been dropped"
+    end
+  end
+
+  test "a rating emoji on any other type is dropped" do
+    out = Survey.sanitize_cards_images!([ rating_card("type" => "multiple_choice", "rating_emoji" => "🎲") ]).first
+    refute out.key?("rating_emoji")
+  end
+
+  # The creator's say on the colour of a card's words over its mobile
+  # background: dark or light, on any type, and nothing else. Absent is Auto.
+  test "a text ink is kept when it is dark or light, on any type" do
+    assert_equal "dark",  Survey.sanitize_cards_images!([ rating_card("text_ink" => "dark") ]).first["text_ink"]
+    assert_equal "light", Survey.sanitize_cards_images!([ rating_card("type" => "tap_card", "text_ink" => " Light ") ]).first["text_ink"]
+  end
+
+  test "any other text ink goes back to Auto rather than into the deck" do
+    [ "#ff0000", "auto", "", nil, 1, [ "dark" ] ].each do |bad|
+      out = Survey.sanitize_cards_images!([ rating_card("text_ink" => bad) ]).first
+      refute out.key?("text_ink"), "#{bad.inspect} should have been dropped — only dark or light, never a colour"
+    end
+  end
+
   # The two captions beside a liquid scale's ends: "We need a short line of text
   # to the left of 0 and to the left of 10... having these editable per NPS
   # question would be good as the scales relate to the question asked."

@@ -52,6 +52,21 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "⚽", rating_icon(themed(theme: "Football fans"))[:on]
   end
 
+  # The card's own pick beats the theme — "if it auto-generated something
+  # completely unrelated to education, I'll be stuck, because I can't actually
+  # change that". One emoji for all five points; absent or blank, the theme.
+  test "a rating card's own emoji beats the Verto's theme, and a blank one falls back" do
+    survey = themed(theme: "Books and reading")
+    assert_equal "📚", rating_icon(survey)[:on], "the theme still picks when the card has no say"
+    assert_equal({ on: "🎲", off: "🎲", kind: "emoji" }, rating_icon(survey, { "rating_emoji" => "🎲" }))
+    assert_equal({ on: "🇪🇺", off: "🇪🇺", kind: "emoji" }, rating_icon(survey, { "rating_emoji" => " 🇪🇺 " }),
+                 "a flag is one emoji, and the stored value is trimmed on the way out")
+    assert_equal "📚", rating_icon(survey, { "rating_emoji" => "" })[:on]
+    assert_equal "📚", rating_icon(survey, {})[:on]
+    assert_equal "★", rating_icon(nil, { "rating_emoji" => "" })[:on]
+    assert_equal "🎲", rating_icon(nil, { "rating_emoji" => "🎲" })[:on], "no survey at all is still a pick"
+  end
+
   # nps_container_shape themes the NPS liquid-container silhouette per Verto.
   test "nps container shape is a known shape, stable per theme, and varies by theme" do
     %w[Space Food Climate].each do |t|

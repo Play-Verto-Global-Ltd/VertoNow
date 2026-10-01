@@ -309,6 +309,10 @@ export default class extends Controller {
       ".split-left-design-prompt, .quiz-correct-block, .token-award-block, " +
       ".book-edit-tools, .logic-branch-block, .mark-correct, .mark-correct-grid, " +
       ".tap-card-image-btn, .slider-axis-toggle, .add-animation-fab, " +
+      // The rating card's 🎨 and the hidden input the picker writes into. The
+      // picker is bound on the editor root, so a cloned trigger would open
+      // the creator's emoji popover inside a respondent view.
+      ".rating-style-slot, " +
       // The panel's OTHER creator CTAs. These are not inert decoration: like the
       // 🎨 below, `media-picker` is bound on the editor root — an ancestor of
       // this overlay — so a cloned "Background" or "Reposition" opened the

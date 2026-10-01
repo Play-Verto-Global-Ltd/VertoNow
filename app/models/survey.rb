@@ -996,6 +996,23 @@ class Survey < ApplicationRecord
     BrandPalette.luminance(hex.to_s) >= LIGHT_BACKDROP_THRESHOLD ? "dark" : "light"
   end
 
+  # Exactly one emoji, by the same rule the editor's picker uses to offer a
+  # pasted one: a single grapheme cluster (a flag's two regional indicators, a
+  # ZWJ family, a skin-toned hand and a keycap are each one), with a
+  # pictographic in it so "a" and "ab" are not, no whitespace so "🎲 🎲" is
+  # not, and bounded so a cluster can only be so long. Ruby's own grapheme
+  # rules rather than LabelEmoji's hoisting ranges: those exist to decide what
+  # may be torn off the FRONT of a label, and they leave out whole blocks the
+  # picker offers (⏰ ⌚ ⏳ …), which would have made a pick vanish on save.
+  SINGLE_EMOJI_MAX_CODEPOINTS = 16
+  SINGLE_EMOJI_MARK = /[\p{Extended_Pictographic}\p{Regional_Indicator}\u{20E3}]/
+
+  def self.single_emoji?(str)
+    s = str.to_s
+    s.present? && !s.match?(/\s/) && s.length <= SINGLE_EMOJI_MAX_CODEPOINTS &&
+      s.grapheme_clusters.size == 1 && s.match?(SINGLE_EMOJI_MARK)
+  end
+
   # One axis of a reposition: a 0-100 percentage, rounded to a whole number
   # because that is all a background-position can usefully carry here. nil for
   # anything that isn't a number, so junk is dropped rather than silently
@@ -1472,6 +1489,31 @@ class Survey < ApplicationRecord
           c["nps_shape"] = shape
         else
           c.delete("nps_shape")
+        end
+      end
+      # A rating card's own glyph — one emoji for all five points, chosen by the
+      # creator over the Verto-themed default (ApplicationHelper#rating_icon).
+      # Same allowlist-or-drop shape as the two above: only on a rating card,
+      # only ONE emoji. Dropping it falls back to the themed pick.
+      if c.key?("rating_emoji")
+        emoji = c["rating_emoji"].is_a?(String) ? c["rating_emoji"].strip : ""
+        if c["type"].to_s == "rating" && single_emoji?(emoji)
+          c["rating_emoji"] = emoji
+        else
+          c.delete("rating_emoji")
+        end
+      end
+      # The ink a card's words take over its mobile background when the creator
+      # has SAID, rather than left it to the measurement: "dark" or "light", on
+      # any type, and nothing else. Absent means Auto — the ink measured off the
+      # picture (mobile_bg.ink, above) — and junk goes back to Auto rather than
+      # into the deck. Top-level, not inside mobile_bg: a background can be
+      # swapped or removed and the creator's say about the words survives it.
+      if c.key?("text_ink")
+        if (ink = sanitize_backdrop_ink(c["text_ink"])).present?
+          c["text_ink"] = ink
+        else
+          c.delete("text_ink")
         end
       end
       # "This card is off the classic 0-10 scale." Stored only when a creator

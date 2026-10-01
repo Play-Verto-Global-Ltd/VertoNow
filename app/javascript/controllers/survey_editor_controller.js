@@ -2521,6 +2521,59 @@ export default class extends Controller {
   // vessel they picked without a round-trip. The redraw is the shared
   // lib/nps_vessels drawing, i.e. the same one the type panel uses and a mirror
   // of the Ruby that rendered what is on screen now.
+  // The creator picked an emoji for a rating card's five points (or cleared
+  // it): record it on the wrap for serialize(), then repaint every star in
+  // place so they see the set they chose without a round-trip. Clearing goes
+  // back to the Verto-themed glyph the editor root carries (the same one
+  // ApplicationHelper#rating_icon rendered what is on screen with).
+  setRatingEmoji(event) {
+    const card = event.currentTarget.closest("[data-survey-editor-target='card']")
+    if (!card) return
+    const emoji = (event.currentTarget.value || "").trim()
+    if (emoji) card.dataset.cardRatingEmoji = emoji
+    else delete card.dataset.cardRatingEmoji
+
+    const root = this.element.dataset
+    const icon = emoji
+      ? { on: emoji, off: emoji, kind: "emoji" }
+      : { on: root.ratingIconOn || "★", off: root.ratingIconOff || "☆", kind: root.ratingIconKind || "star" }
+    const wrap = card.querySelector(".rating-wrap")
+    if (wrap) {
+      wrap.classList.toggle("rating-kind-star",  icon.kind === "star")
+      wrap.classList.toggle("rating-kind-emoji", icon.kind === "emoji")
+      wrap.querySelectorAll(".rating-star").forEach((star) => {
+        star.dataset.ratingOn  = icon.on
+        star.dataset.ratingOff = icon.off
+        star.textContent = star.classList.contains("active") ? icon.on : icon.off
+      })
+    }
+    this.markDirty()
+  }
+
+  // The creator chose dark or light words for a card over its mobile
+  // background from the two circles on the selection toolbar (rich-text#ink,
+  // which sends the card it was over), or took the choice back (ink ""). It is
+  // recorded on the wrap for serialize(), and the panel's ink class is
+  // re-decided — the creator's say first, the measured ink second — which is
+  // the precedence ApplicationHelper#card_text_ink renders with, so the live
+  // editor and the next server render agree.
+  setTextInk(event) {
+    const { card, ink } = event.detail || {}
+    if (!card) return
+    if (ink) card.dataset.cardTextInk = ink
+    else delete card.dataset.cardTextInk
+    this.applyTextInk(card)
+    this.markDirty()
+  }
+
+  applyTextInk(card) {
+    const panel = card.querySelector(".split-right")
+    if (!panel) return
+    let measured = null
+    try { measured = JSON.parse(card.dataset.cardMobileBg || "{}")?.ink || null } catch (_) { measured = null }
+    panel.classList.toggle("bg-ink-dark", (card.dataset.cardTextInk || measured) === "dark")
+  }
+
   setNpsShape(event) {
     const card = event.currentTarget.closest("[data-survey-editor-target='card']")
     if (!card) return
@@ -2850,6 +2903,15 @@ export default class extends Controller {
       // gate: the server drops it if it isn't a vessel it can draw on an NPS
       // card, and its absence means "use the Verto-themed default".
       if (type === "nps" && card.dataset.cardNpsShape) out.nps_shape = card.dataset.cardNpsShape
+      // Rating cards carry the one emoji the creator gave their five points,
+      // same gate: the server keeps it only on a rating card and only when it
+      // is a single emoji, and its absence means "the Verto-themed default".
+      if (type === "rating" && card.dataset.cardRatingEmoji) out.rating_emoji = card.dataset.cardRatingEmoji
+      // The creator's say on the colour of the card's words over its mobile
+      // background — "dark" or "light" from the selection toolbar's two
+      // circles. Absent is Auto (the measured mobile_bg.ink); the server drops
+      // anything else.
+      if (card.dataset.cardTextInk) out.text_ink = card.dataset.cardTextInk
       // …and whether the creator has taken it off the classic 0-10. Emitted
       // only when true, because absent is not "classic" — it is "nobody has
       // said", which the labels then answer (NpsHelper#nps_custom_scale?).
