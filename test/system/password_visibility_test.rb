@@ -139,6 +139,9 @@ class PasswordVisibilityTest < ApplicationSystemTestCase
   test "both labels and both aria-labels are in the reader's language" do
     visit new_player_session_path(locale: "fr")
     assert_selector ".password-field", wait: 5
+    # The aria-label is the controller's to set; read it before the controller
+    # connects and it is nil (gate run, 2 October).
+    wait_for_stimulus
 
     before = field_state(".password-field")
     assert_equal I18n.t("auth.show", locale: :fr), before["label"]
