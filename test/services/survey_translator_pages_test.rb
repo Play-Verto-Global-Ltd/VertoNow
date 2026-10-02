@@ -80,7 +80,7 @@ class SurveyTranslatorPagesTest < ActiveSupport::TestCase
     assert_equal "Tu n'avais pas de manteau.", out.first["pages"][1]["text"]
   end
 
-  test "a page the model dropped falls back to its source text" do
+  test "a page the model dropped comes back blank, keeping the page count" do
     client = RecordingClient.new([
       { text: "Un dilemme", options: [ "Rester", "Partir" ],
         pages: [ { id: "pg_a", text: "Il pleuvait." } ] } # pg_b missing
@@ -89,10 +89,10 @@ class SurveyTranslatorPagesTest < ActiveSupport::TestCase
     out = translator_with(client).call(cards: [ scenario_card ], target_locale: "fr")
 
     assert_equal 2, out.first["pages"].size, "page count must never drift"
-    assert_equal "You had no coat.", out.first["pages"][1]["text"]
+    assert_equal "", out.first["pages"][1]["text"], "the player shows the source page there"
   end
 
-  test "a quiz explanation round-trips and falls back when absent" do
+  test "a quiz explanation round-trips, and is left untranslated when absent" do
     client = RecordingClient.new([
       { text: "Q", options: [ "A", "B" ], explanation: "Parce que." }
     ])
@@ -107,7 +107,7 @@ class SurveyTranslatorPagesTest < ActiveSupport::TestCase
     TranslationCache.delete_all
     blank = RecordingClient.new([ { text: "Q", options: [ "A", "B" ] } ])
     out2  = translator_with(blank).call(cards: [ card ], target_locale: "fr")
-    assert_equal "Because.", out2.first["explanation"], "an unreturned explanation keeps the source"
+    assert_nil out2.first["explanation"], "an unreturned explanation is not stored as its English"
   end
 
   test "the cache key includes pages, so editing one re-translates" do

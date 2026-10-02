@@ -32,11 +32,38 @@ module VertoGeneration
       ErrorReporting.report("SurveyTranslator", e, locale: loc)
     end
 
-    written = if_unchanged.nil? ? survey.update!(cards: cards) : write_cards_if_unchanged!(survey, cards, if_unchanged)
-    # What these translations were made FROM, so the Language check screen can
-    # tell when the original is rewritten under them. See LanguageCheck.
-    LanguageCheck.record_translated!(survey.id, LanguageCheckLines.translated_pairs(survey.cards, survey.secondary_locales)) if written
+    written =
+      if if_unchanged.nil?
+        survey.update!(cards: cards, translations_revision: survey.translations_revision + 1)
+      else
+        write_cards_if_unchanged!(survey, cards, if_unchanged, bump_translations: true)
+      end
+    if written
+      # What these translations were made FROM, and the revision they landed
+      # at — the second is what stops an editor tab opened before them (an
+      # import's creator is in the editor while this runs) autosaving them
+      # away. See SurveysController#keep_reviewed_translations.
+      LanguageCheck.record_translated!(
+        survey.id, LanguageCheckLines.translated_pairs(survey.cards, survey.secondary_locales),
+        revision: survey.translations_revision
+      )
+    end
+    follow_up_untranslated!(survey.reload)
     written
+  end
+
+  # Whatever this pass did not finish — a language whose call failed, cards a
+  # reply left out, or the whole deck when a save landed first and the guard
+  # dropped everything — goes to TranslateLocalesJob, which asks only for the
+  # cards still missing words and records its run. These used to end in an
+  # error report nobody read and a language the creator had to notice was
+  # English.
+  def follow_up_untranslated!(survey)
+    deck = Array(survey.cards)
+    pending = survey.secondary_locales.select do |loc|
+      deck.any? { |card| LanguageCheckLines.needs_translation?(card, loc, survey.default_locale) }
+    end
+    TranslateLocalesJob.enqueue_for(survey, pending) if pending.any?
   end
 
   # A stable fingerprint of a deck, for the guard above.
@@ -46,7 +73,11 @@ module VertoGeneration
 
   # Row-locked so the check and the write are one step — otherwise the creator's
   # autosave could land between them and be lost anyway.
-  def write_cards_if_unchanged!(survey, cards, expected_digest)
+  #
+  # `bump_translations:` moves translations_revision in the same write, so an
+  # editor tab rendered before it carries these translations forward instead
+  # of writing its older copy back over them.
+  def write_cards_if_unchanged!(survey, cards, expected_digest, bump_translations: false)
     survey.with_lock do
       survey.reload
       if cards_digest(survey) != expected_digest
@@ -55,7 +86,9 @@ module VertoGeneration
                               survey_id: survey.id)
         return false
       end
-      survey.update!(cards: cards)
+      attrs = { cards: cards }
+      attrs[:translations_revision] = survey.translations_revision + 1 if bump_translations
+      survey.update!(attrs)
     end
     true
   end

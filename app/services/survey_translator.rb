@@ -38,6 +38,7 @@ class SurveyTranslator
           items: {
             type: "object",
             properties: {
+              index: { type: "integer", description: "The source card's `index`, copied exactly — this is how each translation is matched to its card." },
               text: { type: "string", description: "Translated card/question text." },
               description: { type: "string", description: "Translated sub-text. Empty string if the source had none." },
               options: {
@@ -78,7 +79,7 @@ class SurveyTranslator
                 description: "Translated caption beside the HIGHEST point of an NPS/liquid scale (e.g. 'I am a decision maker'). Empty string if the source had none."
               }
             },
-            required: %w[text options]
+            required: %w[index text options]
           }
         }
       },
@@ -156,7 +157,9 @@ class SurveyTranslator
       Array.new(source.size)
     else
       TranslationCache.lookup_many(source, source_locale: source_locale, target_locale: target_locale)
-                      .each_with_index.map { |hit, i| noted.call(source[i]) ? nil : hit }
+                      .each_with_index.map do |hit, i|
+                        noted.call(source[i]) || copy_of_source?(source[i], hit, source_locale, target_locale) ? nil : hit
+                      end
     end
     misses = source.each_with_index.reject { |_, i| cached[i] }
     return cached if misses.empty?
@@ -186,6 +189,20 @@ class SurveyTranslator
   # Source text dressed as a translation is the one outcome nothing downstream
   # can see: it counts as translated, it is never re-asked for, and a Spanish
   # respondent reads English with every screen reporting Spanish.
+  # A "translation" whose question is the source question word for word, into
+  # a different language. Entries like that went into the cache before the
+  # translator stopped filling gaps with source text, and a cache hit is
+  # exactly what Try again gets — so without this the repair would hand the
+  # same English straight back, for ever. Between English variants identical
+  # is the right answer; words-free text is the same in every language.
+  def copy_of_source?(card, translation, source_locale, target_locale)
+    return false unless translation.is_a?(Hash) && card.is_a?(Hash)
+    return false if SupportedLocales.english?(source_locale) && SupportedLocales.english?(target_locale)
+
+    text = card["text"].to_s.strip
+    text.match?(/\p{L}/) && translation["text"].to_s.strip == text
+  end
+
   def translate_batch(batch, source_locale, target_locale, target, noted)
     response = @client.messages.create(
       model: MODEL,
@@ -213,7 +230,8 @@ class SurveyTranslator
       )
     else
       batch.zip(translated).each do |card, translation|
-        next if translation.nil? || noted.call(card)
+        next if translation.nil? || noted.call(card) ||
+                copy_of_source?(card, translation, source_locale, target_locale)
         TranslationCache.write(card, source_locale: source_locale, target_locale: target_locale, translation: translation)
       end
     end
@@ -282,33 +300,44 @@ class SurveyTranslator
   # text/labels for anything missing or mis-sized WITHIN a card the model
   # returned. A card it did not return at all is nil.
   def align(source, translated)
+    # By the index each entry echoes, not by where it sits in the reply. A
+    # model that skips one card in the middle of a batch used to shift every
+    # card after it, and card 7 was stored with card 8's question — the one
+    # failure here a reviewer could not even see as missing. A reply with no
+    # indexes at all (an older cached shape, a model ignoring the field) is
+    # still read positionally, which is all there is to go on.
+    entries = Array(translated).select { |t| t.is_a?(Hash) }
+    by_index = entries.each_with_object({}) do |t, h|
+      i = Integer(t["index"], exception: false)
+      h[i] = t if i && i.between?(0, source.size - 1) && !h.key?(i)
+    end
+    by_index = nil unless by_index.size == entries.size
+
     source.each_with_index.map do |card, i|
+      t = by_index ? by_index[i] : translated[i]
       # Not returned at all: nothing to align, and the source words are not a
       # translation of themselves. See translate_batch.
-      next nil unless translated[i].is_a?(Hash)
+      next nil unless t.is_a?(Hash)
 
-      t          = translated[i]
+      # Within a returned card, a field or slot the model left out stays BLANK
+      # rather than being filled with the source words. The player falls back
+      # per field and per slot either way (ApplicationHelper#localized_card),
+      # so a respondent reads the same thing — but blank is what the Language
+      # check screen can see and Try again can repair, and English stored as
+      # the translation is neither.
       src_opts   = Array(card["options"])
       trans_opts = Array(t["options"])
       entry = {
-        "text"        => t["text"].presence || card["text"].to_s,
-        "description" => t["description"].presence || card["description"].to_s,
-        "options"     => src_opts.each_with_index.map { |o, j| trans_opts[j].presence || o.to_s }
+        "text"        => t["text"].to_s.strip,
+        "description" => t["description"].to_s.strip,
+        "options"     => src_opts.each_index.map { |j| trans_opts[j].to_s.strip }
       }
 
       pages = align_pages(card, t)
       entry["pages"] = pages if pages.any?
 
-      if card["explanation"].present?
-        entry["explanation"] = t["explanation"].presence || card["explanation"].to_s
-      end
-
-      # Same shape as `explanation`: carried only for the cards that have one,
-      # falling back to the source words so a modal is never blank in a
-      # language the model skipped — blank here would mean a respondent gets an
-      # empty pop-up, not the English one.
-      (%w[modal_title modal_body] + Survey::NPS_ANCHOR_KEYS).each do |field|
-        entry[field] = t[field].presence || card[field].to_s if card[field].present?
+      (%w[explanation modal_title modal_body] + Survey::NPS_ANCHOR_KEYS).each do |field|
+        entry[field] = t[field].to_s.strip if card[field].present? && t[field].present?
       end
 
       entry
@@ -318,7 +347,8 @@ class SurveyTranslator
   # Narrative pages align by id, NOT by position — a creator can reorder pages
   # after translating, and the sanitizer already stores them id-keyed for that
   # reason (Survey.sanitize_cards_images!). A page the model dropped, renamed or
-  # returned empty falls back to its source text, so the page count never drifts.
+  # returned empty comes back blank — the count never drifts, and the player
+  # shows that page's source text in its place.
   def align_pages(card, translation)
     src_pages = Array(card["pages"]).select { |p| p.is_a?(Hash) && p["id"].present? }
     return [] if src_pages.empty?
@@ -329,7 +359,7 @@ class SurveyTranslator
 
     src_pages.map do |p|
       id = p["id"].to_s
-      { "id" => id, "text" => by_id[id].presence || p["text"].to_s }
+      { "id" => id, "text" => by_id[id].to_s.strip }
     end
   end
 

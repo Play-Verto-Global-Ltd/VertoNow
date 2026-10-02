@@ -57,16 +57,16 @@ class SurveyTranslatorNpsAnchorsTest < ActiveSupport::TestCase
     assert_includes props.keys.map(&:to_s), "nps_low_label"
     assert_includes props.keys.map(&:to_s), "nps_high_label"
 
-    # A model that skipped one falls back to the source words rather than
-    # blanking the caption — a blank would leave the scale unlabelled, which is
-    # worse than labelled in the wrong language.
+    # A model that skipped one leaves it untranslated rather than storing the
+    # source words as the translation; the player shows the source caption there,
+    # so the scale is never unlabelled.
     aligned = SurveyTranslator.new(api_key: "x").send(
       :align, [ anchored_card ], [ { "text" => "Quel pouvoir ?", "options" => [],
                                      "nps_low_label" => "Aucun pouvoir" } ]
     ).first
 
     assert_equal "Aucun pouvoir", aligned["nps_low_label"]
-    assert_equal HIGH, aligned["nps_high_label"], "an unanswered caption keeps the source words"
+    assert_nil aligned["nps_high_label"], "an unanswered caption is not stored as its English"
   end
 
   test "a merged translation lands in the card's own i18n entry" do

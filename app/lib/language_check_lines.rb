@@ -291,16 +291,29 @@ module LanguageCheckLines
     ((worded.presence || present) - Array(content["untranslated"])).empty?
   end
 
-  # Does this card still need translating into `locale`? No entry at all, or
-  # an entry whose words are all the original's — the second is what a cut-off
-  # translation call left behind, and "Try again" has to be able to repair it.
+  # Has every field that carries words got words of its own? This, not
+  # "has any", is what Translated means — in the rail, the status poll and Try
+  # again alike. A card whose question was translated and whose sub-text came
+  # back English used to count as done, so the rail said Translated and Try
+  # again never asked for it. untranslated? (nothing at all) still decides the
+  # board's "Not translated yet" banner; a partial line shows its gaps field by
+  # field with the Original chip.
+  def complete?(content)
+    worded = present_fields(content).select { |f| words?(content[f]) }
+    (worded & Array(content["untranslated"])).empty?
+  end
+
+  # Does this card still need translating into `locale`? No entry, or any
+  # worded field still in the original — blank, or copied verbatim, which is
+  # what a cut-off translation call used to store. "Try again" asks for exactly
+  # these.
   def needs_translation?(card, locale, source_locale)
     return false unless card.is_a?(Hash)
     return true if card.dig("i18n", locale.to_s).blank?
 
     canonical = canonical_content(card)
     return false if canonical.values.all?(&:blank?)
-    untranslated?(translated_content(card, locale, canonical, source_locale: source_locale))
+    !complete?(translated_content(card, locale, canonical, source_locale: source_locale))
   end
 
   # The fields this line actually has something in, so the view renders three
@@ -319,7 +332,7 @@ module LanguageCheckLines
   def coverage(cards_rows, locales, primary)
     locales.index_with do |locale|
       rows = cards_rows.filter_map { |c| c[:lines].find { |l| l[:locale] == locale } }
-      translated = rows.count { |line| line[:primary] || !untranslated?(line[:content]) }
+      translated = rows.count { |line| line[:primary] || complete?(line[:content]) }
       { total: rows.size, translated: translated, primary: locale == primary }
     end
   end

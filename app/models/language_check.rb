@@ -71,16 +71,24 @@ class LanguageCheck < ApplicationRecord
   # touches only the provenance column, so a row carrying a reviewer's
   # decision keeps it — a fresh translation of an approved line shows as
   # changed since approval, which is the truth.
-  def self.record_translated!(survey_id, pairs)
+  #
+  # `revision:` is for a write the open editor did not make (a translation job,
+  # an import's translation pass): it stamps edit_revision, so an editor tab
+  # rendered before it carries these lines forward on autosave rather than
+  # deleting them — the same guard a reviewer's edit gets. The editor's own
+  # save passes none; it cannot be stale about what it just wrote.
+  def self.record_translated!(survey_id, pairs, revision: nil)
     pairs = Array(pairs).uniq { |cid, locale, _| [ cid.to_s, locale.to_s ] }
     return if survey_id.nil? || pairs.empty?
 
     now  = Time.current
     rows = pairs.map do |cid, locale, digest|
-      { survey_id: survey_id, cid: cid.to_s, locale: locale.to_s, status: "pending",
-        translated_from_digest: digest, created_at: now, updated_at: now }
+      row = { survey_id: survey_id, cid: cid.to_s, locale: locale.to_s, status: "pending",
+              translated_from_digest: digest, created_at: now, updated_at: now }
+      revision ? row.merge(edit_revision: revision) : row
     end
-    upsert_all(rows, unique_by: %i[survey_id cid locale], update_only: %i[translated_from_digest])
+    update_only = revision ? %i[translated_from_digest edit_revision] : %i[translated_from_digest]
+    upsert_all(rows, unique_by: %i[survey_id cid locale], update_only: update_only)
   end
 
   # { cid => note } for every card whose author has said what it means. Read

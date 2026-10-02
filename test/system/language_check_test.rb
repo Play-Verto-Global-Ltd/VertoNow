@@ -210,7 +210,8 @@ class LanguageCheckSystemTest < ApplicationSystemTestCase
     # French lands while the page sits there.
     cards = @survey.reload.cards.map do |c|
       c.merge("i18n" => (c["i18n"] || {}).merge(
-        "fr" => { "text" => "fr:#{c['text']}", "options" => Array(c["options"]).map { |o| "fr:#{o}" } }
+        "fr" => { "text" => "fr:#{c['text']}", "description" => ("fr:#{c['description']}" if c["description"].present?),
+                  "options" => Array(c["options"]).map { |o| "fr:#{o}" } }.compact
       ))
     end
     @survey.update!(cards: cards)

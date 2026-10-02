@@ -345,4 +345,42 @@ class TranslateLocalesJobTest < ActiveSupport::TestCase
     assert_equal "es:Colour?", entry("c1", "es")["text"]
     assert_equal "es:Why?", entry("c2", "es")["text"]
   end
+
+  # The shape of the third report: a Try again landed while an editor tab was
+  # open on the same Verto, and the tab's next autosave — rebuilt from what it
+  # loaded, which had no Spanish on those cards — deleted what the job wrote.
+  test "a translation the job writes survives an autosave from an editor opened before it" do
+    rendered_at = @survey.reload.translations_revision
+    with_translator do
+      perform_enqueued_jobs { TranslateLocalesJob.enqueue_for(@survey, [ "es" ]) }
+    end
+    assert_operator @survey.reload.translations_revision, :>, rendered_at
+
+    stale_tab = @survey.cards.map { |c| c.except("i18n") }
+    kept = Survey.keep_reviewed_translations(
+      @survey.cards, stale_tab,
+      LanguageCheck.where(survey: @survey).where("edit_revision > ?", rendered_at).pluck(:cid, :locale),
+      primary: "en"
+    )
+    assert_equal "es:Colour?", kept.find { |c| c["cid"] == "c1" }.dig("i18n", "es", "text")
+  end
+
+  test "a card left with one field in English is asked for again" do
+    @survey.update!(cards: @survey.cards.map do |c|
+      c["cid"] == "c1" ? c.merge("i18n" => { "es" => { "text" => "¿Color?", "options" => [ "", "" ] } }) : c
+    end)
+
+    seen = []
+    again = Object.new
+    again.define_singleton_method(:call) do |cards:, **|
+      seen.concat(cards.map { |c| c["cid"] })
+      cards.map { |c| { "text" => "es:#{c['text']}", "options" => Array(c["options"]).map { |o| "es:#{o}" } } }
+    end
+    stub_method(SurveyTranslator, :new, ->(*_a, **_k) { again }) do
+      perform_enqueued_jobs { TranslateLocalesJob.enqueue_for(@survey, [ "es" ]) }
+    end
+
+    assert_includes seen, "c1", "its options were never translated"
+    assert_equal %w[es:Blue es:Green], entry("c1", "es")["options"]
+  end
 end

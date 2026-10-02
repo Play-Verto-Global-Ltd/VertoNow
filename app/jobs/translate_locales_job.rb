@@ -129,9 +129,13 @@ class TranslateLocalesJob < ApplicationJob
     missing.each_with_index { |card_index, j| filled[card_index] = merged[j] }
 
     digest = VertoGeneration.cards_digest(survey)
-    if VertoGeneration.write_cards_if_unchanged!(survey, filled, digest)
+    if VertoGeneration.write_cards_if_unchanged!(survey, filled, digest, bump_translations: true)
+      # Revision-stamped, so an editor tab open since before this run carries
+      # these lines forward instead of autosaving them away — that is how a
+      # Try again could appear to work and then quietly undo itself.
       LanguageCheck.record_translated!(
-        survey.id, LanguageCheckLines.translated_pairs(missing.map { |i| filled[i] }, [ locale ])
+        survey.id, LanguageCheckLines.translated_pairs(missing.map { |i| filled[i] }, [ locale ]),
+        revision: survey.translations_revision
       )
       row.done!
     else

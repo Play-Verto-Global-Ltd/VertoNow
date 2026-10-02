@@ -612,11 +612,19 @@ class LanguageCheckScreenTest < ActionDispatch::IntegrationTest
     get survey_language_check_path(@survey)
     assert_response :success
 
-    # Spanish is translated on c_mc only; French on neither. Counted off the
-    # deck, so a job that half-finished reads as half-finished.
+    # Spanish has c_mc's question and options but not its sub-text; French has
+    # nothing. Counted off the deck, so a job that half-finished reads as
+    # half-finished — and a line with one field still in English is not done.
     coverage = LanguageCheckLines.coverage(LanguageCheckLines.for(@survey),
                                             @survey.verto_locales, @survey.default_locale)
     assert_equal({ total: 2, translated: 2, primary: true }, coverage["en"])
+    assert_equal({ total: 2, translated: 0, primary: false }, coverage["es"])
+
+    @survey.update!(cards: @survey.cards.map do |c|
+      c["cid"] == "c_mc" ? c.deep_merge("i18n" => { "es" => { "description" => "Elige uno" } }) : c
+    end)
+    coverage = LanguageCheckLines.coverage(LanguageCheckLines.for(@survey),
+                                            @survey.verto_locales, @survey.default_locale)
     assert_equal({ total: 2, translated: 1, primary: false }, coverage["es"])
     assert_equal({ total: 2, translated: 0, primary: false }, coverage["fr"])
   end

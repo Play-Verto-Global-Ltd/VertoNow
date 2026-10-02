@@ -183,7 +183,9 @@ class SurveyDuplicateTest < ActionDispatch::IntegrationTest
   # call to pay for.
   test "a copy of an already translated Verto asks for nothing" do
     translated = CARDS.map do |c|
-      c.merge("i18n" => { "es" => { "text" => "es:#{c['text']}", "title" => "es:#{c['title']}" }.compact })
+      entry = { "text" => ("es:#{c['text']}" if c["text"]), "title" => "es:#{c['title']}",
+                "options" => (c["options"]&.map { |o| "es:#{o}" }) }.compact
+      c.merge("i18n" => { "es" => entry })
     end
     original = @org.surveys.create!(title: "T", theme: "Theme", audience_age: "all", key_insight: "k",
                                      default_locale: "en", locales: %w[en es], cards: translated)

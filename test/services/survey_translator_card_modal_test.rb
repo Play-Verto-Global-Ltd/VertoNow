@@ -71,13 +71,21 @@ class SurveyTranslatorCardModalTest < ActiveSupport::TestCase
     assert_equal "Sur la dernière année.", out["modal_body"]
   end
 
-  test "a modal the model skipped falls back to the source, never to blank" do
+  # A skipped modal is left untranslated rather than stored as its English —
+  # English stored as the French is invisible to every screen that checks. The
+  # respondent still gets the English pop-up, never an empty one: the player
+  # falls back per field.
+  test "a modal the model skipped is left untranslated, and the player shows the source" do
     client = RecordingClient.new([ { text: "L'as-tu utilisé ?", options: %w[Oui Non] } ])
     out = translator_with(client).call(cards: [ modal_card ], target_locale: "fr").first
 
-    assert_equal "Before you answer", out["modal_title"],
-                 "blank here would be an empty pop-up, not an English one"
-    assert_equal "We mean in the last year.", out["modal_body"]
+    assert_nil out["modal_title"]
+    assert_nil out["modal_body"]
+
+    card  = Survey.merge_card_translations([ modal_card ], "fr", [ out ]).first
+    shown = ApplicationController.helpers.localized_card(card, "fr", "en")
+    assert_equal "Before you answer", shown["modal_title"], "never an empty pop-up"
+    assert_equal "We mean in the last year.", shown["modal_body"]
   end
 
   test "adding a modal misses the translation cache" do

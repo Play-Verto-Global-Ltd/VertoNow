@@ -222,7 +222,9 @@ class Survey < ApplicationRecord
       # short translation would silently shear labels off the end. When they
       # swap, everything keyed by the old canonical labels moves with them.
       old_options = Array(card["options"])
-      new_options = Array(entry["options"])
+      # A blank slot is "not translated" (the player shows the old label
+      # there), so it keeps the old label rather than becoming an empty answer.
+      new_options = Array(entry["options"]).each_with_index.map { |o, i| o.to_s.strip.presence || old_options[i].to_s }
       if old_options.any? && new_options.length == old_options.length
         mapping = old_options.map.with_index { |o, i| [ o.to_s, new_options[i].to_s ] }.to_h
         out["options"] = new_options
@@ -330,7 +332,7 @@ class Survey < ApplicationRecord
     return [] if deck.empty?
 
     verto_locales.reject { |loc| loc == default_locale }
-                 .select { |loc| deck.any? { |c| c.is_a?(Hash) && c.dig("i18n", loc).blank? } }
+                 .select { |loc| deck.any? { |c| LanguageCheckLines.needs_translation?(c, loc, default_locale) } }
   end
 
   # ── Language check edits ───────────────────────────────────────────────────

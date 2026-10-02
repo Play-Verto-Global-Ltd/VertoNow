@@ -3143,24 +3143,31 @@ export default class extends Controller {
         // has one, and only when this language has words for it.
         if (npsLow  && (t.nps_low_label  || "").trim()) tEntry.nps_low_label  = t.nps_low_label.trim()
         if (npsHigh && (t.nps_high_label || "").trim()) tEntry.nps_high_label = t.nps_high_label.trim()
+        // A slot with no translation is sent BLANK, never filled with the
+        // primary wording. The player shows the primary there either way
+        // (localized_card falls back per slot), but a blank is something the
+        // Language check screen can see and Try again can fill; the primary's
+        // words saved as the translation are counted as translated and never
+        // asked for again. Positional, so the slot count still matches.
         if (primOpts.length) {
           const topts = t.options || []
-          tEntry.options = primOpts.map((p, k) => ((topts[k] || "").trim()) || p)
+          tEntry.options = primOpts.map((_p, k) => (topts[k] || "").trim())
         }
         if (primPages.length) {
           const tpages = t.pages || []
           tEntry.pages = primPages.map(p => {
             const match = tpages.find(tp => tp.id && tp.id === p.id)
-            return { id: p.id, text: (match && match.text.trim()) || p.text }
+            return { id: p.id, text: ((match && match.text) || "").trim() }
           })
         }
-        // Response labels align positionally against the primary scale, exactly
-        // like options — a slot with no translation falls back to the primary
-        // wording, which is what the player renders for it anyway.
         if (primResponses.length) {
           const tresp = t.responses || []
-          tEntry.responses = primResponses.map((p, k) => ((tresp[k] || "").trim()) || p)
+          tEntry.responses = primResponses.map((_p, k) => (tresp[k] || "").trim())
         }
+        // A list with nothing translated in it says nothing; leave it out, so a
+        // card this language has no words for has no entry at all.
+        ;["options", "responses"].forEach(f => { if (tEntry[f] && tEntry[f].every(v => !v)) delete tEntry[f] })
+        if (tEntry.pages && tEntry.pages.every(p => !p.text)) delete tEntry.pages
         if (Object.keys(tEntry).length) i18n[loc] = tEntry
       })
       if (Object.keys(i18n).length) out.i18n = i18n

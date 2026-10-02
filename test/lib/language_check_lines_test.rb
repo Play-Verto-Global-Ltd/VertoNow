@@ -21,7 +21,8 @@ class LanguageCheckLinesTest < ActiveSupport::TestCase
     # A field translated by the app but absent from FIELDS is a line nobody is
     # ever shown and therefore nobody ever checks. Read off the translator's own
     # tool schema rather than restated, so adding one there fails here.
-    translated = SurveyTranslator::TOOL.dig(:input_schema, :properties, :cards, :items, :properties).keys.map(&:to_s)
+    # `index` is how a translation finds its card, not a word on it.
+    translated = SurveyTranslator::TOOL.dig(:input_schema, :properties, :cards, :items, :properties).keys.map(&:to_s) - [ "index" ]
     missing = translated - LanguageCheckLines::FIELDS
     assert_empty missing,
                  "SurveyTranslator writes #{missing.inspect}, which the Language check screen would never show"
@@ -164,7 +165,12 @@ class LanguageCheckLinesTest < ActiveSupport::TestCase
   test "a line with real words is not untranslated because its numerals match" do
     c = copied_scale_card
     c["i18n"]["es"]["text"] = "¿Con qué frecuencia pides comida a domicilio?"
-    assert_not LanguageCheckLines.untranslated?(content_for(c, "es"))
+    assert_not LanguageCheckLines.untranslated?(content_for(c, "es")), "no 'Not translated yet' banner"
+    assert LanguageCheckLines.needs_translation?(c, "es", "en"),
+           "but its captions are still English, so it is not done and Try again asks for it"
+
+    c["i18n"]["es"].merge!("nps_low_label" => "Rara vez", "nps_high_label" => "A diario")
+    assert LanguageCheckLines.complete?(content_for(c, "es"))
     assert_not LanguageCheckLines.needs_translation?(c, "es", "en")
   end
 end
