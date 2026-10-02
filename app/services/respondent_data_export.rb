@@ -142,6 +142,7 @@ class RespondentDataExport
       }.compact,
       "respondent_code" => respondent_code_note(response),
       "scoring"        => scoring(response),
+      "integrity"      => integrity(response),
       "answers"        => answers(response),
       "held_answers"   => held_answers(response).presence
     }.compact
@@ -174,6 +175,24 @@ class RespondentDataExport
     data["quiz_max"]     = response.quiz_max  if response.quiz_max.present?
     data["token_totals"] = response.token_totals if response.token_totals.present?
     data.presence
+  end
+
+  # The Verto Integrity Score (ResponseIntegrity) is derived from how they
+  # answered — light as it is, a profile of them — so their own file carries
+  # it whole: the band, the number, and the signals it was worked out from.
+  # The creator's export carries less (the band only); this is the person's
+  # own data. Omitted where nothing is held.
+  def integrity(response)
+    signals = response.integrity.is_a?(Hash) ? response.integrity : {}
+    return nil if signals.empty? && response.integrity_score.nil? && response.integrity_band == "unscored"
+
+    { "band"    => response.integrity_band,
+      "score"   => response.integrity_score,
+      "signals" => signals.presence,
+      "note"    => "A measure of how this response was given (time on each question, " \
+                   "sliders left where they started, long lists read to the end, " \
+                   "answers changed), used to judge whether results can be relied on. " \
+                   "It describes the response, not the person." }.compact
   end
 
   # Answers are stored keyed by CARD INDEX, so they're only meaningful next to

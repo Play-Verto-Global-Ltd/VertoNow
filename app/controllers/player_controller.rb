@@ -348,6 +348,7 @@ class PlayerController < ApplicationController
     # what's already stored so an already-answered graded card can't be changed.
     resp.answers = locked_merge(stored_answers(resp), data["answers"] || {})
     apply_dwell(resp, data["dwell"])
+    apply_integrity(resp, data["integrity"], data["answers"])
     apply_respondent_code(resp, data["respondent_code"])
     apply_player_key(resp, data["player_key"])
     return if refuse_if_retest(resp)
@@ -359,6 +360,7 @@ class PlayerController < ApplicationController
     apply_quiz_score(resp)
     apply_token_totals(resp)
     save_with_hold!(resp)
+    ResponseIntegrity.apply!(resp, survey: @survey)
     render json: { ok: true, session_token: token }
   rescue JSON::ParserError
     render json: { ok: false, error: "Malformed request body." }, status: :bad_request
@@ -382,6 +384,7 @@ class PlayerController < ApplicationController
     return if refuse_if_declined(resp)
     resp.answers = locked_merge(stored_answers(resp), data["answers"] || {})
     apply_dwell(resp, data["dwell"])
+    apply_integrity(resp, data["integrity"], data["answers"])
     apply_respondent_code(resp, data["respondent_code"])
     apply_player_key(resp, data["player_key"])
     return if refuse_if_retest(resp)
@@ -398,6 +401,7 @@ class PlayerController < ApplicationController
     apply_quiz_score(resp)
     apply_token_totals(resp)
     save_with_hold!(resp)
+    ResponseIntegrity.apply!(resp, survey: @survey)
     # Best-effort: have the finisher's anonymous name minted before the thank-you
     # screen fetches the board. A naming hiccup must never fail the write that
     # just stored the answers — #leaderboard's backfill names anyone missed.
@@ -565,6 +569,7 @@ class PlayerController < ApplicationController
     first_time = !answered?(stored_answers(resp)[idx.to_s])
     resp.answers = locked_merge(stored_answers(resp), data["answers"] || {})
     apply_dwell(resp, data["dwell"])
+    apply_integrity(resp, data["integrity"], data["answers"])
     # The code rides the grade payload like every other save; it used to be
     # dropped here, so a quiz that collected codes recorded none for a
     # respondent who never hit /progress.
@@ -579,6 +584,7 @@ class PlayerController < ApplicationController
     apply_quiz_score(resp)
     apply_token_totals(resp)
     save_with_hold!(resp)
+    ResponseIntegrity.apply!(resp, survey: @survey)
 
     base = { ok: true, session_token: token, score: resp.score, max: resp.quiz_max }
     base[:token_totals] = resp.token_totals if @survey.tokenisation_enabled?
@@ -1423,6 +1429,19 @@ class PlayerController < ApplicationController
     return unless incoming.is_a?(Hash)
 
     resp.dwell_ms = Response.merge_dwell(resp.persisted? ? resp.dwell_ms : {}, incoming, cards: @survey.cards)
+  end
+
+  # The integrity signals (Response.merge_integrity), on the same terms as the
+  # dwell above. `answered` is the card keys THIS save carries, which is what
+  # lets it say a slider an earlier save called untouched has been touched
+  # since. Scored after the save (ResponseIntegrity.apply!), once the held
+  # free text it reads for effort has been lifted out of the answers.
+  def apply_integrity(resp, incoming, answered)
+    return unless incoming.is_a?(Hash)
+
+    resp.integrity = Response.merge_integrity(resp.persisted? ? resp.integrity : {}, incoming,
+                                              cards: @survey.cards,
+                                              answered_keys: answered.is_a?(Hash) ? answered.keys : [])
   end
 
   # The answers already persisted for a response (empty for a brand-new row).

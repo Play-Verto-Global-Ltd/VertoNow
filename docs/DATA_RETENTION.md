@@ -26,6 +26,8 @@ A `responses` row can hold:
 | `consent_agreed_at` / `consent_declined_at`, `consent_text_snapshot` | The consent record, including the exact wording shown |
 | `score`, `quiz_max`, `token_totals` | Quiz and token scoring |
 | `dwell_ms` | Milliseconds spent on each question card, keyed by card index — how long they took to answer. Cleared on consent decline, erased with the row |
+| `integrity` | Compact signals about how they answered, for the Verto Integrity Score: which sliders were left where they opened, how often a pick was replaced, whether long answer lists were scrolled to the end, whether the device went offline. Sent with the answers and held in memory in the browser like them — nothing is written to the device. Cleared on consent decline, erased with the row |
+| `integrity_score`, `integrity_band`, `integrity_version` | The score (0–100) and band derived from those signals, `dwell_ms` and the answers (`app/lib/response_integrity.rb`). Describes the response, not the person. Cleared on consent decline, erased with the row; included in the subject-access export |
 | `session_token` | A random per-session UUID minted in the browser |
 | `respondent_code_digest` | HMAC of a code the respondent chose, if the creator enabled codes |
 | `player_key_digest` | HMAC of a random key the browser minted for this Verto; recorded only where a feature needs a per-device identity — the leaderboard, the contact gate, ask-once questions, or No retests on a Verto that collects no respondent code |

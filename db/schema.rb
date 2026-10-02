@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_02_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_02_190000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -839,6 +839,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_02_180000) do
     t.string "demographic_neurodiversity"
     t.string "device_kind"
     t.json "dwell_ms", default: {}, null: false
+    t.json "integrity", default: {}, null: false
+    t.string "integrity_band", default: "unscored", null: false
+    t.integer "integrity_score"
+    t.integer "integrity_version"
     t.string "locale"
     t.string "player_key_digest"
     t.integer "quiz_max"
@@ -865,12 +869,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_02_180000) do
     t.index ["survey_id", "demographic_gender"], name: "index_responses_on_survey_id_and_demographic_gender"
     t.index ["survey_id", "demographic_heritage"], name: "index_responses_on_survey_id_and_demographic_heritage"
     t.index ["survey_id", "demographic_neurodiversity"], name: "index_responses_on_survey_id_and_demographic_neurodiversity"
+    t.index ["survey_id", "integrity_band"], name: "index_responses_on_survey_and_integrity_band"
     t.index ["survey_id", "player_key_digest"], name: "index_responses_on_survey_and_player_key"
     t.index ["survey_id", "region_country"], name: "index_responses_on_survey_and_region_country"
     t.index ["survey_id", "respondent_code_digest"], name: "index_responses_on_survey_and_respondent_code"
     t.index ["survey_id", "survey_wave_id"], name: "index_responses_on_survey_id_and_survey_wave_id"
     t.index ["survey_link_id"], name: "index_responses_on_survey_link_id"
     t.index ["survey_share_id"], name: "index_responses_on_survey_share_id"
+    t.check_constraint "integrity_band IN ('high', 'medium', 'low', 'unscored', 'unverified')", name: "chk_responses_integrity_band"
     t.check_constraint "status IN ('started', 'completed')", name: "chk_responses_status"
   end
 
@@ -1115,6 +1121,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_02_180000) do
     t.string "impact_link_label"
     t.string "impact_link_url"
     t.datetime "impact_published_at"
+    t.json "integrity_baseline", default: {}, null: false
     t.string "join_body"
     t.string "join_cta"
     t.boolean "join_prompt_enabled", default: false, null: false

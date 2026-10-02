@@ -21,6 +21,15 @@ production:
     command: "ReportRender.sweepable.find_each(&:destroy)"
     schedule: every day at 4am
 
+  # The Verto Integrity Score (ResponseIntegrity): each active Verto's timing
+  # baseline refreshed, responses without signals banded, and every scored
+  # response re-scored against the new baseline. One job per Verto that
+  # collected anything in the last day, for the memory reason given below.
+  # Before the Ask Verto refresh at 3am, so the index reads current bands.
+  refresh_integrity_scores:
+    command: "RescoreIntegrityJob.refresh_all!"
+    schedule: every day at 2:30am
+
   # An approved Verto keeps collecting, so its Ask Verto index goes stale the day
   # after it is approved. This enqueues one job PER Verto rather than doing the
   # work here — Solid Queue runs inside Puma on a small instance, and one job

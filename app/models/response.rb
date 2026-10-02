@@ -23,6 +23,9 @@ class Response < ApplicationRecord
   # than an ordinary validation error.
   STATUSES = %w[started completed].freeze
   validates :status, inclusion: { in: STATUSES }
+  # Same reasoning, for the Verto Integrity Score's band (ResponseIntegrity),
+  # which has a CHECK of its own (chk_responses_integrity_band).
+  validates :integrity_band, inclusion: { in: ResponseIntegrity::BANDS }
 
   # Small-cell suppression for region groupings: any region/results view
   # grouped by region_country should drop groups smaller than this before
@@ -122,6 +125,76 @@ class Response < ApplicationRecord
     merged
   end
 
+  # ── Response-integrity signals ─────────────────────────────────────────────
+  # The compact signals the player sends for the Verto Integrity Score (see
+  # _integrityPayload in player_controller.js and ResponseIntegrity), folded
+  # into what this response already holds. Public JSON, so every part is
+  # bounded and anything unexpected is dropped, never coerced:
+  #
+  #   v          signal version, 1..99 — its presence is what says the player
+  #              sent signals at all
+  #   untouched  range cards answered without being touched. Each save is the
+  #              truth for the cards it answers, so a card it answers and does
+  #              not list has been touched since; cards it does not answer keep
+  #              what an earlier save said.
+  #   seen       per card on a scrolling list, 1 once its end was reached —
+  #              never un-reached
+  #   changes    per card, how often a pick was replaced — counts only grow
+  #   offline    once true, stays true
+  #
+  # Keys must name question cards in `cards`, as for dwell.
+  MAX_SIGNAL_VERSION = 99
+  MAX_ANSWER_CHANGES = 1000
+
+  def self.merge_integrity(stored, incoming, cards:, answered_keys:)
+    merged = stored.is_a?(Hash) ? stored.deep_dup : {}
+    return merged unless incoming.is_a?(Hash)
+
+    version = incoming["v"]
+    return merged unless version.is_a?(Integer) && version.between?(1, MAX_SIGNAL_VERSION)
+
+    cards    = Array(cards)
+    question = lambda do |key|
+      key = key.to_s
+      next nil unless key.match?(/\A\d+\z/) && key == key.to_i.to_s
+      card = cards[key.to_i]
+      card.is_a?(Hash) && CardTypes.question?(card["type"]) ? key : nil
+    end
+
+    merged["v"] = [ merged["v"].is_a?(Integer) ? merged["v"] : 0, version ].max
+
+    answered = Array(answered_keys).map(&:to_s).to_set
+    still    = Array(merged["untouched"]).map(&:to_s).reject { |k| answered.include?(k) }
+    fresh    = Array(incoming["untouched"]).filter_map do |k|
+      key = question.call(k)
+      key if key && cards[key.to_i]["type"].to_s == "range"
+    end
+    merged["untouched"] = (still + fresh).uniq.sort_by(&:to_i)
+
+    seen = merged["seen"].is_a?(Hash) ? merged["seen"].dup : {}
+    if incoming["seen"].is_a?(Hash)
+      incoming["seen"].each do |k, v|
+        key = question.call(k)
+        next unless key && [ 0, 1 ].include?(v)
+        seen[key] = [ seen[key].to_i, v ].max
+      end
+    end
+    merged["seen"] = seen
+
+    changes = merged["changes"].is_a?(Hash) ? merged["changes"].dup : {}
+    if incoming["changes"].is_a?(Hash)
+      incoming["changes"].each do |k, n|
+        key = question.call(k)
+        next unless key && n.is_a?(Integer) && n.positive?
+        changes[key] = [ changes[key].to_i, [ n, MAX_ANSWER_CHANGES ].min ].max
+      end
+    end
+    merged["changes"] = changes
+
+    merged["offline"] = merged["offline"] == true || incoming["offline"] == true
+    merged
+  end
+
   # Seconds spent on the card at `index`, to one decimal, or nil where the
   # player recorded nothing (a response collected before dwell existed, a
   # card never shown, a replay that arrived without it).
@@ -208,6 +281,12 @@ class Response < ApplicationRecord
     # How long they lingered on each question is behavioural data about them,
     # collected on the same promise as the answers it timed.
     self.dwell_ms = {}
+    # The integrity signals describe how they answered, and the score is
+    # derived from them and from the answers — both go with what they describe.
+    self.integrity = {}
+    self.integrity_score = nil
+    self.integrity_band = "unscored"
+    self.integrity_version = nil
     self.respondent_code_digest = nil
     # The leaderboard identity is a durable handle on this person's plays —
     # exactly the kind of thing the decline purge exists to drop.

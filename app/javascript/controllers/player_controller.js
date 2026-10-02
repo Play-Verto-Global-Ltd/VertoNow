@@ -251,6 +251,11 @@ export default class extends Controller {
     this._dwellFrozen = new Set()
     this._onDwellVisibility = () => this._dwellVisibility()
     document.addEventListener("visibilitychange", this._onDwellVisibility)
+    // Response-integrity signals — see _integrityPayload. In memory only, like
+    // the answers and the timings, and sent with the same saves.
+    this._integrity = { reach: {}, changes: {}, lastAnswer: {}, offline: navigator.onLine === false }
+    this._onOffline = () => { this._integrity.offline = true }
+    window.addEventListener("offline", this._onOffline)
 
     this._sessionToken = this._ensureToken()
     // The durable identity is minted for the leaderboard, the contact gate,
@@ -395,6 +400,9 @@ export default class extends Controller {
     document.documentElement.classList.remove("kbd-open")
     this._clearTestTimers()
     document.removeEventListener("visibilitychange", this._onDwellVisibility)
+    window.removeEventListener("offline", this._onOffline)
+    clearTimeout(this._reachRetry)
+    this._reachAbort?.abort()
   }
 
   // ── Footer: answered glow + the cramped-bar fallback ─────────────────────
@@ -430,6 +438,9 @@ export default class extends Controller {
                         this.hasFinishBtnTarget && this.finishBtnTarget ]) {
       if (btn) btn.classList.toggle("is-answered", answered)
     }
+    // The same read, one frame after every interaction, is where a changed
+    // mind shows: it is already the one place that sees each pick land.
+    if (card) this._countChange(card)
   }
 
   // Back and Next carry a translated label ("← Back", "Weiter →", "Enviar ✓"),
@@ -1506,8 +1517,9 @@ export default class extends Controller {
     // server — Response.merge_dwell never forgets a figure — and reads in
     // the export as a blank answer with time beside it: viewed, then routed
     // around, which is what happened.)
+    let keep = null
     if (this.logicValue) {
-      const keep = new Set(
+      keep = new Set(
         this._path.map(i => this.cardTargets[i]?.dataset.cardIndex).filter(k => k != null && k !== "")
       )
       answers = {}
@@ -1517,8 +1529,10 @@ export default class extends Controller {
       dwell = onPath
     }
     // Dwell rides every save too, as running totals: the server keeps the
-    // larger of what it holds and what arrives (Response.merge_dwell).
-    const payload = { session_token: this._sessionToken, answers, locale: this.localeValue, dwell }
+    // larger of what it holds and what arrives (Response.merge_dwell). The
+    // integrity signals ride the same way, cut to the same path.
+    const payload = { session_token: this._sessionToken, answers, locale: this.localeValue, dwell,
+                      integrity: this._integrityPayload(keep) }
     // Rides along with the ordinary save rather than needing an endpoint of its
     // own. The server hashes it and drops the plaintext; it's only sent until a
     // digest is recorded, and the server ignores a second one anyway.
@@ -1533,6 +1547,116 @@ export default class extends Controller {
     // costs nothing.
     if (this._contact && this._playerKey) payload.contact = this._contact
     return payload
+  }
+
+  // ── Response integrity ─────────────────────────────────────────────────────
+  // The few compact signals the Verto Integrity Score needs that only the
+  // player can see (ResponseIntegrity scores them; Response.merge_integrity
+  // bounds them). Like the answers and the timings they live in memory, ride
+  // the ordinary saves and are never written to the device. Nothing here is
+  // a keystroke, a pointer path or a draft:
+  //
+  //   untouched  range sliders answered without ever being touched — the
+  //              position they opened on, recorded as a choice
+  //   seen       on an answer list long enough to scroll, 1 once the
+  //              respondent reaches its end, 0 until then
+  //   changes    how often a pick was replaced on a choice or rating card —
+  //              reconsidering is a positive signal and never penalised
+  //   offline    whether the run went offline at any point
+  //   v          the signal version, so the server can tell a response from
+  //              this player that sent nothing apart from one collected before
+  //              there was anything to send
+  static INTEGRITY_VERSION = 1
+  static REACH_SLACK_PX    = 8
+  static CHANGE_TYPES = [ "multiple_choice", "yes_no", "select_one_grid", "scenario",
+                          "select_many", "select_many_grid", "rating" ]
+
+  _integrityPayload(keep) {
+    const onPath = key => !keep || keep.has(key)
+    const untouched = []
+    this.cardTargets.forEach((card, i) => {
+      const key = card.dataset.cardIndex
+      if (key === undefined || key === "" || !onPath(key)) return
+      if (card.dataset.cardType !== "range" || this._touched.has(key)) return
+      if (!this._isAnswerGiven(this._answers[key])) return
+      // A remembered ask-once answer or a restored quiz answer was given on an
+      // earlier run; not touching it THIS time is not leaving it untouched.
+      if (this._isOnceSkipped(i) || this._revealed.has(i)) return
+      untouched.push(key)
+    })
+    const seen = {}
+    for (const [k, v] of Object.entries(this._integrity.reach)) if (onPath(k)) seen[k] = v
+    const changes = {}
+    for (const [k, n] of Object.entries(this._integrity.changes)) if (onPath(k) && n > 0) changes[k] = n
+    return { v: this.constructor.INTEGRITY_VERSION, untouched, seen, changes,
+             offline: !!this._integrity.offline || navigator.onLine === false }
+  }
+
+  // Where the card's answer stands as it arrives: a restored, remembered or
+  // stepped-back-to answer is the starting point, not a change.
+  _noteStartingAnswer(card) {
+    const key = card?.dataset.cardIndex
+    if (key === undefined || key === "" || !this.constructor.CHANGE_TYPES.includes(card.dataset.cardType)) return
+    this._integrity.lastAnswer[key] = JSON.stringify(this._answerOf(card).value ?? null)
+  }
+
+  // One more change on this card when a given pick is replaced by a different
+  // one, or a ticked option is unticked. Adding a tick to a multi-select is
+  // not reconsidering, and neither is the first pick.
+  _countChange(card) {
+    const key = card.dataset.cardIndex
+    if (key === undefined || key === "" || !this.constructor.CHANGE_TYPES.includes(card.dataset.cardType)) return
+    const now     = this._answerOf(card).value ?? null
+    const nowJson = JSON.stringify(now)
+    const prevJson = this._integrity.lastAnswer[key]
+    if (prevJson === nowJson) return
+    this._integrity.lastAnswer[key] = nowJson
+    const prev  = prevJson == null ? null : JSON.parse(prevJson)
+    const given = v => Array.isArray(v) ? v.length > 0 : (v !== null && v !== undefined && v !== "")
+    if (!given(prev)) return
+    if (Array.isArray(prev)) {
+      const kept = new Set(Array.isArray(now) ? now : [])
+      if (!prev.some(x => !kept.has(x))) return
+    } else if (!given(now)) {
+      return
+    }
+    this._integrity.changes[key] = (this._integrity.changes[key] || 0) + 1
+  }
+
+  // On a card whose answer list scrolls, record whether the respondent gets to
+  // the end of it. A list that fits records nothing: every option was on
+  // screen, which is the common case and says nothing about the respondent.
+  // The layout settles a beat after _update, so look a few times, as the
+  // scroll cue does. The cue's own movement is not the respondent's: it can
+  // reach the end of a list that overflows by one row, and must not count.
+  _trackReach(idx, tries = this.constructor.NUDGE_TRIES) {
+    this._reachAbort?.abort()
+    this._reachAbort = null
+    clearTimeout(this._reachRetry)
+    const card = this.cardTargets[idx]
+    const key  = card?.dataset.cardIndex
+    if (key === undefined || key === "" || this._integrity.reach[key] === 1) return
+
+    const look = left => {
+      if (this.cardTargets[this.currentValue] !== card) return
+      const box  = this._answerScroller(card)
+      const over = box ? box.scrollHeight - box.clientHeight : 0
+      if (!box || over <= this.constructor.NUDGE_MIN_OVERFLOW) {
+        if (left > 1) this._reachRetry = setTimeout(() => look(left - 1), this.constructor.NUDGE_RETRY_MS)
+        return
+      }
+      if (this._integrity.reach[key] == null) this._integrity.reach[key] = 0
+      const ac = new AbortController()
+      this._reachAbort = ac
+      box.addEventListener("scroll", () => {
+        if (this._nudgeAt != null) return
+        if (box.scrollTop + box.clientHeight >= box.scrollHeight - this.constructor.REACH_SLACK_PX) {
+          this._integrity.reach[key] = 1
+          ac.abort()
+        }
+      }, { passive: true, signal: ac.signal })
+    }
+    look(tries)
   }
 
   // ── Dwell time ─────────────────────────────────────────────────────────────
@@ -2018,7 +2142,12 @@ export default class extends Controller {
       // current wave (a code delivered mid-deck, or a device the marker
       // missed). Nothing was stored; land on the refused screen.
       if (await this._alreadyPlayed(res)) this._refuseRetake()
-    } catch (_) { /* retry on the next navigation */ }
+    } catch (_) {
+      // Retry on the next navigation. A save that never got an answer is the
+      // one sure sign the run went offline, which the integrity signals record
+      // so a reader knows the server's own timestamps for this run are late.
+      this._integrity.offline = true
+    }
   }
 
   // Whether the card at `idx` has a usable answer (a value, or free-text Other).
@@ -2773,6 +2902,11 @@ export default class extends Controller {
     // same total.
     this._bankDwell()
     this._startDwell(idx)
+    // Integrity: where the arriving card's answer starts (so a restored or
+    // remembered answer is not a change of mind), and, on a list long enough
+    // to scroll, whether the respondent reaches its end.
+    this._noteStartingAnswer(cards[idx])
+    this._trackReach(idx)
     cards.forEach((c, i) => c.classList.toggle("active", i === idx))
     this._animateCardEntry(cards[idx], idx)
     // The creator's intro modal, if this card carries one and this run has not
