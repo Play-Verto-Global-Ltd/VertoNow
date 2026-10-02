@@ -1047,4 +1047,12 @@ class LanguageCheckScreenTest < ActionDispatch::IntegrationTest
     @survey.switch_primary_locale!("es")
     assert_equal 0, LanguageCheck.where(survey: @survey).where.not(translated_from_digest: nil).count
   end
+
+  test "a translated line with no recorded origin can still be re-translated" do
+    sign_in
+    get survey_language_check_path(@survey)
+    assert_no_match "lc-outdated", spanish_mc_line
+    assert_match "lc-btn lc-btn--ghost\">#{I18n.t("language_check.retranslate")}<", spanish_mc_line,
+                 "lines translated before provenance existed are the ones most likely to be stale"
+  end
 end

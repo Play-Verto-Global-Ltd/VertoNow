@@ -160,6 +160,20 @@
       </button>
     <% end %>
 
+    <%# Re-translate on any translated line, not only the ones known to be out
+        of date: a line translated before provenance was recorded can be just as
+        stale, and this is the only way to fix it from here. The out-of-date
+        banner carries its own button, so it is not offered twice. %>
+    <% if local_assigns[:owner] && editable && !line[:primary] && !untranslated && !meta[:outdated] %>
+      <%= form_with url: retranslate_survey_language_check_path(survey), method: :post,
+                    data: { turbo: false }, class: "lc-verb-form" do %>
+        <%= hidden_field_tag :cid, card[:cid] %>
+        <%= hidden_field_tag :locale, line[:locale] %>
+        <%= hidden_field_tag :filter, filter %>
+        <button type="submit" class="lc-btn lc-btn--ghost"><%= t("language_check.retranslate") %></button>
+      <% end %>
+    <% end %>
+
     <button type="button" class="lc-btn lc-btn--ghost"
             data-action="click->language-check#toggleNotes"
             aria-expanded="<%= open_notes.positive? %>" aria-controls="notes-<%= anchor %>">
