@@ -924,6 +924,8 @@ ru:
     no_data: Нет данных
     n_answered: 'Ответили: %{n}'
     avg: средн. %{n}
+    everyone_else: "все остальные"
+    baseline_too_few: "Пока ответили меньше %{count} других людей, так что сравнивать пока не с кем."
   invites:
     title: Принять приглашение — Playverto
     already_used_title: Приглашение уже использовано

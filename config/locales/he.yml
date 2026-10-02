@@ -924,6 +924,8 @@ he:
     no_data: אין נתונים
     n_answered: "%{n} ענו"
     avg: ממוצע %{n}
+    everyone_else: "כל השאר"
+    baseline_too_few: "עד כה ענו פחות מ-%{count} אנשים אחרים, כך שעדיין אין עם מי להשוות."
   invites:
     title: קבלת הזמנה — Playverto
     already_used_title: ההזמנה כבר נוצלה

@@ -940,6 +940,8 @@ tn:
     no_data: "Ga go na data"
     n_answered: "%{n} ba arabile"
     avg: "palogare %{n}"
+    everyone_else: "ba bangwe botlhe"
+    baseline_too_few: "Batho ba bangwe ba ba kwa tlase ga %{count} ba arabile go fitlha jaanong, ka jalo ga go ise go nne le ope yo o ka bapisang nae."
   invites:
     title: "Amogela taletso — Playverto"
     already_used_title: "Taletso e setse e dirisitswe"

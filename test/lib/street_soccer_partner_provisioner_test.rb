@@ -33,7 +33,8 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
   end
 
   def respond(**attrs)
-    verto.responses.create!({ session_token: SecureRandom.uuid, answered: true, status: "completed" }.merge(attrs))
+    verto.responses.create!({ session_token: SecureRandom.uuid, status: "completed",
+                              answers: { "1" => { "value" => "Yes" } } }.merge(attrs))
   end
 
   def dan          = User.find_by(email_address: P::ADMIN_EMAIL)

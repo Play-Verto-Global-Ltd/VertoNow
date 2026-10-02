@@ -938,6 +938,8 @@ zu:
     no_data: "Ayikho idatha"
     n_answered: "%{n} baphendulile"
     avg: "isilinganiso %{n}"
+    everyone_else: "bonke abanye"
+    baseline_too_few: "Abantu abanye abangaphansi kuka-%{count} asebephendulile kuze kube manje, ngakho akekho ongaqhathaniswa naye okwamanje."
   invites:
     title: "Yamukela isimemo — Playverto"
     already_used_title: "Isimemo sesisetshenzisiwe"

@@ -969,6 +969,8 @@ cs:
     no_data: "Žádná data"
     n_answered: "%{n} odpovědělo"
     avg: "prům. %{n}"
+    everyone_else: "ostatní"
+    baseline_too_few: "Zatím odpovědělo méně než %{count} dalších lidí, takže zatím není s kým srovnávat."
   invites:
     title: "Přijmout pozvánku – Playverto"
     already_used_title: "Pozvánka už byla použita"

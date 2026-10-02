@@ -924,6 +924,8 @@ es:
     no_data: Sin datos
     n_answered: "%{n} respondieron"
     avg: prom. %{n}
+    everyone_else: "todos los demás"
+    baseline_too_few: "Todavía han respondido menos de %{count} personas más, así que aún no hay con quién comparar."
   invites:
     title: Aceptar invitación — Playverto
     already_used_title: Invitación ya utilizada

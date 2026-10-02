@@ -924,6 +924,8 @@ ja:
     no_data: データなし
     n_answered: "%{n} 件回答"
     avg: 平均 %{n}
+    everyone_else: "その他の回答者"
+    baseline_too_few: "他の回答者がまだ%{count}人未満のため、比較できる相手がいません。"
   invites:
     title: 招待を承認 — Playverto
     already_used_title: この招待は使用済みです

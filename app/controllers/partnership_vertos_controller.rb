@@ -2,6 +2,10 @@ class PartnershipVertosController < ApplicationController
   include AggregatesSurveyResults
   layout "fullscreen"
 
+  # Fewer other respondents than this and the comparison is not drawn — the
+  # small-cell line every other slice of a Verto's results is held to.
+  BASELINE_MIN = ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE
+
   before_action :load_partnership
   before_action :require_creator_admin!, only: [ :create, :destroy ]
 
@@ -28,15 +32,26 @@ class PartnershipVertosController < ApplicationController
       return
     end
 
-    partnership_share_ids = @partnership_verto.survey_shares.pluck(:id)
-    completed = @survey.responses.where(status: "completed")
-    mine      = completed.where(survey_share_id: @share.id)
-    partnership_completed = completed.where(survey_share_id: partnership_share_ids)
+    # The owner's results page, for the partner's own respondents, beside
+    # everyone else who answered the Verto. Counted on the owner's page's own
+    # terms — anyone who answered a question (ResolvesResultSegments#
+    # resolve_result_segments), not only those who finished — so a partner and
+    # the owner never read two different totals for one link.
+    #
+    # Everyone else is the owner's respondents, and another partner's, so it
+    # is shown as distributions only (surveys/_result_cards never draws a
+    # baseline's free text) and not at all under the small-cell line: with
+    # four other people, "everyone else" is four people's answers.
+    cards  = Array(@survey.cards)
+    base   = @survey.responses.where(answered: true)
+    mine   = base.where(survey_share_id: @share.id)
+    others = base.where.not(id: mine.select(:id))
 
-    @mine_total       = mine.count
-    @aggregate_total  = partnership_completed.count
-    @mine_results      = aggregate_results(Array(@survey.cards), mine)
-    @aggregate_results = aggregate_results(Array(@survey.cards), partnership_completed)
+    @mine_total     = mine.count
+    @others_total   = others.count
+    @mine_results   = aggregate_results(cards, mine)
+    @others_results = aggregate_results(cards, others) if @others_total >= BASELINE_MIN
+    @dwell          = DwellTimes.for(cards, mine)
   end
 
   private

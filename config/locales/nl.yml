@@ -924,6 +924,8 @@ nl:
     no_data: Geen gegevens
     n_answered: "%{n} beantwoord"
     avg: gem. %{n}
+    everyone_else: "alle anderen"
+    baseline_too_few: "Er hebben nog minder dan %{count} andere mensen geantwoord, dus er is nog niemand om mee te vergelijken."
   invites:
     title: Uitnodiging accepteren — Playverto
     already_used_title: Uitnodiging al gebruikt

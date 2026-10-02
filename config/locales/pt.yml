@@ -924,6 +924,8 @@ pt:
     no_data: Sem dados
     n_answered: "%{n} respondidos"
     avg: méd. %{n}
+    everyone_else: "todos os outros"
+    baseline_too_few: "Até agora responderam menos de %{count} outras pessoas, por isso ainda não há com quem comparar."
   invites:
     title: Aceitar convite — Playverto
     already_used_title: Convite já utilizado

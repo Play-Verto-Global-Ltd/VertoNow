@@ -924,6 +924,8 @@ uk:
     no_data: Немає даних
     n_answered: "%{n} відповіли"
     avg: сер. %{n}
+    everyone_else: "усі інші"
+    baseline_too_few: "Поки що відповіли менше ніж %{count} інших людей, тож порівнювати ще ні з ким."
   invites:
     title: Прийняти запрошення — Playverto
     already_used_title: Запрошення вже використано

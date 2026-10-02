@@ -924,6 +924,8 @@ ar:
     no_data: لا توجد بيانات
     n_answered: "%{n} أجابوا"
     avg: المتوسط %{n}
+    everyone_else: "الآخرون"
+    baseline_too_few: "أجاب أقل من %{count} أشخاص آخرين حتى الآن، لذا لا يوجد من تقارن به بعد."
   invites:
     title: قبول الدعوة — Playverto
     already_used_title: تم استخدام الدعوة بالفعل

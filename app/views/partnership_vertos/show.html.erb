@@ -1,127 +1,17 @@
 <% content_for :title, t("partnership_verto.title", title: @survey.title) %>
-<%
-  cards = Array(@survey.cards)
+<%# A partner's results: the owner's results page, for the respondents who came
+    in through this partner's link, with everyone else who answered drawn
+    beside every answer (surveys/_result_cards, baseline:). The same cards the
+    owner and the public results link render, so the three never disagree
+    about what a question's answers look like.
 
-  # Most question types tally a flat label => count, which is what the rows
-  # below draw. Two don't (AggregatesSurveyResults#accumulate_value):
-  #   tap_card   — a scale per statement, { statement => { answer key => n } }.
-  #                Drawn as one group per statement — the statement as a
-  #                heading, its answers (through the card's own labels) as rows
-  #                — because "statement · answer" in a 340px column truncates
-  #                to the statement and never shows the answer. Every
-  #                respondent answers every statement once, so the card's total
-  #                stays the base for each row. Until this page knew the shape,
-  #                any Verto with a tap card 500'd it.
-  #   prioritise — banks rank SUMS, so a share of the total means nothing.
-  #                Drawn as each option's mean rank, best first, and left out
-  #                of the comparison.
-  #
-  # count_groups gives every type the same shape: [[heading or nil, { label => count }], …].
-  count_groups = ->(row) do
-    return [ [ nil, row[:counts] ] ] unless row[:type] == "tap_card"
-    labels = TapScales.for_card(row[:card], default_locale: @survey.default_locale)
-                      .to_h { |r| [ r["key"], r["label"] ] }
-    row[:counts].filter_map do |statement, scale|
-      [ statement, scale.to_h { |key, n| [ labels[key] || key, n ] } ] if scale.is_a?(Hash)
-    end
-  end
-
-  group_heading = ->(text) do
-    return "" if text.nil?
-    %(<div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.5);line-height:1.35;margin-top:4px;">#{ERB::Util.h(text)}</div>)
-  end
-
-  render_ranks = ->(row, accent) do
-    responders = row[:total].to_i
-    return "" unless responders.positive?
-    row[:counts].map { |label, sum| [ label, (sum.to_f / responders).round(1) ] }.sort_by(&:last).map do |label, rank|
-      <<~HTML
-        <div style="display:flex;align-items:center;gap:8px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.7);">
-          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">#{ERB::Util.h(label)}</span>
-          <span style="flex-shrink:0;text-align:right;color:#{accent};font-variant-numeric:tabular-nums;">#{ERB::Util.h(t("partnership_verto.avg", n: rank))}</span>
-        </div>
-      HTML
-    end.join.html_safe
-  end
-
-  render_counts = ->(row, accent) do
-    return render_ranks.call(row, accent) if row[:type] == "prioritise"
-    total = row[:total]
-    count_groups.call(row).map do |heading, counts|
-      group_heading.call(heading) + counts.map do |label, count|
-        pct = total.to_i.positive? ? (count.to_f / total * 100).round : 0
-        <<~HTML
-          <div style="display:flex;align-items:center;gap:8px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.7);">
-            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">#{ERB::Util.h(label)}</span>
-            <div style="position:relative;flex-shrink:0;width:60px;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
-              <div style="position:absolute;inset:0 auto 0 0;width:#{pct}%;background:#{accent};"></div>
-            </div>
-            <span style="flex-shrink:0;min-width:40px;text-align:right;color:#{accent};font-variant-numeric:tabular-nums;">#{count} · #{pct}%</span>
-          </div>
-        HTML
-      end.join
-    end.join.html_safe
-  end
-
-  no_data_label = t("partnership_verto.no_data")
-  render_section = ->(label, total, row, accent) do
-    if row.nil? || total.to_i.zero?
-      <<~HTML.html_safe
-        <div>
-          <div style="font-family:'Alata',sans-serif;font-size: var(--text-xs);letter-spacing:0.08em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:4px;">#{label}</div>
-          <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.3);">#{ERB::Util.h(no_data_label)}</div>
-        </div>
-      HTML
-    else
-      body = if row[:counts]&.any?
-        render_counts.call(row, accent)
-      elsif row[:texts]&.any?
-        row[:texts].first(3).map { |t| %(<div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.03);border-radius:5px;padding:5px 8px;line-height:1.35;">"#{ERB::Util.h(t)}"</div>) }.join.html_safe
-      else
-        ""
-      end
-      meta = t("partnership_verto.n_answered", n: row[:total])
-      meta += " · #{t("partnership_verto.avg", n: row[:avg])}" if row[:avg]
-      <<~HTML.html_safe
-        <div>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
-            <div style="font-family:'Alata',sans-serif;font-size: var(--text-xs);letter-spacing:0.08em;color:#{accent};text-transform:uppercase;">#{label}</div>
-            <div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-xs);color:rgba(255,255,255,0.35);">#{meta}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;">#{body}</div>
-        </div>
-      HTML
-    end
-  end
-
-  render_comparison = ->(mine, agg) do
-    return "" if mine.nil? || agg.nil? || mine[:type] == "prioritise"
-    return "" if mine[:counts].blank? || agg[:counts].blank?
-    mine_total  = mine[:total].to_i
-    agg_total   = agg[:total].to_i
-    mine_groups = count_groups.call(mine).to_h
-    agg_groups  = count_groups.call(agg).to_h
-    (mine_groups.keys + agg_groups.keys).uniq.map do |heading|
-      m_counts = mine_groups[heading] || {}
-      a_counts = agg_groups[heading] || {}
-      group_heading.call(heading) + (m_counts.keys + a_counts.keys).uniq.map do |label|
-        m_pct = mine_total.positive? ? (m_counts[label].to_f / mine_total * 100).round : 0
-        a_pct = agg_total.positive?  ? (a_counts[label].to_f / agg_total  * 100).round : 0
-        <<~HTML
-          <div style="display:flex;align-items:center;gap:8px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.7);">
-            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">#{ERB::Util.h(label)}</span>
-            <span style="flex-shrink:0;color:#01EACB;font-variant-numeric:tabular-nums;width:42px;text-align:right;">#{m_pct}%</span>
-            <span style="flex-shrink:0;color:rgba(255,255,255,0.3);">vs</span>
-            <span style="flex-shrink:0;color:#FF1E6F;font-variant-numeric:tabular-nums;width:42px;text-align:right;">#{a_pct}%</span>
-          </div>
-        HTML
-      end.join
-    end.join.html_safe
-  end
-%>
+    The partner's own respondents' words are shown — they are this partner's
+    cohort — but the contact details anyone left are not (hide_contacts): those
+    were given to the Verto's owner. Everyone else is distributions only, and
+    not drawn at all below the small-cell line (PartnershipVertosController). %>
 <div style="display:flex;height:100%;background:#1C2034;">
-  <div style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:40px 36px;">
-    <div style="width:100%;max-width:1240px;margin:0 auto;">
+  <div style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:40px 20px 64px;">
+    <div style="width:100%;max-width:780px;margin:0 auto;">
 
       <%= link_to partnership_path(@partnership),
             style: "display:inline-flex;align-items:center;gap:6px;font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.45);text-decoration:none;margin-bottom:18px;" do %>
@@ -148,60 +38,27 @@
                 style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:6px 12px;color:rgba(255,255,255,0.6);font-family:'Alata',sans-serif;font-size: var(--text-sm);cursor:pointer;flex-shrink:0;"><%= t("partnerships.copy") %></button>
       </div>
 
-      <%# Totals strip %>
-      <div style="display:flex;gap:10px;margin-bottom:22px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);">
+      <%# Totals — the key to the page: teal is this partner's respondents
+          everywhere below, pink is everyone else. %>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);">
         <div style="background:rgba(1,234,203,0.08);border:1px solid rgba(1,234,203,0.25);border-radius:8px;padding:7px 12px;color:#01EACB;">
           <strong style="font-family:'Alata',sans-serif;"><%= @mine_total %></strong> <%= t("partnership_verto.mine_label") %>
         </div>
-        <div style="background:rgba(255,30,111,0.08);border:1px solid rgba(255,30,111,0.25);border-radius:8px;padding:7px 12px;color:#FF1E6F;">
-          <strong style="font-family:'Alata',sans-serif;"><%= @aggregate_total %></strong> <%= t("partnership_verto.aggregate_label", partnership: @partnership.name) %>
-        </div>
-      </div>
-
-      <%# Card-by-card: Verto preview + side-by-side results %>
-      <div style="display:flex;flex-direction:column;gap:20px;">
-        <%
-          total_q = cards.count { |c| CardTypes.question?(c["type"]) }
-          q_idx = 0
-        %>
-        <% cards.each_with_index do |card, idx| %>
-          <%
-            is_q     = CardTypes.question?(card["type"])
-            q_idx   += 1 if is_q
-            progress = total_q > 0 ? ((q_idx.to_f / total_q) * 100).round : 5
-            progress = 5 unless is_q
-            mine_row = @mine_results[idx]
-            agg_row  = @aggregate_results[idx]
-          %>
-
-          <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start;">
-
-            <%# Verto card preview %>
-            <div style="background:#0F1326;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px;">
-              <div style="font-family:'Alata',sans-serif;font-size: var(--text-xs);letter-spacing:0.08em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:8px;"><%= t("partnership_verto.card_n", n: idx + 1) %></div>
-              <div style="zoom:0.72;">
-                <%= render "surveys/preview_card", card: card, progress: progress %>
-              </div>
-            </div>
-
-            <%# Results panel: Mine + Aggregate + Comparison %>
-            <div style="background:#161B2E;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:14px;align-self:start;">
-              <%= render_section.call(t("partnership_verto.my_results"), @mine_total, mine_row, "#01EACB") %>
-              <div style="height:1px;background:rgba(255,255,255,0.06);"></div>
-              <%= render_section.call(t("partnership_verto.aggregate"), @aggregate_total, agg_row, "#FF1E6F") %>
-              <%
-                comp_html = render_comparison.call(mine_row, agg_row)
-              %>
-              <% if comp_html.present? %>
-                <div style="height:1px;background:rgba(255,255,255,0.06);"></div>
-                <div>
-                  <div style="font-family:'Alata',sans-serif;font-size: var(--text-xs);letter-spacing:0.08em;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:6px;"><%= t("partnership_verto.comparison") %> <span style="color:rgba(255,255,255,0.3);text-transform:none;letter-spacing:0;">· <%= t("partnership_verto.comparison_sub") %></span></div>
-                  <div style="display:flex;flex-direction:column;gap:4px;"><%= comp_html %></div>
-                </div>
-              <% end %>
-            </div>
+        <% if @others_results %>
+          <div style="background:rgba(255,30,111,0.08);border:1px solid rgba(255,30,111,0.25);border-radius:8px;padding:7px 12px;color:#FF5C93;display:inline-flex;align-items:center;gap:8px;">
+            <span aria-hidden="true" style="display:inline-block;width:2px;height:14px;background:#FF1E6F;"></span>
+            <span><strong style="font-family:'Alata',sans-serif;"><%= @others_total %></strong> <%= t("partnership_verto.everyone_else") %></span>
+          </div>
+        <% else %>
+          <div style="padding:7px 0;color:rgba(255,255,255,0.4);font-size: var(--text-sm);">
+            <%= t("partnership_verto.baseline_too_few", count: PartnershipVertosController::BASELINE_MIN) %>
           </div>
         <% end %>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <%= render "surveys/result_cards", aggregated: @mine_results, total: @mine_total,
+                                           baseline: @others_results, hide_contacts: true, dwell: @dwell %>
       </div>
 
     </div>

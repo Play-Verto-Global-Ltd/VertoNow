@@ -924,6 +924,8 @@ hi:
     no_data: कोई डेटा नहीं
     n_answered: "%{n} ने उत्तर दिया"
     avg: औसत %{n}
+    everyone_else: "बाकी सभी"
+    baseline_too_few: "अब तक %{count} से कम अन्य लोगों ने जवाब दिया है, इसलिए अभी तुलना करने के लिए कोई नहीं है।"
   invites:
     title: आमंत्रण स्वीकार करें — Playverto
     already_used_title: आमंत्रण पहले ही उपयोग किया जा चुका है

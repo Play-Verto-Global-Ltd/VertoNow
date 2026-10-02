@@ -5721,6 +5721,21 @@ button.editor-leave-btn { cursor: pointer; }
   font-variant-numeric: tabular-nums; min-width: 2.2em; text-align: end;
 }
 
+/* A baseline beside the row's own answers (the partner results page: its
+   respondents, and everyone else who answered). The row keeps its own fill and
+   figures; the baseline is a pink tick at ITS share and its figure after the
+   row's, pink being what that page has always drawn "everyone" in. The tick
+   spans the row so it reads against a long fill and a short one alike. */
+.rc-base {
+  position: absolute; inset-block: 0; width: 2px; margin-inline-start: -1px;
+  background: #FF1E6F; pointer-events: none;
+}
+.rc-vs {
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); color: #FF5C93;
+  font-variant-numeric: tabular-nums; min-width: 3.4em; text-align: end; white-space: nowrap;
+}
+.rc-answers.rc-vs-n { margin-inline-start: 0; color: #FF5C93; }
+
 /* Scales, ratings and a tap card's per-statement blocks: short labels, and
    many rows per card — an eleven-point NPS at the full row height is most of
    a screen. Tighter rhythm, same anatomy. */

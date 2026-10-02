@@ -924,6 +924,8 @@ vi:
     no_data: Không có dữ liệu
     n_answered: "%{n} đã trả lời"
     avg: TB %{n}
+    everyone_else: "những người khác"
+    baseline_too_few: "Mới có ít hơn %{count} người khác trả lời, nên chưa có ai để so sánh."
   invites:
     title: Chấp nhận lời mời — Playverto
     already_used_title: Lời mời đã được sử dụng

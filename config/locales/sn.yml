@@ -928,6 +928,8 @@ sn:
     no_data: "Hapana Dhata"
     n_answered: "%{n} vakapindura"
     avg: "avhareji %{n}"
+    everyone_else: "vamwe vese"
+    baseline_too_few: "Vanhu vamwe vasingasviki %{count} ndivo vapindura parizvino, saka hapana wekuenzanisa naye."
   invites:
     title: "Gamuchira Kukokwa — Playverto"
     already_used_title: "Kukokwa Kwatoshandiswa"

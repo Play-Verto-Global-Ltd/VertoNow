@@ -115,7 +115,8 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Trial Verto", response.body
     assert_match share.share_token, response.body
-    assert_match "across Trial", response.body, "aggregate strip names the partnership"
+    assert_match "Fewer than 5 other people have answered yet", response.body,
+                 "nobody else has answered, so there is nothing to compare with"
   end
 
   test "any org can be a creator and a partner-member simultaneously" do
@@ -145,9 +146,11 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     refute_match "Add a partner", response.body, "should NOT see creator controls on partnership you're a member of"
   end
 
-  test "aggregate scope is per-partnership, not cross-partnership" do
-    # Two partnerships, both contain the same partner B and the same Verto.
-    # Responses through partnership 1's share should not appear in partnership 2's aggregate.
+  # The comparison is with everyone else who answered the Verto — the owner's
+  # own respondents and any other partner's alike — not only the partner
+  # group's other links: what a partner asks is how their people differ from
+  # everybody else's.
+  test "everyone else is every other respondent to the Verto, whichever link they came through" do
     partner_admin = User.create!(name: "B", email_address: "agg-b-#{SecureRandom.hex(2)}@test.com", password: "verylongpassword")
     partner_org = Organisation.create!(name: "Agg Partner", slug: "agg-#{SecureRandom.hex(2)}")
     partner_org.memberships.create!(user: partner_admin, role: "admin")
@@ -155,7 +158,7 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     survey = @oa.surveys.create!(
       title: "Cross-Test", theme: "X", audience_age: "all",
       key_insight: "x", default_locale: "en", locales: [ "en" ],
-      cards: [ { "type"=>"single_choice", "title"=>"Q", "options"=>[ { "label"=>"A" }, { "label"=>"B" } ] } ],
+      cards: [ { "type"=>"multiple_choice", "text"=>"Q", "options"=>[ "A", "B" ] } ],
       publish_token: SecureRandom.urlsafe_base64(18), published_at: Time.current
     )
 
@@ -172,24 +175,73 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     a1_share = a1.survey_shares.first
     a2_share = a2.survey_shares.first
 
-    # 2 responses through a1, 5 through a2
-    2.times { survey.responses.create!(session_token: SecureRandom.urlsafe_base64(16), survey_share: a1_share, status: "completed", answers: { "0"=>{ "value"=>"A" } }) }
-    5.times { survey.responses.create!(session_token: SecureRandom.urlsafe_base64(16), survey_share: a2_share, status: "completed", answers: { "0"=>{ "value"=>"B" } }) }
+    # 2 through a1, 5 through a2, 3 on the owner's own link
+    respond = ->(share, value) { survey.responses.create!(session_token: SecureRandom.urlsafe_base64(16), survey_share: share, status: "completed", answers: { "0"=>{ "value"=>value } }) }
+    2.times { respond.call(a1_share, "A") }
+    5.times { respond.call(a2_share, "B") }
+    3.times { respond.call(nil, "B") }
 
     delete session_path
     sign_in partner_admin
 
-    av1 = a1.partnership_vertos.first
-    get partnership_partnership_verto_path(a1, av1)
+    get partnership_partnership_verto_path(a1, a1.partnership_vertos.first)
     assert_response :success
     assert_match "<strong style=\"font-family:'Alata',sans-serif;\">2</strong> from your link", response.body
-    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">2</strong> across Aggregate Alpha", response.body,
-                 "aggregate should be 2 — only this partnership's responses, NOT 7"
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">8</strong> everyone else", response.body,
+                 "the other partnership's five and the owner's three"
 
-    av2 = a2.partnership_vertos.first
-    get partnership_partnership_verto_path(a2, av2)
+    get partnership_partnership_verto_path(a2, a2.partnership_vertos.first)
     assert_response :success
-    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">5</strong> across Aggregate Beta", response.body
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">5</strong> from your link", response.body
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">5</strong> everyone else", response.body
+  end
+
+  # The owner's results cards, the partner's respondents on them, everyone
+  # else drawn beside each answer — and only as numbers: the owner's
+  # respondents' words and anyone's contact details stay with the owner.
+  test "partner results compare every answer with everyone else, as distributions only" do
+    partner_admin = User.create!(name: "P", email_address: "cmp-#{SecureRandom.hex(2)}@test.com", password: "verylongpassword")
+    partner_org = Organisation.create!(name: "Cmp Partner", slug: "cmp-#{SecureRandom.hex(2)}")
+    partner_org.memberships.create!(user: partner_admin, role: "admin")
+    survey = @oa.surveys.create!(
+      title: "Cmp Verto", theme: "T", audience_age: "all", key_insight: "x", default_locale: "en", locales: [ "en" ],
+      cards: [
+        { "type" => "multiple_choice", "text" => "Pick", "options" => [ "Pitch", "Court" ] },
+        { "type" => "open_ended", "text" => "Why?" },
+        { "type" => "contact_form", "text" => "Stay in touch" }
+      ],
+      publish_token: SecureRandom.urlsafe_base64(18), published_at: Time.current
+    )
+    partnership = @oa.partnerships.create!(name: "Cmp Group")
+    PartnershipMembership.join!(partnership: partnership, organisation: partner_org)
+    pv = partnership.partnership_vertos.create!(survey: survey)
+    PartnershipShareSync.ensure_shares_for(partnership: partnership)
+    share = partnership.survey_shares.sole
+    respond = ->(via, pick, why, email) do
+      survey.responses.create!(session_token: SecureRandom.uuid, survey_share: via, status: "completed",
+                               answers: { "0" => { "value" => pick }, "1" => { "value" => why },
+                                          "2" => { "value" => { "name" => "N", "email" => email } } })
+    end
+    2.times { respond.call(share, "Pitch", "Our own words", "ours@example.com") }
+    4.times { respond.call(nil, "Court", "The owner's respondent wrote this", "theirs@example.com") }
+    respond.call(nil, "Pitch", "The owner's respondent wrote this", "theirs@example.com")
+
+    delete session_path
+    sign_in partner_admin
+    get partnership_partnership_verto_path(partnership, pv)
+    assert_response :success
+
+    # Court: nobody here picked it, 80% of everyone else did — the row is
+    # drawn for them anyway, with their tick and figure.
+    assert_match %r{title="Court">Court</span>\s*<span class="rc-pct">0%</span>\s*<span class="rc-vs">80%</span>}, response.body
+    assert_match %r{title="Pitch">Pitch</span>\s*<span class="rc-pct">100%</span>\s*<span class="rc-vs">20%</span>}, response.body
+    assert_select ".rc-base[style*='inset-inline-start:80%']"
+    assert_select ".rc-answers.rc-vs-n", text: "5 everyone else"
+
+    assert_match "Our own words", response.body, "the partner reads its own respondents"
+    assert_no_match "The owner's respondent wrote this", response.body
+    assert_no_match "theirs@example.com", response.body
+    assert_no_match "ours@example.com", response.body, "contact details were left for the Verto's owner"
   end
 
   # Two card types tally something other than label => count, and the partner
@@ -230,10 +282,10 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     # Each statement heads its own answers, labelled as the card labels them.
-    assert_match "I play to keep my head clear", response.body
-    assert_match %r{That(&#39;|')s me</span>.*?2 · 67%}m, response.body
+    assert_select ".rc-group-label", text: "I play to keep my head clear"
+    assert_match %r{That(&#39;|')s me</span>\s*<span class="rc-pct">67%</span>}, response.body
     # Cheaper ranked 1, 2, 1 → 1.3; Closer 2, 1, 2 → 1.7. Best first.
-    assert_match(/Cheaper<\/span>\s*<span[^>]*>avg 1\.3<.*?Closer<\/span>\s*<span[^>]*>avg 1\.7</m, response.body)
+    assert_match(/title="Cheaper">Cheaper<\/span>\s*<span class="rc-n">avg 1\.3<.*?title="Closer">Closer<\/span>\s*<span class="rc-n">avg 1\.7</m, response.body)
   end
 
   test "signed-in admin of an existing org joins a partnership via the join link" do

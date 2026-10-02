@@ -968,6 +968,8 @@ en-US:
     no_data: "No data"
     n_answered: "%{n} answered"
     avg: "avg %{n}"
+    everyone_else: "everyone else"
+    baseline_too_few: "Fewer than %{count} other people have answered yet, so there is no one to compare with."
   invites:
     title: "Accept invite — Playverto"
     already_used_title: "Invite already used"

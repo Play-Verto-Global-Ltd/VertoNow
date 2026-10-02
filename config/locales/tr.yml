@@ -924,6 +924,8 @@ tr:
     no_data: Veri yok
     n_answered: "%{n} yanıtlandı"
     avg: ort %{n}
+    everyone_else: "diğer herkes"
+    baseline_too_few: "Henüz %{count} kişiden az başka kişi yanıt verdi, bu yüzden karşılaştırılacak kimse yok."
   invites:
     title: Daveti kabul et — Playverto
     already_used_title: Davet zaten kullanıldı

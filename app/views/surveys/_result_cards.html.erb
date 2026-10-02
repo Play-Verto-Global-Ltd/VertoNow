@@ -44,15 +44,39 @@
                    mean_ms: } }) over the same responses `aggregated` counted,
                    for the typical-time-to-answer chip in each question's
                    head. Omitted (or nil), no chip is drawn. Aggregate timing,
-                   not PII, so the shared page passes it too. %>
+                   not PII, so the shared page passes it too.
+      baseline   — a second aggregate_results over the same cards, for a
+                   different set of respondents, drawn beside `aggregated` on
+                   every answer row: a tick at its share and its figure after
+                   the row's own, plus its count in the card's head. The
+                   partner results page passes everyone else who answered
+                   (PartnershipVertosController#show). Distributions only —
+                   a baseline's free text, Other write-ins and leads are never
+                   drawn. Omitted (or nil), the cards are exactly as before.
+      hide_contacts — contact_form's lead table as a count-only line, without
+                   redacting the rest. Defaults to `shared`. The partner page
+                   shows a partner its own respondents' words, but the contact
+                   details they left were given to the Verto's owner. %>
 <%
   shared   = local_assigns.fetch(:shared, false)
   answers  = local_assigns[:answers]
   insights = local_assigns.fetch(:insights, false)
   dwell    = local_assigns[:dwell]
+  baseline = local_assigns[:baseline]
+  hide_contacts = local_assigns.fetch(:hide_contacts, shared)
+  # A baseline row's share, and the two marks that draw it on a row. Both
+  # marks are empty strings without a baseline, so every branch below can
+  # carry them unconditionally.
+  base_pct  = ->(count, grand) { grand.to_f.positive? ? ((count.to_f / grand) * 100).round : 0 }
+  # No tick at zero: on the row's own edge it reads as a stray border, and
+  # the figure beside it already says 0%.
+  base_tick = ->(pct) { pct.to_i.positive? ? tag.div(class: "rc-base", style: "inset-inline-start:#{pct}%;") : "" }
+  base_fig  = ->(text) { text ? tag.span(text, class: "rc-vs") : "" }
 %>
 <% aggregated.each_with_index do |result, idx| %>
-  <% type      = result[:type]
+  <% base      = baseline && baseline[idx]
+     b_counts  = base ? base[:counts].to_h : {}
+     type      = result[:type]
      card_data = result[:card]
      total_ans = result[:total]
      card_meta = card_type_meta(type)
@@ -100,6 +124,9 @@
       <span class="rc-answers <%= "is-zero" if total_ans.to_i.zero? %>">
         <%= total_ans %> answer<%= total_ans == 1 ? "" : "s" %>
       </span>
+      <% if base && CardTypes.question?(type) %>
+        <span class="rc-answers rc-vs-n"><%= base[:total].to_i %> <%= t("partnership_verto.everyone_else") %></span>
+      <% end %>
       <%# Dwell time — the median time respondents who answered this question
           spent on it. Only where the player recorded any: a deck answered
           before the measurement existed shows nothing rather than "0s". %>
@@ -127,6 +154,7 @@
       <div class="rc-big-line">
         <span class="rc-big"><%= total %></span>
         <span class="rc-big-word">respondent<%= total == 1 ? "" : "s" %> started</span>
+        <% if base %><span class="rc-vs"><%= base[:total].to_i %> <%= t("partnership_verto.everyone_else") %></span><% end %>
       </div>
 
     <%# `scenario` belongs here and was missing: the aggregator has always
@@ -135,18 +163,25 @@
         reported "43 answers" over nothing at all. %>
     <% elsif %w[multiple_choice yes_no select_one_grid select_many select_many_grid scenario].include?(type) %>
       <% counts = result[:counts]; grand = [ counts.values.sum.to_f, 1.0 ].max %>
+      <%# With a baseline, an answer only the other side gave still gets its
+          row (at zero here), or its share would have nowhere to be drawn. %>
+      <% labels = base ? (counts.keys | b_counts.keys) : counts.keys
+         b_grand = b_counts.values.sum %>
       <div class="rc-rows">
-        <% counts.sort_by { |_, v| -v }.each do |label, count| %>
-          <% pct = ((count / grand) * 100).round %>
+        <% labels.sort_by { |l| [ -counts.fetch(l, 0), -b_counts.fetch(l, 0) ] }.each do |label| %>
+          <% count = counts.fetch(label, 0); pct = ((count / grand) * 100).round %>
+          <% bpct = base && base_pct.call(b_counts.fetch(label, 0), b_grand) %>
           <% row = row_tag.call(label, label, nil, count.to_i.zero?) %>
           <%= content_tag(row[:tag], row.except(:tag)) do %>
             <div class="rc-fill" style="width:<%= pct %>%;"></div>
+            <%= base_tick.call(bpct) %>
             <div class="rc-rowin">
               <% if (style = opt_thumbs[label.to_s]) %>
                 <div class="rc-othumb" style="<%= style %>"></div>
               <% end %>
               <span class="rc-label" title="<%= label %>"><%= label %></span>
               <span class="rc-pct"><%= pct %>%</span>
+              <%= base_fig.call(bpct && "#{bpct}%") %>
               <span class="rc-n"><%= count %></span>
             </div>
           <% end %>
@@ -161,18 +196,31 @@
       <% counts = result[:counts]; total_n = [ result[:total].to_i, 1 ].max %>
       <% ranked = counts.map { |label, sum| [ label, sum.to_f / total_n ] }.sort_by { |_, mean| mean } %>
       <% n = [ ranked.size, 1 ].max %>
+      <% b_n = base && base[:total].to_i %>
       <div class="rc-rows">
         <% ranked.each_with_index do |(label, mean), i| %>
           <% pct = (((n - mean + 1) / n.to_f) * 100).clamp(0, 100).round %>
+          <%# The baseline's own mean position, on the same priority scale. %>
+          <% b_mean = b_n.to_i.positive? && b_counts.key?(label) ? b_counts[label].to_f / b_n : nil %>
+          <% bpct = b_mean && (((n - b_mean + 1) / n.to_f) * 100).clamp(0, 100).round %>
           <div class="rc-row">
             <div class="rc-fill" style="width:<%= pct %>%;background:rgba(97,91,245,0.3);"></div>
+            <%= base_tick.call(bpct) %>
             <div class="rc-rowin">
               <span class="rc-rank"><%= i + 1 %></span>
               <% if (style = opt_thumbs[label.to_s]) %>
                 <div class="rc-othumb" style="<%= style %>"></div>
               <% end %>
               <span class="rc-label" title="<%= label %>"><%= label %></span>
-              <span class="rc-n">avg <%= mean.round(1) %></span>
+              <% if base %>
+                <%# Compared, the row's own mean takes the weight a share has on
+                    every other row, so the two figures read in the same order. %>
+                <span class="rc-n">avg</span>
+                <span class="rc-pct"><%= mean.round(1) %></span>
+                <%= base_fig.call(b_mean && b_mean.round(1).to_s) %>
+              <% else %>
+                <span class="rc-n">avg <%= mean.round(1) %></span>
+              <% end %>
             </div>
           </div>
         <% end %>
@@ -184,18 +232,22 @@
           the shape being read. They are recessed instead (.is-zero). %>
       <% labels = Array(card_data["options"]).presence || (type == "nps" ? (0..10).map(&:to_s) : []) %>
       <% n = [ labels.size, 2 ].max; grand = [ result[:counts].values.sum.to_f, 1.0 ].max %>
+      <% b_grand = b_counts.values.sum %>
       <div class="rc-rows is-compact">
         <% n.times do |i| %>
           <% count = result[:counts][i].to_i; label = labels[i] || "Step #{i + 1}"; pct = ((count / grand) * 100).round %>
+          <% bpct = base && base_pct.call(b_counts[i].to_i, b_grand) %>
           <% row = row_tag.call(i, label, nil, count.zero?) %>
           <%= content_tag(row[:tag], row.except(:tag)) do %>
             <div class="rc-fill" style="width:<%= pct %>%;"></div>
+            <%= base_tick.call(bpct) %>
             <div class="rc-rowin">
               <% if (style = opt_thumbs[label.to_s]) %>
                 <div class="rc-othumb" style="<%= style %>"></div>
               <% end %>
               <span class="rc-label" title="<%= label %>"><%= label %></span>
               <span class="rc-pct"><%= pct %>%</span>
+              <%= base_fig.call(bpct && "#{bpct}%") %>
               <span class="rc-n"><%= count %></span>
             </div>
           <% end %>
@@ -209,19 +261,24 @@
           <% 5.times do |i| %><span style="color:<%= i < avg.round ? '#FFCC00' : 'rgba(255,255,255,0.18)' %>"><%= i < avg.round ? "★" : "☆" %></span><% end %>
         </div>
         <span class="rc-avg"><%= avg %></span>
+        <% if base %><span class="rc-vs"><%= base[:avg] %></span><% end %>
       </div>
+      <% b_grand = b_counts.values.sum %>
       <div class="rc-rows is-compact">
         <% 5.downto(1) do |star| %>
           <% count = result[:counts][star].to_i; pct = ((count / grand) * 100).round %>
+          <% bpct = base && base_pct.call(b_counts[star].to_i, b_grand) %>
           <%# Teal bars, gold stars. Amber at the alpha a row fill needs comes
               out olive over this navy — yellow over blue does — so the gold
               stays on the glyphs and the average, where it is opaque. %>
           <% row = row_tag.call(star, "★" * star, nil, count.zero?) %>
           <%= content_tag(row[:tag], row.except(:tag)) do %>
             <div class="rc-fill" style="width:<%= pct %>%;"></div>
+            <%= base_tick.call(bpct) %>
             <div class="rc-rowin">
               <span class="rc-label rc-stars-row"><%= "★" * star %></span>
               <span class="rc-pct"><%= pct %>%</span>
+              <%= base_fig.call(bpct && "#{bpct}%") %>
               <span class="rc-n"><%= count %></span>
             </div>
           <% end %>
@@ -245,6 +302,8 @@
         <% next unless tallies.is_a?(Hash) %>
         <% tap_counts = responses.map { |r| tallies[r["key"]].to_i } %>
         <% tap_total  = [ tap_counts.sum.to_f, 1.0 ].max %>
+        <% b_tallies  = b_counts[label].is_a?(Hash) ? b_counts[label] : {} %>
+        <% b_tap      = responses.map { |r| b_tallies[r["key"]].to_i } %>
         <div class="rc-group rc-rows is-compact">
           <div class="rc-group-head">
             <% if (style = opt_thumbs[label.to_s]) %>
@@ -254,6 +313,7 @@
           </div>
           <% responses.each_with_index do |response, i| %>
             <% count = tap_counts[i]; pct = ((count / tap_total) * 100).round %>
+            <% bpct = base && base_pct.call(b_tap[i], b_tap.sum) %>
             <% color = response["color"].presence || "#8B85FF" %>
             <%# The row's tint is the answer's own colour, so restyling an
                 answer restyles its bar. Eight-digit hex, guarded — a colour
@@ -263,10 +323,12 @@
             <% row = row_tag.call(response["key"], response["label"], label, count.zero?) %>
             <%= content_tag(row[:tag], row.except(:tag)) do %>
               <div class="rc-fill" style="width:<%= pct %>%;background:<%= tint %>;"></div>
+              <%= base_tick.call(bpct) %>
               <div class="rc-rowin">
                 <span class="rc-dot" style="background:<%= color %>;"></span>
                 <span class="rc-label"><%= response["label"] %></span>
                 <span class="rc-pct"><%= pct %>%</span>
+                <%= base_fig.call(bpct && "#{bpct}%") %>
                 <span class="rc-n"><%= count %></span>
               </div>
             <% end %>
@@ -314,7 +376,7 @@
       <% end %>
 
     <% elsif type == "contact_form" %>
-      <% if shared %>
+      <% if hide_contacts %>
         <div class="rc-sub"><%= t("shared_results.hidden_answers", count: Array(result[:entries]).size) %></div>
       <% else %>
         <%# Lead table — the submitted contact objects, newest last.

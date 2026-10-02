@@ -924,6 +924,8 @@ de:
     no_data: Keine Daten
     n_answered: "%{n} beantwortet"
     avg: Ø %{n}
+    everyone_else: "alle anderen"
+    baseline_too_few: "Bisher haben weniger als %{count} andere Personen geantwortet, daher gibt es noch niemanden zum Vergleichen."
   invites:
     title: Einladung annehmen — Playverto
     already_used_title: Einladung bereits verwendet

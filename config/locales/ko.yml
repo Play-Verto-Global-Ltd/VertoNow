@@ -924,6 +924,8 @@ ko:
     no_data: 데이터 없음
     n_answered: "%{n}명 응답"
     avg: 평균 %{n}
+    everyone_else: "다른 응답자"
+    baseline_too_few: "아직 다른 응답자가 %{count}명 미만이라 비교할 대상이 없습니다."
   invites:
     title: 초대 수락 — Playverto
     already_used_title: 이미 사용된 초대

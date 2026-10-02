@@ -940,6 +940,8 @@ st:
     no_data: "Ha ho datha"
     n_answered: "%{n} ba arabile"
     avg: "kelello %{n}"
+    everyone_else: "ba bang kaofela"
+    baseline_too_few: "Batho ba bang ba ka tlase ho %{count} ba arabile ho fihlela joale, kahoo ha ho eso be le eo o ka bapisang le eena."
   invites:
     title: "Amohela memo — Playverto"
     already_used_title: "Memo e se e sebedisitswe"

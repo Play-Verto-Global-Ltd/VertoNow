@@ -924,6 +924,8 @@ id:
     no_data: Tidak ada data
     n_answered: "%{n} menjawab"
     avg: rata-rata %{n}
+    everyone_else: "lainnya"
+    baseline_too_few: "Baru kurang dari %{count} orang lain yang menjawab, jadi belum ada pembanding."
   invites:
     title: Terima undangan — Playverto
     already_used_title: Undangan sudah digunakan

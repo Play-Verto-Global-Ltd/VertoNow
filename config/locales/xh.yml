@@ -940,6 +940,8 @@ xh:
     no_data: "Akukho datha"
     n_answered: "%{n} baphendule"
     avg: "umlinganiselo %{n}"
+    everyone_else: "abanye bonke"
+    baseline_too_few: "Abantu abanye abangaphantsi kwe-%{count} baphendule ukuza kuthi ga ngoku, ngoko akukabikho mntu wokuthelekisa naye."
   invites:
     title: "Yamkela isimemo — Playverto"
     already_used_title: "Isimemo sele sisetyenzisiwe"

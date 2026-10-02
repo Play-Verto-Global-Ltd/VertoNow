@@ -924,6 +924,8 @@ sw:
     no_data: Hakuna data
     n_answered: "%{n} wamejibu"
     avg: wast. %{n}
+    everyone_else: "wengine wote"
+    baseline_too_few: "Bado ni watu wengine chini ya %{count} waliojibu, kwa hivyo hakuna wa kulinganisha naye bado."
   invites:
     title: Kubali mwaliko — Playverto
     already_used_title: Mwaliko tayari umetumika

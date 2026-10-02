@@ -925,6 +925,8 @@ af:
     no_data: "Geen data nie"
     n_answered: "%{n} het geantwoord"
     avg: "gem. %{n}"
+    everyone_else: "almal anders"
+    baseline_too_few: "Minder as %{count} ander mense het nog geantwoord, so daar is niemand om mee te vergelyk nie."
   invites:
     title: "Aanvaar uitnodiging — Playverto"
     already_used_title: "Uitnodiging reeds gebruik"
