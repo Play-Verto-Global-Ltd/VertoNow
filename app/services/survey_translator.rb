@@ -77,6 +77,11 @@ class SurveyTranslator
               nps_high_label: {
                 type: "string",
                 description: "Translated caption beside the HIGHEST point of an NPS/liquid scale (e.g. 'I am a decision maker'). Empty string if the source had none."
+              },
+              responses: {
+                type: "array",
+                items: { type: "string" },
+                description: "Translated tap-card answer labels in the SAME order and SAME count as the source's `responses`. Keep an empty string empty. Empty array if the source had none."
               }
             },
             required: %w[index text options]
@@ -112,6 +117,10 @@ class SurveyTranslator
       the lowest and highest points of a scale) when the source card has them;
       omit them otherwise. Keep them as short as the source — they sit in a
       narrow column beside the scale.
+    - Translate `responses` (a tap card's answer labels, e.g. "Strongly
+      agree") when the source card has them: the SAME number, in the SAME
+      order, each as short as its source — they are buttons. Leave an empty
+      label empty.
     - Keep translations concise to fit UI constraints: question text short
       (aim under ~70 characters), option labels short (aim under ~20 characters).
     - Preserve numbers, and leave proper nouns / brand names untranslated.
@@ -203,6 +212,15 @@ class SurveyTranslator
     text.match?(/\p{L}/) && translation["text"].to_s.strip == text
   end
 
+  # The labels a tap card stores for its answers, in order — "" where an answer
+  # carries none and takes the preset's translated label instead. Never seen
+  # by the translator before: a creator's "Strongly agree" stayed English in
+  # every language.
+  def self.response_labels(card)
+    return [] unless card.is_a?(Hash) && card["responses"].is_a?(Array)
+    card["responses"].map { |r| r.is_a?(Hash) ? r["label"].to_s.strip : "" }
+  end
+
   def translate_batch(batch, source_locale, target_locale, target, noted)
     response = @client.messages.create(
       model: MODEL,
@@ -258,6 +276,8 @@ class SurveyTranslator
       entry[:modal_title] = card["modal_title"].to_s if card["modal_title"].present?
       entry[:modal_body]  = card["modal_body"].to_s  if card["modal_body"].present?
       Survey::NPS_ANCHOR_KEYS.each { |k| entry[k.to_sym] = card[k].to_s if card[k].present? }
+      labels = self.class.response_labels(card)
+      entry[:responses] = labels if labels.any?(&:present?)
       note = @notes.to_h[card["cid"].to_s]
       entry[:note] = note if note.present?
       entry
@@ -335,6 +355,16 @@ class SurveyTranslator
 
       pages = align_pages(card, t)
       entry["pages"] = pages if pages.any?
+
+      # A tap card's own answer labels, positional like options. Only when the
+      # card stores words of its own: an unlabelled preset answer is translated
+      # by the locale files (TapScales.preset_label), not by this.
+      src_labels = self.class.response_labels(card)
+      if src_labels.any?(&:present?)
+        trans_labels = Array(t["responses"])
+        labels = src_labels.each_index.map { |j| src_labels[j].present? ? trans_labels[j].to_s.strip : "" }
+        entry["responses"] = labels if labels.any?(&:present?)
+      end
 
       (%w[explanation modal_title modal_body] + Survey::NPS_ANCHOR_KEYS).each do |field|
         entry[field] = t[field].to_s.strip if card[field].present? && t[field].present?

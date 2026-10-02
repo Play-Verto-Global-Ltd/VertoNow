@@ -282,7 +282,10 @@ class Survey < ApplicationRecord
         # The anchor lines beside an NPS scale's ends — the words that tell a
         # respondent what 0 and 10 mean, so they had better be in their language.
         "nps_low_label"  => t["nps_low_label"].presence,
-        "nps_high_label" => t["nps_high_label"].presence
+        "nps_high_label" => t["nps_high_label"].presence,
+        # A tap card's answer labels, positional against card["responses"] —
+        # where TapScales.for_card reads them.
+        "responses"      => (Array(t["responses"]) if Array(t["responses"]).any?(&:present?))
       }.compact
       card.merge("i18n" => (card["i18n"] || {}).merge(locale.to_s => entry))
     end

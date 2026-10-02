@@ -137,7 +137,9 @@ module LanguageCheckLines
       content[field] = source.each_with_index.map do |canon, i|
         translated = given[i].to_s
         if translated.blank?
-          fell_back << field
+          # Nothing to translate in a slot the original leaves blank too — a
+          # tap answer with no label of its own reads from the locale files.
+          fell_back << field if canon.present?
           canon
         else
           translated

@@ -46,6 +46,10 @@ class TranslationCache < ApplicationRecord
     # would stay in the source language in every other language, which is
     # exactly the field where that is least survivable.
     Survey::NPS_ANCHOR_KEYS.each { |k| canonical[k] = card[k].to_s if card[k].present? }
+    # A tap card's own answer labels, for the same reason again — and only when
+    # it has any, so every other card hashes exactly as it did.
+    labels = SurveyTranslator.response_labels(card)
+    canonical["responses"] = labels if labels.any?(&:present?)
 
     Digest::SHA256.hexdigest(canonical.to_json)
   end
