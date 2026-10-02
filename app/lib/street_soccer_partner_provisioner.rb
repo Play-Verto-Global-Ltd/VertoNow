@@ -8,7 +8,9 @@
 # owner who clicks "Create account", then gives Dan the link itself:
 #
 #   * a "Street Soccer" organisation of his own, with Dan as its admin — an
-#     ordinary account, so creating Vertos is on (the column default);
+#     ordinary account, so creating Vertos is on (the column default) — and
+#     Nick as a second admin, so the Playverto owner can see the account and
+#     act in it, as he does in the managed ones (ManagedAccountProvisioner);
 #   * a partnership owned by whichever account owns the Verto at that address
 #     (Unleash Football), with Street Soccer as an active member;
 #   * the Verto added to that partnership, which mints Street Soccer's
@@ -43,6 +45,8 @@ class StreetSoccerPartnerProvisioner
   ORG_NAME         = "Street Soccer"
   ADMIN_NAME       = "Dan Wood"
   ADMIN_EMAIL      = "danieljwood9@gmail.com"
+  OWNER_EMAIL      = ManagedAccountProvisioner::NICK_EMAIL
+  OWNER_NAME       = ManagedAccountProvisioner::NICK_NAME
 
   Result = Struct.new(:survey, :partnership, :organisation, :user, :share,
                       :user_created, :welcome_sent, :link_adopted, :responses_moved,
@@ -75,8 +79,12 @@ class StreetSoccerPartnerProvisioner
   def provision!(survey, link)
     partnership = find_or_create_partnership!(survey.organisation)
     org         = Organisation.find_or_create_by!(slug: ORG_SLUG) { |o| o.name = ORG_NAME }
-    user        = find_or_create_user!
+    user        = find_or_create_user!(ADMIN_EMAIL, ADMIN_NAME)
     Membership.find_or_create_by!(user: user, organisation: org) { |m| m.role = "admin" }
+    # After Dan's, so his stays the account's first admin — the one
+    # PartnershipMembership#setup_pending? asks about.
+    owner = find_or_create_user!(OWNER_EMAIL, OWNER_NAME)
+    Membership.find_or_create_by!(user: owner, organisation: org) { |m| m.role = "admin" }
 
     PartnershipMembership.join!(partnership: partnership, organisation: org)
     partnership_verto = partnership.partnership_vertos.find_or_create_by!(survey: survey)
@@ -101,10 +109,11 @@ class StreetSoccerPartnerProvisioner
 
   # Credential-free, as PartnershipAccountsController creates partner users: a
   # throwaway password Dan replaces through the emailed setup link (or, after
-  # that link's week is up, the ordinary password reset).
-  def find_or_create_user!
-    User.find_or_create_by!(email_address: ADMIN_EMAIL) do |u|
-      u.name             = ADMIN_NAME
+  # that link's week is up, the ordinary password reset). Nick already has an
+  # account wherever this matters, so for him this is only the safety net.
+  def find_or_create_user!(email, name)
+    User.find_or_create_by!(email_address: email) do |u|
+      u.name             = name
       u.password         = SecureRandom.hex(32)
       u.password_pending = true
     end

@@ -18,8 +18,14 @@ class PartnershipMembership < ApplicationRecord
   # True when this partner org's admin hasn't finished PartnerAccountSetupsController
   # yet — e.g. an owner-created account whose invite email hasn't been actioned.
   # Powers the "Setup pending" badge on the creator's partnership page.
+  #
+  # The EARLIEST admin, i.e. the partner the account was made for: a partner
+  # account can carry a second admin (Street Soccer has the Playverto owner),
+  # and the association is unordered, so "the first admin found" could be
+  # either on Postgres. Picked in Ruby so the creator page's preload still serves it.
   def setup_pending?
-    organisation.memberships.to_a.find { |m| m.role == "admin" }&.user&.password_pending? || false
+    admin = organisation.memberships.to_a.select(&:admin?).min_by { |m| [ m.created_at, m.id ] }
+    admin&.user&.password_pending? || false
   end
 
   private

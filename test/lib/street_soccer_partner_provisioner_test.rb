@@ -1,5 +1,6 @@
 require "test_helper"
 require Rails.root.join("db/migrate/20261002090000_provision_street_soccer_partner_account")
+require Rails.root.join("db/migrate/20261002120000_add_owner_to_street_soccer_account")
 
 # Street Soccer's partner account, opened by a data migration on deploy, which
 # also hands Dan the Unleash Football link he was already sending people to.
@@ -36,6 +37,7 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
   end
 
   def dan          = User.find_by(email_address: P::ADMIN_EMAIL)
+  def nick         = User.find_by(email_address: P::OWNER_EMAIL)
   def street       = Organisation.find_by(slug: P::ORG_SLUG)
   def street_share = SurveyShare.find_by(partner_organisation: street)
 
@@ -58,6 +60,33 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
     assert dan.password_pending?, "the password is a throwaway until Dan sets his own"
     assert_equal "admin", dan.memberships.find_by!(organisation: street).role
     assert_not dan.memberships.exists?(organisation: unleash), "a partner, not a member of Unleash Football"
+  end
+
+  test "Nick is an admin of Street Soccer too, and keeps his own password" do
+    User.create!(name: "Nick", email_address: P::OWNER_EMAIL, password: "nicks-own-password")
+    street_link
+    P.new.call
+
+    assert_equal "admin", nick.memberships.find_by!(organisation: street).role
+    assert nick.authenticate("nicks-own-password")
+    assert_not nick.password_pending?
+  end
+
+  # The badge on Unleash Football's partnership page is about the partner the
+  # account was made for. With a second admin in it, and no order on the
+  # association, "the first admin found" could be Nick, who has no setup to do.
+  test "Setup pending still means Dan, whichever admin the database returns first" do
+    User.create!(name: "Nick", email_address: P::OWNER_EMAIL, password: "nicks-own-password")
+    street_link
+    P.new.call
+    membership = unleash.partnerships.sole.partnership_memberships.sole
+
+    assert membership.setup_pending?, "Dan has not set his password yet"
+    street.memberships.find_by!(user: nick).update_columns(id: 0) # Nick's row first in id order
+    assert PartnershipMembership.find(membership.id).setup_pending?
+
+    dan.update!(password: "a-long-enough-password", password_pending: false)
+    assert_not PartnershipMembership.find(membership.id).setup_pending?
   end
 
   test "Street Soccer is an active partner of the account that owns the Verto" do
@@ -195,6 +224,21 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
     migrate_up
 
     assert_equal P::LINK_SLUG, street_share.share_token
+  end
+
+  # Production ran the first migration before Nick was in the provisioner: the
+  # follow-up must add exactly his membership, and must not email Dan again.
+  test "the follow-up migration adds Nick to an account the first pass made" do
+    street_link
+    migrate_up
+    street.memberships.where(user: nick).delete_all
+    ActionMailer::Base.deliveries.clear
+
+    assert_difference -> { Membership.count }, 1 do
+      ActiveRecord::Migration.suppress_messages { AddOwnerToStreetSoccerAccount.new.migrate(:up) }
+    end
+    assert_equal "admin", nick.memberships.find_by!(organisation: street).role
+    assert_empty ActionMailer::Base.deliveries
   end
 
   # Unleash Football having already ended a Street Soccer partnership is a
