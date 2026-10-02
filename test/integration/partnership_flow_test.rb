@@ -244,6 +244,68 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     assert_no_match "ours@example.com", response.body, "contact details were left for the Verto's owner"
   end
 
+  # The owner's filters, over the partner's respondents — and each narrows
+  # everyone else the same way, so a slice is compared with the same slice.
+  test "partner results filter both sides by the same segment, and never offer link pills" do
+    partner_admin = User.create!(name: "P", email_address: "seg-#{SecureRandom.hex(2)}@test.com", password: "verylongpassword")
+    partner_org = Organisation.create!(name: "Seg Partner", slug: "seg-#{SecureRandom.hex(2)}")
+    partner_org.memberships.create!(user: partner_admin, role: "admin")
+    other_partner = Organisation.create!(name: "Rival Partner Org", slug: "rival-#{SecureRandom.hex(2)}")
+    survey = @oa.surveys.create!(
+      title: "Seg Verto", theme: "T", audience_age: "all", key_insight: "x", default_locale: "en", locales: [ "en" ],
+      cards: [ { "type" => "multiple_choice", "text" => "Pick", "options" => [ "Pitch", "Court" ] } ],
+      publish_token: SecureRandom.urlsafe_base64(18), published_at: Time.current
+    )
+    survey.survey_links.create!(name: "Owner newsletter", slug: "seg-news-#{SecureRandom.hex(3)}")
+    partnership = @oa.partnerships.create!(name: "Seg Group")
+    PartnershipMembership.join!(partnership: partnership, organisation: partner_org)
+    PartnershipMembership.join!(partnership: partnership, organisation: other_partner)
+    pv = partnership.partnership_vertos.create!(survey: survey)
+    PartnershipShareSync.ensure_shares_for(partnership: partnership)
+    mine_share = partnership.survey_shares.find_by!(partner_organisation: partner_org)
+
+    respond = ->(share, pick, gender, country, at: Time.current) do
+      r = survey.responses.create!(session_token: SecureRandom.uuid, survey_share: share, status: "completed",
+                                   answers: { "0" => { "value" => pick } })
+      r.update_columns(demographic_gender: gender, region_country: country, created_at: at)
+    end
+    6.times { respond.call(mine_share, "Pitch", "female", "GB") }
+    5.times { respond.call(mine_share, "Court", "male", "GB") }
+    5.times { respond.call(nil, "Court", "female", "ES") }   # the owner's women
+    3.times { respond.call(nil, "Pitch", "male", "ES") }     # the owner's men: under the line
+    6.times { respond.call(nil, "Court", "female", "ES", at: 60.days.ago) }
+
+    delete session_path
+    sign_in partner_admin
+
+    get partnership_partnership_verto_path(partnership, pv)
+    assert_response :success
+    assert_select "a.seg-pill", text: /female/
+    assert_select "a.seg-pill", text: /Owner newsletter/, count: 0
+    assert_select "a.seg-pill", text: /Rival Partner Org/, count: 0
+    assert_select "a.seg-pill", text: /Direct link/, count: 0
+    # The map paints this partner's countries, not everyone's.
+    map = JSON.parse(css_select("#results-region-map-data").first.text)
+    assert_equal [ "gb" ], map.keys
+
+    # Their women against everyone else's women — not against everyone.
+    get partnership_partnership_verto_path(partnership, pv, segment: "gender_female")
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">6</strong> from your link", response.body
+    assert_match "of 11 overall", response.body
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">11</strong> everyone else", response.body
+    assert_match %r{title="Court">Court</span>\s*<span class="rc-pct">0%</span>\s*<span class="rc-vs">100%</span>}, response.body
+
+    # Everyone else's men are three: too few to stand in for anyone, so the
+    # page says so instead of quietly comparing with everybody.
+    get partnership_partnership_verto_path(partnership, pv, segment: "gender_male")
+    assert_match "Fewer than 5 other people have answered yet", response.body
+    assert_select ".rc-vs", count: 0
+
+    # The date window narrows both sides: the sixty-day-old women drop out.
+    get partnership_partnership_verto_path(partnership, pv, segment: "gender_female", range: "30d")
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">5</strong> everyone else", response.body
+  end
+
   # Two card types tally something other than label => count, and the partner
   # results page drew both as if they did: a tap card's per-statement scale
   # 500'd it (Hash#to_f), and a prioritise card's rank SUMS read as shares of

@@ -8,7 +8,14 @@
     The partner's own respondents' words are shown — they are this partner's
     cohort — but the contact details anyone left are not (hide_contacts): those
     were given to the Verto's owner. Everyone else is distributions only, and
-    not drawn at all below the small-cell line (PartnershipVertosController). %>
+    not drawn at all below the small-cell line (PartnershipVertosController).
+
+    The map, the date window and the segment pills are the public results
+    page's (shared_results/show) — the read-only cut of the owner's — over this
+    partner's respondents, and each filter narrows everyone else the same way. %>
+<% filter_path = ->(segment: @active_segment[:id] == "overall" ? nil : @active_segment[:id], range: @date_range) {
+     partnership_partnership_verto_path(@partnership, @partnership_verto, segment: segment, range: range)
+   } %>
 <div style="display:flex;height:100%;background:#1C2034;">
   <div style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:40px 20px 64px;">
     <div style="width:100%;max-width:780px;margin:0 auto;">
@@ -38,13 +45,73 @@
                 style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:6px 12px;color:rgba(255,255,255,0.6);font-family:'Alata',sans-serif;font-size: var(--text-sm);cursor:pointer;flex-shrink:0;"><%= t("partnerships.copy") %></button>
       </div>
 
+      <%# Where this partner's respondents are — the read-only tint the public
+          results page draws (shared_map_controller.js), from the same region
+          segments, so a country under the small-cell line is not painted. %>
+      <% region_segments = @segments.select { |seg| seg[:id].to_s.start_with?("region_") } %>
+      <% if region_segments.any? %>
+        <%
+          map_data = {}
+          region_segments.each do |seg|
+            next if seg[:country].blank?
+            cc = seg[:country].downcase
+            map_data[cc] ||= { count: 0, name: WorldRegions.name_for(seg[:country]), segment_ids: [] }
+            map_data[cc][:count] += seg[:count]
+            map_data[cc][:segment_ids] << seg[:id]
+          end
+        %>
+        <div class="regions-box" data-controller="shared-map" style="margin-bottom:16px;">
+          <div class="regions-box-head">
+            <span style="font-family:'Alata',sans-serif;font-size: var(--text-sm);letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);">🌍 <%= t("shared_results.regions_title") %></span>
+          </div>
+          <div class="regions-box-body">
+            <div style="width:100%;max-width:640px;margin:0 auto;">
+              <%= render "shared/world_map" %>
+            </div>
+          </div>
+        </div>
+        <script type="application/json" id="results-region-map-data"><%= map_data.to_json.html_safe %></script>
+      <% end %>
+
+      <%# Date window — narrows both sides; a segment that no longer exists in
+          the narrower window falls back to Overall on its own. %>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 0 8px;">
+        <span style="font-family:'Alata',sans-serif;font-size: var(--text-2xs);letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-right:2px;"><%= t("shared_results.when") %></span>
+        <% date_range_options.each do |opt| %>
+          <% current = (@date_range.presence || "all") == opt[:id] %>
+          <%= link_to opt[:label], filter_path.call(range: (opt[:id] == "all" ? nil : opt[:id])),
+                class: "seg-pill", aria: { current: current.to_s } %>
+        <% end %>
+      </div>
+
+      <%# Segment pills — toggles, as on the owner's page: a pill adds itself to
+          the selection or leaves it, and Overall is the reset. %>
+      <% if @segments.size > 1 %>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 0 16px;">
+          <span style="font-family:'Alata',sans-serif;font-size: var(--text-2xs);letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-right:2px;"><%= t("shared_results.view") %></span>
+          <% @segments.each do |seg| %>
+            <% overall = seg[:id] == "overall" %>
+            <%= link_to filter_path.call(segment: (overall ? nil : segment_toggle_param(@segments, @active_segment, seg[:id]))),
+                  class: "seg-pill",
+                  aria: { current: (overall ? @active_segment[:id] == "overall" : segment_selected?(@active_segment, seg[:id])).to_s } do %>
+              <%= seg[:label] %><span class="seg-pill-count"><%= seg[:count] %></span>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
       <%# Totals — the key to the page: teal is this partner's respondents
           everywhere below, pink is everyone else. %>
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);">
         <div style="background:rgba(1,234,203,0.08);border:1px solid rgba(1,234,203,0.25);border-radius:8px;padding:7px 12px;color:#01EACB;">
           <strong style="font-family:'Alata',sans-serif;"><%= @mine_total %></strong> <%= t("partnership_verto.mine_label") %>
+          <% unless @active_segment[:id] == "overall" %>
+            <span style="color:rgba(255,255,255,0.35);font-size: var(--text-sm);"><%= t("shared_results.of_overall", count: @overall_total) %></span>
+          <% end %>
         </div>
-        <% if @others_results %>
+        <% if @active_segment[:suppressed] %>
+          <%# The notice below says why; nothing to compare a hidden slice with. %>
+        <% elsif @others_results %>
           <div style="background:rgba(255,30,111,0.08);border:1px solid rgba(255,30,111,0.25);border-radius:8px;padding:7px 12px;color:#FF5C93;display:inline-flex;align-items:center;gap:8px;">
             <span aria-hidden="true" style="display:inline-block;width:2px;height:14px;background:#FF1E6F;"></span>
             <span><strong style="font-family:'Alata',sans-serif;"><%= @others_total %></strong> <%= t("partnership_verto.everyone_else") %></span>
@@ -57,8 +124,12 @@
       </div>
 
       <div style="display:flex;flex-direction:column;gap:22px;">
-        <%= render "surveys/result_cards", aggregated: @mine_results, total: @mine_total,
-                                           baseline: @others_results, hide_contacts: true, dwell: @dwell %>
+        <% if @active_segment[:suppressed] %>
+          <%= render "surveys/results_suppressed" %>
+        <% else %>
+          <%= render "surveys/result_cards", aggregated: @mine_results, total: @mine_total,
+                                             baseline: @others_results, hide_contacts: true, dwell: @dwell %>
+        <% end %>
       </div>
 
     </div>
