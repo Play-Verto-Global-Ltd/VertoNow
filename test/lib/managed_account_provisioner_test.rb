@@ -1,8 +1,8 @@
 require "test_helper"
 
-# The two accounts opened together on 2026-09-24 — Riders for Health and The
-# Marketing Society — plus Common Goal (2026-10-02), and the base class they
-# are built on rather than copied from. Each account is provisioned from two disjoint
+# The accounts opened since 2026-09-24 — Riders for Health, The Marketing
+# Society, Common Goal and PlayVerto Demo — and the base class they are built
+# on rather than copied from. Each account is provisioned from two disjoint
 # places (the data migration for an existing database, db/seeds.rb for a fresh
 # one), so the properties that matter are all about running MORE THAN ONCE
 # without doing damage — most sharply, never resetting the password of a user
@@ -10,7 +10,7 @@ require "test_helper"
 # accounts keep their own tests; these run the same checks over the newer ones.
 class ManagedAccountProvisionerTest < ActiveSupport::TestCase
   NEW_ACCOUNTS = [ RidersForHealthAccountProvisioner, MarketingSocietyAccountProvisioner,
-                   CommonGoalAccountProvisioner ].freeze
+                   CommonGoalAccountProvisioner, PlayvertoDemoAccountProvisioner ].freeze
 
   def setup    = destroy_managed_accounts!
   def teardown = destroy_managed_accounts!
@@ -32,6 +32,7 @@ class ManagedAccountProvisionerTest < ActiveSupport::TestCase
     assert_includes ManagedAccountProvisioner.all, RidersForHealthAccountProvisioner
     assert_includes ManagedAccountProvisioner.all, MarketingSocietyAccountProvisioner
     assert_includes ManagedAccountProvisioner.all, CommonGoalAccountProvisioner
+    assert_includes ManagedAccountProvisioner.all, PlayvertoDemoAccountProvisioner
     assert_equal ManagedAccountProvisioner.slugs, ManagedAccountProvisioner.slugs.uniq
     ManagedAccountProvisioner.all.each do |provisioner|
       assert_operator provisioner, :<, ManagedAccountProvisioner
@@ -45,6 +46,8 @@ class ManagedAccountProvisionerTest < ActiveSupport::TestCase
     assert_equal "the-marketing-society", MarketingSocietyAccountProvisioner::ORG_SLUG
     assert_equal "Common Goal",           CommonGoalAccountProvisioner::ORG_NAME
     assert_equal "common-goal",           CommonGoalAccountProvisioner::ORG_SLUG
+    assert_equal "PlayVerto Demo",        PlayvertoDemoAccountProvisioner::ORG_NAME
+    assert_equal "playverto-demo",        PlayvertoDemoAccountProvisioner::ORG_SLUG
   end
 
   NEW_ACCOUNTS.each do |provisioner|

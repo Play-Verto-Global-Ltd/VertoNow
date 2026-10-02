@@ -46,7 +46,8 @@ class ManagedAccountProvisioner
   # middle of defining their superclass.
   def self.all
     [ AlpbachAccountProvisioner, UnleashFootballAccountProvisioner, HistoryCollabAccountProvisioner,
-      RidersForHealthAccountProvisioner, MarketingSocietyAccountProvisioner, CommonGoalAccountProvisioner ]
+      RidersForHealthAccountProvisioner, MarketingSocietyAccountProvisioner, CommonGoalAccountProvisioner,
+      PlayvertoDemoAccountProvisioner ]
   end
 
   def self.slugs = all.map { |provisioner| provisioner::ORG_SLUG }
