@@ -192,6 +192,50 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     assert_match "<strong style=\"font-family:'Alata',sans-serif;\">5</strong> across Aggregate Beta", response.body
   end
 
+  # Two card types tally something other than label => count, and the partner
+  # results page drew both as if they did: a tap card's per-statement scale
+  # 500'd it (Hash#to_f), and a prioritise card's rank SUMS read as shares of
+  # the total. Street Soccer hit the first on the Unleash Football Verto.
+  test "partner results draw a tap card per statement and a prioritise card as mean ranks" do
+    partner_admin = User.create!(name: "P", email_address: "tap-#{SecureRandom.hex(2)}@test.com", password: "verylongpassword")
+    partner_org = Organisation.create!(name: "Tap Partner", slug: "tap-#{SecureRandom.hex(2)}")
+    partner_org.memberships.create!(user: partner_admin, role: "admin")
+    survey = @oa.surveys.create!(
+      title: "Tap Verto", theme: "T", audience_age: "all", key_insight: "x", default_locale: "en", locales: [ "en" ],
+      cards: [
+        { "type" => "tap_card", "text" => "Does it sound like you?", "options" => [ "I play to keep my head clear", "My club feels welcoming" ],
+          "responses" => [ { "key" => "no", "label" => "Not me" }, { "key" => "yes", "label" => "That's me" } ] },
+        { "type" => "prioritise", "text" => "Rank these", "options" => [ "Cheaper", "Closer" ] }
+      ],
+      publish_token: SecureRandom.urlsafe_base64(18), published_at: Time.current
+    )
+    partnership = @oa.partnerships.create!(name: "Tap Group")
+    PartnershipMembership.join!(partnership: partnership, organisation: partner_org)
+    pv = partnership.partnership_vertos.create!(survey: survey)
+    PartnershipShareSync.ensure_shares_for(partnership: partnership)
+    share = partnership.survey_shares.sole
+    answers = [
+      { "0" => { "value" => { "I play to keep my head clear" => "yes", "My club feels welcoming" => "no" } },
+        "1" => { "value" => [ "Cheaper", "Closer" ] } },
+      { "0" => { "value" => { "I play to keep my head clear" => "yes", "My club feels welcoming" => "yes" } },
+        "1" => { "value" => [ "Closer", "Cheaper" ] } },
+      { "0" => { "value" => { "I play to keep my head clear" => "no", "My club feels welcoming" => "yes" } },
+        "1" => { "value" => [ "Cheaper", "Closer" ] } }
+    ]
+    answers.each { |a| survey.responses.create!(session_token: SecureRandom.uuid, survey_share: share, status: "completed", answers: a) }
+
+    delete session_path
+    sign_in partner_admin
+    get partnership_partnership_verto_path(partnership, pv)
+
+    assert_response :success
+    # Each statement heads its own answers, labelled as the card labels them.
+    assert_match "I play to keep my head clear", response.body
+    assert_match %r{That(&#39;|')s me</span>.*?2 · 67%}m, response.body
+    # Cheaper ranked 1, 2, 1 → 1.3; Closer 2, 1, 2 → 1.7. Best first.
+    assert_match(/Cheaper<\/span>\s*<span[^>]*>avg 1\.3<.*?Closer<\/span>\s*<span[^>]*>avg 1\.7</m, response.body)
+  end
+
   test "signed-in admin of an existing org joins a partnership via the join link" do
     # Setup: a partner org with an existing admin who's signed in
     partner_admin = User.create!(name: "Existing", email_address: "exist-#{SecureRandom.hex(2)}@test.com", password: "verylongpassword")

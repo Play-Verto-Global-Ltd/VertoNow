@@ -2,21 +2,65 @@
 <%
   cards = Array(@survey.cards)
 
-  render_counts = ->(counts, total, accent) do
-    return "" if counts.blank?
-    rows = counts.map do |label, count|
-      pct = total.to_i.positive? ? (count.to_f / total * 100).round : 0
+  # Most question types tally a flat label => count, which is what the rows
+  # below draw. Two don't (AggregatesSurveyResults#accumulate_value):
+  #   tap_card   — a scale per statement, { statement => { answer key => n } }.
+  #                Drawn as one group per statement — the statement as a
+  #                heading, its answers (through the card's own labels) as rows
+  #                — because "statement · answer" in a 340px column truncates
+  #                to the statement and never shows the answer. Every
+  #                respondent answers every statement once, so the card's total
+  #                stays the base for each row. Until this page knew the shape,
+  #                any Verto with a tap card 500'd it.
+  #   prioritise — banks rank SUMS, so a share of the total means nothing.
+  #                Drawn as each option's mean rank, best first, and left out
+  #                of the comparison.
+  #
+  # count_groups gives every type the same shape: [[heading or nil, { label => count }], …].
+  count_groups = ->(row) do
+    return [ [ nil, row[:counts] ] ] unless row[:type] == "tap_card"
+    labels = TapScales.for_card(row[:card], default_locale: @survey.default_locale)
+                      .to_h { |r| [ r["key"], r["label"] ] }
+    row[:counts].filter_map do |statement, scale|
+      [ statement, scale.to_h { |key, n| [ labels[key] || key, n ] } ] if scale.is_a?(Hash)
+    end
+  end
+
+  group_heading = ->(text) do
+    return "" if text.nil?
+    %(<div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.5);line-height:1.35;margin-top:4px;">#{ERB::Util.h(text)}</div>)
+  end
+
+  render_ranks = ->(row, accent) do
+    responders = row[:total].to_i
+    return "" unless responders.positive?
+    row[:counts].map { |label, sum| [ label, (sum.to_f / responders).round(1) ] }.sort_by(&:last).map do |label, rank|
       <<~HTML
         <div style="display:flex;align-items:center;gap:8px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.7);">
           <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">#{ERB::Util.h(label)}</span>
-          <div style="position:relative;flex-shrink:0;width:60px;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
-            <div style="position:absolute;inset:0 auto 0 0;width:#{pct}%;background:#{accent};"></div>
-          </div>
-          <span style="flex-shrink:0;min-width:40px;text-align:right;color:#{accent};font-variant-numeric:tabular-nums;">#{count} · #{pct}%</span>
+          <span style="flex-shrink:0;text-align:right;color:#{accent};font-variant-numeric:tabular-nums;">#{ERB::Util.h(t("partnership_verto.avg", n: rank))}</span>
         </div>
       HTML
-    end
-    rows.join.html_safe
+    end.join.html_safe
+  end
+
+  render_counts = ->(row, accent) do
+    return render_ranks.call(row, accent) if row[:type] == "prioritise"
+    total = row[:total]
+    count_groups.call(row).map do |heading, counts|
+      group_heading.call(heading) + counts.map do |label, count|
+        pct = total.to_i.positive? ? (count.to_f / total * 100).round : 0
+        <<~HTML
+          <div style="display:flex;align-items:center;gap:8px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.7);">
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">#{ERB::Util.h(label)}</span>
+            <div style="position:relative;flex-shrink:0;width:60px;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+              <div style="position:absolute;inset:0 auto 0 0;width:#{pct}%;background:#{accent};"></div>
+            </div>
+            <span style="flex-shrink:0;min-width:40px;text-align:right;color:#{accent};font-variant-numeric:tabular-nums;">#{count} · #{pct}%</span>
+          </div>
+        HTML
+      end.join
+    end.join.html_safe
   end
 
   no_data_label = t("partnership_verto.no_data")
@@ -30,7 +74,7 @@
       HTML
     else
       body = if row[:counts]&.any?
-        render_counts.call(row[:counts], row[:total], accent)
+        render_counts.call(row, accent)
       elsif row[:texts]&.any?
         row[:texts].first(3).map { |t| %(<div style="font-family:'ABeeZee',sans-serif;font-size: var(--text-sm);color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.03);border-radius:5px;padding:5px 8px;line-height:1.35;">"#{ERB::Util.h(t)}"</div>) }.join.html_safe
       else
@@ -51,26 +95,28 @@
   end
 
   render_comparison = ->(mine, agg) do
-    return "" if mine.nil? || agg.nil?
+    return "" if mine.nil? || agg.nil? || mine[:type] == "prioritise"
     return "" if mine[:counts].blank? || agg[:counts].blank?
-    labels = (mine[:counts].keys + agg[:counts].keys).uniq
-    mine_total = mine[:total].to_i
-    agg_total  = agg[:total].to_i
-    rows = labels.map do |label|
-      m_count = mine[:counts][label].to_i
-      a_count = agg[:counts][label].to_i
-      m_pct = mine_total.positive? ? (m_count.to_f / mine_total * 100).round : 0
-      a_pct = agg_total.positive?  ? (a_count.to_f / agg_total  * 100).round : 0
-      <<~HTML
-        <div style="display:flex;align-items:center;gap:8px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.7);">
-          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">#{ERB::Util.h(label)}</span>
-          <span style="flex-shrink:0;color:#01EACB;font-variant-numeric:tabular-nums;width:42px;text-align:right;">#{m_pct}%</span>
-          <span style="flex-shrink:0;color:rgba(255,255,255,0.3);">vs</span>
-          <span style="flex-shrink:0;color:#FF1E6F;font-variant-numeric:tabular-nums;width:42px;text-align:right;">#{a_pct}%</span>
-        </div>
-      HTML
-    end
-    rows.join.html_safe
+    mine_total  = mine[:total].to_i
+    agg_total   = agg[:total].to_i
+    mine_groups = count_groups.call(mine).to_h
+    agg_groups  = count_groups.call(agg).to_h
+    (mine_groups.keys + agg_groups.keys).uniq.map do |heading|
+      m_counts = mine_groups[heading] || {}
+      a_counts = agg_groups[heading] || {}
+      group_heading.call(heading) + (m_counts.keys + a_counts.keys).uniq.map do |label|
+        m_pct = mine_total.positive? ? (m_counts[label].to_f / mine_total * 100).round : 0
+        a_pct = agg_total.positive?  ? (a_counts[label].to_f / agg_total  * 100).round : 0
+        <<~HTML
+          <div style="display:flex;align-items:center;gap:8px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);color:rgba(255,255,255,0.7);">
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">#{ERB::Util.h(label)}</span>
+            <span style="flex-shrink:0;color:#01EACB;font-variant-numeric:tabular-nums;width:42px;text-align:right;">#{m_pct}%</span>
+            <span style="flex-shrink:0;color:rgba(255,255,255,0.3);">vs</span>
+            <span style="flex-shrink:0;color:#FF1E6F;font-variant-numeric:tabular-nums;width:42px;text-align:right;">#{a_pct}%</span>
+          </div>
+        HTML
+      end.join
+    end.join.html_safe
   end
 %>
 <div style="display:flex;height:100%;background:#1C2034;">
