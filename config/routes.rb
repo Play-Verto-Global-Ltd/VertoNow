@@ -442,7 +442,10 @@ Rails.application.routes.draw do
   resources :partnerships, except: [ :edit, :update ] do
     resources :partnership_invites,     only: [ :create ]
     resources :partnership_accounts,    only: [ :new, :create ]
-    resources :partnership_vertos,      only: [ :create, :destroy, :show ]
+    resources :partnership_vertos,      only: [ :create, :destroy, :show ] do
+      # The partner results page's AI summary, streamed into its card.
+      resource :summary, only: :show, controller: "partnership_verto_summaries"
+    end
     resources :partnership_common_question_sets, only: [ :create, :destroy ]
     resources :partnership_memberships, only: [ :destroy ]
   end

@@ -2,14 +2,22 @@
 # shared by the short insights summary (ResultsSummariser) and the full AI
 # report (ResultsReportGenerator), so both describe the underlying data
 # identically.
+#
+# `header: false` leaves out the survey's own lines, for a second group of
+# respondents to the same survey described after the first. `texts: false`
+# leaves out every written answer, keeping only their count — for a group
+# whose numbers may be shown to someone but whose words may not (a partner's
+# summary describes everyone else's answers; it never quotes them).
 module FormatsResultsDigest
   private
 
-  def results_digest(survey, aggregated, total)
+  def results_digest(survey, aggregated, total, header: true, texts: true)
     lines = []
-    lines << "Survey: \"#{survey.title}\""
-    lines << "Theme: #{survey.theme}"
-    lines << "Key insight goal: #{survey.key_insight}"
+    if header
+      lines << "Survey: \"#{survey.title}\""
+      lines << "Theme: #{survey.theme}"
+      lines << "Key insight goal: #{survey.key_insight}"
+    end
     lines << "Total responses: #{total}"
     lines << ""
     lines << "Per-question results:"
@@ -70,9 +78,13 @@ module FormatsResultsDigest
         end
 
       when "open_ended"
-        sample = result[:texts].first(5)
-        lines << "  Sample responses (#{result[:total]} total):"
-        sample.each { |t| lines << "    - #{PromptSafety.quote(t, limit: 120)}" }
+        if texts
+          sample = result[:texts].first(5)
+          lines << "  Sample responses (#{result[:total]} total):"
+          sample.each { |t| lines << "    - #{PromptSafety.quote(t, limit: 120)}" }
+        else
+          lines << "  #{result[:total]} written answers (withheld)"
+        end
 
       when "contact_form"
         # Names/companies/emails are identifying data — deliberately NOT put

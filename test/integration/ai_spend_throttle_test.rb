@@ -90,6 +90,7 @@ class AiSpendThrottleTest < ActionDispatch::IntegrationTest
     assert_includes SurveyChatsController.ai_throttled_actions, :create
     assert_includes SurveySummariesController.ai_throttled_actions, :show
     assert_includes SurveySummariesController.ai_throttled_actions, :texts
+    assert_includes PartnershipVertoSummariesController.ai_throttled_actions, :show
     assert_includes ResultsReportStreamsController.ai_throttled_actions, :show
     assert_includes CommonQuestionSetsController.ai_throttled_actions, :generate
   end

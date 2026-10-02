@@ -84,6 +84,10 @@ class PromptSafetyTest < ActiveSupport::TestCase
                       "#{service}'s system prompt must carry the respondent-text instruction"
     end
 
+    # The partner variant of the summary embeds the partner's own written
+    # answers through the same digest, so it carries the same instruction.
+    assert_includes ResultsSummariser::PARTNER_SYSTEM_WITH_SAFETY, PromptSafety::INSTRUCTION
+
     # ResultsReportGenerator's prompt varies with the creator's chosen report
     # sections (see SECTIONS/system_prompt), so it has no single fixed system
     # string — but the instruction is appended unconditionally, outside the

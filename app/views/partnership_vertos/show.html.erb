@@ -100,6 +100,19 @@
         </div>
       <% end %>
 
+      <%# Ask Verto — the owner's summary card, about this slice of the
+          partner's respondents and how it differs from everyone else's
+          (PartnershipVertoSummariesController). Not for a slice under the
+          small-cell line: there is nothing on the page for it to describe. %>
+      <% unless @active_segment[:suppressed] %>
+        <div style="margin-bottom:16px;">
+          <%= render "surveys/results_summary_card",
+                     url: partnership_partnership_verto_summary_path(@partnership, @partnership_verto,
+                                                                      segment: (@active_segment[:id] == "overall" ? nil : @active_segment[:id]),
+                                                                      range: @date_range) %>
+        </div>
+      <% end %>
+
       <%# Totals — the key to the page: teal is this partner's respondents
           everywhere below, pink is everyone else. %>
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;font-family:'ABeeZee',sans-serif;font-size: var(--text-base);">
@@ -118,7 +131,7 @@
           </div>
         <% else %>
           <div style="padding:7px 0;color:rgba(255,255,255,0.4);font-size: var(--text-sm);">
-            <%= t("partnership_verto.baseline_too_few", count: PartnershipVertosController::BASELINE_MIN) %>
+            <%= t("partnership_verto.baseline_too_few", count: ComparesPartnerResults::BASELINE_MIN) %>
           </div>
         <% end %>
       </div>
