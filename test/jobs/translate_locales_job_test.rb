@@ -332,4 +332,17 @@ class TranslateLocalesJobTest < ActiveSupport::TestCase
 
     assert_equal({ "c2" => "why as in reason" }, notes_seen)
   end
+
+  test "a language stored as the original's words is repaired by asking again" do
+    @survey.update!(cards: @survey.cards.map do |c|
+      c.merge("i18n" => { "es" => { "text" => c["text"], "options" => Array(c["options"]) } })
+    end)
+
+    with_translator do
+      perform_enqueued_jobs { TranslateLocalesJob.enqueue_for(@survey, [ "es" ]) }
+    end
+
+    assert_equal "es:Colour?", entry("c1", "es")["text"]
+    assert_equal "es:Why?", entry("c2", "es")["text"]
+  end
 end

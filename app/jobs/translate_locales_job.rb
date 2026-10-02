@@ -110,7 +110,9 @@ class TranslateLocalesJob < ApplicationJob
       wanted = cids.map(&:to_s)
       cards.each_index.select { |i| cards[i].is_a?(Hash) && wanted.include?(cards[i]["cid"].to_s) }
     else
-      cards.each_index.reject { |i| cards[i].dig("i18n", locale).present? }
+      # Missing, or holding only the original's words — what a translation
+      # call that ran out of room used to store. See LanguageCheckLines.
+      cards.each_index.select { |i| LanguageCheckLines.needs_translation?(cards[i], locale, survey.default_locale) }
     end
     if missing.empty?
       return row.done!

@@ -118,4 +118,53 @@ class LanguageCheckLinesTest < ActiveSupport::TestCase
     assert_equal [ "Never", "Often" ], content["responses"]
     assert_includes LanguageCheckLines.present_fields(content), "responses"
   end
+
+  # ── Words copied from the original ─────────────────────────────────────────
+
+  # The shape Unbounded Alliance's Spanish was left in: a scale card whose
+  # question and captions were stored as their English by a cut-off call, and
+  # whose 0–7 answers are the same in every language anyway.
+  def copied_scale_card(locale: "es")
+    {
+      "cid" => "c_s", "type" => "nps", "text" => "How often do you order takeout?",
+      "nps_low_label" => "Rarely", "nps_high_label" => "Daily", "options" => %w[0 1 2 3],
+      "i18n" => { locale => { "text" => "How often do you order takeout?", "nps_low_label" => "Rarely",
+                              "nps_high_label" => "Daily", "options" => %w[0 1 2 3] } }
+    }
+  end
+
+  def content_for(card, locale, source_locale: "en")
+    LanguageCheckLines.translated_content(card, locale, LanguageCheckLines.canonical_content(card),
+                                          source_locale: source_locale)
+  end
+
+  test "a translation that is the original word for word reads as untranslated" do
+    content = content_for(copied_scale_card, "es")
+    assert LanguageCheckLines.untranslated?(content)
+    assert_includes content["untranslated"], "text"
+    assert_not_includes content["untranslated"], "options", "numerals are the same in every language"
+    assert LanguageCheckLines.needs_translation?(copied_scale_card, "es", "en"),
+           "Try again has to be able to repair it"
+  end
+
+  test "identical wording between the two English variants is a translation" do
+    content = content_for(copied_scale_card(locale: "en-US"), "en-US")
+    assert_not LanguageCheckLines.untranslated?(content)
+  end
+
+  test "an option that survives translation unchanged is not a copy while others moved" do
+    c = card.deep_merge("options" => %w[Pizza Tacos], "i18n" => { "es" => { "options" => %w[Pizza Tacos] } })
+    c["i18n"]["es"]["options"] = %w[Pizza Tacos]
+    assert_includes content_for(c, "es")["untranslated"], "options", "every worded slot copied is a copy"
+
+    c["i18n"]["es"]["options"] = %w[Pizza Tacos\ al\ pastor]
+    assert_not_includes content_for(c, "es")["untranslated"], "options"
+  end
+
+  test "a line with real words is not untranslated because its numerals match" do
+    c = copied_scale_card
+    c["i18n"]["es"]["text"] = "¿Con qué frecuencia pides comida a domicilio?"
+    assert_not LanguageCheckLines.untranslated?(content_for(c, "es"))
+    assert_not LanguageCheckLines.needs_translation?(c, "es", "en")
+  end
 end

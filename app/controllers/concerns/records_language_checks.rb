@@ -129,7 +129,7 @@ module RecordsLanguageChecks
 
     locale.to_s == survey.default_locale ?
       canonical :
-      LanguageCheckLines.translated_content(card, locale, canonical)
+      LanguageCheckLines.translated_content(card, locale, canonical, source_locale: survey.default_locale)
   end
 
   # The fingerprint of the primary language this line is a translation OF.

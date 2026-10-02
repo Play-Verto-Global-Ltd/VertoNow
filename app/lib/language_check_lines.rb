@@ -65,7 +65,7 @@ module LanguageCheckLines
           {
             locale:  locale,
             primary: locale == primary,
-            content: locale == primary ? canonical : translated_content(card, locale, canonical)
+            content: locale == primary ? canonical : translated_content(card, locale, canonical, source_locale: primary)
           }
         end
       }
@@ -97,16 +97,30 @@ module LanguageCheckLines
   # `fallback` (per field) is returned alongside so the screen can mark a line
   # as untranslated rather than quietly showing English under a Spanish flag —
   # the single most misleading thing this page could do.
-  def translated_content(card, locale, canonical)
+  #
+  # With `source_locale:`, words copied verbatim from the original count as
+  # fallen back too. A translation call that ran out of room used to fill the
+  # cards it never reached with their English and store that as the Spanish;
+  # those lines read as translated everywhere — no Original chip, no banner,
+  # "Translated" in the rail — while a Spanish respondent read English. Not
+  # between the two English variants, where identical is the right answer,
+  # and never for words-free text (0–10, "5"), which every language shares.
+  # A list counts as copied only when every worded slot is: "Pizza" and "No"
+  # survive translation into plenty of languages on their own.
+  def translated_content(card, locale, canonical, source_locale: nil)
     entry = card.dig("i18n", locale.to_s)
     entry = {} unless entry.is_a?(Hash)
+
+    spot_copies = source_locale.present? &&
+                  !(SupportedLocales.english?(source_locale) && SupportedLocales.english?(locale))
+    copied = ->(value, canon) { spot_copies && words?(value) && value.to_s.strip == canon.to_s.strip }
 
     content = {}
     fell_back = []
 
     SCALAR_FIELDS.each do |field|
       value = entry[field].to_s
-      if value.blank? && canonical[field].present?
+      if (value.blank? && canonical[field].present?) || copied.call(value, canonical[field])
         content[field] = canonical[field]
         fell_back << field
       else
@@ -129,6 +143,8 @@ module LanguageCheckLines
           translated
         end
       end
+      worded = content[field].each_with_index.select { |value, _| words?(value) }
+      fell_back << field if worded.any? && worded.all? { |value, i| copied.call(value, source[i]) }
     end
 
     by_id = Array(entry[PAGE_FIELD]).each_with_object({}) do |p, h|
@@ -144,7 +160,23 @@ module LanguageCheckLines
       end
     end
 
+    worded_pages = content[PAGE_FIELD].each_with_index.select { |page, _| words?(page["text"]) }
+    if worded_pages.any? && worded_pages.all? { |page, i| copied.call(page["text"], canonical[PAGE_FIELD][i]["text"]) }
+      fell_back << PAGE_FIELD
+    end
+
     content.merge("untranslated" => fell_back.uniq)
+  end
+
+  # Does this hold any letters at all? Numerals, scale points and punctuation
+  # read the same in every language, so they are neither evidence of a
+  # translation nor of its absence.
+  def words?(value)
+    case value
+    when Array then value.any? { |v| words?(v) }
+    when Hash  then words?(value["text"])
+    else value.to_s.match?(/\p{L}/)
+    end
   end
 
   # A stable hash of the words on one line. This is what an approval is
@@ -248,8 +280,27 @@ module LanguageCheckLines
   # True when this line has no words of its own at all — every field fell back
   # to the primary language. Shown as "Not translated" rather than as text a
   # reviewer might take for a translation.
+  #
+  # Judged on the fields that carry words: a scale card's 0–7 answers are the
+  # same in Spanish as in English, and counting them as "translated" kept a
+  # line whose question and captions were all English from ever reading as
+  # untranslated. A line with no words at all falls back to every field.
   def untranslated?(content)
-    Array(content["untranslated"]).sort == present_fields(content).sort
+    present = present_fields(content)
+    worded  = present.select { |f| words?(content[f]) }
+    ((worded.presence || present) - Array(content["untranslated"])).empty?
+  end
+
+  # Does this card still need translating into `locale`? No entry at all, or
+  # an entry whose words are all the original's — the second is what a cut-off
+  # translation call left behind, and "Try again" has to be able to repair it.
+  def needs_translation?(card, locale, source_locale)
+    return false unless card.is_a?(Hash)
+    return true if card.dig("i18n", locale.to_s).blank?
+
+    canonical = canonical_content(card)
+    return false if canonical.values.all?(&:blank?)
+    untranslated?(translated_content(card, locale, canonical, source_locale: source_locale))
   end
 
   # The fields this line actually has something in, so the view renders three

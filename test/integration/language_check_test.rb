@@ -1055,4 +1055,17 @@ class LanguageCheckScreenTest < ActionDispatch::IntegrationTest
     assert_match "lc-btn lc-btn--ghost\">#{I18n.t("language_check.retranslate")}<", spanish_mc_line,
                  "lines translated before provenance existed are the ones most likely to be stale"
   end
+
+  test "a language stored as the original's English is not reported as Translated" do
+    sign_in
+    @survey.update!(cards: @survey.cards.map do |c|
+      c.merge("i18n" => { "es" => c.slice("text", "description", "options").compact })
+    end)
+
+    get survey_language_check_path(@survey)
+    es_row = response.body[/data-language-row="es".*?<\/li>/m]
+    assert_no_match "lc-rail-status--done", es_row
+    assert_match "0/2", es_row
+    assert_match I18n.t("language_check.untranslated_note"), spanish_mc_line
+  end
 end

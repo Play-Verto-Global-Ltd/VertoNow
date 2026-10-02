@@ -151,10 +151,11 @@ class SurveyTranslatorCacheTest < ActiveSupport::TestCase
     out = translator.call(cards: cards, target_locale: "es", source_locale: "en")
 
     # The request still succeeds — a partly translated deck beats none — and the
-    # shortfall falls back to source text rather than erroring.
+    # shortfall comes back empty rather than as its own English, which would be
+    # stored as the translation and counted as one everywhere downstream.
     assert_equal 2, out.size
     assert_equal "TRANSLATED", out[0]["text"]
-    assert_equal "Two", out[1]["text"], "the truncated tail falls back to source text"
+    assert_nil out[1], "the truncated tail is untranslated, not translated into English"
 
     # The important half: source text must NOT be cached as if it were a
     # translation, or the gap becomes permanent and invisible.

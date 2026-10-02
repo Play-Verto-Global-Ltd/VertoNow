@@ -8,7 +8,8 @@ require "anthropic"
 #
 # Returns an array (aligned to the input cards) of:
 #   { "text" => ..., "description" => ..., "options" => [...] }
-# which the caller merges into each card's i18n[locale].
+# which the caller merges into each card's i18n[locale] — or nil for a card
+# the model did not return, which the caller leaves untranslated.
 #
 # Common Question cards are deliberately NOT skipped — a French Verto must
 # present its common cards in French alongside the rest of the deck. The
@@ -21,6 +22,9 @@ class SurveyTranslator
 
   MODEL      = ClaudeModels::FAST
   MAX_TOKENS = 4096
+  # Cards per call. A card's translation is ~100–250 output tokens (more with
+  # options, pages or a modal), so twelve leaves MAX_TOKENS room to spare.
+  BATCH_SIZE = 12
 
   TOOL = {
     name: "emit_translation",
@@ -160,39 +164,12 @@ class SurveyTranslator
     miss_cards   = misses.map(&:first)
     miss_indices = misses.map(&:last)
 
-    response = @client.messages.create(
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
-      system: SYSTEM,
-      tools: [ TOOL ],
-      tool_choice: { type: "tool", name: "emit_translation" },
-      messages: [ { role: "user", content: user_message(miss_cards, source_locale, target) } ]
-    )
-    log_usage("SurveyTranslator", response.usage, model: MODEL)
-
-    block = Array(response.content).find { |b| tool_use?(b) }
-    raise "Model did not return a tool_use block" unless block
-
-    translated_misses = align(miss_cards, Array(deep_stringify(input_of(block))["cards"]))
-
-    # A batch whose output hit the token ceiling returns fewer cards than it was
-    # given, and `align` backfills the shortfall with SOURCE-language text rather
-    # than failing. That is the right call for a live request — a partly
-    # translated deck beats none — but caching it would make the gap permanent
-    # and invisible. So on truncation: report it, and skip the cache write so the
-    # next attempt gets a clean run at these cards.
-    if truncated?(response)
-      ErrorReporting.report(
-        "SurveyTranslator",
-        RuntimeError.new("translation truncated at #{MAX_TOKENS} output tokens — #{miss_cards.size} cards sent, cache write skipped"),
-        target_locale: target_locale.to_s, cards: miss_cards.size
-      )
-    else
-      # Write each miss back to the cache so the next call hits it.
-      miss_cards.zip(translated_misses).each do |card, translation|
-        next if noted.call(card)
-        TranslationCache.write(card, source_locale: source_locale, target_locale: target_locale, translation: translation)
-      end
+    # In batches, because MAX_TOKENS bounds one reply and a whole deck in one
+    # reply ran past it: Unbounded Alliance's Spanish stopped part-way, and
+    # every card after that point was stored as its English. Each batch is its
+    # own call, so a long deck costs more calls rather than losing its tail.
+    translated_misses = miss_cards.each_slice(BATCH_SIZE).flat_map do |batch|
+      translate_batch(batch, source_locale, target_locale, target, noted)
     end
 
     # Merge cache hits + fresh translations into the source-aligned shape.
@@ -202,6 +179,47 @@ class SurveyTranslator
   end
 
   private
+
+  # One call for up to BATCH_SIZE cards. A card the model did not return comes
+  # back nil — never as its own source text — so the caller leaves it
+  # untranslated, the Language check screen says so, and asking again fills it.
+  # Source text dressed as a translation is the one outcome nothing downstream
+  # can see: it counts as translated, it is never re-asked for, and a Spanish
+  # respondent reads English with every screen reporting Spanish.
+  def translate_batch(batch, source_locale, target_locale, target, noted)
+    response = @client.messages.create(
+      model: MODEL,
+      max_tokens: MAX_TOKENS,
+      system: SYSTEM,
+      tools: [ TOOL ],
+      tool_choice: { type: "tool", name: "emit_translation" },
+      messages: [ { role: "user", content: user_message(batch, source_locale, target) } ]
+    )
+    log_usage("SurveyTranslator", response.usage, model: MODEL)
+
+    block = Array(response.content).find { |b| tool_use?(b) }
+    raise "Model did not return a tool_use block" unless block
+
+    translated = align(batch, Array(deep_stringify(input_of(block))["cards"]))
+
+    # A batch that hit the token ceiling is reported and kept out of the cache:
+    # what it did return may stop mid-card, and a cached half-answer would be
+    # served to every Verto with these words from now on.
+    if truncated?(response)
+      ErrorReporting.report(
+        "SurveyTranslator",
+        RuntimeError.new("translation truncated at #{MAX_TOKENS} output tokens — #{batch.size} cards sent, cache write skipped"),
+        target_locale: target_locale.to_s, cards: batch.size
+      )
+    else
+      batch.zip(translated).each do |card, translation|
+        next if translation.nil? || noted.call(card)
+        TranslationCache.write(card, source_locale: source_locale, target_locale: target_locale, translation: translation)
+      end
+    end
+
+    translated
+  end
 
   def user_message(source, source_locale, target)
     payload = source.each_with_index.map do |card, i|
@@ -261,10 +279,15 @@ class SurveyTranslator
   end
 
   # Force the output to match the source's shape exactly, falling back to source
-  # text/labels for anything missing or mis-sized.
+  # text/labels for anything missing or mis-sized WITHIN a card the model
+  # returned. A card it did not return at all is nil.
   def align(source, translated)
     source.each_with_index.map do |card, i|
-      t          = translated[i].is_a?(Hash) ? translated[i] : {}
+      # Not returned at all: nothing to align, and the source words are not a
+      # translation of themselves. See translate_batch.
+      next nil unless translated[i].is_a?(Hash)
+
+      t          = translated[i]
       src_opts   = Array(card["options"])
       trans_opts = Array(t["options"])
       entry = {
