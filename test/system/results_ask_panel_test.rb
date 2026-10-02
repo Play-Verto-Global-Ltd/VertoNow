@@ -63,6 +63,21 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
     end
   end
 
+  # Clicks the pill until the panel is open, or gives up.
+  #
+  # CI run 36993157175 failed with the panel still shut straight after the
+  # click, in a run whose wait_for_stimulus had found results-chat connected
+  # — so the click, like the Escape above, was lost on the way into the page.
+  # It is re-sent only while the panel lacks .is-open, which #toggle sets
+  # synchronously: a click that DID land is never followed by a second one
+  # that would toggle the panel shut again. A broken #toggle still fails here.
+  def open_with_click
+    wait_until(timeout: 6) do
+      find(".results-ask-fab").click unless page.has_css?("#results-ask-panel.is-open", visible: :all, wait: 0)
+      page.has_selector?("#results-ask-panel", visible: true, wait: 0.5)
+    end
+  end
+
   def escape_diagnostics
     evaluate_script(<<~JS)
       (() => {
@@ -96,8 +111,7 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
     # the difference.
     assert_no_selector "#results-ask-panel", visible: true
 
-    find(".results-ask-fab").click
-    assert_selector "#results-ask-panel", visible: true
+    assert open_with_click, "PANEL NEVER OPENED — #{escape_diagnostics}"
     assert_equal "true", find(".results-ask-fab", visible: :all)["aria-expanded"]
 
     before = panel_viewport_y
@@ -109,8 +123,7 @@ class ResultsAskPanelTest < ApplicationSystemTestCase
   test "Escape closes it and hands focus back to the pill that opened it" do
     open_results
 
-    find(".results-ask-fab").click
-    assert_selector "#results-ask-panel", visible: true
+    assert open_with_click, "PANEL NEVER OPENED — #{escape_diagnostics}"
 
     assert close_with_escape, "PANEL STILL OPEN — #{escape_diagnostics}"
     assert evaluate_script("document.activeElement.classList.contains('results-ask-fab')"),
