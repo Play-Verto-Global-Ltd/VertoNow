@@ -229,6 +229,13 @@ export default class extends Controller {
       this.element.addEventListener(type, () => { window.playvertoEngaged = true },
         { capture: true, once: true, passive: true })
     }
+    // A book's page turn is a new page of text, and a long one teaches itself
+    // to scroll as a new card would (_cueKey keys the showing per page). Only
+    // the active card's book; a listener on the element dies with it.
+    this.element.addEventListener("scenario:turned", event => {
+      const idx = this.currentValue
+      if (this.cardTargets[idx]?.contains(event.target)) requestAnimationFrame(() => this._maybeNudgeScroll(idx))
+    })
     // Embedded (see PlayerController#allow_embedding): tell the host page the
     // player actually booted. A same-origin host could look for this element
     // itself, but a Verto embedded from a downloaded HTML file is cross-origin,
@@ -652,13 +659,23 @@ export default class extends Controller {
     return null
   }
 
-  // The cue's scroller: the list's, when there is a list — so every list card
-  // finds exactly the box it always did — and otherwise the answer panel's,
-  // for every other shape that can outgrow the card.
+  // The cue's scroller. A book (scenario, consent) scrolls INSIDE its open
+  // page, so that page's own scroller comes first: the answer panel around it
+  // never overflows, and a cue that only looked there left long consent text
+  // and long scenario pages below the fold with nothing saying so. Otherwise
+  // the list's box when there is a list — so every list card finds exactly
+  // the box it always did — and the answer panel's for every other shape.
+  //
+  // The walk stops at the card. Past it is .preview-body, which on a short
+  // desktop window overflows by a few pixels on cards whose answer fits; a cue
+  // that reached it would move the whole deck rather than the answer.
   _cueScroller(card) {
-    const from = card?.querySelector(".choice-list, .pick-list, .choice-grid, .prioritise-list")?.parentElement ||
-                 card?.querySelector(".split-right > .mt-2")
-    for (let el = from; el && el !== document.body; el = el.parentElement) {
+    if (!card) return null
+    const page = card.querySelector(".book-page:not([inert]) .book-page-scroll")
+    if (page && page.scrollHeight - page.clientHeight > 1) return page
+    const from = card.querySelector(".choice-list, .pick-list, .choice-grid, .prioritise-list")?.parentElement ||
+                 card.querySelector(".split-right > .mt-2")
+    for (let el = from; el && el !== card.parentElement; el = el.parentElement) {
       const oy = getComputedStyle(el).overflowY
       if ((oy === "auto" || oy === "scroll") && el.scrollHeight - el.clientHeight > 1) return el
     }
@@ -668,6 +685,15 @@ export default class extends Controller {
   // A cue still running for a card the respondent has left. The old card is
   // hidden, so the motion is invisible, but it held _nudgeArmed and so kept the
   // card they are looking at from teaching itself until it had finished.
+  // What a showing is spent against: the card, or the card's open page on a
+  // book, so that each long page of a scenario teaches itself once as it is
+  // turned to rather than only the first.
+  _cueKey(idx) {
+    const pages = Array.from(this.cardTargets[idx]?.querySelectorAll(".book-page") || [])
+    const open  = pages.findIndex(p => !p.hasAttribute("inert"))
+    return open < 0 ? String(idx) : `${idx}:${open}`
+  }
+
   _cancelNudge() {
     clearTimeout(this._nudgeDown)
     clearTimeout(this._nudgeUp)
@@ -687,8 +713,9 @@ export default class extends Controller {
   // again a few times, then stop: a card whose answer still fits after this
   // long fits.
   _maybeNudgeScroll(idx, tries = this.constructor.NUDGE_TRIES) {
-    if (this._nudgeIdx !== idx) this._cancelNudge()
-    this._nudgeIdx = idx
+    const key = this._cueKey(idx)
+    if (this._nudgeKey !== key) this._cancelNudge()
+    this._nudgeKey = key
     // Two flags, not one. _nudgedCards is spent only by a cue that actually
     // MOVED (see _runNudge); _nudgeArmed just stops a second _update() in the
     // same frame scheduling a second run. The first cut spent the one-shot
@@ -696,7 +723,7 @@ export default class extends Controller {
     // tap that dismissed the cookie banner killed the cue before it had moved
     // anything, and nothing ever brought it back.
     this._nudgedCards ||= new Set()
-    if (this._nudgedCards.has(idx) || this._nudgeArmed) return
+    if (this._nudgedCards.has(key) || this._nudgeArmed) return
     // No motion cue for anyone who asked for no motion. They are not left
     // without one: the fade is already on the box, and is the part of this the
     // owner rates most highly.
@@ -709,7 +736,8 @@ export default class extends Controller {
     // _dismissConsentBanner and dismissCardModal call _update(), which re-enters
     // here with a full budget the moment the deck is live, which is the first
     // moment the cue is any use. (A self-driving CARD — consent_gate, the
-    // respondent-code gate — never reaches this line: _update returns above.)
+    // respondent-code gate — is not one of these: it IS the card, and its
+    // branch of _update schedules this like any other.)
     if (this.element.hasAttribute("data-consent-pending")) return
     if (this.element.hasAttribute("data-card-modal-open")) return
 
@@ -753,10 +781,10 @@ export default class extends Controller {
     const opts = { passive: true, signal: ac.signal }
     for (const ev of [ "pointerdown", "touchstart", "wheel" ]) box.addEventListener(ev, this._nudgeAbort, opts)
     window.addEventListener("keydown", this._nudgeAbort, opts)
-    this._nudgeDown = setTimeout(() => this._runNudge(box, travel, idx), this.constructor.NUDGE_DELAY_MS)
+    this._nudgeDown = setTimeout(() => this._runNudge(box, travel, key), this.constructor.NUDGE_DELAY_MS)
   }
 
-  async _runNudge(box, travel, idx) {
+  async _runNudge(box, travel, key) {
     if (this._nudgeCancelled) return
     // The pre-roll is the one stretch nothing watches the box through, and a
     // scroll can land in it without a pointer, wheel or key (a scrollbar, a
@@ -764,13 +792,13 @@ export default class extends Controller {
     // the answer back up from wherever it had been put. Whoever moved it has
     // found the scroll, so the card's cue is spent.
     if (box.scrollTop > 0) {
-      this._nudgedCards.add(idx)
+      this._nudgedCards.add(key)
       return this._teardownNudge()
     }
     // Spent HERE. The pre-roll is over, nothing interrupted it, and the next
     // frame moves the list — that is the cue being delivered, and the only
     // thing that should cost this card its one showing of it.
-    this._nudgedCards.add(idx)
+    this._nudgedCards.add(key)
     await this._scrollOver(box, travel, this.constructor.NUDGE_DOWN_MS)
     if (this._nudgeCancelled) return
     await new Promise(done => { this._nudgeUp = setTimeout(done, this.constructor.NUDGE_HOLD_MS) })
@@ -3003,6 +3031,9 @@ export default class extends Controller {
       this.backBtnTarget.classList.add("invisible")
       this.nextBtnTarget.classList.add("hidden")
       this.finishBtnTarget.classList.add("hidden")
+      // Long consent text and a code card squeezed by its question scroll like
+      // any other answer, so they say so like any other answer.
+      requestAnimationFrame(() => this._maybeNudgeScroll(idx))
       return
     }
 

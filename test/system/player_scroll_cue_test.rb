@@ -58,9 +58,11 @@ class PlayerScrollCueTest < ApplicationSystemTestCase
     window.__cue = { peak: 0, last: 0 }
     window.__box = () => {
       const card = document.querySelector(".preview-card.active")
+      const page = card && card.querySelector(".book-page:not([inert]) .book-page-scroll")
+      if (page && page.scrollHeight - page.clientHeight > 1) return page
       const list = card && card.querySelector(".choice-list, .pick-list, .choice-grid")
       const from = (list && list.parentElement) || (card && card.querySelector(".split-right > .mt-2"))
-      for (let el = from; el && el !== document.body; el = el.parentElement) {
+      for (let el = from; el && el !== card.parentElement; el = el.parentElement) {
         const oy = getComputedStyle(el).overflowY
         if ((oy === "auto" || oy === "scroll") && el.scrollHeight - el.clientHeight > 1) return el
       }
@@ -207,6 +209,40 @@ class PlayerScrollCueTest < ApplicationSystemTestCase
 
     assert_not scroller?, "three options overflowed an iPad — the fixture, not the cue, is wrong"
     assert_equal 0, cue["peak"], "a list with nothing below the fold moved anyway, which reads as a glitch"
+  end
+
+  # A book scrolls inside its open page, not in the answer panel around it, so
+  # a cue that only knew the panel left long consent text and long scenario
+  # pages below the fold without a word. Consent is also a self-driving card,
+  # which used to leave _update before the cue was ever scheduled.
+  LONG_PAGE = ("You are taking part in a study about how young people spend their week. " * 9).strip
+
+  def book_verto(type, pages)
+    card = { "type" => type, "cid" => "b", "text" => "Before you start", "pages" => pages }
+    card["options"] = [ "I'd go", "Not for me" ] if type == "scenario"
+    survey = @org.surveys.create!(title: "Cue", theme: "Climate", audience_age: "all", key_insight: "k",
+                                  default_locale: "en", locales: [ "en" ], cards: [ card ])
+    survey.update_columns(publish_token: SecureRandom.hex(8), published_at: Time.current)
+    survey
+  end
+
+  test "a long consent page shows itself moving, inside the page" do
+    open_player(book_verto("consent_gate", [ { "id" => "p1", "text" => LONG_PAGE } ]), *PHONE)
+
+    assert wait_until(timeout: 8, interval: 0.02) { cue["peak"] > 2 },
+      "the consent text ran below the fold and never moved — the cue did not look inside the page"
+    assert wait_until(timeout: 8, interval: 0.02) { cue["last"] <= 2 }
+  end
+
+  test "each long scenario page teaches itself as it is turned to" do
+    open_player(book_verto("scenario", [ { "id" => "p1", "text" => LONG_PAGE }, { "id" => "p2", "text" => LONG_PAGE } ]), *PHONE)
+    assert wait_until(timeout: 8, interval: 0.02) { cue["peak"] > 2 }, "the first long page never moved"
+    assert wait_until(timeout: 8, interval: 0.02) { cue["last"] <= 2 }
+
+    find(".preview-card.active button.book-chevron[data-action*='scenario#next']").click
+    reset_cue
+    assert wait_until(timeout: 8, interval: 0.02) { cue["peak"] > 2 },
+      "the second long page never moved. A page turn is a new page of text, and it was left to the fade alone"
   end
 
   test "reduced motion keeps the fade and loses the movement" do

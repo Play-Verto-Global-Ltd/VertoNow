@@ -962,9 +962,12 @@
    bar per token, up to however many the creator defined, under a title and a
    pill of body copy. Four tokens on a laptop put the last bar past the
    card's edge with no way to reach it ("I need to be able to scroll on this
-   card"). */
+   card"). And the respondent-code card, the same again: under a long question
+   on a 320px phone its input, its note and Continue all sat below the card's
+   edge — the one card a respondent cannot get past without reaching them. */
 .split-right > .mt-2:has(> .welcome-intake),
-.split-right > .mt-2:has(> .token-checkpoint-body) {
+.split-right > .mt-2:has(> .token-checkpoint-body),
+.split-right > .mt-2:has(> .respondent-code-input) {
   /* grow 0, NOT 1. This box is the panel's only growable child, so with a
      grow factor it swallowed every spare pixel and left .split-right's
      `justify-content: safe center` nothing to centre: the question sat flush
@@ -10557,7 +10560,8 @@ body.generating-overlay-active .bottom-bar { display: none; }
   .preview-overlay .split-card .split-right > .mt-2:has(> .rating-wrap),
   .preview-overlay .split-card .split-right > .mt-2:has(> .freeform-wrap),
   .preview-overlay .split-card .split-right > .mt-2:has(> .welcome-intake),
-  .preview-overlay .split-card .split-right > .mt-2:has(> .token-checkpoint-body) {
+  .preview-overlay .split-card .split-right > .mt-2:has(> .token-checkpoint-body),
+  .preview-overlay .split-card .split-right > .mt-2:has(> .respondent-code-input) {
     flex: 0 1 auto;
     min-height: 0;
     -webkit-overflow-scrolling: touch;

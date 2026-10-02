@@ -177,6 +177,9 @@ export default class extends Controller {
     })
 
     this._syncDots()
+    // The player teaches each long page to scroll as it is turned to; it
+    // cannot see a turn any other way.
+    this.dispatch("turned", { detail: { page: this.current } })
 
     const atAnswer = this.atAnswerPage
     this._header?.classList.toggle("book-header-visible", atAnswer)
