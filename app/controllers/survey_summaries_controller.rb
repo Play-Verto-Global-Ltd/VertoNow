@@ -34,7 +34,7 @@ class SurveySummariesController < ApplicationController
   # already wrote, and the count alone would never move them (BUG-043).
   def questions
     survey = Current.organisation.surveys.find(params[:id])
-    _base, segments, segment = resolve_result_segments(survey, params[:segment], floor: ResolvesResultSegments::OWNER_FLOOR)
+    _base, segments, segment = resolve_result_segments(survey, params[:segment], **ResolvesResultSegments::OWNER_VIEW)
     total = segment[:scope].count
 
     cached = survey.results_insights
@@ -121,7 +121,7 @@ class SurveySummariesController < ApplicationController
       return
     end
 
-    _base, segments, = resolve_result_segments(survey, nil, floor: ResolvesResultSegments::OWNER_FLOOR)
+    _base, segments, = resolve_result_segments(survey, nil, **ResolvesResultSegments::OWNER_VIEW)
     segment = segments.find { |s| s[:id] == params[:segment] }
     unless segment
       response.stream.write("Unknown segment.")

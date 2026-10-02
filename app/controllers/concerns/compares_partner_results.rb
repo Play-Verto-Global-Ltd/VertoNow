@@ -68,7 +68,7 @@ module ComparesPartnerResults
     mine     = answered.where(survey_share_id: @share.id)
     others   = answered.where.not(id: mine.reorder(nil).select(:id))
 
-    @segments       = partner_segments(mine, floor: ResolvesResultSegments::OWNER_FLOOR)
+    @segments       = partner_segments(mine, **ResolvesResultSegments::OWNER_VIEW)
     @active_segment = select_result_segment(@segments, mine, segment_param, floor: ResolvesResultSegments::OWNER_FLOOR)
     @overall_total  = mine.count
     @mine_total     = @active_segment[:count]
@@ -82,10 +82,12 @@ module ComparesPartnerResults
   # partner, and a named link's is the owner's own label for an audience
   # (the public results page leaves those out for the same reason).
   #
-  # `floor:` as for ResolvesResultSegments#result_segments: the partner's own
-  # respondents pass OWNER_FLOOR; everyone else keeps the published default.
-  def partner_segments(base, floor: ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE)
-    result_segments(@survey, base, links: false, floor: floor)
+  # `floor:` and `integrity:` as for ResolvesResultSegments#result_segments:
+  # the partner's own respondents pass OWNER_VIEW; everyone else keeps the
+  # published floor, with the bands offered so a partner's Low can be set
+  # beside everyone else's Low.
+  def partner_segments(base, floor: ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE, integrity: true)
+    result_segments(@survey, base, links: false, floor: floor, integrity: integrity)
       .reject { |s| ResolvesResultSegments.kind_of(s[:id]) == "links" }
   end
 

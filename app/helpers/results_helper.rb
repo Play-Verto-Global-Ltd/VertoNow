@@ -14,7 +14,8 @@ module ResultsHelper
   # else in the product.
   #
   # Order is deliberate: how they reached the Verto, then when, then where, then
-  # who — narrowing from the study's own structure down to the person.
+  # who — narrowing from the study's own structure down to the person — and
+  # then how carefully they answered (the integrity bands).
   SEGMENT_GROUPS = [
     { key: "links",    accent: "#8B85FF" },
     { key: "waves",    accent: "#FF9F45" },
@@ -22,7 +23,9 @@ module ResultsHelper
     { key: "gender",   accent: "#FF1E6F" },
     { key: "age",      accent: "#FFC24B" },
     { key: "heritage", accent: "#615BF5" },
-    { key: "neuro",    accent: "#00C2A8" }
+    { key: "neuro",    accent: "#00C2A8" },
+    # Last: not who someone is, but how carefully they answered.
+    { key: "integrity", accent: "#B8F28A" }
   ].freeze
 
   # [{ key:, accent:, segments: [...] }, ...] for everything except "overall",

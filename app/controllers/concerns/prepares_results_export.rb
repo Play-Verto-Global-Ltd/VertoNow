@@ -16,7 +16,7 @@ module PreparesResultsExport
 
   # Returns [ResultsExport, active_segment].
   def build_results_export(survey, segment_param)
-    _base, _segments, active = resolve_result_segments(survey, segment_param, floor: ResolvesResultSegments::OWNER_FLOOR)
+    _base, _segments, active = resolve_result_segments(survey, segment_param, **ResolvesResultSegments::OWNER_VIEW)
     responses  = active[:scope]
     aggregated = aggregate_results(Array(survey.cards), responses)
     [ ResultsExport.new(survey: survey, responses: responses, aggregated: aggregated), active ]

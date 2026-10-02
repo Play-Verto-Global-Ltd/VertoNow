@@ -17,6 +17,8 @@ import { Controller } from "@hotwired/stimulus"
 // window with site data blocked) and a picker that throws on click is worse
 // than one that closes.
 const KEY = "results:segment-picker-open"
+// The gap kept between the panel and the window's edge when it is pulled back.
+const EDGE_PX = 16
 
 export default class extends Controller {
   connect() {
@@ -30,7 +32,34 @@ export default class extends Controller {
       reopen = sessionStorage.getItem(KEY) === "1"
       sessionStorage.removeItem(KEY)
     } catch {}
+    this._onToggle = () => this._fit()
+    this.element.addEventListener("toggle", this._onToggle)
     if (reopen) this.element.open = true
+  }
+
+  disconnect() {
+    this.element.removeEventListener("toggle", this._onToggle)
+  }
+
+  // The panel hangs from the picker's start edge and is as wide as its widest
+  // row, up to 760px — and the picker sits a good way along the header, so a
+  // long row (six countries, or the five integrity bands) used to run it off
+  // the right of the window. Pulled back by exactly the overhang, never past
+  // the window's start; the CSS's own max-width still keeps it narrower than
+  // the window. Measured on every open, because rows differ page to page.
+  _fit() {
+    const panel = this.element.querySelector(".rh-segments-panel")
+    if (!panel) return
+    panel.style.removeProperty("inset-inline-start")
+    if (!this.element.open) return
+
+    const box  = panel.getBoundingClientRect()
+    const rtl  = getComputedStyle(panel).direction === "rtl"
+    const over = rtl ? EDGE_PX - box.left : box.right - (window.innerWidth - EDGE_PX)
+    if (over <= 0) return
+
+    const room = rtl ? window.innerWidth - EDGE_PX - box.right : box.left - EDGE_PX
+    panel.style.setProperty("inset-inline-start", `-${Math.max(0, Math.min(over, room))}px`)
   }
 
   // click->segment-picker#remember on the <details>: a pill inside the panel

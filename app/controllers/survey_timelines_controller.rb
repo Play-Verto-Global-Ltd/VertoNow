@@ -47,7 +47,7 @@ class SurveyTimelinesController < ApplicationController
     # From/To narrows it the same way.
     range  = custom ? nil : params[:range].presence
     _base, _segments, segment = resolve_result_segments(survey, params[:segment], range, window: custom,
-                                                                  floor: ResolvesResultSegments::OWNER_FLOOR)
+                                                                  **ResolvesResultSegments::OWNER_VIEW)
     scope  = segment[:scope]
 
     to   = custom ? custom.end : Date.current

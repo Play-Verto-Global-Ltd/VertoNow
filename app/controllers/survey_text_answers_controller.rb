@@ -50,7 +50,7 @@ class SurveyTextAnswersController < ApplicationController
     # here is exactly the segment the card was counted in. It builds every
     # segment's count to find one — the cost every results endpoint pays.
     _base, _segments, segment = resolve_result_segments(survey, params[:segment], params[:range].presence,
-                                                       floor: ResolvesResultSegments::OWNER_FLOOR)
+                                                       **ResolvesResultSegments::OWNER_VIEW)
     query = params[:q].to_s.strip.downcase
     page  = [ params[:page].to_i, 1 ].max
 

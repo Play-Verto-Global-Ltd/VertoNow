@@ -107,4 +107,30 @@ class ResultsSegmentPickerTest < ApplicationSystemTestCase
     assert_current_path survey_results_path(@survey, segment: "link_#{link.id}"), wait: 5
     assert_selector ".rh-segments summary .rh-picker-active", text: "🔗 New link (#{link.slug})", wait: 5
   end
+
+  # The panel hangs from the picker, which sits a long way along the header;
+  # a long row (here eight countries and the five integrity bands) used to
+  # run it off the right of the window. It is pulled back inside it.
+  test "a wide panel is pulled back inside the window" do
+    %w[FR ES IT PT NL BE].each { |c| seed(2, c, "Male") }
+    @survey.responses.order(:id).limit(5).each_with_index do |r, i|
+      r.update_columns(integrity_band: ResponseIntegrity::BANDS[i])
+    end
+    previous = ENV["INTEGRITY_SCORES_VISIBLE"]
+    ENV["INTEGRITY_SCORES_VISIBLE"] = "1"
+
+    page.driver.browser.resize(width: 1300, height: 900)
+    sign_in_as(@user)
+    visit survey_results_path(@survey)
+    dismiss_cookie_banner
+    find(".rh-segments summary").click
+    assert_selector ".rh-segments-panel a.rh-seg", text: "Unverified", wait: 5
+
+    right = nil
+    assert wait_until { (right = evaluate_script("document.querySelector('.rh-segments-panel').getBoundingClientRect().right")) <= 1300 - 16 },
+           "the panel's right edge is #{right}px in a 1300px window"
+    assert_operator evaluate_script("document.querySelector('.rh-segments-panel').getBoundingClientRect().left"), :>=, 0
+  ensure
+    ENV["INTEGRITY_SCORES_VISIBLE"] = previous
+  end
 end

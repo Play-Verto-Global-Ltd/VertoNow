@@ -20,7 +20,8 @@ module ResolvesResultSegments
     "gender_"   => "gender",
     "age_"      => "age",
     "heritage_" => "heritage",
-    "neuro_"    => "neuro"
+    "neuro_"    => "neuro",
+    "integrity_" => "integrity"
   }.freeze
 
   # The kinds that slice by WHO someone is rather than how or when they
@@ -75,7 +76,12 @@ module ResolvesResultSegments
   # `floor` is the smallest group a country or demographic slice may show
   # (see OWNER_FLOOR): the published minimum by default, so a caller that
   # forgets to say who is looking hides a small slice rather than showing it.
-  def result_segments(survey, base, links: true, floor: MIN_DEMOGRAPHIC_SAMPLE)
+  #
+  # `integrity: true` adds one segment per Verto Integrity Score band
+  # (ResponseIntegrity) once scores are visible — for the organisation's own
+  # view and a partner's, never the public link, where a "Low" pill would be
+  # a public verdict on a handful of named-by-context respondents.
+  def result_segments(survey, base, links: true, floor: MIN_DEMOGRAPHIC_SAMPLE, integrity: false)
     segments = [ { id: "overall", label: "Overall", scope: base, count: base.count } ]
 
     shares = survey.survey_shares
@@ -168,7 +174,9 @@ module ResolvesResultSegments
       }
     end
 
-    segments + demographic_segments(base, floor)
+    segments += demographic_segments(base, floor)
+    segments += integrity_segments(base, floor) if integrity && ResponseIntegrity.visible?
+    segments
   end
 
   REGION_SEGMENT_CAP = 30
@@ -186,6 +194,10 @@ module ResolvesResultSegments
   # pages and exports and for a partner's own slice; everyone else gets the
   # default.
   OWNER_FLOOR = 1
+
+  # Everything the organisation's own pages (and a partner's own slice) are
+  # offered: no floor, and the integrity bands as a filter of their own.
+  OWNER_VIEW = { floor: OWNER_FLOOR, integrity: true }.freeze
 
   # Age bands rather than birth years: a year is close to an identifier on a
   # small Verto, and nobody analyses "people born in 1987" — they analyse
@@ -259,6 +271,22 @@ module ResolvesResultSegments
     end
   end
 
+  # One segment per integrity band the base holds, in band order. How
+  # carefully a response was given is not WHO gave it, so these are not an
+  # identity kind: a band combined with a country is held to whatever line
+  # the country is. A band the switch leaves out (Survey#integrity_filtered)
+  # is not in the base, so is never offered.
+  def integrity_segments(base, floor)
+    counts = base.reorder(nil).group(:integrity_band).count
+    ResponseIntegrity::BANDS.filter_map do |band|
+      count = counts[band].to_i
+      next if count.zero? || count < floor
+
+      { id: "integrity_#{band}", label: "🛡️ #{I18n.t("results.integrity.bands.#{band}")}",
+        scope: base.where(integrity_band: band), count: count }
+    end
+  end
+
   def age_segments(base, floor)
     this_year = Date.current.year
 
@@ -299,11 +327,11 @@ module ResolvesResultSegments
   #
   # `floor:` as for result_segments — the creator's own pages pass OWNER_FLOOR.
   def resolve_result_segments(survey, segment_param, range_param = nil, links: true, window: nil,
-                              floor: MIN_DEMOGRAPHIC_SAMPLE)
+                              floor: MIN_DEMOGRAPHIC_SAMPLE, integrity: false)
     base     = survey.integrity_filtered(survey.responses.where(answered: true)).order(created_at: :desc)
     base     = apply_date_range(base, range_param)
     base     = base.where(created_at: window.begin.beginning_of_day..window.end.end_of_day) if window
-    segments = result_segments(survey, base, links: links, floor: floor)
+    segments = result_segments(survey, base, links: links, floor: floor, integrity: integrity)
     [ base, segments, select_result_segment(segments, base, segment_param, floor: floor) ]
   end
 
@@ -367,7 +395,11 @@ module ResolvesResultSegments
   # "🌍 Austria or Germany · 👤 Male · 🎂 25–34": each kind's alternatives
   # joined with "or", the kinds joined with a middle dot — the sentence the
   # scope above is. A kind's emoji is said once per run, not once per pill.
-  EMOJI_PREFIX = /\A\p{Emoji_Presentation}\uFE0F?\s+/
+  # Extended_Pictographic rather than Emoji_Presentation: the integrity
+  # bands' 🛡️ is a text-default symbol made an emoji by its U+FE0F, which
+  # Emoji_Presentation does not match. Digits are in neither, so "18–24"
+  # keeps its first character.
+  EMOJI_PREFIX = /\A\p{Extended_Pictographic}\uFE0F?\s+/
 
   def combination_label(by_kind)
     joiner = " #{I18n.t("results.combination_or", default: "or")} "

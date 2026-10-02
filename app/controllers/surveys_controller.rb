@@ -1368,7 +1368,7 @@ class SurveysController < ApplicationController
     @date_range = params[:range].presence
     # The organisation's own results: every response, however few (OWNER_FLOOR).
     base, @segments, @active_segment = resolve_result_segments(@survey, params[:segment], @date_range,
-                                                               floor: ResolvesResultSegments::OWNER_FLOOR)
+                                                               **ResolvesResultSegments::OWNER_VIEW)
     @overall_total  = base.count
 
     @responses  = @active_segment[:scope]
@@ -1467,7 +1467,7 @@ class SurveysController < ApplicationController
   # client-side (no reload per toggle, unlike the single-segment `results`
   # view above).
   def results_compare
-    _base, segments, = resolve_result_segments(@survey, nil, floor: ResolvesResultSegments::OWNER_FLOOR)
+    _base, segments, = resolve_result_segments(@survey, nil, **ResolvesResultSegments::OWNER_VIEW)
     cards = Array(@survey.cards)
 
     render json: {
