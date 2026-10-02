@@ -2145,6 +2145,12 @@ export default class extends Controller {
       }
 
       case "range": {
+        // The age slider opens on a band like every range card, and an
+        // untouched pass used to store that band as the respondent's age —
+        // demographic_age_band '25_34' for everyone who simply pressed Next.
+        // On a card that requires a touch, the opening position is not an
+        // answer; one the respondent moves, taps or keys to is.
+        if (card.dataset.cardRequiresTouch === "true" && !this._touched.has(card.dataset.cardIndex)) return null
         const dots   = Array.from(card.querySelectorAll(".s-dot"))
         const active = dots.findIndex(d => d.classList.contains("active"))
         return active >= 0 ? active : null

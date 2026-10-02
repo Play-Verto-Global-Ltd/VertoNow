@@ -304,6 +304,10 @@ tn:
     unavailable_title: "Kgokaganyo e ya diphetho ga e fitlhelesege"
     unavailable_body: "E ka tswa e emisitswe kgotsa e timeditswe ke motlhami wa yona, kgotsa aterese e kwadilwe phoso."
     under_responses: "Dikarabo tse di ka fa tlase ga %{count}"
+    answers_under: "Dikarabo di le kwa tlase ga %{count}"
+    card_too_few: "Batho ba ba kwa tlase ga %{count} ba arabile potso eno, ka jalo dikarabo tsa yone di fitlhilwe mo dikgolaganong tse di abelanwang."
+    too_few_title: "Ga go ise go nne le dikarabo tse di lekaneng"
+    too_few_body: "Dipholo di tla bonala fano fa bonnye batho ba le %{count} ba sena go araba, gore dikarabo tsa ope di se ka tsa itsiwe."
   player:
     compare_promise: "Fetsa go bona kafa dikarabo tsa gago di tshwanang le tsa ba bangwe."
     region_search_placeholder: "Batla toropo kgotsa kgaolo ya gago…"

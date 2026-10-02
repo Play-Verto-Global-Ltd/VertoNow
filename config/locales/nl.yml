@@ -294,6 +294,10 @@ nl:
     unavailable_title: Deze resultatenlink is niet beschikbaar
     unavailable_body: Deze is mogelijk gepauzeerd of uitgeschakeld door de maker, of het adres is verkeerd getypt.
     under_responses: "Minder dan %{count} antwoorden"
+    answers_under: "Minder dan %{count} antwoorden"
+    card_too_few: "Minder dan %{count} mensen hebben deze vraag beantwoord, dus de antwoorden zijn verborgen op gedeelde links."
+    too_few_title: "Nog niet genoeg reacties"
+    too_few_body: "De resultaten verschijnen hier zodra minstens %{count} mensen hebben gereageerd, zodat niemands antwoorden te herkennen zijn."
   player:
     compare_promise: "Maak het af om te zien hoe jouw antwoorden zich verhouden tot die van anderen."
     region_search_placeholder: "Zoek je stad of regio…"

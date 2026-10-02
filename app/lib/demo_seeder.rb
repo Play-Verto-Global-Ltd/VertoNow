@@ -91,27 +91,27 @@ class DemoSeeder
       # self-declared sub-regions (e.g. "Greater London" + "Manchester")
       # correctly collapsing into one country total rather than each needing
       # its own dot. Only *completed* responses get tagged with a region (see
-      # seed_responses!), so every cluster here is sized well above
-      # Response::MIN_REGION_SAMPLE_SIZE (5) to comfortably clear it even
-      # after ~12% of a cluster don't finish — 8 raw survives that with room
-      # to spare, rather than sitting right on the suppression line.
-      seed_responses!(@money_matters, count: 41, consent: true,
+      # seed_responses!), so every COUNTRY here is sized well above
+      # Response::MIN_REGION_SAMPLE_SIZE (10) to clear it even after ~12% of
+      # a cluster don't finish — 15 raw, or two clusters of 8, survives that
+      # with room to spare rather than sitting on the suppression line.
+      seed_responses!(@money_matters, count: 47, consent: true,
         regions: [
           [ "ZA", "Gauteng", 8 ], [ "ZA", "Western Cape", 8 ],
           [ "GB", "Greater London", 8 ], [ "GB", "Manchester", 8 ],
-          [ "US", "California", 9 ]
+          [ "US", "California", 15 ]
         ])
-      seed_responses!(@workplace, count: 32,
+      seed_responses!(@workplace, count: 46,
         regions: [
           [ "US", "Texas", 8 ], [ "US", "New York", 8 ],
-          [ "GB", "Greater Manchester", 8 ],
-          [ "AU", "New South Wales", 8 ]
+          [ "GB", "Greater Manchester", 15 ],
+          [ "AU", "New South Wales", 15 ]
         ])
-      seed_responses!(@campus, count: 32,
+      seed_responses!(@campus, count: 46,
         regions: [
           [ "GB", "London", 8 ], [ "GB", "Edinburgh", 8 ],
-          [ "ES", "Madrid", 8 ],
-          [ "ZA", "Western Cape", 8 ]
+          [ "ES", "Madrid", 15 ],
+          [ "ZA", "Western Cape", 15 ]
         ],
         locale_by_country: { "ES" => "es" })
       # @community_safety stays a draft with zero responses — nothing to seed there.
@@ -414,8 +414,8 @@ class DemoSeeder
   # ── simulated respondents ────────────────────────────────────────────────
 
   # `regions` is [[country_code, label, how_many], ...] — must sum to `count`,
-  # so every region cluster is ≥5 responses (MIN_REGION_SAMPLE_SIZE) and the
-  # region/map view actually has something to show.
+  # and every country should total comfortably over MIN_REGION_SAMPLE_SIZE so
+  # the region/map view actually has something to show.
   def seed_responses!(survey, count:, regions:, consent: false, locale_by_country: {})
     region_pool = regions.flat_map { |country, label, n| Array.new(n) { [ country, label ] } }
     raise "region pool (#{region_pool.size}) must total `count` (#{count}) for #{survey.title}" unless region_pool.size == count

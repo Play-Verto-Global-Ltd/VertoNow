@@ -98,14 +98,15 @@ class ResultsTallyTest < ActionDispatch::IntegrationTest
   # A segment's count comes from its own filtered scope; the live tally carries
   # whole-Verto totals and would contradict it.
   test "a segment shows its own count and what it is a slice of, and no rate" do
-    answer(7, country: "GB")
+    # GB clears the small-cell line, so it is a segment to open.
+    answer(Response::MIN_REGION_SAMPLE_SIZE, country: "GB")
     answer(6, country: "ES")
 
     get survey_results_path(@survey, segment: "region_GB")
     assert_response :success
 
-    assert_select ".rmap-pill--count .rh-count-num", text: "7"
-    assert_select ".rmap-of", text: "of 13 overall"
+    assert_select ".rmap-pill--count .rh-count-num", text: Response::MIN_REGION_SAMPLE_SIZE.to_s
+    assert_select ".rmap-of", text: "of #{Response::MIN_REGION_SAMPLE_SIZE + 6} overall"
     assert_select ".rmap-pill--rate", 0
     assert_select "#results-live", 0,
       "a segment must not subscribe to a broadcast that would overwrite it with whole-Verto numbers"

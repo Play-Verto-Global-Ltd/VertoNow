@@ -27,9 +27,15 @@ class Response < ApplicationRecord
   # Small-cell suppression for region groupings: any region/results view
   # grouped by region_country should drop groups smaller than this before
   # display, so a single respondent (or a handful) is never singled out on a
-  # map or in a per-country breakdown — the same threshold official
-  # statistics bodies (e.g. the UK ONS) use for suppressing small cells.
-  MIN_REGION_SAMPLE_SIZE = 5
+  # map or in a per-country breakdown.
+  #
+  # 10 since 2026-10-02 (it was 5): the Privacy Notice tells respondents that
+  # no result is produced from a group of fewer than 10, and the owner chose
+  # to make the product match the notice rather than the other way round. One
+  # constant, so the map, the segment pills, the respondent's end-of-Verto
+  # comparison, the account page, the answer timeline, the partner page and
+  # the public results link all move together.
+  MIN_REGION_SAMPLE_SIZE = 10
 
   # Keep the denormalised `answered` flag (answered ≥1 question with a value) in
   # sync on every save, so the dashboard can count responders with a grouped SQL

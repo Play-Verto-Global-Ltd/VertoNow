@@ -44,11 +44,12 @@ class CorpusIndexerTest < ActiveSupport::TestCase
     entry.reload
   end
 
-  # The floor defaults to 1 on this deployment — the owner's decision that every
-  # answer counts — so the tests that guard the SUPPRESSION MACHINERY set it
-  # explicitly. They are not describing the default; they are proving that the
-  # mechanism still works for anyone who turns it back on, which is the only
-  # thing that makes turning it back on a real option.
+  # The floor defaults to 10, the Privacy Notice's minimum group (see "by
+  # default the floor is the Privacy Notice's minimum group" below). The tests
+  # that guard the SUPPRESSION MACHINERY set 30 — the original floor, still one
+  # ASK_VERTO_MIN_CELL away — explicitly. They are not describing the default;
+  # they are proving the mechanism follows whatever floor a deployment sets,
+  # which is the only thing that makes setting one a real option.
   def with_floor(size = 30, &block) = CorpusEntry.with_min_sample_size(size, &block)
 
   # ── The prioritise trap ───────────────────────────────────────────────────
@@ -132,7 +133,7 @@ class CorpusIndexerTest < ActiveSupport::TestCase
     end
   end
 
-  # ── Every answer counts ───────────────────────────────────────────────────
+  # ── Answers count whether or not the Verto was finished ──────────────────
   test "a respondent who stopped part-way still counts on the questions they answered" do
     # The corpus used to see status: "completed" only, which on the WLL digital
     # export was 22,572 of 50,835 sessions against 44,585 carrying real answers.
@@ -169,21 +170,62 @@ class CorpusIndexerTest < ActiveSupport::TestCase
       "someone who opened the Verto and left answered nothing, and counting them would deflate every share"
   end
 
-  test "by default nothing is suppressed" do
-    # The owner's decision: every answer counts. One respondent is a citable
-    # cell, and a segment of one is a citable segment.
+  test "by default the floor is the Privacy Notice's minimum group" do
+    # The Privacy Notice promises respondents that no result — "a report, the
+    # Data Commons or an Ask Verto answer" — is produced from a group of fewer
+    # than 10, and the owner chose (2026-10-02) to make the product keep that
+    # promise. It replaces a default of 1, under which every answer counted: a
+    # one-respondent Verto was citable, and so was a segment of one child.
+    assert_equal 10, CorpusEntry.min_sample_size
+    assert_equal Response::MIN_REGION_SAMPLE_SIZE, CorpusEntry.min_sample_size,
+      "one minimum group across the product — Ask Verto must not publish what the results page withholds"
+
+    floor  = CorpusEntry.min_sample_size
     survey = survey_with([ { "type" => "multiple_choice", "cid" => "c_m", "text" => "Why?",
                              "options" => [ "Money", "Time" ] } ])
-    seed!(survey, 1) { { "0" => { "value" => "Money" } } }
+    # Women exactly on the line, men one under it.
+    seed!(survey, floor) { { "0" => { "value" => "Money" } } }
     survey.responses.update_all(demographic_gender: "Female")
+    seed!(survey, floor - 1) { { "0" => { "value" => "Time" } } }
+    survey.responses.where(demographic_gender: nil).update_all(demographic_gender: "Male")
+
+    question = index!(survey).corpus_questions.find_by(cid: "c_m")
+
+    assert_equal({ "Money" => floor, "Time" => floor - 1 }, question.distribution)
+    assert_equal floor, question.segments.dig("Gender: Female", "n"), "a group of exactly the floor is citable"
+    assert_not question.segments.key?("Gender: Male"),
+      "a group one under the floor is the kind the notice says no result comes from"
+  end
+
+  test "by default a Verto with fewer answers than the minimum group is not cited at all" do
+    survey = survey_with([ { "type" => "yes_no", "cid" => "c_a", "text" => "Q", "options" => %w[Yes No] } ])
+    seed!(survey, CorpusEntry.min_sample_size - 1) { { "0" => { "value" => "Yes" } } }
 
     entry = index!(survey)
-    question = entry.corpus_questions.find_by(cid: "c_m")
 
-    assert_equal 1, CorpusEntry.min_sample_size
-    assert_not_nil question, "a one-respondent Verto is citable on this deployment"
-    assert_equal({ "Money" => 1 }, question.distribution)
-    assert_equal 1, question.segments.dig("Gender: Female", "n")
+    assert_empty entry.corpus_questions
+    assert_equal CorpusEntry.min_sample_size - 1, entry.response_count
+  end
+
+  test "a deployment can still lower the floor, all the way to every answer counting" do
+    # ASK_VERTO_MIN_CELL (or with_min_sample_size) overrides the default. Below
+    # 10 it breaks the Privacy Notice's promise, but it is the deployment's
+    # setting to make — and at 1 nothing is suppressed: one respondent is a
+    # citable cell, and a segment of one is a citable segment.
+    with_floor(1) do
+      survey = survey_with([ { "type" => "multiple_choice", "cid" => "c_m", "text" => "Why?",
+                               "options" => [ "Money", "Time" ] } ])
+      seed!(survey, 1) { { "0" => { "value" => "Money" } } }
+      survey.responses.update_all(demographic_gender: "Female")
+
+      question = index!(survey).corpus_questions.find_by(cid: "c_m")
+
+      assert_equal 1, CorpusEntry.min_sample_size
+      assert_not_nil question, "a one-respondent Verto is citable under a floor of 1"
+      assert_equal({ "Money" => 1 }, question.distribution)
+      assert_equal 1, question.segments.dig("Gender: Female", "n")
+    end
+    assert_equal 10, CorpusEntry.min_sample_size, "the override ends with its block"
   end
 
   # ── Breakdowns beyond the choice types ────────────────────────────────────

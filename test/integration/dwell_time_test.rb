@@ -80,6 +80,18 @@ class DwellTimeTest < ActionDispatch::IntegrationTest
     assert_equal({ "1" => Response::DWELL_CAP_MS }, row.dwell_ms, "a non-object is ignored, not an error")
   end
 
+  # The request log line carries the respondent's IP address; their per-card
+  # timings and integrity signals must not ride beside it.
+  test "the request log filters dwell times and integrity signals" do
+    filter = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+    logged = filter.filter("dwell" => { "1" => 4200 }, "integrity" => { "v" => 1, "untouched" => [ "2" ] },
+                           "locale" => "en")
+
+    assert_equal "[FILTERED]", logged["dwell"]
+    assert_equal "[FILTERED]", logged["integrity"]
+    assert_equal "en", logged["locale"]
+  end
+
   test "dwell on a card is not an answer to it" do
     progress(answers: {}, dwell: { "1" => 8000, "2" => 3000 })
     assert_response :success

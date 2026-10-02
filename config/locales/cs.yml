@@ -289,6 +289,10 @@ cs:
     gone_body: "Tvůrce toto Verto uzavřel nebo odstranil."
     unavailable_title: "Tento odkaz na výsledky není k dispozici"
     unavailable_body: "Tvůrce ho možná pozastavil nebo vypnul, nebo byla adresa zadána chybně."
+    answers_under: "Méně než %{count} odpovědí"
+    card_too_few: "Na tuto otázku odpovědělo méně než %{count} lidí, proto jsou její odpovědi na sdílených odkazech skryté."
+    too_few_title: "Zatím málo odpovědí"
+    too_few_body: "Výsledky se zde zobrazí, jakmile odpoví alespoň %{count} lidí, aby nebylo možné rozpoznat odpovědi konkrétního člověka."
   player:
     compare_promise: "Po dokončení uvidíte, jak si vaše odpovědi stojí ve srovnání s ostatními."
     region_search_placeholder: "Vyhledejte své město nebo region…"

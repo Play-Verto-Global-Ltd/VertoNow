@@ -417,6 +417,11 @@
            data-card-awards-tokens="<%= awards_tokens %>"
            <% if awards_tokens %>data-card-tokens="<%= card['tokens'].to_json %>" data-card-token-award="<%= card['token_award'].to_json %>" data-card-token-award-mode="<%= card['token_award_mode'] %>"<% end %>
            data-card-required="<%= (is_q && card['required']) ? 'true' : 'false' %>"
+           <%# The age question is a slider that opens on a band, so an
+               untouched pass would record that band as the respondent's
+               age. On this card only an answer the respondent actually gave
+               counts — see player_controller.js#_read. %>
+           <% if card['demographic'] && type == 'range' %>data-card-requires-touch="true"<% end %>
            <%# The creator's intro modal, shown over this card the first time
                the respondent arrives on it. The flag rides the wrap so the
                player can decide whether to open one without reaching into the

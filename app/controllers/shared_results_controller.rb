@@ -63,6 +63,13 @@ class SharedResultsController < ApplicationController
     # falls back to Overall like any unknown id.
     base, @segments, @active_segment = resolve_result_segments(@survey, params[:segment], @date_range, links: false)
     @overall_total = base.count
+    # The Privacy Notice's promise — no result from a group of fewer than
+    # Response::MIN_REGION_SAMPLE_SIZE — holds for the whole Verto here, not
+    # only for segments: this page is public, and "3 responses, 2 said yes" on
+    # an open link is a statement about people a reader may know. Under the
+    # line, nothing derived from the answers renders: no cards, no map, no
+    # cached summary, no report.
+    @too_few = @overall_total < Response::MIN_REGION_SAMPLE_SIZE
     @total         = @active_segment[:count]
     @aggregated    = aggregate_results(Array(@survey.cards), @active_segment[:scope])
     # Typical time to answer per question — aggregate timing, no free text,
@@ -75,7 +82,8 @@ class SharedResultsController < ApplicationController
     # a targeted pick avoids widening every viewer's request for the sake of
     # the rare report-download click.
     report_text, @cached_summary = Survey.where(id: @survey.id).pick(:results_report, :results_summary)
-    @has_report = report_text.present?
+    @has_report = report_text.present? && !too_few_for_report?
+    @cached_summary = nil if @too_few
   end
 
   # GET /results/:token/report — the same self-contained document template
@@ -83,7 +91,7 @@ class SharedResultsController < ApplicationController
   # markdown only: this action never generates a report (see class comment).
   def report
     survey = full_survey
-    return render_unavailable(:not_found) if survey.results_report.blank?
+    return render_unavailable(:not_found) if survey.results_report.blank? || too_few_for_report?
 
     render html: results_report_document(survey, survey.results_report).html_safe, layout: false
   end
@@ -93,7 +101,7 @@ class SharedResultsController < ApplicationController
   # survey before spawning a new job, so repeat clicks (or two visitors
   # reading the same link) don't each queue their own wkhtmltopdf process.
   def create_render
-    if full_survey.results_report.blank?
+    if full_survey.results_report.blank? || too_few_for_report?
       return render json: { ok: false, error: "This report hasn't been generated yet." }, status: :unprocessable_entity
     end
 
@@ -139,6 +147,13 @@ class SharedResultsController < ApplicationController
   end
 
   private
+
+  # The report is written about every answered response, whatever window the
+  # page is showing, so it is held to the floor over all of them. Checked on
+  # every path that can hand it out, not only on the page that links to it.
+  def too_few_for_report?
+    @survey.responses.where(answered: true).count < Response::MIN_REGION_SAMPLE_SIZE
+  end
 
   # without_report_text (below) excludes results_report/results_summary — a
   # deliberate cost-saving for #show, which never needs the text itself, only

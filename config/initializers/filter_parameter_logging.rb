@@ -16,5 +16,10 @@ Rails.application.config.filter_parameters += [
   # write-in and every contact field used to be printed, verbatim, into the
   # request log on each /progress and /submit. The moderator holds free text
   # out of the database until it is screened; a log copy would undo that.
-  :answers, :contact
+  :answers, :contact,
+  # How long a respondent spent on each question, and the response-integrity
+  # signals that ride the same saves. Behavioural data about one person: the
+  # request log line already carries their IP address, and a log is not where
+  # the Privacy Notice says these are kept ("stored with your response").
+  :dwell, :integrity
 ]

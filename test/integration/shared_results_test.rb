@@ -162,6 +162,7 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
 
   test "shows closed-question distributions and counts, but hides open text, other-text and contact details" do
     add_secret_response
+    add_plain_responses(MIN - 1) # the page shows nothing under the minimum group
     token = enable_share!
     delete session_path
 
@@ -274,9 +275,9 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
   # cross-feature check, proving a shared-results viewer sees wave pills too,
   # with zero SharedResultsController changes required for it.
   test "wave segments appear on the shared page too, for free" do
-    add_plain_responses(2, value: "Blue")
+    add_plain_responses(MIN, value: "Blue")
     @survey.start_next_wave!
-    add_plain_responses(3, value: "Green", wave: @survey.current_wave)
+    add_plain_responses(MIN + 1, value: "Green", wave: @survey.current_wave)
     token = enable_share!
     delete session_path
 
@@ -287,7 +288,7 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
 
     get shared_results_path(token, segment: "wave_2")
     assert_response :success
-    assert_match "3 responses", response.body # wave 2's own count, not the whole Verto's 5
+    assert_match "#{MIN + 1} responses", response.body # wave 2's own count, not the whole Verto's
   end
 
   # Custom links are the one segment kind the public page does NOT get: a
@@ -296,7 +297,7 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
   # Overall, so a guessed link_N URL shows nothing extra either.
   test "custom-link segments stay off the shared page" do
     link = @survey.survey_links.create!(name: "RA Sam", slug: "ra-sam-#{SecureRandom.hex(2)}")
-    add_plain_responses(2, value: "Blue")
+    add_plain_responses(MIN, value: "Blue")
     @survey.responses.create!(session_token: SecureRandom.uuid, status: "completed", answered: true,
                               survey_link: link, answers: { "1" => { "type" => "multiple_choice", "value" => "Green" } })
     token = enable_share!
@@ -311,11 +312,66 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
     get shared_results_path(token, segment: "link_#{link.id}")
     assert_response :success
     assert_no_match(/RA Sam/, response.body)
-    assert_match "3 responses", response.body, "falls back to Overall — every response, not the link's batch"
+    assert_match "#{MIN + 1} responses", response.body, "falls back to Overall — every response, not the link's batch"
 
     sign_in
     get survey_results_path(@survey)
     assert_match "RA Sam", response.body, "the owner's own page still has the pill"
+  end
+
+  # ── The minimum group, on a page anyone can open ───────────────────────────
+  # The Privacy Notice: no result is produced from a group of fewer than
+  # MIN_REGION_SAMPLE_SIZE. On the public page that holds for the whole Verto
+  # and for each question, not only for the segments it always covered.
+
+  test "a Verto under the minimum group shows nothing derived from its answers" do
+    add_plain_responses(MIN - 1, value: "Blue")
+    @survey.update_columns(results_report: MD, results_summary: "SUMMARY_TEXT_UNDER_FLOOR")
+    token = enable_share!
+    delete session_path
+
+    get shared_results_path(token)
+    assert_response :success
+    assert_match "Not enough responses yet", response.body
+    assert_no_match "Colour?", response.body, "no question cards at all"
+    assert_no_match "SUMMARY_TEXT_UNDER_FLOOR", response.body, "and no cached summary of them"
+    assert_no_match(/#{MIN - 1} responses/, response.body, "the count itself is withheld")
+    assert_select "a[href*='/report']", false
+    assert_select "a.seg-pill[href*='segment=']", false
+  end
+
+  test "the cached report is withheld under the minimum group on every path that hands it out" do
+    add_plain_responses(MIN - 1)
+    @survey.update_columns(results_report: MD)
+    token = enable_share!
+    delete session_path
+
+    get shared_results_report_path(token)
+    assert_response :not_found
+    post shared_results_renders_path(token)
+    assert_response :unprocessable_entity
+
+    add_plain_responses(1)
+    get shared_results_report_path(token)
+    assert_response :success, "at the floor, the report is available again"
+  end
+
+  test "a question fewer than the minimum answered is withheld even when the Verto clears it" do
+    add_plain_responses(MIN, value: "Blue")
+    # Only three people reached the open question; its card says so and no more.
+    3.times do
+      @survey.responses.create!(session_token: SecureRandom.uuid, status: "completed",
+                                answers: { "1" => { "value" => "Green" }, "2" => { "value" => "ONLY_THREE_SAID_THIS" } })
+    end
+    token = enable_share!
+    delete session_path
+
+    get shared_results_path(token)
+    assert_response :success
+    assert_match "Colour?", response.body
+    assert_select "#rc-card-2 .rc-answers", text: /Under #{MIN} answers/
+    assert_select "#rc-card-2 .rc-sub", text: /Fewer than #{MIN} people answered this question/
+    assert_select "#rc-card-1 .rc-answers", text: /#{MIN + 3} answers/
   end
 
   # ── Report: cached-only, never generates ───────────────────────────────────
@@ -329,6 +385,7 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
   end
 
   test "the report page renders cached markdown and NEVER calls the generator" do
+    add_plain_responses(MIN)
     @survey.update_columns(results_report: MD, results_report_response_count: 0)
     token = enable_share!
     delete session_path
@@ -350,6 +407,7 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
   end
 
   test "create_render builds a real PDF from the cached report via the background job" do
+    add_plain_responses(MIN)
     @survey.update_columns(results_report: MD, results_report_response_count: 0)
     token = enable_share!
     delete session_path
@@ -375,7 +433,7 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
     # count — results_report_markdown would treat this as stale and regenerate
     # for a creator's own download. A shared request must use the cached text
     # verbatim regardless.
-    add_plain_responses(3)
+    add_plain_responses(MIN)
     @survey.update_columns(results_report: MD, results_report_response_count: 999)
     token = enable_share!
     delete session_path
@@ -391,6 +449,7 @@ class SharedResultsTest < ActionDispatch::IntegrationTest
   end
 
   test "create_render dedupes: a second request while one is already running reuses it" do
+    add_plain_responses(MIN)
     @survey.update_columns(results_report: MD, results_report_response_count: 0)
     token = enable_share!
     delete session_path

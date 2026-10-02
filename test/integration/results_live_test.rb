@@ -122,9 +122,10 @@ class ResultsLiveTest < ActionDispatch::IntegrationTest
   test "a segmented view keeps its own filtered count" do
     # A broadcast carries whole-Verto totals, which would contradict a filtered
     # view — so the segmented page opts out of the live tally rather than
-    # showing a number that doesn't match its charts.
-    5.times { answered_response }
-    @survey.responses.limit(5).update_all(region_country: "GB", region_label: "London")
+    # showing a number that doesn't match its charts. Enough responses for GB
+    # to clear the small-cell line, so it is a segment to open at all.
+    Response::MIN_REGION_SAMPLE_SIZE.times { answered_response }
+    @survey.responses.update_all(region_country: "GB", region_label: "London")
     sign_in
 
     get survey_results_path(@survey, segment: "region_GB")

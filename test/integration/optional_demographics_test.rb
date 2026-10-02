@@ -9,6 +9,9 @@ require "test_helper"
 class OptionalDemographicsTest < ActionDispatch::IntegrationTest
   include ResolvesResultSegments
 
+  # The small-cell floor a segment pill must reach to be offered.
+  MIN = ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE
+
   def setup
     @org  = Organisation.create!(name: "OD", slug: "od-#{SecureRandom.hex(2)}")
     @user = User.create!(name: "U", email_address: "od-#{SecureRandom.hex(2)}@test.com",
@@ -164,11 +167,11 @@ class OptionalDemographicsTest < ActionDispatch::IntegrationTest
   end
 
   test "heritage and neurodiversity segments appear at the sample floor and overlap correctly" do
-    5.times do
+    MIN.times do
       submit!({ "4" => { "type" => "multiple_choice", "value" => "Mixed or multiple heritage" },
                 "5" => { "type" => "select_many", "value" => [ "ADHD", "Dyslexia" ] } })
     end
-    4.times { submit!({ "5" => { "type" => "select_many", "value" => [ "Autism" ] } }) }
+    (MIN - 1).times { submit!({ "5" => { "type" => "select_many", "value" => [ "Autism" ] } }) }
     @survey.responses.update_all(status: "completed")
 
     segments = result_segments(@survey, @survey.responses)
@@ -177,13 +180,13 @@ class OptionalDemographicsTest < ActionDispatch::IntegrationTest
     assert_includes ids, "heritage_mixed-or-multiple-heritage"
     assert_includes ids, "neuro_adhd"
     assert_includes ids, "neuro_dyslexia"
-    refute_includes ids, "neuro_autism", "4 responders sits under the small-cell floor"
+    refute_includes ids, "neuro_autism", "#{MIN - 1} responders sits under the small-cell floor"
 
     adhd = segments.find { |s| s[:id] == "neuro_adhd" }
     dyslexia = segments.find { |s| s[:id] == "neuro_dyslexia" }
-    assert_equal 5, adhd[:count]
-    assert_equal 5, dyslexia[:count], "a two-condition respondent belongs to both segments"
-    assert_equal 5, adhd[:scope].count
+    assert_equal MIN, adhd[:count]
+    assert_equal MIN, dyslexia[:count], "a two-condition respondent belongs to both segments"
+    assert_equal MIN, adhd[:scope].count
   end
 
   test "the results page renders the new pills" do
@@ -191,7 +194,7 @@ class OptionalDemographicsTest < ActionDispatch::IntegrationTest
     # recorded as. The pill it produces is unchanged, which is the whole reason
     # the label was kept rather than retired: these roll up with the answers
     # collected back when it was still an option.
-    5.times { submit!({ "4" => { "type" => "multiple_choice", "value" => nil, "other" => "Cornish" } }) }
+    MIN.times { submit!({ "4" => { "type" => "multiple_choice", "value" => nil, "other" => "Cornish" } }) }
     @survey.responses.update_all(status: "completed")
 
     post session_path, params: { email_address: @user.email_address, password: "verylongpassword" }

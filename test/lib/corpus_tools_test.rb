@@ -437,7 +437,11 @@ class CorpusToolsTest < ActiveSupport::TestCase
   # window. Nothing asserted its size, which is why it grew unnoticed.
 
   # A Verto whose respondents span many countries and two genders, so the
-  # indexer has real segments to write.
+  # indexer has real segments to write. Each country has exactly the cell floor
+  # (CorpusEntry.min_sample_size) of respondents, all but two "Very worried" —
+  # under it a country is suppressed and there would be nothing to break down.
+  def per_country = CorpusEntry.min_sample_size
+
   def segmented_verto(countries: 30)
     survey = @org.surveys.create!(title: "Global Pulse", theme: "Climate Action", audience_age: "all",
                                   key_insight: "x", default_locale: "en", locales: [ "en" ],
@@ -446,11 +450,11 @@ class CorpusToolsTest < ActiveSupport::TestCase
                                              "options" => [ "Very worried", "Somewhat worried", "Not worried" ] } ])
     countries.times do |c|
       code = format("%c%c", 65 + (c / 26), 65 + (c % 26))
-      6.times do |i|
+      per_country.times do |i|
         survey.responses.create!(session_token: SecureRandom.hex(8), status: "completed",
                                  region_country: code,
                                  demographic_gender: i.even? ? "female" : "male",
-                                 answers: { "0" => { "value" => i < 4 ? "Very worried" : "Not worried" } })
+                                 answers: { "0" => { "value" => i < per_country - 2 ? "Very worried" : "Not worried" } })
       end
     end
     entry = CorpusEntry.create!(survey: survey, organisation: @org, review_status: "approved",
@@ -490,8 +494,8 @@ class CorpusToolsTest < ActiveSupport::TestCase
     assert_equal 5, result[:omitted], "what is left out is stated, never silently absent"
 
     segment = result[:segments].first
-    assert_equal 6, segment[:responses]
-    assert_in_delta 66.7, segment[:answers].first[:percent], 0.1
+    assert_equal per_country, segment[:responses]
+    assert_in_delta (per_country - 2) * 100.0 / per_country, segment[:answers].first[:percent], 0.1
   end
 
   test "a breakdown cites as the question it came from" do

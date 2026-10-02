@@ -5,6 +5,9 @@ require "test_helper"
 # separate ask_region opt-in and no creator-minted region links (both
 # retired). See PlayerController#sync_region_from_answers!.
 class LocationDemographicTest < ActionDispatch::IntegrationTest
+  # The small-cell line a country must clear to be shown at all.
+  MIN = Response::MIN_REGION_SAMPLE_SIZE
+
   CARDS = [
     { "type" => "welcome_card", "title" => "hi" },
     { "type" => "yes_no", "text" => "Do you like sport?", "options" => [ "Yes", "No" ] },
@@ -158,7 +161,7 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     org = create_org_and_sign_in("agg")
     s   = create_survey(org)
 
-    5.times do |i|
+    MIN.times do |i|
       s.responses.create!(session_token: "gb-#{i}-#{SecureRandom.hex(3)}", status: "completed",
                           region_country: "GB", region_label: "Yorkshire",
                           answers: { "1" => { "type" => "yes_no", "value" => "Yes" } })
@@ -175,11 +178,11 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     assert_response :success
     data = JSON.parse(response.body)
     assert data["ok"]
-    assert_equal 7, data["total_tagged"]
+    assert_equal MIN + 2, data["total_tagged"]
     # FR (2 responders) is below Response::MIN_REGION_SAMPLE_SIZE — suppressed.
     assert_equal [ "GB" ], data["regions"].map { |r| r["country"] }
     top = data["regions"].first
-    assert_equal [ "GB", 5 ], [ top["country"], top["responders"] ]
+    assert_equal [ "GB", MIN ], [ top["country"], top["responders"] ]
     refute top.key?("label")
   end
 
@@ -187,9 +190,9 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     org = create_org_and_sign_in("agg-collapse")
     s   = create_survey(org)
 
-    # Neither label alone clears MIN_REGION_SAMPLE_SIZE (5), but together the
+    # Neither label alone clears MIN_REGION_SAMPLE_SIZE, but together the
     # country does — region display/aggregation is country-level only.
-    3.times do |i|
+    (MIN - 2).times do |i|
       s.responses.create!(session_token: "gb-yorks-#{i}-#{SecureRandom.hex(3)}", status: "completed",
                           region_country: "GB", region_label: "Yorkshire",
                           answers: { "1" => { "type" => "yes_no", "value" => "Yes" } })
@@ -207,7 +210,7 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     assert_equal 1, data["regions"].size
     row = data["regions"].first
     assert_equal "GB", row["country"]
-    assert_equal 5, row["responders"]
+    assert_equal MIN, row["responders"]
     refute row.key?("label")
   end
 
@@ -215,8 +218,8 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     org = create_org_and_sign_in("partial-region")
     s   = create_survey(org)
 
-    # 5 region-tagged responders who answered but never submitted (started)
-    5.times do |i|
+    # MIN region-tagged responders who answered but never submitted (started)
+    MIN.times do |i|
       s.responses.create!(session_token: "gb-started-#{i}-#{SecureRandom.hex(3)}", status: "started",
                           region_country: "GB", region_label: "Yorkshire",
                           answers: { "1" => { "type" => "yes_no", "value" => "Yes" } })
@@ -226,16 +229,16 @@ class LocationDemographicTest < ActionDispatch::IntegrationTest
     data = JSON.parse(response.body)
     assert data["ok"]
     assert_equal [ "GB" ], data["regions"].map { |r| r["country"] }
-    assert_equal 5, data["regions"].first["responders"]
+    assert_equal MIN, data["regions"].first["responders"]
   end
 
   test "creator results show one country segment even when respondents span sub-regions" do
     org = create_org_and_sign_in("results")
     s   = create_survey(org)
-    # Neither label alone clears MIN_REGION_SAMPLE_SIZE (5), but together the
+    # Neither label alone clears MIN_REGION_SAMPLE_SIZE, but together the
     # country does — proving sub-region labels collapse to one country
     # segment rather than each needing its own dot/pin.
-    3.times do |i|
+    (MIN - 2).times do |i|
       s.responses.create!(session_token: "r-yorks-#{i}-#{SecureRandom.hex(3)}", status: "completed",
                           region_country: "GB", region_label: "Yorkshire",
                           answers: { "1" => { "type" => "yes_no", "value" => "Yes" } })

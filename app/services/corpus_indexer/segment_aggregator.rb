@@ -6,11 +6,10 @@
 # skipped.
 #
 # The floor itself is CorpusEntry.min_sample_size, an account setting. It
-# defaults to 1 — no suppression — on this deployment, by the owner's decision:
-# every answer counts. `ASK_VERTO_MIN_CELL=30` restores the original, which is
-# stricter than the results screen's, because inside an account a segment of
-# five reveals nothing the creator cannot already see, and Ask Verto publishes
-# across an organisation boundary.
+# defaults to 10, the minimum group the Privacy Notice promises for anything
+# published (owner's decision, 2026-10-02 — it had been 1, no suppression).
+# `ASK_VERTO_MIN_CELL=30` restores the original, stricter floor, because Ask
+# Verto publishes across an organisation boundary.
 #
 # A failing cell is DROPPED, never zeroed. A published "0" is as identifying as a
 # published "1" — it says nobody in that group answered that way, which in a small

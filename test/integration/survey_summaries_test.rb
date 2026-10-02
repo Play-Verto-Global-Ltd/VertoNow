@@ -67,7 +67,7 @@ class SurveySummariesTest < ActionDispatch::IntegrationTest
     @survey.responses.create!(session_token: SecureRandom.uuid, status: "completed", answered: true,
                               region_country: "US",
                               answers: { "2" => { "type" => "open_ended", "value" => "US answer" } })
-    4.times do |i|
+    (Response::MIN_REGION_SAMPLE_SIZE - 1).times do |i|
       @survey.responses.create!(session_token: "us-pad-#{i}-#{SecureRandom.hex(2)}", status: "completed", answered: true,
                                 region_country: "US", answers: { "2" => { "type" => "open_ended", "value" => "padding #{i}" } })
     end
@@ -76,7 +76,7 @@ class SurveySummariesTest < ActionDispatch::IntegrationTest
                               answers: { "2" => { "type" => "open_ended", "value" => "GB answer" } })
     # GB needs its own padding to clear Response::MIN_REGION_SAMPLE_SIZE, on a
     # different card so it doesn't add extra open-ended texts to assert against.
-    4.times do |i|
+    (Response::MIN_REGION_SAMPLE_SIZE - 1).times do |i|
       @survey.responses.create!(session_token: "gb-pad-#{i}-#{SecureRandom.hex(2)}", status: "completed", answered: true,
                                 region_country: "GB", answers: { "1" => { "type" => "yes_no", "value" => "Yes" } })
     end

@@ -9,6 +9,9 @@ require "test_helper"
 # merge two Vertos' token piles just because both creators happened to name a
 # token "gold".
 class YouCompareWalletTest < ActionDispatch::IntegrationTest
+  # The small-cell floor both pages are held to, as the player is.
+  MIN = Response::MIN_REGION_SAMPLE_SIZE
+
   CARDS = [
     { "type" => "welcome_card", "cid" => "w", "text" => "Hello" },
     { "type" => "multiple_choice", "cid" => "q", "text" => "What would you want first?",
@@ -33,10 +36,13 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
                         player_key_digest: key ? s.player_key_digest(key) : nil)
   end
 
-  # Enough other people to clear MIN_REGION_SAMPLE_SIZE.
-  def crowd(s, n = 6, value: "Wider pavements")
+  # Enough other people to clear MIN_REGION_SAMPLE_SIZE on their own.
+  def crowd(s, n = MIN, value: "Wider pavements")
     n.times { answered(s, value: value) }
   end
+
+  # A share as the pages print it: a whole percent.
+  def pct(count, of) = "#{(count * 100.0 / of).round}%"
 
   def sign_in_with(claims)
     pl = Player.for_email("yc-#{SecureRandom.hex(4)}@test.com")
@@ -50,7 +56,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
 
   test "it shows your answer against everyone else's" do
     s = survey
-    crowd(s, 6, value: "Wider pavements")
+    crowd(s, value: "Wider pavements")
     mine = answered(s, value: "More trees")
     sign_in_with([ mine ])
 
@@ -62,9 +68,9 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     # Their own bar is marked, and only theirs.
     assert_select ".you-bar-row.is-mine", 1
     assert_select ".you-bar-row.is-mine .you-bar-label", text: "More trees"
-    # 6 of 7 chose the other option.
+    # MIN of MIN + 1 chose the other option.
     assert_select ".you-bar-row", 3
-    assert_match "86%", response.body
+    assert_match pct(MIN, MIN + 1), response.body
   end
 
   test "under the small-cell floor it refuses the comparison, exactly as the player does" do
@@ -86,7 +92,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
 
   test "the creator's comparison switch still decides, and the Verto is kept either way" do
     s = survey(show_results_comparison: false)
-    crowd(s, 8)
+    crowd(s)
     mine = answered(s, value: "More trees")
     sign_in_with([ mine ])
 
@@ -101,7 +107,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
   test "a question with no set options shows your answer without inventing a chart" do
     s = survey(cards: [ { "type" => "welcome_card", "cid" => "w", "text" => "Hi" },
                         { "type" => "open_ended", "cid" => "o", "text" => "Anything else?" } ])
-    6.times do
+    MIN.times do
       s.responses.create!(session_token: SecureRandom.uuid, status: "completed", answered: true,
                           answers: { "1" => { "type" => "open_ended", "value" => "Something" } })
     end
@@ -168,9 +174,11 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     "9" => { "type" => "open_ended", "value" => "GB|London" }
   }.freeze
 
+  # MIN others who all answered OTHERS_ANSWER, so the comparison clears the
+  # floor without the respondent's own run, plus that run (MY_ANSWER).
   def mixed_verto(**attrs)
     s = survey(cards: MIXED, **attrs)
-    6.times do
+    MIN.times do
       s.responses.create!(session_token: SecureRandom.uuid, status: "completed", answered: true,
                           completed_at: 1.day.ago, answers: OTHERS_ANSWER.deep_dup)
     end
@@ -221,9 +229,10 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     assert_equal 2, bars.count { |b| b[:mine] }, "exactly one marked bar per statement"
     no = captions[scale.index { |r| r["key"] == "no" }]
     assert_equal [ no, no ], bars.select { |b| b[:mine] }.map { |b| b[:label] }
-    # 6 of 7 said yes to the first statement — a share of that statement, not of the card.
+    # MIN of MIN + 1 said yes to the first statement — a share of that
+    # statement, not of the card.
     yes = scale.index { |r| r["key"] == "yes" }
-    assert_equal "86%", bars[yes][:pct]
+    assert_equal pct(MIN, MIN + 1), bars[yes][:pct]
   end
 
   test "a rating is drawn on its stars, with their own number marked" do
@@ -237,8 +246,8 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     assert_match "2 ★", block.at_css(".you-q-mine").text
     assert_equal (1..5).map { |i| "#{i} ★" }, bars.map { |b| b[:label] }
     assert_equal [ "2 ★" ], bars.select { |b| b[:mine] }.map { |b| b[:label] }
-    assert_equal "86%", bars.find { |b| b[:label] == "5 ★" }[:pct]
-    assert_equal "14%", bars.find { |b| b[:label] == "2 ★" }[:pct]
+    assert_equal pct(MIN, MIN + 1), bars.find { |b| b[:label] == "5 ★" }[:pct]
+    assert_equal pct(1, MIN + 1),   bars.find { |b| b[:label] == "2 ★" }[:pct]
     assert_equal "0%",  bars.find { |b| b[:label] == "1 ★" }[:pct]
   end
 
@@ -253,12 +262,12 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
       "stored as step 0, shown as the word the card gave that step"
     assert_equal %w[Low Middling High], bars_of(range).map { |b| b[:label] }
     assert_equal [ "Low" ], bars_of(range).select { |b| b[:mine] }.map { |b| b[:label] }
-    assert_equal "86%", bars_of(range).find { |b| b[:label] == "High" }[:pct]
+    assert_equal pct(MIN, MIN + 1), bars_of(range).find { |b| b[:label] == "High" }[:pct]
 
     nps = question("Would you recommend it?")
     assert_equal (0..10).map(&:to_s), bars_of(nps).map { |b| b[:label] }
     assert_equal [ "3" ], bars_of(nps).select { |b| b[:mine] }.map { |b| b[:label] }
-    assert_equal "86%", bars_of(nps).find { |b| b[:label] == "9" }[:pct]
+    assert_equal pct(MIN, MIN + 1), bars_of(nps).find { |b| b[:label] == "9" }[:pct]
   end
 
   test "a ranking shows the group's order by average position, never a percentage over 100" do
@@ -271,8 +280,11 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
 
     assert_match "Parks › Jobs › Homes", block.at_css(".you-q-mine").text
     assert_equal [ "1. Homes", "2. Jobs", "3. Parks" ], bars.map { |b| b[:label] },
-                 "6 of 7 put Homes first, so the group's order is Homes, Jobs, Parks"
-    assert_equal [ "avg 1.3", "avg 2.0", "avg 2.7" ],
+                 "MIN of MIN + 1 put Homes first, so the group's order is Homes, Jobs, Parks"
+    # Homes: MIN people put it 1st and they put it 3rd; Parks the other way round.
+    homes = (MIN * 1 + 3) / (MIN + 1.0)
+    parks = (MIN * 3 + 1) / (MIN + 1.0)
+    assert_equal [ format("avg %.1f", homes), "avg 2.0", format("avg %.1f", parks) ],
                  bars.map { |b| b[:pct] }, "the figure is the mean position, as the player prints it"
     assert bars.none? { |b| b[:mine] },
       "their answer is the WHOLE list, so marking any bar as theirs says nothing"
@@ -289,7 +301,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     bars = bars_of(question("How do you get here?"))
 
     assert_equal %w[Bike Walk], bars.select { |b| b[:mine] }.map { |b| b[:label] }.sort
-    assert_equal "86%", bars.find { |b| b[:label] == "Bus" }[:pct]
+    assert_equal pct(MIN, MIN + 1), bars.find { |b| b[:label] == "Bus" }[:pct]
   end
 
   test "a yes/no card that stores no options still gets its bars, from what was answered" do
@@ -369,9 +381,13 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
                         answers: { "1" => { "type" => "multiple_choice", "value" => "Paris" } })
   end
 
+  # MIN graded runs besides the one under test, so the score comparison clears
+  # the floor without it: one 0, two 1s, and full marks for the rest.
+  QUIZ_CROWD = ([ 0, 1, 1 ] + [ 2 ] * (MIN - 3)).freeze
+
   def quiz_verto(**attrs)
     s = survey(cards: QUIZ, quiz: true, **attrs)
-    [ 0, 1, 1, 2, 2, 2 ].each { |n| scored(s, n) }
+    QUIZ_CROWD.each { |n| scored(s, n) }
     s
   end
 
@@ -383,13 +399,19 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "#score .you-h2", text: I18n.t("player.quiz_compare_title")
-    # 7 scored: one scored 0, so 1 of 7 is below a score of 1; mean is 9/7.
+    # QUIZ_CROWD and theirs scored: one scored 0, so 1 of them all is below a
+    # score of 1; three scored 1 (two and theirs) and the rest 2.
+    total = QUIZ_CROWD.size + 1
+    twos  = QUIZ_CROWD.count(2)
+    avg   = ((QUIZ_CROWD.sum + 1).to_f / total).round(1)
     assert_select "#score .you-score-meta",
-                  text: I18n.t("js.player.quiz_compare_meta", score: 1, max: 2, beat: 14, avg: 1.3)
+                  text: I18n.t("js.player.quiz_compare_meta", score: 1, max: 2,
+                               beat: (100.0 / total).round, avg: avg)
     labels = css_select("#score .you-bar-row .you-bar-label").map { |n| n.text.strip }
     assert_equal %w[0/2 1/2 2/2], labels
     assert_equal [ "1/2" ], css_select("#score .you-bar-row.is-mine .you-bar-label").map { |n| n.text.strip }
-    assert_equal %w[14% 43% 43%], css_select("#score .you-bar-pct").map { |n| n.text.strip }
+    assert_equal [ pct(1, total), pct(3, total), pct(twos, total) ],
+                 css_select("#score .you-bar-pct").map { |n| n.text.strip }
   end
 
   test "the score is there whether or not the creator opened the answers comparison" do
@@ -419,7 +441,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
 
   test "a Verto that is not a quiz has no score card, and a run that was never graded has none" do
     plain = survey
-    crowd(plain, 6)
+    crowd(plain)
     sign_in_with([ answered(plain) ])
     get you_verto_path(plain)
     assert_select "#score", 0
@@ -453,7 +475,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
       get player_scores_path(s.publish_token)
       body = JSON.parse(response.body)
 
-      assert_equal 7, body["total"]
+      assert_equal QUIZ_CROWD.size + 1, body["total"]
       assert_equal 2, body["per_question"].size, "the per-question rates the end screen draws"
       assert_equal 3, body["distribution"].size
     end
@@ -635,7 +657,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
 
   test "a Verto whose results the creator hasn't opened says so on the list" do
     s = survey(show_results_comparison: false)
-    crowd(s, 8)
+    crowd(s)
     sign_in_with([ answered(s) ])
 
     get you_path
@@ -645,7 +667,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
   end
 
   test "a Verto below the floor names the floor and the count, not 'soon'" do
-    # 2 of 5 tells a respondent whether to come back tomorrow or never.
+    # 2 of 10 tells a respondent whether to come back tomorrow or never.
     # "Not enough yet" tells them nothing and sends them to support.
     s = survey
     crowd(s, 1)
@@ -663,7 +685,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
   test "a Verto that can be compared is not labelled at all" do
     # Opening it is the point of the row; a badge saying so is noise.
     s = survey
-    crowd(s, 8)
+    crowd(s)
     sign_in_with([ answered(s) ])
 
     get you_path
@@ -722,8 +744,8 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     thin   = survey(owner: o, theme: "Too few")
     closed = survey(owner: o, theme: "Shut", show_results_comparison: false)
     gone   = survey(owner: o, theme: "Gone", show_results_comparison: false)
-    crowd(ready, 8)
-    crowd(closed, 8)
+    crowd(ready)
+    crowd(closed)
     sign_in_with([ answered(ready), answered(thin), answered(closed), answered(gone) ])
     gone.update!(unpublished_at: Time.current)
 
@@ -918,7 +940,7 @@ class YouCompareWalletTest < ActionDispatch::IntegrationTest
     # variant so a future one cannot slip through either.
     s = survey(tokenisation_enabled: true,
                token_types: [ { "id" => "leaf", "name" => "Leaves", "icon" => "🍃" } ])
-    crowd(s, 6)
+    crowd(s)
     sign_in_with([ answered(s, tokens: { "leaf" => 12 }) ])
 
     get you_wallet_path(locale: "en-US")

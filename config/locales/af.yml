@@ -295,6 +295,10 @@ af:
     unavailable_title: "Hierdie resultateskakel is nie beskikbaar nie"
     unavailable_body: "Dit is dalk deur die skepper gepouseer of afgeskakel, of die adres is verkeerd getik."
     under_responses: "Minder as %{count} antwoorde"
+    answers_under: "Minder as %{count} antwoorde"
+    card_too_few: "Minder as %{count} mense het hierdie vraag beantwoord, dus word die antwoorde op gedeelde skakels versteek."
+    too_few_title: "Nog nie genoeg antwoorde nie"
+    too_few_body: "Resultate verskyn hier sodra minstens %{count} mense geantwoord het, sodat niemand se antwoorde uitgesonder kan word nie."
   player:
     compare_promise: "Voltooi om te sien hoe jou antwoorde met almal anders s'n vergelyk."
     region_search_placeholder: "Soek na jou stad of streek…"

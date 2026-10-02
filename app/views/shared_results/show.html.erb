@@ -26,7 +26,12 @@
           @overall_total). Always showing @overall_total here would make the
           header silently disagree with the cards it sits above the moment
           someone opens a segment=wave_2-style link. %>
-      <% if @active_segment[:id] == "overall" %>
+      <% if @too_few %>
+        <%# The count itself is withheld under the floor, as a suppressed
+            segment's is: "3 responses" next to a public link already says
+            something about a small, possibly known group. %>
+        <%= t("shared_results.under_responses", count: Response::MIN_REGION_SAMPLE_SIZE) %>
+      <% elsif @active_segment[:id] == "overall" %>
         <%= t("shared_results.total_responses", count: @overall_total) %>
       <% elsif @active_segment[:suppressed] %>
         <%# Under the small-cell line the number itself is what is withheld
@@ -51,7 +56,7 @@
 
     <%# Regions map — static, read-only tint (shared_map_controller.js), same
         #results-region-map-data JSON contract the owner's page renders. %>
-    <% region_segments = @segments.select { |s| s[:id].to_s.start_with?("region_") } %>
+    <% region_segments = @too_few ? [] : @segments.select { |s| s[:id].to_s.start_with?("region_") } %>
     <% if region_segments.any? %>
       <%
         map_data = {}
@@ -94,7 +99,7 @@
         source (ResolvesResultSegments) so small-cell suppression matches the
         owner's page exactly. Toggles, as on the owner's page: a pill adds
         itself to the selection or leaves it, and Overall is the reset. %>
-    <% if @segments.size > 1 %>
+    <% if @segments.size > 1 && !@too_few %>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 0 16px;">
         <span style="font-family:'Alata',sans-serif;font-size: var(--text-2xs);letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-right:2px;"><%= t("shared_results.view") %></span>
         <% @segments.each do |seg| %>
@@ -115,7 +120,12 @@
     <%# Same 22px between cards as the owner's feed (#results-feed) — the two
         surfaces render the same cards and should read at the same rhythm. %>
     <div style="display:flex;flex-direction:column;gap:22px;">
-      <% if @active_segment[:suppressed] %>
+      <% if @too_few %>
+        <div class="rc-card rc-suppressed" role="status">
+          <div class="rc-suppressed-title">🔒 <%= t("shared_results.too_few_title") %></div>
+          <div class="rc-suppressed-body"><%= t("shared_results.too_few_body", count: Response::MIN_REGION_SAMPLE_SIZE) %></div>
+        </div>
+      <% elsif @active_segment[:suppressed] %>
         <%= render "surveys/results_suppressed" %>
       <% else %>
         <%= render "surveys/result_cards", aggregated: @aggregated, total: @total, shared: true, dwell: @dwell %>

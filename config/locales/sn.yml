@@ -296,6 +296,10 @@ sn:
     unavailable_title: "Rinki iyi yeMhedzisiro Haiwanikwi"
     unavailable_body: "Ingangove yakamiswa kana kudzimwa nemugadziri wayo, kana kuti aderesi yakanyorwa zvisirizvo."
     under_responses: "Mhinduro dzisingasviki %{count}"
+    answers_under: "Mhinduro dziri pasi pe%{count}"
+    card_too_few: "Vanhu vari pasi pe%{count} ndivo vakapindura mubvunzo uyu, saka mhinduro dzawo dzakavanzwa pamalink akagovaniswa."
+    too_few_title: "Mhinduro hadzisati dzakakwana"
+    too_few_body: "Zvabuda zvinoratidzwa pano kana vanhu vangangoita %{count} vapindura, kuitira kuti mhinduro dzemunhu upi zvake dzisazivikanwe."
   player:
     compare_promise: "Pedzisa kuti uone kuti mhinduro dzako dzakaenzana sei nedzevamwe."
     region_search_placeholder: "Tsvaga guta rako kana dunhu rako…"

@@ -8,6 +8,9 @@ require "test_helper"
 # test/system/results_timeline_test.rb.
 class ResultsTimelineTest < ActionDispatch::IntegrationTest
   MIN = AnswerTimeline::MIN_PERIOD_ANSWERS
+  # A full day's answers: as many rounds of three Blue, two Green, one Red as
+  # it takes to clear the small-cell line.
+  PER_DAY = (MIN / 6.0).ceil * 6
 
   CARDS = [
     { "type" => "multiple_choice", "text" => "Colour?", "options" => %w[Blue Green Red] },
@@ -29,11 +32,11 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
     @link = @survey.survey_links.create!(name: "Newsletter", slug: "news-#{SecureRandom.hex(2)}")
     @tap_keys = TapScales.keys_for(CARDS[1])
 
-    # Ten days of answers, six a day — three Blue, two Green, one Red — except
-    # three days ago, which has two (under the small-cell line). Even days
-    # arrive through the named link. Noon, so nothing straddles a day.
+    # Ten days of answers, PER_DAY a day — half Blue, a third Green, a sixth
+    # Red — except three days ago, which has two (under the small-cell line).
+    # Even days arrive through the named link. Noon, so nothing straddles a day.
     10.times do |d|
-      (d == 3 ? 2 : 6).times { |i| add(d.days, i, link: d.even? ? @link : nil) }
+      (d == 3 ? 2 : PER_DAY).times { |i| add(d.days, i, link: d.even? ? @link : nil) }
     end
     # And a block from two months back, for the weekly view.
     20.times { |i| add(60.days, i) }
@@ -79,8 +82,8 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
     assert_equal "day", week["granularity"]
     assert_equal 8, week["periods"].size, "seven days ago through today"
     assert_equal Date.current.iso8601, week["periods"].last["start"]
-    assert_equal [ 3, 2, 1 ], week["periods"].last["counts"]
-    assert_equal 6, week["periods"].last["n"]
+    assert_equal [ PER_DAY / 2, PER_DAY / 3, PER_DAY / 6 ], week["periods"].last["counts"]
+    assert_equal PER_DAY, week["periods"].last["n"]
 
     all = timeline(range: "all")
     assert_equal "week", all["granularity"], "sixty-one days is past the daily span"
@@ -147,7 +150,7 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
     assert_equal from.iso8601, data["periods"].first["start"]
     assert_equal to.iso8601, data["periods"].last["start"]
     assert_equal from.iso8601, data["from"]
-    assert data["periods"].all? { |p| p["n"] == 6 }
+    assert data["periods"].all? { |p| p["n"] == PER_DAY }
 
     get survey_results_timeline_path(@survey, card_index: 0, from: to.iso8601, to: from.iso8601), as: :json
     assert_response :unprocessable_entity, "an inverted window"
@@ -163,7 +166,7 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
 
     today     = data["periods"].last
     yesterday = data["periods"][-2]
-    assert_equal 6, today["n"], "today's answers came through the link"
+    assert_equal PER_DAY, today["n"], "today's answers came through the link"
     assert yesterday["thin"], "yesterday's did not — nothing to show in this segment"
   end
 
@@ -176,11 +179,11 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
     assert_equal @tap_keys, data["series"].map { |s| s["key"] }
     assert_equal "Coffee", data["statement"]
     today = data["periods"].last
-    assert_equal 6, today["counts"].first, "everyone said the first thing about coffee"
+    assert_equal PER_DAY, today["counts"].first, "everyone said the first thing about coffee"
     assert_equal 0, today["counts"].last
 
     tea = timeline(card_index: 1, statement: "Tea", range: "7d")
-    assert_equal 6, tea["periods"].last["counts"].last, "and the last thing about tea"
+    assert_equal PER_DAY, tea["periods"].last["counts"].last, "and the last thing about tea"
 
     get survey_results_timeline_path(@survey, card_index: 1, range: "7d"), as: :json
     assert_response :unprocessable_entity
@@ -192,7 +195,7 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
 
     assert_equal (0..10).map(&:to_s), data["series"].map { |s| s["label"] }
     assert_equal 11, data["periods"].last["counts"].size
-    assert_equal 6, data["periods"].last["counts"].sum
+    assert_equal PER_DAY, data["periods"].last["counts"].sum
   end
 
   test "refuses cards without counted rows" do

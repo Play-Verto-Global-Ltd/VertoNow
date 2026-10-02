@@ -304,6 +304,10 @@ st:
     unavailable_title: "Kgokahano ena ya diphetho ha e fumanehe"
     unavailable_body: "E ka be e emisitswe kapa e timilwe ke motheha wayo, kapa aterese e ngotswe hampe."
     under_responses: "Dikarabo tse ka tlase ho %{count}"
+    answers_under: "Dikarabo tse ka tlase ho %{count}"
+    card_too_few: "Batho ba ka tlase ho %{count} ba arabile potso ena, kahoo dikarabo tsa yona di patilwe dikgokahanyong tse arolelanwang."
+    too_few_title: "Ha ho so be le dikarabo tse lekaneng"
+    too_few_body: "Diphetho di tla hlaha mona hang ha bonyane batho ba %{count} ba arabile, e le hore dikarabo tsa motho ofe kapa ofe di se ke tsa tsejwa."
   player:
     compare_promise: "Qeta ho bona kamoo dikarabo tsa hao di tshwanang le tsa ba bang."
     region_search_placeholder: "Batla toropo kapa sebaka sa hao…"

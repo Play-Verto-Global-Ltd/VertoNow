@@ -1,6 +1,9 @@
 require "test_helper"
 
 class ResultsCompareTest < ActionDispatch::IntegrationTest
+  # The small-cell line a country segment must clear to be offered.
+  MIN = Response::MIN_REGION_SAMPLE_SIZE
+
   CARDS = [
     { "type" => "welcome_card", "title" => "hi" },
     { "type" => "yes_no", "text" => "Do you like sport?", "options" => [ "Yes", "No" ] }
@@ -67,7 +70,7 @@ class ResultsCompareTest < ActionDispatch::IntegrationTest
   test "sub-region labels below the per-label threshold combine to clear country-level suppression" do
     org = create_org_and_sign_in("combine")
     s   = create_survey(org)
-    seed_region(s, "GB", "Yorkshire", 3)
+    seed_region(s, "GB", "Yorkshire", MIN - 2)
     seed_region(s, "GB", "London", 2)
 
     get survey_results_compare_path(s)
@@ -76,7 +79,7 @@ class ResultsCompareTest < ActionDispatch::IntegrationTest
     data = JSON.parse(response.body)
     region = data["segments"].find { |seg| seg["id"] == "region_GB" }
     assert region, "expected a combined GB segment"
-    assert_equal 5, region["count"]
+    assert_equal MIN, region["count"]
     assert data["aggregates"].key?("region_GB")
   end
 
@@ -95,8 +98,8 @@ class ResultsCompareTest < ActionDispatch::IntegrationTest
   test "two different countries produce two segments" do
     org = create_org_and_sign_in("two-countries")
     s   = create_survey(org)
-    seed_region(s, "US", "Austin, Texas", 5)
-    seed_region(s, "GB", "Yorkshire", 5)
+    seed_region(s, "US", "Austin, Texas", MIN)
+    seed_region(s, "GB", "Yorkshire", MIN)
 
     get survey_results_compare_path(s)
     assert_response :success
@@ -115,7 +118,8 @@ class ResultsCompareTest < ActionDispatch::IntegrationTest
     s.responses.create!(session_token: "gb-#{SecureRandom.hex(3)}", status: "completed",
                         region_country: "GB",
                         answers: { "2" => { "type" => "open_ended", "value" => "More benches please" } })
-    4.times do |i|
+    # Padding so GB clears the small-cell line and gets a segment at all.
+    (MIN - 1).times do |i|
       s.responses.create!(session_token: "gb-pad-#{i}-#{SecureRandom.hex(2)}", status: "completed",
                           region_country: "GB", answers: { "1" => { "type" => "yes_no", "value" => "Yes" } })
     end

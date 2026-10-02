@@ -25,14 +25,18 @@ class ResultsOutlineTest < ActionDispatch::IntegrationTest
         { "type" => "nps", "text" => "How likely?" }
       ]
     )
-    2.times do
+    answer!(2)
+    sign_in(@user)
+    get survey_results_path(@survey)
+    assert_response :success
+  end
+
+  def answer!(n)
+    n.times do
       @survey.responses.create!(session_token: SecureRandom.uuid, answered: true, status: "completed",
                                 answers: { "0" => { "value" => true }, "1" => { "value" => "A" },
                                            "2" => { "value" => "Some words" }, "3" => { "value" => 9 } })
     end
-    sign_in(@user)
-    get survey_results_path(@survey)
-    assert_response :success
   end
 
   def sign_in(user)
@@ -87,6 +91,9 @@ class ResultsOutlineTest < ActionDispatch::IntegrationTest
   # The rail is chrome for the owner's page. The public share page renders the
   # same cards through the same partial and must not grow one.
   test "the shared page gets the card anchors but no rail" do
+    # The public page withholds every card from a Verto answered by fewer than
+    # the minimum group, so it needs that many before there is a card to anchor.
+    answer!(Response::MIN_REGION_SAMPLE_SIZE - @survey.responses.count)
     @survey.update_columns(results_share_active: true, results_share_token: SecureRandom.hex(12))
 
     get shared_results_path(@survey.results_share_token)

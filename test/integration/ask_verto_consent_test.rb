@@ -79,10 +79,10 @@ class AskVertoConsentTest < ActionDispatch::IntegrationTest
   end
 
   test "a Verto under the sample floor is declined with a reason the creator can act on" do
-    # The floor defaults to 1 here — the owner's decision that every answer
-    # counts — so this sets it, because what is being proved is that the review
-    # queue still surfaces a blocking check as a decline reason for anyone who
-    # turns suppression back on.
+    # The floor defaults to 10, the Privacy Notice's minimum group; this sets
+    # 30 because what is being proved is that the review queue surfaces a
+    # blocking check as a decline reason whatever floor a deployment sets, and
+    # the fixture's 40 responses clear 10.
     CorpusEntry.min_sample_size = 30
     @survey.responses.limit(35).destroy_all
     sign_in

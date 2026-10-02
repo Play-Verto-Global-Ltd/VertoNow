@@ -5,6 +5,9 @@ require "test_helper"
 # everyone else (or nothing, under the small-cell line) — and never everyone
 # else's written answers, which the page itself withholds.
 class PartnershipVertoSummaryTest < ActionDispatch::IntegrationTest
+  # The small-cell line, on both sides of the comparison.
+  MIN = ComparesPartnerResults::BASELINE_MIN
+
   CARDS = [
     { "type" => "multiple_choice", "text" => "Pick", "options" => [ "Pitch", "Court" ] },
     { "type" => "open_ended", "text" => "Why?" }
@@ -48,7 +51,7 @@ class PartnershipVertoSummaryTest < ActionDispatch::IntegrationTest
 
   test "it streams a summary of the partner's respondents against everyone else's" do
     3.times { respond(@share, "Pitch", "Our own words") }
-    5.times { respond(nil, "Court", "Their words") }
+    MIN.times { respond(nil, "Court", "Their words") }
     sign_in
 
     with_fake_summariser do |calls|
@@ -59,37 +62,37 @@ class PartnershipVertoSummaryTest < ActionDispatch::IntegrationTest
       call = calls.sole
       assert_equal 3, call[:total]
       assert_equal({ "Pitch" => 3 }, call[:aggregated][0][:counts].to_h)
-      assert_equal 5, call[:baseline_total]
-      assert_equal({ "Court" => 5 }, call[:baseline][0][:counts].to_h)
+      assert_equal MIN, call[:baseline_total]
+      assert_equal({ "Court" => MIN }, call[:baseline][0][:counts].to_h)
     end
   end
 
   test "it summarises the slice the page is showing, against the same slice of everyone else" do
-    6.times { respond(@share, "Pitch", "w", gender: "female") }
-    5.times { respond(@share, "Court", "w", gender: "male") }
-    5.times { respond(nil, "Court", "w", gender: "female") }
+    (MIN + 1).times { respond(@share, "Pitch", "w", gender: "female") }
+    MIN.times { respond(@share, "Court", "w", gender: "male") }
+    MIN.times { respond(nil, "Court", "w", gender: "female") }
     3.times { respond(nil, "Pitch", "w", gender: "male") }
     sign_in
 
     with_fake_summariser do |calls|
       get partnership_partnership_verto_summary_path(@partnership, @pv, segment: "gender_female")
-      assert_equal 6, calls.last[:total]
-      assert_equal 5, calls.last[:baseline_total]
-      assert_equal({ "Court" => 5 }, calls.last[:baseline][0][:counts].to_h)
+      assert_equal MIN + 1, calls.last[:total]
+      assert_equal MIN, calls.last[:baseline_total]
+      assert_equal({ "Court" => MIN }, calls.last[:baseline][0][:counts].to_h)
 
       # Everyone else's men are three — too few to stand for anyone, so the
       # summary describes the partner's men alone.
       get partnership_partnership_verto_summary_path(@partnership, @pv, segment: "gender_male")
-      assert_equal 5, calls.last[:total]
+      assert_equal MIN, calls.last[:total]
       assert_nil calls.last[:baseline]
     end
   end
 
   test "a slice under the small-cell line is never sent to the model" do
-    # Five women and five people in the UK, but no woman in the UK: each pill
-    # is offered, and their combination is under the line.
-    5.times { respond(@share, "Pitch", "w", gender: "female", country: "ES") }
-    5.times { respond(@share, "Court", "w", gender: "male", country: "GB") }
+    # MIN women and MIN people in the UK, but no woman in the UK: each pill is
+    # offered, and their combination is under the line.
+    MIN.times { respond(@share, "Pitch", "w", gender: "female", country: "ES") }
+    MIN.times { respond(@share, "Court", "w", gender: "male", country: "GB") }
     sign_in
 
     with_fake_summariser do |calls|

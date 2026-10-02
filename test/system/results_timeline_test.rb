@@ -20,15 +20,17 @@ class ResultsTimelineTest < ApplicationSystemTestCase
       publish_token: SecureRandom.hex(8), published_at: Time.current,
       cards: [ { "type" => "multiple_choice", "text" => "Colour?", "options" => %w[Blue Green Red] } ]
     )
-    # Three weeks, six answers a day — enough in every day for a daily view
-    # to show every point, so the shape is there to click on.
+    # Three weeks, whole rounds of 3 Blue / 2 Green / 1 Red a day — enough in
+    # every day to clear the small-cell line (Response::MIN_REGION_SAMPLE_SIZE)
+    # for a daily view to show every point, so the shape is there to click on.
+    per_day = (Response::MIN_REGION_SAMPLE_SIZE / 6.0).ceil * 6
     21.times do |d|
-      6.times do |i|
+      per_day.times do |i|
         at = Time.current.utc.change(hour: 12) - d.days
         @survey.responses.create!(
           session_token: SecureRandom.uuid, status: "completed", locale: "en", answered: true,
           created_at: at, updated_at: at,
-          answers: { "0" => { "type" => "multiple_choice", "value" => %w[Blue Blue Blue Green Green Red][i] } }
+          answers: { "0" => { "type" => "multiple_choice", "value" => %w[Blue Blue Blue Green Green Red][i % 6] } }
         )
       end
     end

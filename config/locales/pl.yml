@@ -294,6 +294,10 @@ pl:
     unavailable_title: Ten link do wyników jest niedostępny
     unavailable_body: Mógł zostać wstrzymany lub wyłączony przez twórcę, albo adres został błędnie wpisany.
     under_responses: "Mniej niż %{count} odpowiedzi"
+    answers_under: "Mniej niż %{count} odpowiedzi"
+    card_too_few: "Na to pytanie odpowiedziało mniej niż %{count} osób, więc odpowiedzi są ukryte w udostępnionych linkach."
+    too_few_title: "Za mało odpowiedzi"
+    too_few_body: "Wyniki pojawią się tutaj, gdy odpowie co najmniej %{count} osób, aby nie dało się rozpoznać niczyich odpowiedzi."
   player:
     compare_promise: "Dokończ, aby zobaczyć, jak twoje odpowiedzi wypadają na tle innych."
     region_search_placeholder: "Wyszukaj swoje miasto lub region…"

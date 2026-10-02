@@ -1,6 +1,10 @@
 require "test_helper"
 
 class PartnershipFlowTest < ActionDispatch::IntegrationTest
+  # Fewer other respondents than this and the partner page draws no comparison;
+  # a slice of the partner's own under it is withheld.
+  MIN = ComparesPartnerResults::BASELINE_MIN
+
   setup do
     @admin = User.create!(name: "A", email_address: "creator@test.com", password: "verylongpassword")
     @oa = Organisation.create!(name: "Creator Co", slug: "creator-co-#{SecureRandom.hex(2)}")
@@ -115,7 +119,7 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Trial Verto", response.body
     assert_match share.share_token, response.body
-    assert_match "Fewer than 5 other people have answered yet", response.body,
+    assert_match "Fewer than #{MIN} other people have answered yet", response.body,
                  "nobody else has answered, so there is nothing to compare with"
   end
 
@@ -175,11 +179,13 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     a1_share = a1.survey_shares.first
     a2_share = a2.survey_shares.first
 
-    # 2 through a1, 5 through a2, 3 on the owner's own link
+    # 2 through a1, 5 through a2, MIN - 2 on the owner's own link — so a2's
+    # everyone else (a1's two and the owner's) is exactly the small-cell line,
+    # and a1's clears it.
     respond = ->(share, value) { survey.responses.create!(session_token: SecureRandom.urlsafe_base64(16), survey_share: share, status: "completed", answers: { "0"=>{ "value"=>value } }) }
     2.times { respond.call(a1_share, "A") }
     5.times { respond.call(a2_share, "B") }
-    3.times { respond.call(nil, "B") }
+    (MIN - 2).times { respond.call(nil, "B") }
 
     delete session_path
     sign_in partner_admin
@@ -187,13 +193,13 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
     get partnership_partnership_verto_path(a1, a1.partnership_vertos.first)
     assert_response :success
     assert_match "<strong style=\"font-family:'Alata',sans-serif;\">2</strong> from your link", response.body
-    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">8</strong> everyone else", response.body,
-                 "the other partnership's five and the owner's three"
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">#{5 + MIN - 2}</strong> everyone else", response.body,
+                 "the other partnership's five and the owner's MIN - 2"
 
     get partnership_partnership_verto_path(a2, a2.partnership_vertos.first)
     assert_response :success
     assert_match "<strong style=\"font-family:'Alata',sans-serif;\">5</strong> from your link", response.body
-    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">5</strong> everyone else", response.body
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">#{MIN}</strong> everyone else", response.body
   end
 
   # The owner's results cards, the partner's respondents on them, everyone
@@ -222,21 +228,25 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
                                answers: { "0" => { "value" => pick }, "1" => { "value" => why },
                                           "2" => { "value" => { "name" => "N", "email" => email } } })
     end
+    # Everyone else is MIN people, just enough to compare with: all but one
+    # picked Court.
     2.times { respond.call(share, "Pitch", "Our own words", "ours@example.com") }
-    4.times { respond.call(nil, "Court", "The owner's respondent wrote this", "theirs@example.com") }
+    (MIN - 1).times { respond.call(nil, "Court", "The owner's respondent wrote this", "theirs@example.com") }
     respond.call(nil, "Pitch", "The owner's respondent wrote this", "theirs@example.com")
+    court = ((MIN - 1) * 100.0 / MIN).round
+    pitch = (100.0 / MIN).round
 
     delete session_path
     sign_in partner_admin
     get partnership_partnership_verto_path(partnership, pv)
     assert_response :success
 
-    # Court: nobody here picked it, 80% of everyone else did — the row is
+    # Court: nobody here picked it, most of everyone else did — the row is
     # drawn for them anyway, with their tick and figure.
-    assert_match %r{title="Court">Court</span>\s*<span class="rc-pct">0%</span>\s*<span class="rc-vs">80%</span>}, response.body
-    assert_match %r{title="Pitch">Pitch</span>\s*<span class="rc-pct">100%</span>\s*<span class="rc-vs">20%</span>}, response.body
-    assert_select ".rc-base[style*='inset-inline-start:80%']"
-    assert_select ".rc-answers.rc-vs-n", text: "5 everyone else"
+    assert_match %r{title="Court">Court</span>\s*<span class="rc-pct">0%</span>\s*<span class="rc-vs">#{court}%</span>}, response.body
+    assert_match %r{title="Pitch">Pitch</span>\s*<span class="rc-pct">100%</span>\s*<span class="rc-vs">#{pitch}%</span>}, response.body
+    assert_select ".rc-base[style*='inset-inline-start:#{court}%']"
+    assert_select ".rc-answers.rc-vs-n", text: "#{MIN} everyone else"
 
     assert_match "Our own words", response.body, "the partner reads its own respondents"
     assert_no_match "The owner's respondent wrote this", response.body
@@ -269,10 +279,12 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
                                    answers: { "0" => { "value" => pick } })
       r.update_columns(demographic_gender: gender, region_country: country, created_at: at)
     end
-    6.times { respond.call(mine_share, "Pitch", "female", "GB") }
-    5.times { respond.call(mine_share, "Court", "male", "GB") }
-    5.times { respond.call(nil, "Court", "female", "ES") }   # the owner's women
-    3.times { respond.call(nil, "Pitch", "male", "ES") }     # the owner's men: under the line
+    # The partner's women and men each just clear the small-cell line; so do
+    # the owner's women in the last month.
+    MIN.times { respond.call(mine_share, "Pitch", "female", "GB") }
+    MIN.times { respond.call(mine_share, "Court", "male", "GB") }
+    MIN.times { respond.call(nil, "Court", "female", "ES") }   # the owner's women
+    3.times { respond.call(nil, "Pitch", "male", "ES") }       # the owner's men: under the line
     6.times { respond.call(nil, "Court", "female", "ES", at: 60.days.ago) }
 
     delete session_path
@@ -290,20 +302,20 @@ class PartnershipFlowTest < ActionDispatch::IntegrationTest
 
     # Their women against everyone else's women — not against everyone.
     get partnership_partnership_verto_path(partnership, pv, segment: "gender_female")
-    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">6</strong> from your link", response.body
-    assert_match "of 11 overall", response.body
-    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">11</strong> everyone else", response.body
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">#{MIN}</strong> from your link", response.body
+    assert_match "of #{2 * MIN} overall", response.body
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">#{MIN + 6}</strong> everyone else", response.body
     assert_match %r{title="Court">Court</span>\s*<span class="rc-pct">0%</span>\s*<span class="rc-vs">100%</span>}, response.body
 
     # Everyone else's men are three: too few to stand in for anyone, so the
     # page says so instead of quietly comparing with everybody.
     get partnership_partnership_verto_path(partnership, pv, segment: "gender_male")
-    assert_match "Fewer than 5 other people have answered yet", response.body
+    assert_match "Fewer than #{MIN} other people have answered yet", response.body
     assert_select ".rc-vs", count: 0
 
     # The date window narrows both sides: the sixty-day-old women drop out.
     get partnership_partnership_verto_path(partnership, pv, segment: "gender_female", range: "30d")
-    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">5</strong> everyone else", response.body
+    assert_match "<strong style=\"font-family:'Alata',sans-serif;\">#{MIN}</strong> everyone else", response.body
   end
 
   # Two card types tally something other than label => count, and the partner

@@ -123,11 +123,12 @@ class QuestionInsightsEndpointTest < ActionDispatch::IntegrationTest
   # The one that matters. results_summary caches on the response count alone,
   # so switching filters can replay a summary written about a different set of
   # people; this endpoint keys on the segment too, and this test is what holds
-  # that. Both segments here have the SAME number of answers, so a count-only
-  # cache would sail straight through it.
+  # that. Both segments here have the SAME number of answers — just enough for
+  # each country to clear the small-cell line and be a segment at all — so a
+  # count-only cache would sail straight through it.
   test "a different segment is read afresh rather than replayed under new numbers" do
-    5.times { answer(country: "GB", value: "Yes") }
-    5.times { answer(country: "US", value: "No") }
+    Response::MIN_REGION_SAMPLE_SIZE.times { answer(country: "GB", value: "Yes") }
+    Response::MIN_REGION_SAMPLE_SIZE.times { answer(country: "US", value: "No") }
 
     fake, calls = fake_service
     stub_method(QuestionInsights, :new, ->(*) { fake }) do
@@ -140,8 +141,8 @@ class QuestionInsightsEndpointTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal 2, calls.size
-    assert_equal({ "Yes" => 5 }, calls.first[:counts])
-    assert_equal({ "No" => 5 }, calls.last[:counts])
+    assert_equal({ "Yes" => Response::MIN_REGION_SAMPLE_SIZE }, calls.first[:counts])
+    assert_equal({ "No" => Response::MIN_REGION_SAMPLE_SIZE }, calls.last[:counts])
   end
 
   test "a new response invalidates the reading it is not counted in" do
@@ -301,7 +302,8 @@ class QuestionInsightsWhyTest < ActionDispatch::IntegrationTest
   # so it stays; the reading does not appear.
   test "the shared page keeps the Why and asks for no reading" do
     build_survey([ TAGGED ])
-    answer("0" => { "value" => "Yes" })
+    # The public page shows no card at all under the minimum group.
+    Response::MIN_REGION_SAMPLE_SIZE.times { answer("0" => { "value" => "Yes" }) }
     @survey.update_columns(results_share_active: true, results_share_token: SecureRandom.hex(12))
 
     get shared_results_path(@survey.results_share_token)

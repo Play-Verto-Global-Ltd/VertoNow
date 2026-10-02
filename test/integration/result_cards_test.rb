@@ -141,7 +141,9 @@ class ResultCardsTest < ActionDispatch::IntegrationTest
   # is what every respondent already saw, so it stays; free text does not.
   test "the shared page keeps the pictures and redacts the free text" do
     build_survey([ { "type" => "open_ended", "text" => "In your words", "image" => CARD_IMG } ])
-    answer("0" => { "value" => "Something identifying" })
+    # Answered by the minimum group: under it the public page shows no card at
+    # all, and there would be neither a picture nor free text to redact.
+    Response::MIN_REGION_SAMPLE_SIZE.times { answer("0" => { "value" => "Something identifying" }) }
     @survey.update_columns(results_share_active: true, results_share_token: SecureRandom.hex(12))
 
     get shared_results_path(@survey.results_share_token)
