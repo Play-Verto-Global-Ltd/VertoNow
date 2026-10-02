@@ -104,9 +104,11 @@ class SurveyLinksController < ApplicationController
               .group(:survey_link_id).count
     # Responders who arrived on the Verto's own link — the count for the
     # default row. Same "answered at least one question" basis as everywhere
-    # else on the dashboard.
+    # else on the dashboard. A partner's share link is not the Verto's own link
+    # either: its respondents are counted on the partnership's page, and here
+    # they would read as this account's own traffic.
     @default_responder_count =
-      @survey.responses.where(answered: true, survey_link_id: nil).count
+      @survey.responses.where(answered: true, survey_link_id: nil, survey_share_id: nil).count
   end
 
   # A checkbox can't say "inherit", so the three-state overrides are selects

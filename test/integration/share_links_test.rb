@@ -209,6 +209,27 @@ class ShareLinksTest < ActionDispatch::IntegrationTest
     assert_equal survey.id, resp.survey_id
   end
 
+  test "the Verto's own link row counts neither named links nor partner shares" do
+    org = sign_in_org("own-count")
+    survey = published_survey(org)
+    link = survey.survey_links.create!(name: "A", slug: "own-count-#{SecureRandom.hex(3)}")
+    partner = Organisation.create!(name: "P", slug: "sl-partner-#{SecureRandom.hex(3)}")
+    partnership = org.partnerships.create!(name: "Partners")
+    PartnershipMembership.join!(partnership: partnership, organisation: partner)
+    partnership.partnership_vertos.create!(survey: survey)
+    PartnershipShareSync.ensure_shares_for(partnership: partnership)
+    share = survey.survey_shares.sole
+
+    answered = ->(**via) { survey.responses.create!(session_token: SecureRandom.uuid, answers: { "1" => { "value" => "Yes" } }, **via) }
+    answered.call
+    answered.call(survey_link: link)
+    2.times { answered.call(survey_share: share) }
+
+    get share_survey_path(survey)
+    assert_response :success
+    assert_select ".share-section:first-of-type .share-section__head .share-count", text: "1 responder"
+  end
+
   # ── The player ────────────────────────────────────────────────────────────
 
   test "the player resolves a Verto by a share link's slug" do
