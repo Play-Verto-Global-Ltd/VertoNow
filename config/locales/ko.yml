@@ -224,6 +224,7 @@ ko:
     hide: "숨기기"
     show_password: "비밀번호 표시"
     hide_password: "비밀번호 숨기기"
+    social_no_player_account: "이 %{provider} 주소로 된 Playverto 계정이 아직 없어요. 계정은 Verto를 마칠 때 만들 수 있어요. Verto를 플레이하고 계정을 만들어 보세요."
   results:
     share_paused_by_admin: "관리자가 일시 중지했습니다. 다시 시작하면 링크가 다시 작동합니다."
     share_not_enabled: "아직 공유되지 않았습니다. 계정 관리자가 결과 공유를 켤 수 있습니다."
@@ -481,6 +482,9 @@ ko:
       already_played_plain: "이미 이 Verto에 참여하셨습니다 — 감사합니다."
       join_google_done_title: "Google로 이동하는 중…"
       join_use_google: "이 주소는 Google로 로그인합니다. Google 버튼을 사용해 주세요."
+      join_age_confirm: "만 %{age}세 이상입니다"
+      join_age_required: "계정은 만 %{age}세 이상만 만들 수 있어요. 확인하려면 체크박스를 선택하세요."
+      join_too_young: "계정은 만 %{age}세 이상만 만들 수 있어요."
     editor:
       delete_card_confirm: 이 카드를 삭제하시겠습니까?
       save_to_library: "브랜드 라이브러리에도 저장"

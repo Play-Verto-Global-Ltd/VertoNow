@@ -30,7 +30,7 @@ class PlayerClaimsTest < ActionDispatch::IntegrationTest
   PASSWORD = "correct-horse-battery"
 
   def join(s, password: PASSWORD, **payload)
-    post join_survey_path(s.publish_token), params: payload.merge(password: password).to_json,
+    post join_survey_path(s.publish_token), params: { age_confirmed: true }.merge(payload).merge(password: password).to_json,
          headers: { "CONTENT_TYPE" => "application/json" }
   end
 

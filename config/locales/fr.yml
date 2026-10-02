@@ -224,6 +224,7 @@ fr:
     hide: "Masquer"
     show_password: "Afficher le mot de passe"
     hide_password: "Masquer le mot de passe"
+    social_no_player_account: "Il n'existe pas encore de compte Playverto pour cette adresse %{provider}. Les comptes se créent à la fin d'un Verto — jouez-en un pour créer le vôtre."
   results:
     share_paused_by_admin: "Mis en pause par un administrateur — le lien fonctionnera de nouveau dès qu'il le réactivera."
     share_not_enabled: "Pas encore partagé — un administrateur de votre compte peut activer le partage des résultats."
@@ -481,6 +482,9 @@ fr:
       already_played_plain: "Vous avez déjà répondu à ce Verto — merci."
       join_google_done_title: "Direction Google…"
       join_use_google: "Cette adresse se connecte avec Google — utilisez plutôt le bouton Google."
+      join_age_confirm: "J'ai %{age} ans ou plus"
+      join_age_required: "Les comptes sont réservés aux personnes de %{age} ans et plus — cochez la case pour confirmer que c'est votre cas."
+      join_too_young: "Les comptes sont réservés aux personnes de %{age} ans et plus."
     editor:
       delete_card_confirm: Supprimer cette carte ?
       save_to_library: "Enregistrer aussi dans ma bibliothèque de marque"

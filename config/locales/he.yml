@@ -224,6 +224,7 @@ he:
     hide: "הסתר"
     show_password: "הצגת הסיסמה"
     hide_password: "הסתרת הסיסמה"
+    social_no_player_account: "עדיין אין חשבון Playverto לכתובת %{provider} הזו. חשבונות נוצרים בסוף Verto — שחקו אחד כדי ליצור את שלכם."
   results:
     share_paused_by_admin: "הושהה על ידי מנהל — הקישור יפעל שוב ברגע שהוא יחדש אותו."
     share_not_enabled: "עדיין לא משותף — מנהל בחשבון שלך יכול להפעיל שיתוף תוצאות."
@@ -481,6 +482,9 @@ he:
       already_played_plain: "כבר השלמת את ה-Verto הזה — תודה."
       join_google_done_title: "מעבירים אותך אל Google…"
       join_use_google: "הכתובת הזו מתחברת דרך Google — השתמשו בכפתור Google במקום."
+      join_age_confirm: "אני בן/בת %{age} ומעלה"
+      join_age_required: "חשבונות מיועדים לבני %{age} ומעלה — סמנו את התיבה כדי לאשר."
+      join_too_young: "חשבונות מיועדים לבני %{age} ומעלה."
     editor:
       delete_card_confirm: למחוק את הכרטיס הזה?
       save_to_library: "שמור גם בספריית המותג שלי"

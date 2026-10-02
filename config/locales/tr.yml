@@ -224,6 +224,7 @@ tr:
     hide: "Gizle"
     show_password: "Parolayı göster"
     hide_password: "Parolayı gizle"
+    social_no_player_account: "Bu %{provider} adresi için henüz bir Playverto hesabı yok. Hesaplar bir Verto'nun sonunda oluşturulur — kendi hesabını oluşturmak için bir tane oyna."
   results:
     share_paused_by_admin: "Bir yönetici tarafından duraklatıldı — yönetici sürdürdüğünde bağlantı yeniden çalışır."
     share_not_enabled: "Henüz paylaşılmadı — hesabınızın bir yöneticisi sonuç paylaşımını açabilir."
@@ -481,6 +482,9 @@ tr:
       already_played_plain: "Bu Verto'yu zaten tamamladınız — teşekkürler."
       join_google_done_title: "Seni Google'a götürüyoruz…"
       join_use_google: "Bu adres Google ile giriş yapıyor — bunun yerine Google düğmesini kullan."
+      join_age_confirm: "%{age} yaşında veya daha büyüğüm"
+      join_age_required: "Hesaplar %{age} yaş ve üzeri kişiler içindir — onaylamak için kutuyu işaretle."
+      join_too_young: "Hesaplar %{age} yaş ve üzeri kişiler içindir."
     editor:
       delete_card_confirm: Bu kart silinsin mi?
       save_to_library: "Marka kitaplığıma da kaydet"

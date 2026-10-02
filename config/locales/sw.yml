@@ -224,6 +224,7 @@ sw:
     hide: "Ficha"
     show_password: "Onyesha nenosiri"
     hide_password: "Ficha nenosiri"
+    social_no_player_account: "Bado hakuna akaunti ya Playverto kwa anwani hiyo ya %{provider}. Akaunti hufunguliwa mwishoni mwa Verto — cheza moja ili kufungua yako."
   results:
     share_paused_by_admin: "Imesitishwa na msimamizi — kiungo kitafanya kazi tena mara tu atakapokiendeleza."
     share_not_enabled: "Bado haijashirikiwa — msimamizi wa akaunti yako anaweza kuwasha kushiriki matokeo."
@@ -481,6 +482,9 @@ sw:
       already_played_plain: "Umeshakamilisha Verto hii — asante."
       join_google_done_title: "Tunakupeleka kwa Google…"
       join_use_google: "Anwani hiyo huingia kwa Google — tumia kitufe cha Google badala yake."
+      join_age_confirm: "Nina umri wa miaka %{age} au zaidi"
+      join_age_required: "Akaunti ni za watu wenye umri wa miaka %{age} na zaidi — weka alama kwenye kisanduku kuthibitisha."
+      join_too_young: "Akaunti ni za watu wenye umri wa miaka %{age} na zaidi."
     editor:
       delete_card_confirm: Futa kadi hii?
       save_to_library: "Hifadhi pia kwenye maktaba yangu ya chapa"

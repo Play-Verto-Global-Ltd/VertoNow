@@ -226,6 +226,7 @@ sn:
     hide: "Vanza"
     show_password: "Ratidza password"
     hide_password: "Vanza password"
+    social_no_player_account: "Hapasati pane akaundi yePlayverto yekero iyoyo ye%{provider}. Maakaundi anogadzirwa pakupera kweVerto — tamba imwe kuti ugadzire yako."
   results:
     share_paused_by_admin: "Yakamiswa nemutungamiri — chinongedzo chichashanda zvakare kana vachitangazve."
     share_not_enabled: "Haisati yagoverwa — mutungamiri weakaunti yako anogona kubatidza kugoverwa kwemhinduro."
@@ -485,6 +486,9 @@ sn:
       already_played_plain: "Wakatopedza Verto iyi kare — tinotenda."
       join_google_done_title: "Tiri kukuendesa kuGoogle…"
       join_use_google: "Kero iyoyo inopinda neGoogle — shandisa bhatani reGoogle pachinzvimbo chezvo."
+      join_age_confirm: "Ndine makore %{age} kana kupfuura"
+      join_age_required: "Maakaundi ndeevanhu vane makore %{age} zvichikwira — chongedza bhokisi kuti usimbise."
+      join_too_young: "Maakaundi ndeevanhu vane makore %{age} zvichikwira."
     editor:
       delete_card_confirm: "Bvisa kadhi iri?"
       save_to_library: "Chengetedzawo mulaibhurari yangu yechiratidzo"

@@ -55,7 +55,7 @@ class PlayerGoogleJoinTest < ActionDispatch::IntegrationTest
 
   def start_handoff(**body)
     post join_google_survey_path(@survey.publish_token),
-         params: body.to_json, headers: { "CONTENT_TYPE" => "application/json" }
+         params: { age_confirmed: true }.merge(body).to_json, headers: { "CONTENT_TYPE" => "application/json" }
     JSON.parse(response.body)
   end
 
@@ -324,7 +324,7 @@ class PlayerGoogleJoinTest < ActionDispatch::IntegrationTest
     player.verify_email!
 
     post join_survey_path(@survey.publish_token),
-         params: { email: player.email_address, password: "correct-horse-battery" }.to_json,
+         params: { email: player.email_address, password: "correct-horse-battery", age_confirmed: true }.to_json,
          headers: { "CONTENT_TYPE" => "application/json" }
 
     assert_response :unauthorized

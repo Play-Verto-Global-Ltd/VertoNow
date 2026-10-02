@@ -224,6 +224,7 @@ hi:
     hide: "छिपाएं"
     show_password: "पासवर्ड दिखाएं"
     hide_password: "पासवर्ड छिपाएं"
+    social_no_player_account: "इस %{provider} पते के लिए अभी कोई Playverto खाता नहीं है। खाते किसी Verto के अंत में बनते हैं — अपना खाता बनाने के लिए एक Verto खेलें।"
   results:
     share_paused_by_admin: "एक एडमिन ने रोक दिया है — जब वे इसे फिर से शुरू करेंगे तो लिंक फिर काम करेगा।"
     share_not_enabled: "अभी साझा नहीं किया गया — आपके खाते का कोई एडमिन परिणाम साझा करना चालू कर सकता है।"
@@ -481,6 +482,9 @@ hi:
       already_played_plain: "आप यह Verto पहले ही पूरा कर चुके हैं — धन्यवाद।"
       join_google_done_title: "आपको Google पर ले जा रहे हैं…"
       join_use_google: "यह पता Google से साइन इन करता है — इसके बजाय Google बटन का उपयोग करें।"
+      join_age_confirm: "मेरी उम्र %{age} साल या उससे ज़्यादा है"
+      join_age_required: "खाते %{age} साल और उससे ज़्यादा उम्र के लोगों के लिए हैं — पुष्टि करने के लिए बॉक्स पर टिक करें।"
+      join_too_young: "खाते %{age} साल और उससे ज़्यादा उम्र के लोगों के लिए हैं।"
     editor:
       delete_card_confirm: इस कार्ड को हटाएं?
       save_to_library: "मेरी ब्रांड लाइब्रेरी में भी सहेजें"

@@ -224,6 +224,7 @@ nl:
     hide: "Verbergen"
     show_password: "Wachtwoord tonen"
     hide_password: "Wachtwoord verbergen"
+    social_no_player_account: "Er is nog geen Playverto-account voor dat %{provider}-adres. Accounts maak je aan het eind van een Verto — speel er een om het jouwe te maken."
   results:
     share_paused_by_admin: "Gepauzeerd door een beheerder — de link werkt weer zodra die wordt hervat."
     share_not_enabled: "Nog niet gedeeld — een beheerder van je account kan het delen van resultaten inschakelen."
@@ -481,6 +482,9 @@ nl:
       already_played_plain: "Je hebt deze Verto al ingevuld — bedankt."
       join_google_done_title: "We brengen je naar Google…"
       join_use_google: "Dat adres logt in met Google — gebruik de Google-knop."
+      join_age_confirm: "Ik ben %{age} of ouder"
+      join_age_required: "Accounts zijn voor mensen van %{age} jaar en ouder — vink het vakje aan om dat te bevestigen."
+      join_too_young: "Accounts zijn voor mensen van %{age} jaar en ouder."
     editor:
       delete_card_confirm: Deze kaart verwijderen?
       save_to_library: "Ook opslaan in mijn merkbibliotheek"

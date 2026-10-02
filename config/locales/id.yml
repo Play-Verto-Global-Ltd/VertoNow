@@ -224,6 +224,7 @@ id:
     hide: "Sembunyikan"
     show_password: "Tampilkan kata sandi"
     hide_password: "Sembunyikan kata sandi"
+    social_no_player_account: "Belum ada akun Playverto untuk alamat %{provider} itu. Akun dibuat di akhir sebuah Verto — mainkan satu untuk membuat akunmu."
   results:
     share_paused_by_admin: "Dijeda oleh admin — tautan akan berfungsi lagi begitu mereka melanjutkannya."
     share_not_enabled: "Belum dibagikan — admin akun Anda dapat mengaktifkan berbagi hasil."
@@ -481,6 +482,9 @@ id:
       already_played_plain: "Anda sudah mengisi Verto ini — terima kasih."
       join_google_done_title: "Mengarahkan kamu ke Google…"
       join_use_google: "Alamat itu masuk dengan Google — pakai tombol Google saja."
+      join_age_confirm: "Saya berusia %{age} tahun atau lebih"
+      join_age_required: "Akun hanya untuk orang berusia %{age} tahun ke atas — centang kotak untuk mengonfirmasi."
+      join_too_young: "Akun hanya untuk orang berusia %{age} tahun ke atas."
     editor:
       delete_card_confirm: Hapus kartu ini?
       save_to_library: "Simpan juga ke pustaka merek saya"

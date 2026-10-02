@@ -411,6 +411,14 @@ class PlayerController < ApplicationController
     payload = { ok: true }
     payload.merge!(score: resp.score, max: resp.quiz_max) if @survey.quiz?
     payload.merge!(token_totals: resp.token_totals) if @survey.tokenisation_enabled?
+    # Whether the end-of-Verto account ask may be offered to THIS person (see
+    # AccountAge). The card is in the shared, cached page bytes, so only this
+    # per-run answer can tell the page to hide it or to ask for an age first.
+    # #join and #join_google enforce the same verdict; this is only the UI.
+    if @survey.join_prompt?
+      payload.merge!(join_age: AccountAge.verdict(resp, @survey),
+                     join_min_age: AccountAge.min_age(resp, @survey))
+    end
     render json: payload
   rescue JSON::ParserError
     render json: { ok: false, error: "Malformed request body." }, status: :bad_request
@@ -790,6 +798,9 @@ class PlayerController < ApplicationController
     return render json: { ok: false }, status: :not_found unless @survey
     return render json: { ok: false, error: "This Verto is no longer available." }, status: :gone unless @survey.playable?
     return render json: { ok: false, error: "unavailable" }, status: :forbidden unless @survey.join_prompt?
+    if (refusal = join_age_refusal)
+      return render json: { ok: false, error: refusal }, status: :forbidden
+    end
 
     email    = params[:email].to_s.strip.downcase.first(Player::MAX_EMAIL)
     password = params[:password].to_s
@@ -863,6 +874,9 @@ class PlayerController < ApplicationController
     return render json: { ok: false, error: "This Verto is no longer available." }, status: :gone unless @survey.playable?
     return render json: { ok: false, error: "unavailable" }, status: :forbidden unless @survey.join_prompt?
     return render json: { ok: false, error: "unavailable" }, status: :forbidden unless SocialAuth.player_enabled?
+    if (refusal = join_age_refusal)
+      return render json: { ok: false, error: refusal }, status: :forbidden
+    end
 
     # The language they were playing in, twice over: on the row, so the account
     # this ends in is created in it (remember_play_locale's job on the other
@@ -1273,6 +1287,25 @@ class PlayerController < ApplicationController
     end
 
     claims.uniq { |c| c["response_id"] }
+  end
+
+  # The Privacy Notice's minimum age for an account (AccountAge), checked
+  # against the run just finished. nil when the person may go ahead; else the
+  # error key the card shows. A run with no age on record needs the card's
+  # "I'm N or older" box ticked. A run that recorded an age below the minimum
+  # is refused outright, ticked or not: the box declares an age, it cannot
+  # overrule the one they gave a minute ago.
+  #
+  # The run is looked up by session_token, which every join already sends to
+  # claim it. One that isn't stored (yet) is :unknown, like a skipped age card.
+  def join_age_refusal
+    token = params[:session_token].to_s
+    resp  = token.present? ? @survey.responses.find_by(session_token: token) : nil
+    case AccountAge.verdict(resp, @survey)
+    when :eligible  then nil
+    when :too_young then "too_young"
+    else ActiveModel::Type::Boolean.new.cast(params[:age_confirmed]) ? nil : "age_confirm"
+    end
   end
 
   # load_survey_and_share's four-way resolution without the instance variables:

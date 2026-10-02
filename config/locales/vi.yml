@@ -224,6 +224,7 @@ vi:
     hide: "Ẩn"
     show_password: "Hiện mật khẩu"
     hide_password: "Ẩn mật khẩu"
+    social_no_player_account: "Chưa có tài khoản Playverto nào cho địa chỉ %{provider} đó. Tài khoản được tạo ở cuối một Verto — hãy chơi một Verto để tạo tài khoản của bạn."
   results:
     share_paused_by_admin: "Đã bị quản trị viên tạm dừng — liên kết sẽ hoạt động trở lại khi họ tiếp tục."
     share_not_enabled: "Chưa được chia sẻ — quản trị viên của tài khoản bạn có thể bật chia sẻ kết quả."
@@ -481,6 +482,9 @@ vi:
       already_played_plain: "Bạn đã hoàn thành Verto này rồi — cảm ơn bạn."
       join_google_done_title: "Đang đưa bạn đến Google…"
       join_use_google: "Địa chỉ đó đăng nhập bằng Google — hãy dùng nút Google."
+      join_age_confirm: "Tôi từ %{age} tuổi trở lên"
+      join_age_required: "Tài khoản dành cho người từ %{age} tuổi trở lên — đánh dấu vào ô để xác nhận."
+      join_too_young: "Tài khoản dành cho người từ %{age} tuổi trở lên."
     editor:
       delete_card_confirm: Xóa thẻ này?
       save_to_library: "Cũng lưu vào thư viện thương hiệu của tôi"

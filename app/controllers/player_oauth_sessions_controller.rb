@@ -24,8 +24,20 @@ class PlayerOauthSessionsController < ApplicationController
     email = verified_email(auth)
     return redirect_unverified if email.nil?
 
-    player  = locate_or_create_player!(auth, email)
-    handoff = spend_handoff
+    # Looked at BEFORE the account, because it decides whether one may be
+    # made. A handoff is minted only once PlayerController#join_google has let
+    # the run through its minimum-age check (AccountAge), so one parked by this
+    # browser — live, expired or already spent — means that check was passed.
+    # Without one this is the bare "Continue with Google" on /you, which may
+    # sign an existing account in but must not open a new one: it never asked
+    # an age, and the Privacy Notice says accounts are not available under 16.
+    # New accounts start at the end of a Verto, where the age is known or
+    # declared.
+    handoff_id = session.delete(:player_oauth_handoff_id)
+    age_passed = handoff_id.present? && PlayerOauthHandoff.exists?(id: handoff_id)
+    handoff    = spend_handoff(handoff_id)
+    player     = locate_or_create_player!(auth, email, may_create: age_passed)
+    return redirect_no_account if player.nil?
 
     # Google has asserted the address, which is strictly better proof than the
     # emailed link this card was built around: that one proves somebody can
@@ -63,11 +75,16 @@ class PlayerOauthSessionsController < ApplicationController
   # been verified — that is what makes "sign in with Google" find the account
   # somebody previously made with that address and a password, rather than
   # silently starting a second one beside it.
-  def locate_or_create_player!(auth, email)
+  #
+  # nil when there is no account to find and may_create is false.
+  def locate_or_create_player!(auth, email, may_create:)
     identity = PlayerIdentity.find_or_initialize_by(provider: auth.provider.to_s, uid: auth.uid.to_s)
     name     = auth.info&.name.to_s.strip.presence
 
-    player = identity.player || Player.find_by(email_address: email) || create_player!(email, name)
+    player = identity.player || Player.find_by(email_address: email)
+    return nil if player.nil? && !may_create
+
+    player ||= create_player!(email, name)
     # The name is the provider's to refresh, but it must not overwrite one the
     # respondent set themselves on /you.
     player.update_column(:name, name) if name && player.name.blank?
@@ -93,8 +110,7 @@ class PlayerOauthSessionsController < ApplicationController
   # the sign-in itself untouched, because being signed in is worth more than the
   # one run that brought them here — and that run is reclaimable by playing it
   # again.
-  def spend_handoff
-    id = session.delete(:player_oauth_handoff_id)
+  def spend_handoff(id)
     return nil if id.blank?
 
     handoff = PlayerOauthHandoff.live.find_by(id: id)
@@ -115,6 +131,11 @@ class PlayerOauthSessionsController < ApplicationController
   def redirect_failed
     redirect_to new_player_session_path,
                 alert: t("auth.social_failed", provider: SocialAuth.label_for(:google_player))
+  end
+
+  def redirect_no_account
+    redirect_to new_player_session_path,
+                alert: t("auth.social_no_player_account", provider: SocialAuth.label_for(:google_player))
   end
 
   def redirect_unverified

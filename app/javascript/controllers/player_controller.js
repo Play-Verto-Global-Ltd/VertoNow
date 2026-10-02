@@ -23,7 +23,9 @@ const JOIN_ERRORS = {
   credentials:    "player.join_credentials",
   too_many:       "player.join_too_many",
   unavailable:    "player.join_unavailable",
-  use_google:     "player.join_use_google"
+  use_google:     "player.join_use_google",
+  too_young:      "player.join_too_young",
+  age_confirm:    "player.join_age_required"
 }
 
 // Cards that ask for agreement rather than an answer, and drive their own
@@ -84,6 +86,7 @@ export default class extends Controller {
                     "scoreChip", "quizScore", "scoresList", "scoresMeta",
                     "tokenScoreChip", "tokenScore", "leaderboard", "fontScaleBtn",
                     "joinBlock", "joinAsk", "joinAlso", "joinAlsoBox", "joinAlsoLabel",
+                    "joinAge", "joinAgeBox", "joinAgeLabel",
                     "joinEmbedded", "joinEmail", "joinPassword", "joinBtn", "joinGoogleBtn",
                     "joinError", "joinDone", "joinReveal", "joinForm",
                     "testConfirm"]
@@ -206,6 +209,10 @@ export default class extends Controller {
   // themselves, keyed by token type id.
   _tokenLocked = new Set()
   _tokenTotals = {}
+  // The account-ask verdict from submit ("eligible" / "too_young" / "unknown")
+  // and the minimum age it was judged against — see _renderJoinState.
+  _joinAge = null
+  _joinMinAge = 16
 
   // Card indices the respondent has actually interacted with — see
   // _markTouched for why the Next button's glow needs this and _read doesn't.
@@ -1730,6 +1737,12 @@ export default class extends Controller {
       if (this.quizValue && data && typeof data.score === "number") {
         this._quizScore = data.score
         if (typeof data.max === "number") this._quizMax = data.max
+      }
+      // May this person be offered an account (AccountAge, Privacy Notice
+      // §15)? Only the server knows the age and country this run recorded.
+      if (data && data.join_age) {
+        this._joinAge = data.join_age
+        this._joinMinAge = data.join_min_age
       }
       // Trust the server's final token totals over the running client tally.
       if (this.tokenisationValue && data && data.token_totals && typeof data.token_totals === "object") {
@@ -3754,7 +3767,18 @@ export default class extends Controller {
   // offer would say otherwise.
   _renderJoinState(rejected = false) {
     if (!this.hasJoinBlockTarget || !this.joinUrlValue || rejected) return
+    // No verdict (the submit was queued offline, so the run isn't stored) or
+    // the run recorded an age under the minimum: no account ask at all. A
+    // card that only refuses on submit would be an ask we can't keep.
+    if (this._joinAge !== "eligible" && this._joinAge !== "unknown") return
     this.joinBlockTarget.classList.remove("hidden")
+
+    // No age on record: the person says whether they meet the minimum, the
+    // one thing the server will take in place of an age card's answer.
+    if (this._joinAge === "unknown" && this.hasJoinAgeTarget) {
+      this.joinAgeLabelTarget.textContent = t("player.join_age_confirm", { age: this._joinMinAge })
+      this.joinAgeTarget.classList.remove("hidden")
+    }
 
     const others = this._joinDeviceKeys().filter(d => d.token !== this._playToken())
     if (this._embedded()) {
@@ -3811,6 +3835,8 @@ export default class extends Controller {
       return
     }
 
+    if (!this._joinAgeOk()) return
+
     const wanted = this.hasJoinAlsoBoxTarget && this.joinAlsoBoxTarget.checked
     this._joinSending = true
     if (this.hasJoinBtnTarget) this.joinBtnTarget.disabled = true
@@ -3824,6 +3850,7 @@ export default class extends Controller {
           password,
           session_token: this._sessionToken || null,
           lang: this.localeValue || null,
+          age_confirmed: this._joinAgeConfirmed(),
           device_keys: wanted ? this._joinDeviceKeys() : []
         })
       })
@@ -3839,7 +3866,7 @@ export default class extends Controller {
         return
       }
       this._joinError(t(JOIN_ERRORS[data?.error] || "player.join_failed",
-                        { count: JOIN_MIN_PASSWORD }))
+                        { count: JOIN_MIN_PASSWORD, age: this._joinMinAge }))
     } catch (_e) {
       this._joinError(t("player.join_failed"))
     } finally {
@@ -3864,6 +3891,7 @@ export default class extends Controller {
   async joinGoogle(event) {
     event?.preventDefault()
     if (!this.joinGoogleUrlValue || this._joinSending) return
+    if (!this._joinAgeOk()) return
 
     const wanted = this.hasJoinAlsoBoxTarget && this.joinAlsoBoxTarget.checked
     this._joinSending = true
@@ -3876,6 +3904,7 @@ export default class extends Controller {
         body: JSON.stringify({
           session_token: this._sessionToken || null,
           lang: this.localeValue || null,
+          age_confirmed: this._joinAgeConfirmed(),
           device_keys: wanted ? this._joinDeviceKeys() : []
         })
       })
@@ -3889,7 +3918,7 @@ export default class extends Controller {
         return
       }
       this._joinError(t(JOIN_ERRORS[data?.error] || "player.join_failed",
-                        { count: JOIN_MIN_PASSWORD }))
+                        { count: JOIN_MIN_PASSWORD, age: this._joinMinAge }))
     } catch (_e) {
       this._joinError(t("player.join_failed"))
     } finally {
@@ -3913,6 +3942,22 @@ export default class extends Controller {
         `<div class="join-sent-title">${this._esc(t(titleKey))}</div>`
     }
     window.location.assign(next)
+  }
+
+  // The age box, when the card is showing it, must be ticked before either
+  // way in (the server refuses it unticked, so this only saves the trip).
+  _joinAgeOk() {
+    if (!this._joinAgeAsked() || this._joinAgeConfirmed()) return true
+    this._joinError(t("player.join_age_required", { age: this._joinMinAge }))
+    return false
+  }
+
+  _joinAgeAsked() {
+    return this.hasJoinAgeTarget && !this.joinAgeTarget.classList.contains("hidden")
+  }
+
+  _joinAgeConfirmed() {
+    return this._joinAgeAsked() && this.joinAgeBoxTarget.checked
   }
 
   _joinError(message) {

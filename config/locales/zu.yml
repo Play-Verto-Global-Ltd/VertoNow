@@ -232,6 +232,7 @@ zu:
     hide: "Fihla"
     show_password: "Bonisa iphasiwedi"
     hide_password: "Fihla iphasiwedi"
+    social_no_player_account: "Alikho i-akhawunti ye-Playverto yaleli kheli le-%{provider} okwamanje. Ama-akhawunti enziwa ekupheleni kwe-Verto — dlala eyodwa ukuze wenze eyakho."
   results:
     share_paused_by_admin: "Imiswe okwesikhashana ngumphathi — isixhumanisi sizosebenza futhi lapho esiqhubeka."
     share_not_enabled: "Akukabelwana ngakho okwamanje — umphathi we-akhawunti yakho angavula ukwabelana ngemiphumela."
@@ -495,6 +496,9 @@ zu:
       already_played_plain: "Usuyiqedile le Verto — siyabonga."
       join_google_done_title: "Sikuyisa kuGoogle…"
       join_use_google: "Leyo keli ingena ngeGoogle — sebenzisa inkinobho yeGoogle esikhundleni salokho."
+      join_age_confirm: "Ngineminyaka engu-%{age} noma ngaphezulu"
+      join_age_required: "Ama-akhawunti awabantu abaneminyaka engu-%{age} nangaphezulu — khetha ibhokisi ukuqinisekisa."
+      join_too_young: "Ama-akhawunti awabantu abaneminyaka engu-%{age} nangaphezulu."
     editor:
       delete_card_confirm: "Susa leli khadi?"
       save_to_library: "Londoloza futhi kulayibrari yami yamabhrendi"

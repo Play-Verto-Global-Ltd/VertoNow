@@ -225,6 +225,7 @@ af:
     hide: "Versteek"
     show_password: "Wys wagwoord"
     hide_password: "Versteek wagwoord"
+    social_no_player_account: "Daar is nog geen Playverto-rekening vir daardie %{provider}-adres nie. Rekeninge word aan die einde van 'n Verto geskep — speel een om joune te skep."
   results:
     share_paused_by_admin: "Deur 'n admin onderbreek — die skakel werk weer sodra hulle dit hervat."
     share_not_enabled: "Nog nie gedeel nie — 'n admin van jou rekening kan resultate-deling aanskakel."
@@ -482,6 +483,9 @@ af:
       already_played_plain: "Jy het hierdie Verto reeds voltooi — dankie."
       join_google_done_title: "Ons neem jou na Google…"
       join_use_google: "Daardie adres meld met Google aan — gebruik eerder die Google-knoppie."
+      join_age_confirm: "Ek is %{age} of ouer"
+      join_age_required: "Rekeninge is vir mense van %{age} en ouer — merk die blokkie om dit te bevestig."
+      join_too_young: "Rekeninge is vir mense van %{age} en ouer."
     editor:
       delete_card_confirm: "Vee hierdie kaart uit?"
       save_to_library: "Stoor ook in my handelsmerkbiblioteek"

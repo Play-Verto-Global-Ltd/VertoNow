@@ -26,7 +26,7 @@ class PlayerEmailConfirmationTest < ActionDispatch::IntegrationTest
   def address = "pec-#{SecureRandom.hex(4)}@test.com"
 
   def join(s, email:, password: PASSWORD)
-    post join_survey_path(s.publish_token), params: { email: email, password: password }.to_json,
+    post join_survey_path(s.publish_token), params: { email: email, password: password, age_confirmed: true }.to_json,
          headers: { "CONTENT_TYPE" => "application/json" }
   end
 
@@ -227,7 +227,7 @@ class PlayerEmailConfirmationTest < ActionDispatch::IntegrationTest
     s.responses.create!(session_token: (token = SecureRandom.uuid), status: "completed", answered: true)
     email = address
     post join_survey_path(s.publish_token),
-         params: { email: email, password: PASSWORD, session_token: token }.to_json,
+         params: { email: email, password: PASSWORD, session_token: token, age_confirmed: true }.to_json,
          headers: { "CONTENT_TYPE" => "application/json" }
     post JSON.parse(response.body)["next"]
     pl = Player.find_by(email_address: email)

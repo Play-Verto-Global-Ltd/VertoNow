@@ -49,6 +49,17 @@
         <span data-player-target="joinAlsoLabel"></span>
       </label>
 
+      <%# Accounts are for 16s and over (18 in some countries) — Privacy Notice
+          §15, AccountAge. Shown only when this run recorded no age, so the
+          person declares it; a run whose age is under the minimum never shows
+          the card at all. The label carries the minimum, which depends on the
+          run's country, so it is written by the controller, not here.
+          Unticked by default: it is a statement they make, not one we make. %>
+      <label class="join-also join-age hidden" data-player-target="joinAge">
+        <input type="checkbox" data-player-target="joinAgeBox" data-action="change->player#joinTyped">
+        <span data-player-target="joinAgeLabel"></span>
+      </label>
+
       <%# Embedded in a third-party page, localStorage is partitioned or blocked
           outright, so this browser can see nothing it played elsewhere. Said
           plainly rather than silently offering less. %>

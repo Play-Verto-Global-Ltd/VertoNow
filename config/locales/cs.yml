@@ -219,6 +219,7 @@ cs:
     confirm_new_password: "Potvrďte nové heslo"
     repeat_new_password: "Zopakujte nové heslo"
     set_submit: "Uložit nové heslo"
+    social_no_player_account: "Pro tuto adresu %{provider} zatím neexistuje žádný účet Playverto. Účty se zakládají na konci Verta — zahrajte si jedno a založte si ho."
   results:
     share_paused_by_admin: "Pozastaveno správcem – odkaz začne znovu fungovat, jakmile ho správce obnoví."
     share_not_enabled: "Zatím nesdíleno – sdílení výsledků může zapnout správce vašeho účtu."
@@ -526,6 +527,9 @@ cs:
       leaderboard_empty: "Buďte v žebříčku první!"
       already_played: "Toto Verto jste už hráli – takhle teď vypadá žebříček."
       already_played_plain: "Toto Verto jste už vyplnili – děkujeme."
+      join_age_confirm: "Je mi %{age} let nebo víc"
+      join_age_required: "Účty jsou pro lidi od %{age} let — zaškrtnutím políčka to potvrďte."
+      join_too_young: "Účty jsou pro lidi od %{age} let."
     editor:
       delete_card_confirm: "Smazat tuto kartu?"
       save_to_library: "Uložit také do mé knihovny značky"

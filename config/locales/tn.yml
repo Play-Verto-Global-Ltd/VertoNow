@@ -234,6 +234,7 @@ tn:
     hide: "Fitlha"
     show_password: "Bontsha phasewete"
     hide_password: "Fitlha phasewete"
+    social_no_player_account: "Ga go ise go nne le akhaonto ya Playverto ya aterese eo ya %{provider}. Diakhaonto di dirwa kwa bofelong jwa Verto — tshameka nngwe go dira ya gago."
   results:
     share_paused_by_admin: "E emisitswe ke motsamaisi — kgokelo e tla dira gape fela fa a e tswelela."
     share_not_enabled: "Ga e ise e abelanwe — motsamaisi wa akhaonto ya gago a ka bulela go abelana dipholo."
@@ -497,6 +498,9 @@ tn:
       already_played_plain: "O setse o feditse Verto e — re a leboga."
       join_google_done_title: "Re go isa kwa Google…"
       join_use_google: "Aterese eo e tsena ka Google — dirisa konopo ya Google mo boemong jwa moo."
+      join_age_confirm: "Ke na le dingwaga di le %{age} kgotsa go feta"
+      join_age_required: "Diakhaonto ke tsa batho ba dingwaga di le %{age} le go feta — tshwaya lebokoso go netefatsa."
+      join_too_young: "Diakhaonto ke tsa batho ba dingwaga di le %{age} le go feta."
     editor:
       delete_card_confirm: "Phimola karata e?"
       save_to_library: "Boloka gape mo laeboraring ya me ya letshwao"

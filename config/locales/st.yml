@@ -234,6 +234,7 @@ st:
     hide: "Pata"
     show_password: "Bontsha phasewete"
     hide_password: "Pata phasewete"
+    social_no_player_account: "Ha ho na akhaonte ya Playverto bakeng sa aterese eo ya %{provider} hajoale. Diakhaonte di etswa qetellong ya Verto — bapala e le nngwe ho etsa ya hao."
   results:
     share_paused_by_admin: "E emisitswe ke motsamaisi — sehokelo se tla sebetsa hape hang ha a se tsosolosa."
     share_not_enabled: "Ha e so arolelanwe — motsamaisi wa akhaonto ya hao a ka bulela ho arolelana diphetho."
@@ -497,6 +498,9 @@ st:
       already_played_plain: "O se o phethile Verto ena — rea leboha."
       join_google_done_title: "Re u isa ho Google…"
       join_use_google: "Aterese eo e kena ka Google — sebelisa konopo ea Google ho e-na le hoo."
+      join_age_confirm: "Ke na le dilemo tse %{age} kapa ho feta"
+      join_age_required: "Diakhaonte ke tsa batho ba dilemo tse %{age} le ho feta — tshwaya lebokose ho netefatsa."
+      join_too_young: "Diakhaonte ke tsa batho ba dilemo tse %{age} le ho feta."
     editor:
       delete_card_confirm: "Hlakola karete ena?"
       save_to_library: "Boloka hape polokelong ya letshwao la ka"

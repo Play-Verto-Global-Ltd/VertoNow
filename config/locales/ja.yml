@@ -224,6 +224,7 @@ ja:
     hide: "非表示"
     show_password: "パスワードを表示する"
     hide_password: "パスワードを非表示にする"
+    social_no_player_account: "この%{provider}アドレスのPlayvertoアカウントはまだありません。アカウントはVertoの最後に作成できます。Vertoをプレイして作成してください。"
   results:
     share_paused_by_admin: "管理者によって一時停止中です。再開されるとリンクは再び有効になります。"
     share_not_enabled: "まだ共有されていません。アカウントの管理者が結果の共有を有効にできます。"
@@ -481,6 +482,9 @@ ja:
       already_played_plain: "このVertoにはすでに回答済みです — ありがとうございました。"
       join_google_done_title: "Google に移動しています…"
       join_use_google: "このアドレスは Google でサインインします。Google のボタンをお使いください。"
+      join_age_confirm: "%{age}歳以上です"
+      join_age_required: "アカウントは%{age}歳以上の方が対象です。チェックを入れて確認してください。"
+      join_too_young: "アカウントは%{age}歳以上の方が対象です。"
     editor:
       delete_card_confirm: このカードを削除しますか？
       save_to_library: "ブランドライブラリにも保存"

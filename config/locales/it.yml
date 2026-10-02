@@ -224,6 +224,7 @@ it:
     hide: "Nascondi"
     show_password: "Mostra la password"
     hide_password: "Nascondi la password"
+    social_no_player_account: "Non esiste ancora un account Playverto per questo indirizzo %{provider}. Gli account si creano alla fine di un Verto: giocane uno per creare il tuo."
   results:
     share_paused_by_admin: "In pausa per scelta di un amministratore: il link tornerà a funzionare quando lo riattiverà."
     share_not_enabled: "Non ancora condiviso: un amministratore del tuo account può attivare la condivisione dei risultati."
@@ -481,6 +482,9 @@ it:
       already_played_plain: "Hai già completato questo Verto — grazie."
       join_google_done_title: "Ti portiamo su Google…"
       join_use_google: "Quell'indirizzo accede con Google: usa il pulsante Google."
+      join_age_confirm: "Ho %{age} anni o più"
+      join_age_required: "Gli account sono per persone dai %{age} anni in su: spunta la casella per confermarlo."
+      join_too_young: "Gli account sono per persone dai %{age} anni in su."
     editor:
       delete_card_confirm: Eliminare questa carta?
       save_to_library: "Salva anche nella mia libreria del brand"

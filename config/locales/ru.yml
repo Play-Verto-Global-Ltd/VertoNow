@@ -224,6 +224,7 @@ ru:
     hide: "Скрыть"
     show_password: "Показать пароль"
     hide_password: "Скрыть пароль"
+    social_no_player_account: "Для этого адреса %{provider} ещё нет аккаунта Playverto. Аккаунты создаются в конце Verto — пройдите его, чтобы создать свой."
   results:
     share_paused_by_admin: "Приостановлено администратором — ссылка снова заработает, когда он её возобновит."
     share_not_enabled: "Пока не опубликовано — администратор вашего аккаунта может включить доступ к результатам."
@@ -481,6 +482,9 @@ ru:
       already_played_plain: "Вы уже прошли этот Verto — спасибо."
       join_google_done_title: "Переходим в Google…"
       join_use_google: "Этот адрес входит через Google — воспользуйтесь кнопкой Google."
+      join_age_confirm: "Мне %{age} лет или больше"
+      join_age_required: "Аккаунты доступны с %{age} лет — отметьте поле, чтобы подтвердить это."
+      join_too_young: "Аккаунты доступны с %{age} лет."
     editor:
       delete_card_confirm: Удалить эту карточку?
       save_to_library: "Также сохранить в библиотеку бренда"
