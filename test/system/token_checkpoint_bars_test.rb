@@ -124,6 +124,46 @@ class TokenCheckpointBarsTest < ApplicationSystemTestCase
     end
   end
 
+  # "I need to be able to scroll on this card." A bar per token, as many as the
+  # creator defines, under a title and a pill — on a laptop the last of four
+  # went past the card's edge, and the panel clipped it with no scroll path.
+  test "a checkpoint taller than the card scrolls to its last bar" do
+    many = %w[nature time money comfort health fun].map.with_index do |id, i|
+      { "id" => id, "name" => id.capitalize, "icon" => %w[🐝 ⏰ 🏦 🛋️ 💪 🎉][i] }
+    end
+    deck!({ "Both" => many.to_h { |t| [ t["id"], 5 ] } },
+          note: "Here's how your decisions are adding up so far, across everything you chose.")
+    @survey.update!(token_types: many)
+
+    page.driver.browser.resize(width: 1280, height: 640)
+    visit play_survey_path(@survey.publish_token)
+    dismiss_cookie_banner
+    find(".preview-card.active .pick-item", text: "Both").click
+    find(".preview-btn-next").click
+    assert_selector ".preview-card.active .token-checkpoint-row", count: 6
+    settle_fills!
+
+    reach = page.evaluate_script(<<~JS)
+      (() => {
+        const card  = document.querySelector(".preview-card.active")
+        const box   = card.querySelector(".split-right > .mt-2")
+        const panel = card.querySelector(".split-right")
+        const rows  = card.querySelectorAll(".token-checkpoint-row")
+        const edge  = () => panel.getBoundingClientRect().bottom - rows[rows.length - 1].getBoundingClientRect().bottom
+        const before = edge()
+        box.scrollTop = box.scrollHeight
+        return { before: Math.round(before), gap: Math.round(edge()) }
+      })()
+    JS
+
+    assert_operator reach["before"], :<, 0,
+                    "the bars fitted at 1280x640, so this proves nothing — add tokens until they don't"
+    assert_operator reach["gap"], :>=, 0,
+                    "scrolled to the bottom, the last bar is still #{-reach["gap"]}px past the card's edge"
+  ensure
+    page.driver.browser.resize(width: 1280, height: 900)
+  end
+
   test "the bars are decorative — the number beside them is the announcement" do
     deck!({ "Both" => { "gold" => 10, "lives" => 5 } })
     reach_checkpoint!("Both")
