@@ -43,8 +43,9 @@ module CorpusChecks
       pii_options(cards),
       free_text(cards),
       contact_forms(cards),
-      question_count(cards)
-    ]
+      question_count(cards),
+      integrity(survey)
+    ].compact
   end
 
   def sample_size(answered_count)
@@ -108,6 +109,29 @@ module CorpusChecks
     else
       Check.new(key: :question_count, status: :fail,
                 label: "No questions in this Verto can be cited — nothing to add to Ask Verto.")
+    end
+  end
+
+  # The Commons' 70% rule (ResponseIntegrity.commons_eligible?): at least that
+  # share of a Verto's scored responses High or Medium. No check at all while
+  # scores are in shadow mode — a reviewer must not be shown, or a creator
+  # declined over, a number nobody has tuned yet.
+  def integrity(survey)
+    return nil unless ResponseIntegrity.visible?
+
+    standing = ResponseIntegrity.commons_standing(survey)
+    needed   = (ResponseIntegrity::COMMONS_MIN_RELIABLE_SHARE * 100).round
+    if standing[:share].nil?
+      Check.new(key: :integrity, status: :pass,
+                label: "Integrity · no scored responses (collected before scoring began, or imported)")
+    elsif ResponseIntegrity.commons_eligible?(survey, standing)
+      Check.new(key: :integrity, status: :pass,
+                label: "Integrity · #{(standing[:share] * 100).round}% of #{standing[:scored]} scored responses High or Medium")
+    else
+      Check.new(key: :integrity, status: :fail,
+                label: "Only #{(standing[:share] * 100).floor}% of #{standing[:scored]} scored responses are High or Medium; " \
+                       "the Data Commons needs #{needed}%. Low and unverified responses were given too quickly or " \
+                       "carelessly to rely on.")
     end
   end
 

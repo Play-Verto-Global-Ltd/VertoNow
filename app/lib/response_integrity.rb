@@ -97,11 +97,37 @@ module ResponseIntegrity
 
   Result = Struct.new(:score, :band, :components, :bonus, :reasons, keyword_init: true)
 
+  # The Data Commons' rule (Mike's proposal, the owner's decision of
+  # 2026-10-02): a Verto contributes only while at least this share of its
+  # scored responses are High or Medium. Unscored responses are left out of
+  # the count on both sides — a Verto collected before scoring began, or
+  # imported, has nothing to judge, and is not failed for it.
+  COMMONS_MIN_RELIABLE_SHARE = 0.7
+
   # Whether creators see scores, bands and the exclude-Low filter, and whether
   # the Commons gate applies them. Off until the shadow-mode tuning with Mike
   # is done: scores are computed and stored either way.
   def visible?
     ENV["INTEGRITY_SCORES_VISIBLE"] == "1"
+  end
+
+  # A Verto's answered responses by band, and of the scored ones, how many are
+  # High or Medium — what the Commons' rule is applied to, and what the
+  # review queue shows. One grouped count over an indexed column.
+  def commons_standing(survey)
+    counts   = survey.responses.where(answered: true).reorder(nil).group(:integrity_band).count
+    scored   = SCORED_BANDS.sum { |band| counts[band].to_i }
+    reliable = counts["high"].to_i + counts["medium"].to_i
+    { scored: scored, reliable: reliable, share: scored.zero? ? nil : reliable.to_f / scored }
+  end
+
+  # Whether a Verto may contribute to the Data Commons on integrity grounds.
+  # Always true in shadow mode, and for a Verto with nothing scored.
+  def commons_eligible?(survey, standing = nil)
+    return true unless visible?
+
+    share = (standing || commons_standing(survey))[:share]
+    share.nil? || share >= COMMONS_MIN_RELIABLE_SHARE
   end
 
   # Score one response and write the result. Never raises: integrity is

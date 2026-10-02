@@ -59,8 +59,16 @@ class CorpusIndexer
   # stored, but they belong in no question's denominator. `answered` is the
   # app's own canonical definition of that (Response.answered_entry?), kept in
   # step by a before_save and indexed alongside survey_id.
+  #
+  # Low and unverified responses are out too, once integrity scores are live
+  # (ResponseIntegrity.visible?): the Privacy Notice tells respondents the
+  # Commons is built from responses given with care. Whatever the creator's
+  # own results switch says — that is a view of their results; this is what
+  # leaves their account. Unscored responses (collected before scoring, or
+  # imported) stay in: there is nothing in them to judge.
   def self.countable_responses(survey)
-    survey.responses.where(answered: true)
+    scope = survey.responses.where(answered: true)
+    ResponseIntegrity.visible? ? scope.where(integrity_band: ResponseIntegrity::PASSING_BANDS) : scope
   end
 
   def initialize(entry, themer: OpenTextThemer.new)
@@ -79,6 +87,11 @@ class CorpusIndexer
     responses = self.class.countable_responses(@survey)
     total     = responses.count
     return skip!(total) if total < CorpusEntry.min_sample_size
+    # The Commons' 70% rule, held here as well as in the review queue
+    # (CorpusChecks#integrity): an approved Verto whose responses have since
+    # slipped under it stops contributing at the next nightly refresh, rather
+    # than staying cited on the strength of an earlier approval.
+    return skip!(total) unless ResponseIntegrity.commons_eligible?(@survey)
 
     cards      = Array(@survey.cards)
     aggregated = aggregate_results(cards, responses)
