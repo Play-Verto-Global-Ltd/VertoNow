@@ -42,12 +42,19 @@ class RescoreIntegrityJob < ApplicationJob
 
   # Each question's median time to answer, over the respondents who answered
   # it, kept only where a question has ResponseIntegrity::COHORT_MIN_ANSWERS of
-  # them. DwellTimes already reads only rows that carry any timing.
+  # them, and the same for a finished run's total. DwellTimes already reads
+  # only rows that carry any timing.
   def refresh_baseline!(survey)
     stats = DwellTimes.for(Array(survey.cards), survey.responses.where(answered: true))
     cards = stats.select { |_idx, s| s[:n] >= ResponseIntegrity::COHORT_MIN_ANSWERS }
                  .to_h { |idx, s| [ idx.to_s, { "n" => s[:n], "median_ms" => s[:median_ms] } ] }
     baseline = { "v" => ResponseIntegrity::VERSION, "cards" => cards }
+    # The whole-run median, for ResponseIntegrity#total_time, on the same
+    # terms as a card's: kept only once enough finished runs are timed.
+    total = DwellTimes.total_for(survey.responses.where(answered: true))
+    if total && total[:n] >= ResponseIntegrity::COHORT_MIN_ANSWERS
+      baseline["total"] = { "n" => total[:n], "median_ms" => total[:median_ms] }
+    end
     survey.update_columns(integrity_baseline: baseline) unless survey.integrity_baseline == baseline
   end
 
@@ -66,7 +73,7 @@ class RescoreIntegrityJob < ApplicationJob
 
   def rescore_stamped!(survey)
     survey.responses.where("CAST(responses.integrity AS TEXT) <> '{}'").reorder(nil)
-          .select(:id, :survey_id, :answers, :dwell_ms, :integrity, :created_at, :device_kind,
+          .select(:id, :survey_id, :status, :answers, :dwell_ms, :integrity, :created_at, :device_kind,
                   :integrity_score, :integrity_band, :integrity_version)
           .find_each(batch_size: BATCH) { |response| ResponseIntegrity.apply!(response, survey: survey) }
   end

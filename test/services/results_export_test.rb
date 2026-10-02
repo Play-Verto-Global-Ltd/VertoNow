@@ -64,7 +64,9 @@ class ResultsExportTest < ActiveSupport::TestCase
     assert_equal questions, header[META, questions.size]
     # The dwell block comes AFTER every answer column, so nothing that reads
     # this file by column position moves when it is added.
-    assert_equal questions.map { |q| "Dwell time (seconds): #{q}" }, header[(META + questions.size)..]
+    assert_equal questions.map { |q| "Dwell time (seconds): #{q}" } + [ "Total dwell time (seconds)" ],
+                 header[(META + questions.size)..],
+                 "the whole run's total follows the per-question block it is the sum of"
     refute_includes header, "Welcome"
   end
 
@@ -140,11 +142,12 @@ class ResultsExportTest < ActiveSupport::TestCase
 
     assert_equal [ 4.2, "", 12.0, "", "", "", 61.4 ], rows[1][base, 7]
     assert_equal [ 1.0, "", "", "", "", "", "" ],     rows[2][base, 7], "blank where nothing was recorded"
+    assert_equal [ 77.7, 1.0 ], [ rows[1][base + 7], rows[2][base + 7] ], "the total is the sum of the run's dwell"
   end
 
   test "a response from before dwell existed exports blank dwell cells, not zeros" do
     rows = @export.response_rows
-    assert_equal Array.new(7, ""), rows[1][(META + 7)..]
+    assert_equal Array.new(8, ""), rows[1][(META + 7)..], "seven question columns and the total"
   end
 
   test "summary_rows carry a median and mean dwell row per question that has any" do

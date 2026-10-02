@@ -74,6 +74,27 @@ module DwellTimes
     end
   end
 
+  # The whole-Verto figure: each FINISHED respondent's total time answering
+  # (Response#total_dwell_ms — every card they were timed on, answered or
+  # not, because the total is the run), as { n:, median_ms:, mean_ms: }, or
+  # nil when nobody finished with timings. A partial run is not a total.
+  def total_for(responses)
+    finished = if responses.respond_to?(:where)
+      responses.where(status: "completed")
+    else
+      responses.select { |r| r.status.to_s == "completed" }
+    end
+
+    totals = []
+    each_response(finished) do |_answers, dwell|
+      next unless dwell.is_a?(Hash)
+
+      sum = dwell.values.sum { |v| v.is_a?(Numeric) && v.positive? ? v : 0 }
+      totals << sum if sum.positive?
+    end
+    totals.empty? ? nil : stats_for(totals)
+  end
+
   def stats_for(list)
     sorted = list.sort
     n      = sorted.size

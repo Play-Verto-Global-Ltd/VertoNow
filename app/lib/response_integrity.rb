@@ -23,10 +23,17 @@
 #   reach           on answer lists long enough to scroll, whether the
 #                   respondent reached the end of the list.
 #   effort          free text that is a character, a key-mash or a repeat.
+#   total           a finished run's total time answering (the sum of its
+#                   per-question times) against the time it takes to read
+#                   everything answered, and once 30 finished runs are timed,
+#                   a quarter of their median total.
 #
-# Answer changes add a small bonus and never penalise. Total completion time is
-# deliberately NOT a separate component: it is the sum of the per-question
-# times, and counting it again would make speed most of the score. Media
+# Answer changes add a small bonus and never penalise. Total time is Mike's
+# "total completion time", judged against the WHOLE run rather than card by
+# card — it catches a run that clears every card's floor by a hair yet takes a
+# fraction of what everyone else took — and its weight comes out of speed's,
+# so timing as a whole counts no more than it did before (owner's call,
+# 2026-10-02, after it had first been left out as double counting). Media
 # engagement is dropped: the only media are decorative autoplay headers, so it
 # would measure the phone, not the person.
 #
@@ -47,7 +54,8 @@
 module ResponseIntegrity
   module_function
 
-  VERSION = 1
+  # 2: total time joined the score (2026-10-02).
+  VERSION = 2
 
   BANDS        = %w[high medium low unscored unverified].freeze
   SCORED_BANDS = %w[high medium low unverified].freeze
@@ -58,7 +66,7 @@ module ResponseIntegrity
   HIGH_FROM   = 75
   MEDIUM_FROM = 50
 
-  WEIGHTS = { speed: 35, straightlining: 20, untouched: 15, reach: 15, effort: 15 }.freeze
+  WEIGHTS = { speed: 25, total: 10, straightlining: 20, untouched: 15, reach: 15, effort: 15 }.freeze
   # Answer changes are a positive signal only: reconsidering is care.
   MAX_CHANGE_BONUS = 5
 
@@ -158,6 +166,7 @@ module ResponseIntegrity
 
     components = {
       speed:          speed(cards, answers, dwell, untouched, baseline, young, reasons),
+      total:          total_time(response, cards, answers, dwell, baseline, young, reasons),
       straightlining: straightlining(cards, answers, untouched, reasons),
       untouched:      untouched_share(cards, answers, untouched, reasons),
       reach:          reach(signals, reasons),
@@ -247,6 +256,32 @@ module ResponseIntegrity
 
     upper = text.scan(/\b(\d{1,2})\s*[-–to]+\s*(\d{1,2})\b/).map { |_a, b| b.to_i }.max
     upper.present? && upper < 18
+  end
+
+  # ── total time ─────────────────────────────────────────────────────────────
+
+  # Only a finished run has a whole to judge. The bar is the time it takes to
+  # read every question card answered (the per-card floors, summed), raised
+  # to a quarter of the Verto's median total once COHORT_MIN_ANSWERS finished
+  # runs have been timed (survey.integrity_baseline["total"], nightly).
+  def total_time(response, cards, answers, dwell, baseline, young, reasons)
+    return nil unless response.status.to_s == "completed"
+
+    total = dwell.values.sum { |v| v.is_a?(Numeric) && v.positive? ? v : 0 }
+    return nil unless total.positive?
+
+    bar = cards.each_with_index.sum do |card, idx|
+      question_card?(card) && Response.answered_entry?(answers[idx.to_s]) ? reading_floor_ms(card, answers[idx.to_s], young) : 0
+    end
+    cohort = baseline.is_a?(Hash) ? baseline["total"] : nil
+    if cohort.is_a?(Hash) && cohort["n"].to_i >= COHORT_MIN_ANSWERS && cohort["median_ms"].to_f.positive?
+      bar = [ bar, cohort["median_ms"].to_f * COHORT_FAST_SHARE ].max
+    end
+    return nil unless bar.positive?
+    return 1.0 if total >= bar
+
+    reasons << "total time: the whole Verto in #{(total / 1000.0).round}s, under the #{(bar / 1000.0).round}s bar"
+    0.0
   end
 
   # ── straight-lining ────────────────────────────────────────────────────────

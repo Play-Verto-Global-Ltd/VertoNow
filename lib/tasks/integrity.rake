@@ -36,7 +36,7 @@ namespace :integrity do
 
     components = Hash.new { |h, k| h[k] = [] }
     reasons    = Hash.new(0)
-    scored.reorder(nil).select(:id, :survey_id, :answers, :dwell_ms, :integrity, :created_at, :device_kind)
+    scored.reorder(nil).select(:id, :survey_id, :status, :answers, :dwell_ms, :integrity, :created_at, :device_kind)
           .find_each(batch_size: 500) do |response|
       result = ResponseIntegrity.score(response, survey: survey)
       result.components.each { |k, v| components[k] << v }
@@ -48,6 +48,11 @@ namespace :integrity do
       components.each { |k, vs| puts format("  %-15s %.2f over %d response(s)", k, vs.sum / vs.size, vs.size) }
       puts "\nResponses flagged, by reason:"
       reasons.sort_by { |_r, n| -n }.each { |r, n| puts format("  %-16s %d", r, n) }
+    end
+
+    whole = survey.integrity_baseline.is_a?(Hash) ? survey.integrity_baseline["total"] : nil
+    if whole.is_a?(Hash)
+      puts format("\nWhole-Verto median total: %.1fs over %d finished response(s)", whole["median_ms"].to_f / 1000, whole["n"].to_i)
     end
 
     baseline = survey.integrity_baseline.is_a?(Hash) ? survey.integrity_baseline["cards"] : nil

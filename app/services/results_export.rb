@@ -25,6 +25,9 @@ class ResultsExport
   # asks — a creator filtering a spreadsheet on "score < 48" is acting on a
   # precision the score does not have. Only while scores are visible at all.
   INTEGRITY_HEADER = "Integrity band".freeze
+  # The whole run's time answering (Response#total_dwell_ms), after the
+  # per-question dwell block it is the sum of.
+  TOTAL_DWELL_HEADER = "Total dwell time (seconds)".freeze
   SUMMARY_HEADER  = [ "Card #", "Card type", "Question", "Answer option", "Count", "Percentage", "Total answers" ].freeze
   CHOICE_TYPES    = %w[multiple_choice yes_no select_one_grid select_many select_many_grid scenario].freeze
 
@@ -77,6 +80,7 @@ class ResultsExport
     yield csv_safe_row(RESPONSE_HEADER +
                        question_cards.map { |card, _idx| question_text(card) } +
                        question_cards.map { |card, _idx| dwell_header(card) } +
+                       [ TOTAL_DWELL_HEADER ] +
                        (integrity ? [ INTEGRITY_HEADER ] : []))
 
     buffered = []
@@ -103,6 +107,7 @@ class ResultsExport
         # that is real behaviour — whereas the summary's typical figure is
         # over answers only (DwellTimes).
         question_cards.map { |_card, idx| response.dwell_seconds_at(idx) || "" } +
+        [ response.total_dwell_seconds || "" ] +
         (integrity ? [ response.integrity_band.to_s ] : [])
       buffered << { cells: cells,
                     code_digest: response.respondent_code_digest.presence,

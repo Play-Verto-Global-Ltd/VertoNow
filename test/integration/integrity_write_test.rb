@@ -115,6 +115,7 @@ class IntegrityWriteTest < ActionDispatch::IntegrationTest
       assert_equal "unscored",   imported.reload.integrity_band
       assert_equal "unverified", silent.reload.integrity_band
       assert_equal 20_000, @survey.reload.integrity_baseline.dig("cards", "1", "median_ms")
+      assert_equal 80_000, @survey.integrity_baseline.dig("total", "median_ms"), "four cards at 20s each"
       assert_equal "high", timed.first.reload.integrity_band
       assert_equal 0.0, ResponseIntegrity.score(quick.reload, survey: @survey).components[:speed],
                    "3s against a 20s median is under a quarter of it, though over the reading floor"

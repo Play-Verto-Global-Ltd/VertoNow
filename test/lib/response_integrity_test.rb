@@ -80,6 +80,34 @@ class ResponseIntegrityTest < ActiveSupport::TestCase
     assert_equal 0.0, score(resp, deck(cards, baseline: full)).components[:speed]
   end
 
+  # ── total time ─────────────────────────────────────────────────────────────
+
+  test "a finished run a fraction of everyone else's is caught by total time, though every card cleared its floor" do
+    cards = Array.new(4) { |i| { "type" => "yes_no", "text" => "Q#{i}?", "options" => %w[Yes No] } }
+    answers = (0..3).to_h { |i| [ i.to_s, { "value" => i.even? ? "Yes" : "No" } ] }
+    run   = response(answers: answers, dwell: (0..3).to_h { |i| [ i.to_s, 2_000 ] })
+    crowd = { "total" => { "n" => ResponseIntegrity::COHORT_MIN_ANSWERS, "median_ms" => 60_000 } }
+
+    alone = score(run, deck(cards))
+    assert_equal 1.0, alone.components[:total], "8s clears the time it takes to read four short questions"
+    assert_equal 1.0, alone.components[:speed]
+
+    judged = score(run, deck(cards, baseline: crowd))
+    assert_equal 0.0, judged.components[:total], "8s is under a quarter of the usual minute"
+    assert_equal 1.0, judged.components[:speed], "no single card was too fast"
+    assert_match "total time: the whole Verto in 8s, under the 15s bar", judged.reasons.join
+  end
+
+  test "total time judges only finished runs, and only once enough of them are timed to trust a median" do
+    cards = [ { "type" => "yes_no", "text" => "Ok?", "options" => %w[Yes No] } ]
+    thin  = { "total" => { "n" => ResponseIntegrity::COHORT_MIN_ANSWERS - 1, "median_ms" => 60_000 } }
+    run   = response(answers: { "0" => { "value" => "Yes" } }, dwell: { "0" => 2_000 })
+
+    assert_equal 1.0, score(run, deck(cards, baseline: thin)).components[:total]
+    run.status = "started"
+    assert_nil score(run, deck(cards)).components[:total], "a partial run has no whole to judge"
+  end
+
   # ── straight-lining ────────────────────────────────────────────────────────
 
   test "the same answer down a run of questions sharing one option list is straight-lining" do
@@ -166,7 +194,7 @@ class ResponseIntegrityTest < ActiveSupport::TestCase
     result = score(calm, deck(cards))
     assert_equal 100, result.score
     assert_equal "high", result.band
-    assert_equal %i[speed straightlining untouched].sort, result.components.keys.sort
+    assert_equal %i[speed straightlining total untouched].sort, result.components.keys.sort
 
     rushed = response(answers: (0..3).to_h { |i| [ i.to_s, { "value" => 2 } ] },
                       dwell: (0..3).to_h { |i| [ i.to_s, 100 ] }, signals: { "v" => 1, "untouched" => %w[0 1 2 3] })

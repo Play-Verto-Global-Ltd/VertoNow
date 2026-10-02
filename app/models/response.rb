@@ -197,6 +197,25 @@ class Response < ApplicationRecord
     merged
   end
 
+  # The whole run's time answering, in milliseconds: the sum of the per-card
+  # dwell above, so it carries the same properties — time with the tab hidden
+  # is excluded, and a reload costs nothing, because each card's figure is
+  # max-merged — over question cards only. Mike's "total completion time"
+  # (ResponseIntegrity#total_time); unlike #duration_seconds it is not
+  # stretched by a submit that waited in the offline queue. nil where the
+  # player recorded nothing.
+  def total_dwell_ms
+    return nil unless dwell_ms.is_a?(Hash)
+
+    values = dwell_ms.values.select { |v| v.is_a?(Numeric) && v.positive? }
+    values.empty? ? nil : values.sum
+  end
+
+  def total_dwell_seconds
+    ms = total_dwell_ms
+    ms && (ms / 1000.0).round(1)
+  end
+
   # Seconds spent on the card at `index`, to one decimal, or nil where the
   # player recorded nothing (a response collected before dwell existed, a
   # card never shown, a replay that arrived without it).
