@@ -1,23 +1,26 @@
-# Opens a PARTNER account for Street Soccer (Dan Wood) and hands it the link
-# they were already sending respondents to.
+# Opens a PARTNER account for Street Soccer and hands it the link its people
+# were already sending respondents to.
 #
-# Dan spread an Unleash Football Verto through a named link of Unleash
-# Football's, /play/street-football. That makes him a partner in all but
-# name, and a named link can't show anyone outside the owning account its
-# results. So this does what PartnershipAccountsController#create does for an
-# owner who clicks "Create account", then gives Dan the link itself:
+# Street Soccer (Dan Wood) spread an Unleash Football Verto through a named
+# link of Unleash Football's, /play/street-football. That makes them a partner
+# in all but name, and a named link can't show anyone outside the owning
+# account its results. So this does what PartnershipAccountsController#create
+# does for an owner who clicks "Create account", then gives Street Soccer the
+# link itself:
 #
-#   * a "Street Soccer" organisation of his own, with Dan as its admin — an
-#     ordinary account, so creating Vertos is on (the column default) — and
-#     Nick as a second admin, so the Playverto owner can see the account and
-#     act in it, as he does in the managed ones (ManagedAccountProvisioner);
+#   * a "Street Soccer" organisation — an ordinary account, so creating Vertos
+#     is on (the column default) — with Nick and Jamie as its admins, as they
+#     are of the managed accounts (ManagedAccountProvisioner). Street Soccer's
+#     own people are invited from its Members page like anyone else's: Dan was
+#     created here at first and removed again (RemoveDanWoodFromStreetSoccer)
+#     so that he could be added through the platform instead;
 #   * a partnership owned by whichever account owns the Verto at that address
 #     (Unleash Football), with Street Soccer as an active member;
 #   * the Verto added to that partnership, which mints Street Soccer's
 #     SurveyShare;
 #   * the named link's ADDRESS moved onto that share, and every response that
-#     came in through the link re-attributed to it, so Dan's partner page
-#     counts the respondents he has already gathered and the printed link keeps
+#     came in through the link re-attributed to it, so the partner page
+#     counts the respondents they had already gathered and the printed link keeps
 #     working. The link row itself is then deleted — it has nothing left to
 #     answer for, and keeping it would mean two rows in the /play namespace
 #     claiming one address.
@@ -32,34 +35,32 @@
 # password and name, an existing membership keeps its role, an existing
 # partnership membership keeps its status. Running it twice changes nothing
 # the second time. On a database without the address (every dev and test
-# database) it does nothing at all — no account, no email.
+# database) it does nothing at all.
 #
 # If the address turns out to be the Verto's OWN custom link rather than a
 # named one, the account, partnership and share are still made but nothing is
 # moved: that slug is the whole Verto's address, and which of its responses
-# were Dan's is not something the database can say.
+# were Street Soccer's is not something the database can say.
 class StreetSoccerPartnerProvisioner
   LINK_SLUG        = "street-football"
   PARTNERSHIP_NAME = "Unleash Football partners"
   ORG_SLUG         = "street-soccer"
   ORG_NAME         = "Street Soccer"
-  ADMIN_NAME       = "Dan Wood"
-  ADMIN_EMAIL      = "danieljwood9@gmail.com"
-  OWNER_EMAIL      = ManagedAccountProvisioner::NICK_EMAIL
-  OWNER_NAME       = ManagedAccountProvisioner::NICK_NAME
+  # Playverto's own people, as admins — { email => name }.
+  ADMINS = {
+    ManagedAccountProvisioner::NICK_EMAIL  => ManagedAccountProvisioner::NICK_NAME,
+    ManagedAccountProvisioner::JAMIE_EMAIL => ManagedAccountProvisioner::JAMIE_NAME
+  }.freeze
 
-  Result = Struct.new(:survey, :partnership, :organisation, :user, :share,
-                      :user_created, :welcome_sent, :link_adopted, :responses_moved,
-                      :link_overrides, :link_was_paused, keyword_init: true)
+  Result = Struct.new(:survey, :partnership, :organisation, :share, :link_adopted,
+                      :responses_moved, :link_overrides, :link_was_paused, keyword_init: true)
 
   # nil when nothing in the /play namespace answers to LINK_SLUG.
   def call
     survey, link = resolve
     return unless survey
 
-    result = ActiveRecord::Base.transaction { provision!(survey, link) }
-    result.welcome_sent = result.user_created && deliver_welcome(result)
-    result
+    ActiveRecord::Base.transaction { provision!(survey, link) }
   end
 
   private
@@ -79,12 +80,9 @@ class StreetSoccerPartnerProvisioner
   def provision!(survey, link)
     partnership = find_or_create_partnership!(survey.organisation)
     org         = Organisation.find_or_create_by!(slug: ORG_SLUG) { |o| o.name = ORG_NAME }
-    user        = find_or_create_user!(ADMIN_EMAIL, ADMIN_NAME)
-    Membership.find_or_create_by!(user: user, organisation: org) { |m| m.role = "admin" }
-    # After Dan's, so his stays the account's first admin — the one
-    # PartnershipMembership#setup_pending? asks about.
-    owner = find_or_create_user!(OWNER_EMAIL, OWNER_NAME)
-    Membership.find_or_create_by!(user: owner, organisation: org) { |m| m.role = "admin" }
+    ADMINS.each do |email, name|
+      Membership.find_or_create_by!(user: find_or_create_user!(email, name), organisation: org) { |m| m.role = "admin" }
+    end
 
     PartnershipMembership.join!(partnership: partnership, organisation: org)
     partnership_verto = partnership.partnership_vertos.find_or_create_by!(survey: survey)
@@ -95,8 +93,7 @@ class StreetSoccerPartnerProvisioner
     paused    = link ? !link.active? : false
     moved     = link ? adopt_link!(link, share) : 0
 
-    Result.new(survey: survey, partnership: partnership, organisation: org, user: user,
-               share: share, user_created: user.previously_new_record?,
+    Result.new(survey: survey, partnership: partnership, organisation: org, share: share,
                link_adopted: share.share_token == LINK_SLUG,
                responses_moved: moved, link_overrides: overrides, link_was_paused: paused)
   end
@@ -107,10 +104,11 @@ class StreetSoccerPartnerProvisioner
       owner.partnerships.create!(name: PARTNERSHIP_NAME)
   end
 
-  # Credential-free, as PartnershipAccountsController creates partner users: a
-  # throwaway password Dan replaces through the emailed setup link (or, after
-  # that link's week is up, the ordinary password reset). Nick already has an
-  # account wherever this matters, so for him this is only the safety net.
+  # Credential-free, as ManagedAccountProvisioner creates its people: a
+  # throwaway password, claimed through the ordinary password reset. Nick and
+  # Jamie already have accounts wherever this matters, so this is only the
+  # safety net — and as it only runs on create, an existing password is never
+  # touched.
   def find_or_create_user!(email, name)
     User.find_or_create_by!(email_address: email) do |u|
       u.name             = name
@@ -136,17 +134,5 @@ class StreetSoccerPartnerProvisioner
       "Share button"       => link.share_enabled,
       "regions map"        => link.regions_enabled
     }.compact
-  end
-
-  # Only for an account this run made: an existing user already has a
-  # password, and "an admin set up an account for you" would be untrue.
-  # A failed send must not undo the account — the password reset reaches the
-  # same place — so it is reported, not raised.
-  def deliver_welcome(result)
-    PartnershipAccountMailer.welcome(result.user, result.partnership).deliver_now
-    true
-  rescue => e
-    ErrorReporting.report("StreetSoccerPartnerProvisioner", e, user_id: result.user.id)
-    false
   end
 end

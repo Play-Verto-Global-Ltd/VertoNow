@@ -8,9 +8,10 @@
 # each write is safe to repeat, is on StreetSoccerPartnerProvisioner. A
 # database without that address — every dev and test one — gets nothing.
 #
-# It emails Dan the same welcome PartnershipAccountsController sends, once,
-# when it creates his user. disable_ddl_transaction! so the account is
-# committed before that email goes, rather than with the migration after it.
+# As first deployed it also created Dan's user and emailed him the partner
+# welcome; the provisioner no longer does either (see
+# RemoveDanWoodFromStreetSoccer), and this body follows it so that it still
+# loads — it has already run wherever it matters.
 #
 # Up-only: ending a partnership is a product decision made on the
 # Partnerships page, not a rollback, and the deleted link is not recreated.
@@ -21,12 +22,8 @@ class ProvisionStreetSoccerPartnerAccount < ActiveRecord::Migration[8.1]
     result = StreetSoccerPartnerProvisioner.new.call
     return say("Street Soccer: no /play/#{StreetSoccerPartnerProvisioner::LINK_SLUG} here — nothing to do") unless result
 
-    admin = if !result.user_created then "existing user, no email"
-    elsif result.welcome_sent        then "new user, welcome email sent"
-    else                                  "new user, welcome email NOT sent — Dan can use password reset"
-    end
     say "Street Soccer: partner of #{result.survey.organisation.name} in \"#{result.partnership.name}\" " \
-        "for Verto ##{result.survey.id}; admin #{result.user.email_address} (#{admin})"
+        "for Verto ##{result.survey.id}; admins #{StreetSoccerPartnerProvisioner::ADMINS.keys.join(", ")}"
     if result.link_adopted
       say "Street Soccer: /play/#{result.share.share_token} is now the partner share; " \
           "#{result.responses_moved} response(s) moved from the named link"

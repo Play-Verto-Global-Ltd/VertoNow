@@ -1,12 +1,14 @@
 require "test_helper"
 require Rails.root.join("db/migrate/20261002090000_provision_street_soccer_partner_account")
 require Rails.root.join("db/migrate/20261002120000_add_owner_to_street_soccer_account")
+require Rails.root.join("db/migrate/20261002170000_remove_dan_wood_from_street_soccer")
 
 # Street Soccer's partner account, opened by a data migration on deploy, which
-# also hands Dan the Unleash Football link he was already sending people to.
-# What matters: he ends up an ordinary partner who can see the respondents he
-# gathered, the printed address keeps answering, and nothing runs twice —
-# least of all the email.
+# also hands it the Unleash Football link its people were already sending
+# respondents to. What matters: it ends up an ordinary partner account, held
+# by Nick and Jamie until Street Soccer's own people are invited, that can see
+# the respondents it gathered; the printed address keeps answering; nothing
+# runs twice.
 class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
   P = StreetSoccerPartnerProvisioner
 
@@ -37,57 +39,34 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
                               answers: { "1" => { "value" => "Yes" } } }.merge(attrs))
   end
 
-  def dan          = User.find_by(email_address: P::ADMIN_EMAIL)
-  def nick         = User.find_by(email_address: P::OWNER_EMAIL)
+  def dan          = User.find_by(email_address: RemoveDanWoodFromStreetSoccer::DAN_EMAIL)
+  def nick         = User.find_by(email_address: ManagedAccountProvisioner::NICK_EMAIL)
+  def jamie        = User.find_by(email_address: ManagedAccountProvisioner::JAMIE_EMAIL)
   def street       = Organisation.find_by(slug: P::ORG_SLUG)
   def street_share = SurveyShare.find_by(partner_organisation: street)
 
-  test "a database without the address gets nothing — no account, no email" do
+  test "a database without the address gets nothing" do
     verto
 
     assert_nil P.new.call
-    assert_nil dan
     assert_nil street
     assert_empty ActionMailer::Base.deliveries
   end
 
-  test "Dan gets his own account, as its admin, and it can create Vertos" do
+  test "Street Soccer is an ordinary account that can create Vertos, held by Nick and Jamie" do
+    User.create!(name: "Nick", email_address: ManagedAccountProvisioner::NICK_EMAIL, password: "nicks-own-password")
+    User.create!(name: "Jamie", email_address: ManagedAccountProvisioner::JAMIE_EMAIL, password: "jamies-own-password")
     street_link
     P.new.call
 
     assert_equal "Street Soccer", street.name
     assert street.verto_creation_enabled?, "a partner account is an ordinary one — it builds its own Vertos"
-    assert_equal "Dan Wood", dan.name
-    assert dan.password_pending?, "the password is a throwaway until Dan sets his own"
-    assert_equal "admin", dan.memberships.find_by!(organisation: street).role
-    assert_not dan.memberships.exists?(organisation: unleash), "a partner, not a member of Unleash Football"
-  end
-
-  test "Nick is an admin of Street Soccer too, and keeps his own password" do
-    User.create!(name: "Nick", email_address: P::OWNER_EMAIL, password: "nicks-own-password")
-    street_link
-    P.new.call
-
-    assert_equal "admin", nick.memberships.find_by!(organisation: street).role
-    assert nick.authenticate("nicks-own-password")
-    assert_not nick.password_pending?
-  end
-
-  # The badge on Unleash Football's partnership page is about the partner the
-  # account was made for. With a second admin in it, and no order on the
-  # association, "the first admin found" could be Nick, who has no setup to do.
-  test "Setup pending still means Dan, whichever admin the database returns first" do
-    User.create!(name: "Nick", email_address: P::OWNER_EMAIL, password: "nicks-own-password")
-    street_link
-    P.new.call
-    membership = unleash.partnerships.sole.partnership_memberships.sole
-
-    assert membership.setup_pending?, "Dan has not set his password yet"
-    street.memberships.find_by!(user: nick).update_columns(id: 0) # Nick's row first in id order
-    assert PartnershipMembership.find(membership.id).setup_pending?
-
-    dan.update!(password: "a-long-enough-password", password_pending: false)
-    assert_not PartnershipMembership.find(membership.id).setup_pending?
+    assert_equal [ ManagedAccountProvisioner::JAMIE_EMAIL, ManagedAccountProvisioner::NICK_EMAIL ],
+                 street.memberships.where(role: "admin").map { |m| m.user.email_address }.sort
+    assert nick.authenticate("nicks-own-password"), "an existing account keeps its password"
+    assert jamie.authenticate("jamies-own-password")
+    assert_nil dan, "Street Soccer's own people are invited through the platform"
+    assert_empty ActionMailer::Base.deliveries, "nobody is emailed"
   end
 
   test "Street Soccer is an active partner of the account that owns the Verto" do
@@ -118,11 +97,11 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
       assert_nil r.survey_link_id
     end
     assert_nil direct.reload.survey_share_id, "the Verto's own respondents stay Unleash Football's"
-    assert_nil other.reload.survey_share_id, "another link's respondents are not Dan's"
+    assert_nil other.reload.survey_share_id, "another link's respondents are not Street Soccer's"
     assert other.survey_link_id
   end
 
-  test "the printed address still opens the Verto, now as Dan's share" do
+  test "the printed address still opens the Verto, now as Street Soccer's share" do
     street_link
     P.new.call
 
@@ -137,30 +116,20 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
     assert_equal street_share.id, verto.responses.find_by!(session_token: session_token).survey_share_id
   end
 
-  test "Dan's partner page counts the respondents he had already gathered" do
+  test "Street Soccer's partner page counts the respondents it had already gathered" do
+    User.create!(name: "Nick", email_address: ManagedAccountProvisioner::NICK_EMAIL, password: "nicks-own-password")
     link = street_link
     3.times { respond(survey_link: link) }
-    respond # one of Unleash Football's own, which is not his
+    respond # one of Unleash Football's own, which is not Street Soccer's
     P.new.call
 
-    dan.update!(password: "a-long-enough-password", password_pending: false)
-    post session_path, params: { email_address: P::ADMIN_EMAIL, password: "a-long-enough-password" }
+    post session_path, params: { email_address: ManagedAccountProvisioner::NICK_EMAIL, password: "nicks-own-password" }
     partnership = unleash.partnerships.sole
     get partnership_partnership_verto_path(partnership, partnership.partnership_vertos.sole)
 
     assert_response :success
     assert_select "strong", text: "3"
     assert_includes response.body, play_survey_url(P::LINK_SLUG)
-  end
-
-  test "Dan is sent the partner welcome, with a link to set his password" do
-    street_link
-    result = P.new.call
-
-    assert result.welcome_sent
-    mail = ActionMailer::Base.deliveries.sole
-    assert_equal [ P::ADMIN_EMAIL ], mail.to
-    assert_includes mail.subject, P::PARTNERSHIP_NAME
   end
 
   test "running it again changes nothing and sends nothing" do
@@ -174,20 +143,7 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
       result = P.new.call
       assert result.link_adopted
       assert_equal 0, result.responses_moved
-      assert_not result.user_created
     end
-    assert_empty ActionMailer::Base.deliveries
-  end
-
-  test "an existing user keeps his password and gets no 'account set up for you' email" do
-    User.create!(name: "Daniel", email_address: P::ADMIN_EMAIL, password: "his-own-password-123")
-    street_link
-    result = P.new.call
-
-    assert_not result.user_created
-    assert_equal "Daniel", dan.name
-    assert dan.authenticate("his-own-password-123")
-    assert_equal "admin", dan.memberships.find_by!(organisation: street).role
     assert_empty ActionMailer::Base.deliveries
   end
 
@@ -227,19 +183,67 @@ class StreetSoccerPartnerProvisionerTest < ActionDispatch::IntegrationTest
     assert_equal P::LINK_SLUG, street_share.share_token
   end
 
-  # Production ran the first migration before Nick was in the provisioner: the
-  # follow-up must add exactly his membership, and must not email Dan again.
-  test "the follow-up migration adds Nick to an account the first pass made" do
+  # Production's state after the first deploy: the account as the first
+  # version of the provisioner made it, with Dan as its admin and a throwaway
+  # password he never replaced.
+  def first_deploy_state
     street_link
     migrate_up
-    street.memberships.where(user: nick).delete_all
-    ActionMailer::Base.deliveries.clear
+    street.memberships.where(user: jamie).delete_all
+    dan = User.create!(name: "Dan Wood", email_address: RemoveDanWoodFromStreetSoccer::DAN_EMAIL,
+                       password: SecureRandom.hex(32), password_pending: true)
+    street.memberships.create!(user: dan, role: "admin")
+    dan
+  end
 
-    assert_difference -> { Membership.count }, 1 do
-      ActiveRecord::Migration.suppress_messages { AddOwnerToStreetSoccerAccount.new.migrate(:up) }
+  def remove_dan
+    ActiveRecord::Migration.suppress_messages { RemoveDanWoodFromStreetSoccer.new.migrate(:up) }
+  end
+
+  test "Dan's account is removed, and Nick and Jamie keep the account" do
+    first_deploy_state
+
+    remove_dan
+
+    assert_nil dan
+    assert_equal [ ManagedAccountProvisioner::JAMIE_EMAIL, ManagedAccountProvisioner::NICK_EMAIL ],
+                 street.memberships.map { |m| m.user.email_address }.sort
+    assert_equal P::LINK_SLUG, street_share.share_token, "the partner link and its respondents stay Street Soccer's"
+  end
+
+  # With no account left at his address, an invite from the Members page makes
+  # him a fresh one — rather than asking for a password he never set.
+  test "after the removal Dan can be invited to Street Soccer like anyone else" do
+    first_deploy_state
+    remove_dan
+    invite = Invite.create!(organisation: street, invited_by: nick, kind: "member", role: "admin",
+                            email_address: RemoveDanWoodFromStreetSoccer::DAN_EMAIL, expires_at: 7.days.from_now)
+
+    post accept_invite_path(invite.token), params: { name: "Dan Wood", password: "dans-own-password",
+                                                     password_confirmation: "dans-own-password" }
+
+    assert dan, "the invite made his account"
+    assert dan.authenticate("dans-own-password")
+    assert_equal "admin", dan.memberships.find_by!(organisation: street).role
+  end
+
+  test "a Dan who has made something keeps his account, and the deploy carries on" do
+    dan = first_deploy_state
+    Invite.create!(organisation: street, invited_by: dan, kind: "member", role: "member",
+                   email_address: "colleague@example.com", expires_at: 7.days.from_now)
+
+    assert_nothing_raised { remove_dan }
+    assert dan.reload.persisted?, "refused whole, not half-deleted"
+    assert street.memberships.exists?(user: dan)
+  end
+
+  test "removing Dan where he never existed does nothing" do
+    street_link
+    migrate_up
+
+    assert_no_difference -> { User.count } do
+      remove_dan
     end
-    assert_equal "admin", nick.memberships.find_by!(organisation: street).role
-    assert_empty ActionMailer::Base.deliveries
   end
 
   # Unleash Football having already ended a Street Soccer partnership is a

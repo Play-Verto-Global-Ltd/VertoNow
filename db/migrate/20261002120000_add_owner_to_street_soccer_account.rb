@@ -16,7 +16,7 @@ class AddOwnerToStreetSoccerAccount < ActiveRecord::Migration[8.1]
     result = StreetSoccerPartnerProvisioner.new.call
     return say("Street Soccer: no /play/#{StreetSoccerPartnerProvisioner::LINK_SLUG} here — nothing to do") unless result
 
-    say "Street Soccer: #{StreetSoccerPartnerProvisioner::OWNER_EMAIL} is an admin of #{result.organisation.name}"
+    say "Street Soccer: #{StreetSoccerPartnerProvisioner::ADMINS.keys.join(", ")} are admins of #{result.organisation.name}"
   rescue => e
     # Data-only migration: never hold a deploy hostage — the membership can
     # always be granted by hand, or through the Members page.
