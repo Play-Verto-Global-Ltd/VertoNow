@@ -1,15 +1,16 @@
 require "test_helper"
 
 # The two accounts opened together on 2026-09-24 — Riders for Health and The
-# Marketing Society — and the base class they are the first to be built on
-# rather than copied from. Each account is provisioned from two disjoint
+# Marketing Society — plus Common Goal (2026-10-02), and the base class they
+# are built on rather than copied from. Each account is provisioned from two disjoint
 # places (the data migration for an existing database, db/seeds.rb for a fresh
 # one), so the properties that matter are all about running MORE THAN ONCE
 # without doing damage — most sharply, never resetting the password of a user
 # who already has an account, which both of these people do. The three older
-# accounts keep their own tests; these run the same checks over the new pair.
+# accounts keep their own tests; these run the same checks over the newer ones.
 class ManagedAccountProvisionerTest < ActiveSupport::TestCase
-  NEW_ACCOUNTS = [ RidersForHealthAccountProvisioner, MarketingSocietyAccountProvisioner ].freeze
+  NEW_ACCOUNTS = [ RidersForHealthAccountProvisioner, MarketingSocietyAccountProvisioner,
+                   CommonGoalAccountProvisioner ].freeze
 
   def setup    = destroy_managed_accounts!
   def teardown = destroy_managed_accounts!
@@ -30,6 +31,7 @@ class ManagedAccountProvisionerTest < ActiveSupport::TestCase
   test "lists every managed account once, each under its own slug" do
     assert_includes ManagedAccountProvisioner.all, RidersForHealthAccountProvisioner
     assert_includes ManagedAccountProvisioner.all, MarketingSocietyAccountProvisioner
+    assert_includes ManagedAccountProvisioner.all, CommonGoalAccountProvisioner
     assert_equal ManagedAccountProvisioner.slugs, ManagedAccountProvisioner.slugs.uniq
     ManagedAccountProvisioner.all.each do |provisioner|
       assert_operator provisioner, :<, ManagedAccountProvisioner
@@ -41,6 +43,8 @@ class ManagedAccountProvisionerTest < ActiveSupport::TestCase
     assert_equal "riders-for-health",     RidersForHealthAccountProvisioner::ORG_SLUG
     assert_equal "The Marketing Society", MarketingSocietyAccountProvisioner::ORG_NAME
     assert_equal "the-marketing-society", MarketingSocietyAccountProvisioner::ORG_SLUG
+    assert_equal "Common Goal",           CommonGoalAccountProvisioner::ORG_NAME
+    assert_equal "common-goal",           CommonGoalAccountProvisioner::ORG_SLUG
   end
 
   NEW_ACCOUNTS.each do |provisioner|
@@ -140,11 +144,11 @@ class ManagedAccountProvisionerTest < ActiveSupport::TestCase
     end
   end
 
-  # Every managed account shares both of its people. Opening the new pair must
-  # not disturb the older accounts' memberships, and the pair must not collapse
+  # Every managed account shares both of its people. Opening the new accounts must
+  # not disturb the older accounts' memberships, and they must not collapse
   # into one another — they are separate accounts that happen to be staffed by
   # the same two admins.
-  test "opening the new pair leaves the older accounts alone and keeps the pair apart" do
+  test "opening the new accounts leaves the older ones alone and keeps them apart" do
     older = ManagedAccountProvisioner.all - NEW_ACCOUNTS
     older.each { |provisioner| provisioner.new.call }
     older_orgs = older.map { |provisioner| org_of(provisioner) }
@@ -157,6 +161,6 @@ class ManagedAccountProvisionerTest < ActiveSupport::TestCase
     end
     assert_equal ManagedAccountProvisioner.all.size,
                  Organisation.where(slug: ManagedAccountProvisioner.slugs).distinct.count(:id)
-    refute_equal org_of(RidersForHealthAccountProvisioner).id, org_of(MarketingSocietyAccountProvisioner).id
+    assert_equal NEW_ACCOUNTS.size, NEW_ACCOUNTS.map { |provisioner| org_of(provisioner).id }.uniq.size
   end
 end
