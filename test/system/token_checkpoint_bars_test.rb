@@ -155,6 +155,10 @@ class TokenCheckpointBarsTest < ApplicationSystemTestCase
         return { before: Math.round(before), gap: Math.round(edge()) }
       })()
     JS
+    # The "more below" fade, drawn over the last bar with nothing below it, is
+    # the other half of "the last answer is cut off".
+    assert wait_until { page.evaluate_script("getComputedStyle(document.querySelector('.preview-card.active .split-right > .mt-2')).maskImage") == "none" },
+           "scrolled to the end, the last bar is still faded out under the 'more below' fade"
 
     assert_operator reach["before"], :<, 0,
                     "the bars fitted at 1280x640, so this proves nothing — add tokens until they don't"

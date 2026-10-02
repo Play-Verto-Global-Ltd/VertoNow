@@ -1091,7 +1091,12 @@
    it. 24px of the border box, which on the grids (12px of padding) is about
    half padding and half content — the same reach the sticky bar had, since
    bottom: 0 put that on the padding-box edge too. */
-.split-right > .mt-2.is-scrollable {
+/* And only while there IS more below. Left on at the bottom of the scroll it
+   faded the last answer out with nothing beneath it to read — "i dont like
+   that the last answer is cut off". is-at-end is _syncScrollEnd's, kept apart
+   from is-scrollable because that class also carries the floating controls'
+   runway and must not change as the box moves. */
+.split-right > .mt-2.is-scrollable:not(.is-at-end) {
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
           mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
 }

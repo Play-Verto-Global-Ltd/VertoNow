@@ -1,6 +1,9 @@
 require "application_system_test_case"
 
-# The answer list teaches itself to scroll, once, by moving.
+# An answer that overflows the card teaches itself to scroll, once per card, by
+# moving — on every card type, not only lists (2026-10-02: "we need to add the
+# scroll nudge to all cards/answer types when the answers need to be
+# scrolled").
 #
 # Reported from a study run on students' own phones: on a long list the first
 # option is the only one on screen, so it is the one that gets picked, and the
@@ -56,7 +59,8 @@ class PlayerScrollCueTest < ApplicationSystemTestCase
     window.__box = () => {
       const card = document.querySelector(".preview-card.active")
       const list = card && card.querySelector(".choice-list, .pick-list, .choice-grid")
-      for (let el = list && list.parentElement; el && el !== document.body; el = el.parentElement) {
+      const from = (list && list.parentElement) || (card && card.querySelector(".split-right > .mt-2"))
+      for (let el = from; el && el !== document.body; el = el.parentElement) {
         const oy = getComputedStyle(el).overflowY
         if ((oy === "auto" || oy === "scroll") && el.scrollHeight - el.clientHeight > 1) return el
       }
@@ -153,18 +157,48 @@ class PlayerScrollCueTest < ApplicationSystemTestCase
       "and anything longer takes the question off the screen with it"
   end
 
-  test "the same respondent is only shown it once" do
+  test "every card that scrolls shows it once, and stepping back does not repeat it" do
     open_player(build_verto, *DESKTOP)
     assert wait_until(timeout: 8, interval: 0.02) { cue["peak"] > 2 }
     assert wait_until(timeout: 8, interval: 0.02) { cue["last"] <= 2 }
 
     answer_and_advance
     reset_cue
+    assert wait_until(timeout: 8, interval: 0.02) { cue["peak"] > 2 },
+      "the second long list never moved. It was once a play; it is once a CARD now, so a " \
+      "respondent on card 18 is not relying on what card 2 taught them"
+    assert wait_until(timeout: 8, interval: 0.02) { cue["last"] <= 2 }
+
+    click_button "Back"
+    assert_selector ".preview-card.active[data-card-index='0']", wait: 5
+    reset_cue
     sleep QUIET
 
     assert_equal 0, cue["peak"],
-      "the second long list nudged too. Being shown the same thing on every card is a tic, not a " \
-      "cue — once a play is the whole design"
+      "stepping back onto a card that had already shown the cue showed it again — that is a tic, not a cue"
+  end
+
+  test "a card with no list nudges too — the Points Checkpoint" do
+    types = %w[nature time money comfort health fun].map { |id| { "id" => id, "name" => id.capitalize, "icon" => "⭐" } }
+    survey = @org.surveys.create!(
+      title: "Cue", theme: "Climate", audience_age: "all", key_insight: "k",
+      default_locale: "en", locales: [ "en" ],
+      cards: [ { "type" => "multiple_choice", "cid" => "q1", "text" => "Pick", "options" => %w[A B],
+                 "tokens" => { "A" => types.to_h { |t| [ t["id"], 5 ] } } },
+               { "type" => "token_checkpoint", "cid" => "cp", "text" => "Here is how it adds up",
+                 "description" => "Here's how your decisions are adding up so far." } ],
+      tokenisation_enabled: true, token_types: types, token_amounts_shown: true)
+    survey.update_columns(publish_token: SecureRandom.hex(8), published_at: Time.current)
+
+    open_player(survey, *DESKTOP)
+    find(".preview-card.active .pick-item", text: "A").click
+    click_button "Next"
+    assert_selector ".preview-card.active .token-checkpoint-row", count: 6
+    reset_cue
+
+    assert wait_until(timeout: 8, interval: 0.02) { cue["peak"] > 2 },
+      "six score bars overflowed the card and it never said so by moving — the cue only knew lists"
+    assert wait_until(timeout: 8, interval: 0.02) { cue["last"] <= 2 }
   end
 
   test "an answer that fits is left alone" do

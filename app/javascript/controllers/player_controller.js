@@ -388,10 +388,7 @@ export default class extends Controller {
     clearTimeout(this._revealTimer)
     // The scroll cue is two chained timers and a set of listeners on window;
     // left running they fire against whatever replaced the deck.
-    clearTimeout(this._nudgeDown)
-    clearTimeout(this._nudgeUp)
-    clearTimeout(this._nudgeRetry)
-    if (this._nudgeFrame) cancelAnimationFrame(this._nudgeFrame)
+    this._cancelNudge()
     this._nudgeAbort?.()
     // kbd-open lives on <html>, outside this controller's element, so it does
     // NOT go away with the deck. Left behind it would guard _fitCard on
@@ -577,6 +574,20 @@ export default class extends Controller {
     // whether there IS anything below — left unconditional it greys out the
     // final row's label on an answer that fits perfectly well.
     box.classList.toggle("is-scrollable", over > 1)
+    this._syncScrollEnd(box)
+  }
+
+  // The fade is drawn over the last of the content, so it also has to know
+  // when there is nothing further below: scrolled to the bottom, a fade left on
+  // greys out the last answer with nothing under it ("i dont like that the
+  // last answer is cut off"). One listener per box, for the life of the box.
+  _syncScrollEnd(box) {
+    this._endWatched ||= new WeakSet()
+    if (!this._endWatched.has(box)) {
+      this._endWatched.add(box)
+      box.addEventListener("scroll", () => this._syncScrollEnd(box), { passive: true })
+    }
+    box.classList.toggle("is-at-end", box.scrollTop + box.clientHeight >= box.scrollHeight - 2)
   }
 
   // ── Saying that the answer MOVES, once ──────────────────────────────────
@@ -597,12 +608,18 @@ export default class extends Controller {
   // also the shape already proven here — the range slider nudges, it does not
   // run its track (.option-limit-counter.is-rejected is the same idea in CSS).
   //
-  // ONCE PER PLAY, and deliberately not once per browser. A flag in
-  // localStorage would fire for a first-time respondent and stay silent for a
-  // returning one — a difference in treatment between people inside the same
-  // study, which is a worse problem than the one being fixed. Every respondent
-  // gets the same run; the cost is that somebody playing two Vertos sees it
-  // twice, which is the right way round.
+  // ONCE PER CARD, on every card whose answer overflows, whatever its type.
+  // It was once per play, on lists only — so the Points Checkpoint, the welcome
+  // pills and every other shape that can outgrow the card never said it moved,
+  // and a respondent taught on card 2 was left to remember it on card 18. The
+  // owner's call, 2026-10-02: "we need to add the scroll nudge to all
+  // cards/answer types when the answers need to be scrolled". Stepping Back
+  // onto a card that has already shown it does not show it again.
+  //
+  // And deliberately not once per browser. A flag in localStorage would fire
+  // for a first-time respondent and stay silent for a returning one — a
+  // difference in treatment between people inside the same study, which is a
+  // worse problem than the one being fixed.
   static NUDGE_MIN_OVERFLOW = 32   // px below the fold worth teaching about; less
                                    // than this is a clipped edge, and moving it reads as a glitch
   static NUDGE_DELAY_MS     = 520  // let the card's entry animation land first
@@ -622,6 +639,9 @@ export default class extends Controller {
   // options and take whichever ancestor is actually scrolling; on every
   // viewport measured so far it resolves to .mt-2, which is the point — it
   // finds the scroller rather than assuming it.
+  //
+  // Integrity's reach signal reads this one and only means a LIST; the cue
+  // asks _cueScroller, which is the same walk from any answer.
   _answerScroller(card) {
     const list = card?.querySelector(".choice-list, .pick-list, .choice-grid, .prioritise-list")
     if (!list) return null
@@ -632,6 +652,33 @@ export default class extends Controller {
     return null
   }
 
+  // The cue's scroller: the list's, when there is a list — so every list card
+  // finds exactly the box it always did — and otherwise the answer panel's,
+  // for every other shape that can outgrow the card.
+  _cueScroller(card) {
+    const from = card?.querySelector(".choice-list, .pick-list, .choice-grid, .prioritise-list")?.parentElement ||
+                 card?.querySelector(".split-right > .mt-2")
+    for (let el = from; el && el !== document.body; el = el.parentElement) {
+      const oy = getComputedStyle(el).overflowY
+      if ((oy === "auto" || oy === "scroll") && el.scrollHeight - el.clientHeight > 1) return el
+    }
+    return null
+  }
+
+  // A cue still running for a card the respondent has left. The old card is
+  // hidden, so the motion is invisible, but it held _nudgeArmed and so kept the
+  // card they are looking at from teaching itself until it had finished.
+  _cancelNudge() {
+    clearTimeout(this._nudgeDown)
+    clearTimeout(this._nudgeUp)
+    clearTimeout(this._nudgeRetry)
+    if (this._nudgeFrame) cancelAnimationFrame(this._nudgeFrame)
+    // Caught mid-travel, the old card's list would be waiting off its origin
+    // for anyone who steps Back to it — and a box already moved never cues.
+    if (this._nudgeAt != null && this._nudgeBox) this._nudgeBox.scrollTop = 0
+    if (this._nudgeArmed) this._nudgeAbort?.()
+  }
+
   // `tries` counts down. _update runs before the panel has settled into the
   // height _fitCardHeight gives it and its observers then correct — so the
   // first look often finds a box that does not overflow YET, on a card that
@@ -640,13 +687,16 @@ export default class extends Controller {
   // again a few times, then stop: a card whose answer still fits after this
   // long fits.
   _maybeNudgeScroll(idx, tries = this.constructor.NUDGE_TRIES) {
-    // Two flags, not one. _scrollNudged is spent only by a cue that actually
+    if (this._nudgeIdx !== idx) this._cancelNudge()
+    this._nudgeIdx = idx
+    // Two flags, not one. _nudgedCards is spent only by a cue that actually
     // MOVED (see _runNudge); _nudgeArmed just stops a second _update() in the
     // same frame scheduling a second run. The first cut spent the one-shot
     // here, at scheduling — which, with the window listeners below, meant the
     // tap that dismissed the cookie banner killed the cue before it had moved
     // anything, and nothing ever brought it back.
-    if (this._scrollNudged || this._nudgeArmed) return
+    this._nudgedCards ||= new Set()
+    if (this._nudgedCards.has(idx) || this._nudgeArmed) return
     // No motion cue for anyone who asked for no motion. They are not left
     // without one: the fade is already on the box, and is the part of this the
     // owner rates most highly.
@@ -671,7 +721,7 @@ export default class extends Controller {
 
     const card = this.cardTargets[idx]
     if (!card || !card.classList.contains("active")) return
-    const box = this._answerScroller(card)
+    const box = this._cueScroller(card)
     if (!box) return again()
     // Already moved — by them, or by a position the browser restored. The cue
     // is for someone who has not discovered it yet.
@@ -681,8 +731,9 @@ export default class extends Controller {
     if (over <= this.constructor.NUDGE_MIN_OVERFLOW) return again()
 
     this._nudgeArmed = true
+    this._nudgeBox   = box
 
-    const row    = box.querySelector(".choice-list-item, .pick-item, .choice-card")
+    const row    = box.querySelector(".choice-list-item, .pick-item, .choice-card, .token-checkpoint-row")
     const travel = Math.min(over, Math.round(row?.getBoundingClientRect().height) || this.constructor.NUDGE_FALLBACK)
 
     // Any sign of a real person ON THIS LIST cancels it, and leaves them
@@ -702,15 +753,24 @@ export default class extends Controller {
     const opts = { passive: true, signal: ac.signal }
     for (const ev of [ "pointerdown", "touchstart", "wheel" ]) box.addEventListener(ev, this._nudgeAbort, opts)
     window.addEventListener("keydown", this._nudgeAbort, opts)
-    this._nudgeDown = setTimeout(() => this._runNudge(box, travel), this.constructor.NUDGE_DELAY_MS)
+    this._nudgeDown = setTimeout(() => this._runNudge(box, travel, idx), this.constructor.NUDGE_DELAY_MS)
   }
 
-  async _runNudge(box, travel) {
+  async _runNudge(box, travel, idx) {
     if (this._nudgeCancelled) return
+    // The pre-roll is the one stretch nothing watches the box through, and a
+    // scroll can land in it without a pointer, wheel or key (a scrollbar, a
+    // focus ring, a restored position). Started from there, the cue would drag
+    // the answer back up from wherever it had been put. Whoever moved it has
+    // found the scroll, so the card's cue is spent.
+    if (box.scrollTop > 0) {
+      this._nudgedCards.add(idx)
+      return this._teardownNudge()
+    }
     // Spent HERE. The pre-roll is over, nothing interrupted it, and the next
     // frame moves the list — that is the cue being delivered, and the only
-    // thing that should cost a respondent their one showing of it.
-    this._scrollNudged = true
+    // thing that should cost this card its one showing of it.
+    this._nudgedCards.add(idx)
     await this._scrollOver(box, travel, this.constructor.NUDGE_DOWN_MS)
     if (this._nudgeCancelled) return
     await new Promise(done => { this._nudgeUp = setTimeout(done, this.constructor.NUDGE_HOLD_MS) })
