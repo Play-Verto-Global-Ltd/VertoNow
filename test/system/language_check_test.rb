@@ -399,6 +399,9 @@ class LanguageCheckSystemTest < ApplicationSystemTestCase
       click_button "Save wording"
     end
 
+    # The click only starts the POST; read the deck once it has landed, not
+    # in the same instant (raced on CI, run 871).
+    wait_until { mc_card.dig("i18n", "es", "text") == "Sin JavaScript" }
     assert_equal "Sin JavaScript", mc_card.dig("i18n", "es", "text")
   end
 end
