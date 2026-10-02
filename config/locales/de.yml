@@ -269,6 +269,23 @@ de:
     dwell_time_seconds: "%{s} s"
     dwell_time_minutes: "%{m} min %{s} s"
     dwell_time_hours: "%{h} h %{m} min"
+    integrity:
+      menu: "Integrität"
+      heading: "Antwortintegrität"
+      reliable: "von %{count} bewerteten Antworten sind Hoch oder Mittel"
+      explain: "Wie sorgfältig jede Antwort gegeben wurde: Zeit für jede Frage, Schieberegler in der Ausgangsstellung belassen, dieselbe Antwort eine ganze Liste hinunter, lange Listen bis zum Ende gelesen. Bewertet wird die Antwort, nie die Person."
+      unscored_note: "Nicht bewertete Antworten kamen vor Beginn der Bewertung an oder wurden importiert. Nicht verifizierte kamen ohne die Signale an, die die Bewertung braucht, und zählen als Niedrig."
+      exclude: "Niedrige Antworten ausschließen (%{count})"
+      include: "Niedrige Antworten wieder einbeziehen"
+      admin_only: "Ein Admin kann niedrige Antworten aus diesen Ergebnissen ausschließen."
+      notice: "%{count} niedrige und nicht verifizierte Antworten sind ausgeschlossen. Diese Ergebnisse, ihre Exporte und der KI-Bericht zählen nur hohe, mittlere und nicht bewertete Antworten."
+      notice_public: "Diese Ergebnisse schließen Antworten aus, die nicht sorgfältig gegeben wurden."
+      bands:
+        high: "Hoch"
+        medium: "Mittel"
+        low: "Niedrig"
+        unverified: "Nicht verifiziert"
+        unscored: "Nicht bewertet"
   shared_results:
     title: Ergebnisse
     read_only_badge: Schreibgeschützt

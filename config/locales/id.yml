@@ -269,6 +269,23 @@ id:
     dwell_time_seconds: "%{s} dtk"
     dwell_time_minutes: "%{m} mnt %{s} dtk"
     dwell_time_hours: "%{h} jam %{m} mnt"
+    integrity:
+      menu: "Integritas"
+      heading: "Integritas jawaban"
+      reliable: "dari %{count} jawaban yang dinilai berkategori Tinggi atau Sedang"
+      explain: "Seberapa cermat setiap jawaban diberikan: waktu di setiap pertanyaan, penggeser yang dibiarkan di posisi awal, jawaban yang sama di sepanjang daftar, daftar panjang yang dibaca sampai habis. Yang dinilai adalah jawabannya, bukan orangnya."
+      unscored_note: "Jawaban tanpa nilai masuk sebelum penilaian dimulai, atau diimpor. Jawaban yang belum terverifikasi masuk tanpa sinyal yang dibutuhkan penilaian, dan dihitung sebagai Rendah."
+      exclude: "Kecualikan jawaban Rendah (%{count})"
+      include: "Kembalikan jawaban Rendah"
+      admin_only: "Admin dapat mengecualikan jawaban Rendah dari hasil ini."
+      notice: "%{count} jawaban Rendah dan belum terverifikasi dikecualikan. Hasil ini, ekspornya, dan laporan AI hanya menghitung jawaban Tinggi, Sedang, dan tanpa nilai."
+      notice_public: "Hasil ini mengecualikan jawaban yang tidak diberikan dengan cermat."
+      bands:
+        high: "Tinggi"
+        medium: "Sedang"
+        low: "Rendah"
+        unverified: "Belum terverifikasi"
+        unscored: "Tanpa nilai"
   shared_results:
     title: Hasil
     read_only_badge: Hanya baca

@@ -283,6 +283,23 @@ en:
     timeline_share: "Share %"
     timeline_count: "Count"
     timeline_footnote: "Share is of the answers that arrived in each period. A period with fewer than %{count} answers is left blank."
+    integrity:
+      menu: "Integrity"
+      heading: "Response integrity"
+      reliable: "of %{count} scored responses are High or Medium"
+      explain: "How carefully each response was given: time on each question, sliders left where they started, the same answer all the way down a list, long lists read to the end. It scores the response, never the person."
+      unscored_note: "Unscored responses arrived before scoring began, or were imported. Unverified ones arrived without the signals the score needs, and count as Low."
+      exclude: "Leave out Low responses (%{count})"
+      include: "Put Low responses back"
+      admin_only: "An admin can leave Low responses out of these results."
+      notice: "Leaving out %{count} Low and unverified responses. These results, their exports and the AI report count High, Medium and unscored responses only."
+      notice_public: "These results leave out responses that were not given with care."
+      bands:
+        high: "High"
+        medium: "Medium"
+        low: "Low"
+        unverified: "Unverified"
+        unscored: "Unscored"
   shared_results:
     title: "Results"
     read_only_badge: "Read-only"

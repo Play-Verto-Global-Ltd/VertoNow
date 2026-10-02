@@ -276,8 +276,12 @@ module ResolvesResultSegments
   # named preset — the "over time" tab's custom From/To. Applied to the BASE,
   # like the preset, so a segment's count and its small-cell check are made
   # within the window too.
+  #
+  # A Verto whose creator left Low responses out (Survey#integrity_filtered)
+  # has them left out here, at the base, so every segment, count, card,
+  # export and small-cell check below is made without them.
   def resolve_result_segments(survey, segment_param, range_param = nil, links: true, window: nil)
-    base     = survey.responses.where(answered: true).order(created_at: :desc)
+    base     = survey.integrity_filtered(survey.responses.where(answered: true)).order(created_at: :desc)
     base     = apply_date_range(base, range_param)
     base     = base.where(created_at: window.begin.beginning_of_day..window.end.end_of_day) if window
     segments = result_segments(survey, base, links: links)

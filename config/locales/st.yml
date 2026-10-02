@@ -279,6 +279,23 @@ st:
     dwell_time_seconds: "%{s}s"
     dwell_time_minutes: "%{m}m %{s}s"
     dwell_time_hours: "%{h}h %{m}m"
+    integrity:
+      menu: "Botshepehi"
+      heading: "Botshepehi ba dikarabo"
+      reliable: "ho dikarabo tse %{count} tse fuweng matshwao di Hodimo kapa Bohareng"
+      explain: "Hore karabo ka nngwe e fanwe ka hloko hakae: nako potsong ka nngwe, ditsamaisi tse siilweng moo di qadileng teng, karabo e le nngwe ho ya fatshe lenaneng lohle, manane a malelele a badilweng ho fihlela qetellong. E fa karabo matshwao, eseng motho."
+      unscored_note: "Dikarabo tse se nang matshwao di fihlile pele ho qala ho fana ka matshwao, kapa di tlisitswe ho tswa kantle. Tse sa netefatswang di fihlile ntle le matshwao ao dintlha di a hlokang, mme di balwa e le Tlase."
+      exclude: "Tlohela dikarabo tse Tlase (%{count})"
+      include: "Kgutlisa dikarabo tse Tlase"
+      admin_only: "Admin a ka tlohela dikarabo tse Tlase diphethong tsena."
+      notice: "Ho tlohelwa dikarabo tse %{count} tse Tlase le tse sa netefatswang. Diphetho tsena, ditlhahiso tsa tsona le tlaleho ya AI di bala feela dikarabo tse Hodimo, tsa Bohareng le tse se nang matshwao."
+      notice_public: "Diphetho tsena di tlohela dikarabo tse sa kang tsa fanwa ka hloko."
+      bands:
+        high: "Hodimo"
+        medium: "Bohareng"
+        low: "Tlase"
+        unverified: "Ha e a netefatswa"
+        unscored: "Ha e na matshwao"
   shared_results:
     title: "Diphetho"
     read_only_badge: "Ho Bala Feela"

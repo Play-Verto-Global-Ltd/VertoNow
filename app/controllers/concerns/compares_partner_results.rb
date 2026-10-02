@@ -57,7 +57,7 @@ module ComparesPartnerResults
   # matching slice or nil when there is nobody to compare with].
   def resolve_partner_comparison(segment_param, range_param)
     @date_range = range_param.presence
-    answered = apply_date_range(@survey.responses.where(answered: true).order(created_at: :desc), @date_range)
+    answered = apply_date_range(@survey.integrity_filtered(@survey.responses.where(answered: true)).order(created_at: :desc), @date_range)
     mine     = answered.where(survey_share_id: @share.id)
     others   = answered.where.not(id: mine.reorder(nil).select(:id))
 

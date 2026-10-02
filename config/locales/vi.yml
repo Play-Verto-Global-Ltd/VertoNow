@@ -269,6 +269,23 @@ vi:
     dwell_time_seconds: "%{s} giây"
     dwell_time_minutes: "%{m} phút %{s} giây"
     dwell_time_hours: "%{h} giờ %{m} phút"
+    integrity:
+      menu: "Độ tin cậy"
+      heading: "Độ tin cậy của câu trả lời"
+      reliable: "trong %{count} câu trả lời đã chấm điểm đạt mức Cao hoặc Trung bình"
+      explain: "Mỗi câu trả lời được đưa ra cẩn thận đến đâu: thời gian cho từng câu hỏi, thanh trượt để nguyên ở vị trí ban đầu, cùng một câu trả lời suốt cả danh sách, danh sách dài được đọc đến cuối. Chấm điểm câu trả lời, không bao giờ chấm điểm con người."
+      unscored_note: "Câu trả lời chưa chấm điểm đến trước khi bắt đầu chấm điểm, hoặc được nhập từ nơi khác. Câu trả lời chưa xác minh đến mà không có các tín hiệu cần cho việc chấm điểm, và được tính là Thấp."
+      exclude: "Loại bỏ câu trả lời Thấp (%{count})"
+      include: "Đưa câu trả lời Thấp trở lại"
+      admin_only: "Quản trị viên có thể loại bỏ câu trả lời Thấp khỏi các kết quả này."
+      notice: "Đang loại bỏ %{count} câu trả lời Thấp và chưa xác minh. Các kết quả này, bản xuất và báo cáo AI chỉ tính câu trả lời Cao, Trung bình và chưa chấm điểm."
+      notice_public: "Các kết quả này loại bỏ những câu trả lời không được đưa ra cẩn thận."
+      bands:
+        high: "Cao"
+        medium: "Trung bình"
+        low: "Thấp"
+        unverified: "Chưa xác minh"
+        unscored: "Chưa chấm điểm"
   shared_results:
     title: Kết quả
     read_only_badge: Chỉ xem

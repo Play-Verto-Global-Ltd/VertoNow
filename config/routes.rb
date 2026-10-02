@@ -241,6 +241,9 @@ Rails.application.routes.draw do
   post   "surveys/:id/results_share", to: "results_shares#create",  as: :results_share_survey
   patch  "surveys/:id/results_share", to: "results_shares#update"
   delete "surveys/:id/results_share", to: "results_shares#destroy"
+  # The results header's Integrity menu: leave Low responses out of the
+  # results, or put them back (Survey#exclude_low_integrity).
+  patch  "surveys/:id/integrity_filter", to: "integrity_filters#update", as: :integrity_filter_survey
   # Repeat participation: start the next wave (closes whatever's open),
   # rename one.
   post  "surveys/:survey_id/waves",     to: "survey_waves#create", as: :survey_waves

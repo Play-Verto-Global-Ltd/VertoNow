@@ -277,6 +277,23 @@ zu:
     dwell_time_seconds: "%{s}s"
     dwell_time_minutes: "%{m}m %{s}s"
     dwell_time_hours: "%{h}h %{m}m"
+    integrity:
+      menu: "Ukwethembeka"
+      heading: "Ukwethembeka kwezimpendulo"
+      reliable: "kwezimpendulo ezingu-%{count} ezinikezwe amaphuzu zisezingeni Eliphezulu noma Eliphakathi"
+      explain: "Ukuthi impendulo ngayinye inikezwe ngokucophelela kangakanani: isikhathi embuzweni ngamunye, amaslayida ashiywe lapho aqale khona, impendulo efanayo kuze kube phansi kohlu lonke, uhlu olude olufundwe kuze kube sekugcineni. Inikeza impendulo amaphuzu, hhayi umuntu."
+      unscored_note: "Izimpendulo ezingenamaphuzu zafika ngaphambi kokuba kuqalwe ukunikeza amaphuzu, noma zangeniswa zivela kwenye indawo. Ezingaqinisekisiwe zafika zingenazo izimpawu ezidingwa amaphuzu, futhi zibalwa njengeZiphansi."
+      exclude: "Shiya izimpendulo eziPhansi (%{count})"
+      include: "Buyisela izimpendulo eziPhansi"
+      admin_only: "Umphathi angashiya izimpendulo eziPhansi kule miphumela."
+      notice: "Kushiywa izimpendulo ezingu-%{count} eziPhansi nezingaqinisekisiwe. Le miphumela, okuthunyelwe ngaphandle kwayo kanye nombiko we-AI kubala kuphela izimpendulo eziPhezulu, eziPhakathi nezingenamaphuzu."
+      notice_public: "Le miphumela ishiya izimpendulo ezinganikezwanga ngokucophelela."
+      bands:
+        high: "Phezulu"
+        medium: "Phakathi"
+        low: "Phansi"
+        unverified: "Akuqinisekisiwe"
+        unscored: "Akunamaphuzu"
   shared_results:
     title: "Imiphumela"
     read_only_badge: "Ukufunda kuphela"

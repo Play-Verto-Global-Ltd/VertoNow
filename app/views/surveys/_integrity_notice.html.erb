@@ -1,0 +1,14 @@
+<%# Says that Low responses are being left out (Survey#integrity_filtered),
+    everywhere results are read with them left out: the creator's results
+    page, the public results link and the partner page. A number nobody is
+    told was filtered is a number someone will quote as the whole picture.
+    `count` only on the creator's own page; the public and partner pages say
+    that responses were left out, not how many. %>
+<% if survey.excluding_low_integrity? %>
+  <div class="rc-integrity-notice" role="note">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2.5 3.5h11L9.2 8.6v4.2l-2.4-1.2v-3L2.5 3.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+    </svg>
+    <span><%= local_assigns[:count] ? t("results.integrity.notice", count: count) : t("results.integrity.notice_public") %></span>
+  </div>
+<% end %>

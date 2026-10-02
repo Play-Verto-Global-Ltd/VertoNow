@@ -269,6 +269,23 @@ fr:
     dwell_time_seconds: "%{s} s"
     dwell_time_minutes: "%{m} min %{s} s"
     dwell_time_hours: "%{h} h %{m} min"
+    integrity:
+      menu: "Intégrité"
+      heading: "Intégrité des réponses"
+      reliable: "des %{count} réponses notées sont Élevées ou Moyennes"
+      explain: "Le soin avec lequel chaque réponse a été donnée : le temps passé sur chaque question, les curseurs laissés à leur position de départ, la même réponse tout au long d'une liste, les longues listes lues jusqu'au bout. C'est la réponse qui est notée, jamais la personne."
+      unscored_note: "Les réponses non notées sont arrivées avant le début de la notation, ou ont été importées. Les réponses non vérifiées sont arrivées sans les signaux dont la note a besoin, et comptent comme Faibles."
+      exclude: "Exclure les réponses Faibles (%{count})"
+      include: "Réintégrer les réponses Faibles"
+      admin_only: "Un administrateur peut exclure les réponses Faibles de ces résultats."
+      notice: "%{count} réponses Faibles et non vérifiées sont exclues. Ces résultats, leurs exports et le rapport IA ne comptent que les réponses Élevées, Moyennes et non notées."
+      notice_public: "Ces résultats excluent les réponses qui n'ont pas été données avec soin."
+      bands:
+        high: "Élevée"
+        medium: "Moyenne"
+        low: "Faible"
+        unverified: "Non vérifiée"
+        unscored: "Non notée"
   shared_results:
     title: Résultats
     read_only_badge: Lecture seule

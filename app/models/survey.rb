@@ -3631,6 +3631,31 @@ class Survey < ApplicationRecord
     play_key_taken?(value, excluding_survey_id: excluding_id)
   end
 
+  # ── Response integrity ─────────────────────────────────────────────────────
+  # Whether this Verto's results leave out Low and unverified responses
+  # (ResponseIntegrity). The creator's switch only means anything once scores
+  # are visible: in shadow mode it is stored and ignored, so nothing a creator
+  # cannot see can change what they are shown.
+  def excluding_low_integrity?
+    exclude_low_integrity? && ResponseIntegrity.visible?
+  end
+
+  # `scope` (responses of this Verto) narrowed to the ones its results count.
+  # Every creator-facing path that counts responses goes through here — the
+  # segment base, the AI readings and report, the partner page — so the page,
+  # its exports and what is said about it never disagree. The respondent's own
+  # end-of-Verto comparison does not: that is a promise to the person who just
+  # answered, not the creator's analysis.
+  def integrity_filtered(scope)
+    excluding_low_integrity? ? scope.where(integrity_band: ResponseIntegrity::PASSING_BANDS) : scope
+  end
+
+  # How many answered responses the switch leaves out, or would — for the
+  # notice that says it is on, and the count beside the switch.
+  def low_integrity_count
+    responses.where(answered: true).where.not(integrity_band: ResponseIntegrity::PASSING_BANDS).count
+  end
+
   # A "responder" is anyone who answered at least one question (not just those
   # who submitted). Counted in SQL off the denormalised `answered` flag, so this
   # never loads response rows / answers JSON (the dashboard computes these once

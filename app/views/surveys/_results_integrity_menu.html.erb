@@ -1,0 +1,52 @@
+<%# ── Integrity: the band split of this Verto's answered responses
+    (ResponseIntegrity) and, for an admin, the switch that leaves Low ones
+    out of every count on this page (IntegrityFiltersController). Whole-Verto
+    on purpose, like the live tally: the split says how much of what was
+    collected can be relied on, and narrowing it to the segment on screen
+    would make the switch's count disagree with the notice it produces.
+    Rendered only once ResponseIntegrity.visible?. ── %>
+<% split  = local_assigns[:split] || {} %>
+<% scored = ResponseIntegrity::SCORED_BANDS.sum { |b| split[b].to_i } %>
+<% reliable = split["high"].to_i + split["medium"].to_i %>
+<% low_count = split["low"].to_i + split["unverified"].to_i %>
+<details class="results-export-menu rh-integrity-menu" name="results-header-menu" style="position:relative;">
+  <summary class="rh-pill<%= " rh-pill--on" if @survey.excluding_low_integrity? %>">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M8 1.8 2.8 3.9v3.6c0 3.1 2.2 5.6 5.2 6.7 3-1.1 5.2-3.6 5.2-6.7V3.9L8 1.8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="m5.7 8 1.6 1.6 3-3.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg><%= t("results.integrity.menu") %>
+  </summary>
+  <div class="rh-integrity-panel">
+    <div class="rh-integrity-heading"><%= t("results.integrity.heading") %></div>
+    <% if scored.positive? %>
+      <div class="rh-integrity-headline">
+        <span class="rh-integrity-pct"><%= (reliable * 100.0 / scored).round %>%</span>
+        <span><%= t("results.integrity.reliable", count: scored) %></span>
+      </div>
+    <% end %>
+    <ul class="rh-integrity-bands">
+      <% ResponseIntegrity::BANDS.each do |band| %>
+        <li class="rh-integrity-band rh-integrity-band--<%= band %>">
+          <span class="rh-integrity-dot" aria-hidden="true"></span>
+          <span class="rh-integrity-label"><%= t("results.integrity.bands.#{band}") %></span>
+          <span class="rh-integrity-count"><%= split[band].to_i %></span>
+        </li>
+      <% end %>
+    </ul>
+    <p class="rh-integrity-explain"><%= t("results.integrity.explain") %></p>
+    <p class="rh-integrity-explain"><%= t("results.integrity.unscored_note") %></p>
+    <% if current_membership&.admin? %>
+      <% if @survey.excluding_low_integrity? %>
+        <%= button_to t("results.integrity.include"), integrity_filter_survey_path(@survey),
+              method: :patch, params: { exclude: "0", segment: @active_segment[:id], range: @date_range },
+              form: { style: "margin:10px 0 0;" }, class: "rh-integrity-switch" %>
+      <% elsif low_count.positive? %>
+        <%= button_to t("results.integrity.exclude", count: low_count), integrity_filter_survey_path(@survey),
+              method: :patch, params: { exclude: "1", segment: @active_segment[:id], range: @date_range },
+              form: { style: "margin:10px 0 0;" }, class: "rh-integrity-switch rh-integrity-switch--on" %>
+      <% end %>
+    <% elsif !@survey.excluding_low_integrity? && low_count.positive? %>
+      <p class="rh-integrity-explain"><%= t("results.integrity.admin_only") %></p>
+    <% end %>
+  </div>
+</details>

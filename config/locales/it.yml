@@ -269,6 +269,23 @@ it:
     dwell_time_seconds: "%{s} s"
     dwell_time_minutes: "%{m} min %{s} s"
     dwell_time_hours: "%{h} h %{m} min"
+    integrity:
+      menu: "Integrità"
+      heading: "Integrità delle risposte"
+      reliable: "di %{count} risposte valutate sono Alta o Media"
+      explain: "Con quanta cura è stata data ogni risposta: il tempo su ogni domanda, i cursori lasciati dove partivano, la stessa risposta lungo tutto un elenco, gli elenchi lunghi letti fino in fondo. Valuta la risposta, mai la persona."
+      unscored_note: "Le risposte non valutate sono arrivate prima che la valutazione iniziasse, oppure sono state importate. Quelle non verificate sono arrivate senza i segnali di cui la valutazione ha bisogno, e contano come Bassa."
+      exclude: "Escludi le risposte Basse (%{count})"
+      include: "Reintegra le risposte Basse"
+      admin_only: "Un amministratore può escludere le risposte Basse da questi risultati."
+      notice: "Sono escluse %{count} risposte Basse e non verificate. Questi risultati, le loro esportazioni e il report IA contano solo risposte Alte, Medie e non valutate."
+      notice_public: "Questi risultati escludono le risposte che non sono state date con cura."
+      bands:
+        high: "Alta"
+        medium: "Media"
+        low: "Bassa"
+        unverified: "Non verificata"
+        unscored: "Non valutata"
   shared_results:
     title: Risultati
     read_only_badge: Sola lettura

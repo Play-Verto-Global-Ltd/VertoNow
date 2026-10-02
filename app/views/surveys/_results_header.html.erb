@@ -181,6 +181,10 @@
       </div>
     </details>
 
+    <% if ResponseIntegrity.visible? %>
+      <%= render "surveys/results_integrity_menu", split: @integrity_split %>
+    <% end %>
+
     <%# ── AI Report: brief → generate → preview, edit in place, download
         PDF, save to Google Drive. First open shows a 3-question brief
         (goal / audience / length) that steers the AI away from a

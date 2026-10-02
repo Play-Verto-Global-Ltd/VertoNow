@@ -19,6 +19,12 @@ class ResultsExport
                       "Duration (seconds)", "Device", "Responder", "Device group" ].freeze
   RESPONDER_COLUMN    = RESPONSE_HEADER.index("Responder")
   DEVICE_GROUP_COLUMN = RESPONSE_HEADER.index("Device group")
+  # The Verto Integrity Score's band (ResponseIntegrity), after every other
+  # column so nothing reading the file by position moves. The band only: the
+  # number and the signals behind it stay out of exports, as Mike's proposal
+  # asks — a creator filtering a spreadsheet on "score < 48" is acting on a
+  # precision the score does not have. Only while scores are visible at all.
+  INTEGRITY_HEADER = "Integrity band".freeze
   SUMMARY_HEADER  = [ "Card #", "Card type", "Question", "Answer option", "Count", "Percentage", "Total answers" ].freeze
   CHOICE_TYPES    = %w[multiple_choice yes_no select_one_grid select_many select_many_grid scenario].freeze
 
@@ -67,9 +73,11 @@ class ResultsExport
   # formatted cells (never AR objects), which puts this path's peak memory
   # where the Sheets/XLSX paths already are — both materialise every row.
   def each_response_row
+    integrity = ResponseIntegrity.visible?
     yield csv_safe_row(RESPONSE_HEADER +
                        question_cards.map { |card, _idx| question_text(card) } +
-                       question_cards.map { |card, _idx| dwell_header(card) })
+                       question_cards.map { |card, _idx| dwell_header(card) } +
+                       (integrity ? [ INTEGRITY_HEADER ] : []))
 
     buffered = []
     each_export_response do |response|
@@ -94,7 +102,8 @@ class ResultsExport
         # time is given for a card the respondent viewed and skipped too —
         # that is real behaviour — whereas the summary's typical figure is
         # over answers only (DwellTimes).
-        question_cards.map { |_card, idx| response.dwell_seconds_at(idx) || "" }
+        question_cards.map { |_card, idx| response.dwell_seconds_at(idx) || "" } +
+        (integrity ? [ response.integrity_band.to_s ] : [])
       buffered << { cells: cells,
                     code_digest: response.respondent_code_digest.presence,
                     device_digest: response.player_key_digest.presence,
@@ -190,7 +199,7 @@ class ResultsExport
       @responses.reorder(nil)
         .select(:id, :created_at, :locale, :survey_share_id, :survey_link_id, :answers,
                 :started_at, :completed_at, :device_kind, :dwell_ms,
-                :respondent_code_digest, :player_key_digest)
+                :respondent_code_digest, :player_key_digest, :integrity_band)
         .find_each(batch_size: 500, &block)
     else
       @responses.each(&block)

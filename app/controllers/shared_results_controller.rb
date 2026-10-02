@@ -152,7 +152,7 @@ class SharedResultsController < ApplicationController
   # page is showing, so it is held to the floor over all of them. Checked on
   # every path that can hand it out, not only on the page that links to it.
   def too_few_for_report?
-    @survey.responses.where(answered: true).count < Response::MIN_REGION_SAMPLE_SIZE
+    @survey.integrity_filtered(@survey.responses.where(answered: true)).count < Response::MIN_REGION_SAMPLE_SIZE
   end
 
   # without_report_text (below) excludes results_report/results_summary — a

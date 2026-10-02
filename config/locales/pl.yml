@@ -269,6 +269,23 @@ pl:
     dwell_time_seconds: "%{s} s"
     dwell_time_minutes: "%{m} min %{s} s"
     dwell_time_hours: "%{h} godz. %{m} min"
+    integrity:
+      menu: "Rzetelność"
+      heading: "Rzetelność odpowiedzi"
+      reliable: "z %{count} ocenionych odpowiedzi ma poziom Wysoki lub Średni"
+      explain: "Jak starannie udzielono każdej odpowiedzi: czas przy każdym pytaniu, suwaki pozostawione w pozycji początkowej, ta sama odpowiedź przez całą listę, długie listy przeczytane do końca. Ocenia odpowiedź, nigdy osobę."
+      unscored_note: "Nieocenione odpowiedzi wpłynęły przed rozpoczęciem oceniania lub zostały zaimportowane. Niezweryfikowane wpłynęły bez sygnałów potrzebnych do oceny i liczą się jako Niskie."
+      exclude: "Pomiń Niskie odpowiedzi (%{count})"
+      include: "Przywróć Niskie odpowiedzi"
+      admin_only: "Administrator może pominąć Niskie odpowiedzi w tych wynikach."
+      notice: "Pominięto %{count} Niskich i niezweryfikowanych odpowiedzi. Te wyniki, ich eksporty i raport AI liczą tylko odpowiedzi Wysokie, Średnie i nieocenione."
+      notice_public: "Te wyniki pomijają odpowiedzi, których nie udzielono starannie."
+      bands:
+        high: "Wysoki"
+        medium: "Średni"
+        low: "Niski"
+        unverified: "Niezweryfikowany"
+        unscored: "Nieoceniony"
   shared_results:
     title: Wyniki
     read_only_badge: Tylko do odczytu

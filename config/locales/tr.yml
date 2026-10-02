@@ -269,6 +269,23 @@ tr:
     dwell_time_seconds: "%{s} sn"
     dwell_time_minutes: "%{m} dk %{s} sn"
     dwell_time_hours: "%{h} sa %{m} dk"
+    integrity:
+      menu: "Güvenilirlik"
+      heading: "Yanıt güvenilirliği"
+      reliable: "(%{count} puanlanmış yanıt içinde Yüksek veya Orta)"
+      explain: "Her yanıtın ne kadar özenle verildiği: her soruda geçen süre, başladığı yerde bırakılan kaydırıcılar, bir liste boyunca aynı yanıt, sonuna kadar okunan uzun listeler. Puanlanan yanıttır, asla kişi değil."
+      unscored_note: "Puanlanmamış yanıtlar puanlama başlamadan önce geldi ya da içe aktarıldı. Doğrulanmamış olanlar puanlamanın ihtiyaç duyduğu sinyaller olmadan geldi ve Düşük sayılır."
+      exclude: "Düşük yanıtları dışarıda bırak (%{count})"
+      include: "Düşük yanıtları geri ekle"
+      admin_only: "Bir yönetici Düşük yanıtları bu sonuçların dışında bırakabilir."
+      notice: "%{count} Düşük ve doğrulanmamış yanıt dışarıda bırakılıyor. Bu sonuçlar, dışa aktarımları ve yapay zekâ raporu yalnızca Yüksek, Orta ve puanlanmamış yanıtları sayar."
+      notice_public: "Bu sonuçlar özenle verilmemiş yanıtları dışarıda bırakır."
+      bands:
+        high: "Yüksek"
+        medium: "Orta"
+        low: "Düşük"
+        unverified: "Doğrulanmamış"
+        unscored: "Puanlanmamış"
   shared_results:
     title: Sonuçlar
     read_only_badge: Salt okunur

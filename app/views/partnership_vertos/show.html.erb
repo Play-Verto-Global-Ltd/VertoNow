@@ -137,6 +137,7 @@
       </div>
 
       <div style="display:flex;flex-direction:column;gap:22px;">
+        <%= render "surveys/integrity_notice", survey: @survey %>
         <% if @active_segment[:suppressed] %>
           <%= render "surveys/results_suppressed" %>
         <% else %>

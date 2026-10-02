@@ -16,7 +16,7 @@ module GeneratesResultsReport
   # The report markdown for `survey`, generating + caching it when missing or
   # stale (cache is keyed to the completed-response count, like the summary).
   def results_report_markdown(survey)
-    responses = survey.responses.where(status: "completed")
+    responses = survey.integrity_filtered(survey.responses.where(status: "completed"))
     total     = responses.count
 
     if survey.results_report.present? && survey.results_report_response_count == total
@@ -55,7 +55,7 @@ module GeneratesResultsReport
   # `brief` is the creator's goal/audience/length answers, persisted so later
   # regenerations — forced or count-triggered — reuse them.
   def stream_results_report(survey, brief: nil, force: false)
-    responses = survey.responses.where(status: "completed")
+    responses = survey.integrity_filtered(survey.responses.where(status: "completed"))
     total     = responses.count
 
     if !force && survey.results_report.present? && survey.results_report_response_count == total
@@ -116,7 +116,7 @@ module GeneratesResultsReport
   def report_figures_for(survey)
     aggregate_results(
       Array(survey.cards),
-      survey.responses.where(status: "completed").order(created_at: :desc)
+      survey.integrity_filtered(survey.responses.where(status: "completed")).order(created_at: :desc)
     )
   end
 

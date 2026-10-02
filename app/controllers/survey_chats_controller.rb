@@ -13,7 +13,7 @@ class SurveyChatsController < ApplicationController
 
   def create
     survey    = Current.organisation.surveys.find(params[:survey_id])
-    responses = survey.responses.where(status: "completed").order(created_at: :desc)
+    responses = survey.integrity_filtered(survey.responses.where(status: "completed")).order(created_at: :desc)
     total     = responses.count
     aggregated = aggregate_results(Array(survey.cards), responses)
 

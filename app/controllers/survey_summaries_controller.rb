@@ -60,7 +60,7 @@ class SurveySummariesController < ApplicationController
 
   def show
     survey    = Current.organisation.surveys.find(params[:id])
-    responses = survey.responses.where(status: "completed").order(created_at: :desc)
+    responses = survey.integrity_filtered(survey.responses.where(status: "completed")).order(created_at: :desc)
     total     = responses.count
 
     response.headers["Content-Type"]      = "text/plain; charset=utf-8"

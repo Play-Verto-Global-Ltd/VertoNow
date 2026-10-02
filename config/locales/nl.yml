@@ -269,6 +269,23 @@ nl:
     dwell_time_seconds: "%{s} s"
     dwell_time_minutes: "%{m} min %{s} s"
     dwell_time_hours: "%{h} u %{m} min"
+    integrity:
+      menu: "Integriteit"
+      heading: "Antwoordintegriteit"
+      reliable: "van %{count} beoordeelde antwoorden is Hoog of Gemiddeld"
+      explain: "Hoe zorgvuldig elk antwoord is gegeven: tijd per vraag, schuifregelaars gelaten waar ze begonnen, hetzelfde antwoord een hele lijst lang, lange lijsten tot het eind gelezen. Het beoordeelt het antwoord, nooit de persoon."
+      unscored_note: "Niet-beoordeelde antwoorden kwamen binnen voordat de beoordeling begon, of zijn geïmporteerd. Niet-geverifieerde kwamen binnen zonder de signalen die de score nodig heeft, en tellen als Laag."
+      exclude: "Lage antwoorden weglaten (%{count})"
+      include: "Lage antwoorden terugzetten"
+      admin_only: "Een beheerder kan Lage antwoorden uit deze resultaten weglaten."
+      notice: "%{count} Lage en niet-geverifieerde antwoorden worden weggelaten. Deze resultaten, hun exports en het AI-rapport tellen alleen Hoge, Gemiddelde en niet-beoordeelde antwoorden."
+      notice_public: "Deze resultaten laten antwoorden weg die niet zorgvuldig zijn gegeven."
+      bands:
+        high: "Hoog"
+        medium: "Gemiddeld"
+        low: "Laag"
+        unverified: "Niet geverifieerd"
+        unscored: "Niet beoordeeld"
   shared_results:
     title: Resultaten
     read_only_badge: Alleen-lezen

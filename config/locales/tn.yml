@@ -279,6 +279,23 @@ tn:
     dwell_time_seconds: "%{s}s"
     dwell_time_minutes: "%{m}m %{s}s"
     dwell_time_hours: "%{h}h %{m}m"
+    integrity:
+      menu: "Boikanyego"
+      heading: "Boikanyego jwa dikarabo"
+      reliable: "ya dikarabo di le %{count} tse di filweng maduo di Kwa godimo kgotsa Fa gare"
+      explain: "Gore karabo nngwe le nngwe e neilwe ka kelotlhoko go le kae: nako mo potsong nngwe le nngwe, ditsamaisi tse di tlogetsweng kwa di simolotseng teng, karabo e le nngwe go ya kwa tlase ga lenaane lotlhe, manane a maleele a badilweng go fitlha kwa bofelong. E naya karabo maduo, e seng motho."
+      unscored_note: "Dikarabo tse di se nang maduo di fitlhile pele go simolola go naya maduo, kgotsa di tsentswe go tswa kwa ntle. Tse di sa netefadiwang di fitlhile kwa ntle ga matshwao a maduo a a tlhokang, mme di balwa jaaka Kwa tlase."
+      exclude: "Tlogela dikarabo tse di Kwa tlase (%{count})"
+      include: "Busetsa dikarabo tse di Kwa tlase"
+      admin_only: "Motsamaisi a ka tlogela dikarabo tse di Kwa tlase mo dipholong tse."
+      notice: "Go tlogelwa dikarabo di le %{count} tse di Kwa tlase le tse di sa netefadiwang. Dipholo tse, diromelwantle tsa tsone le pegelo ya AI di bala fela dikarabo tse di Kwa godimo, tsa Fa gare le tse di se nang maduo."
+      notice_public: "Dipholo tse di tlogela dikarabo tse di sa neelwang ka kelotlhoko."
+      bands:
+        high: "Kwa godimo"
+        medium: "Fa gare"
+        low: "Kwa tlase"
+        unverified: "Ga e a netefadiwa"
+        unscored: "Ga e na maduo"
   shared_results:
     title: "Diphetho"
     read_only_badge: "Go bala fela"

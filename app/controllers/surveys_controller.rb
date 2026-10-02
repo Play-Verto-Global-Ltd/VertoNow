@@ -1376,6 +1376,11 @@ class SurveysController < ApplicationController
     # count — skipped for a segment under the small-cell line, whose cards
     # are replaced by the notice.
     @dwell      = @active_segment[:suppressed] ? {} : DwellTimes.for(Array(@survey.cards), @responses)
+    # The Integrity menu's band split (surveys/_results_integrity_menu), only
+    # once scores are shown at all. One grouped count over an indexed column.
+    if ResponseIntegrity.visible?
+      @integrity_split = @survey.responses.where(answered: true).reorder(nil).group(:integrity_band).count
+    end
 
     # The creator's view of the board. Whole-Verto on purpose — identities
     # span the date/segment filters, and the retake policy already decides

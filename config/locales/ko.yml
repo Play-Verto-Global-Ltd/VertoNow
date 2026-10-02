@@ -269,6 +269,23 @@ ko:
     dwell_time_seconds: "%{s}초"
     dwell_time_minutes: "%{m}분 %{s}초"
     dwell_time_hours: "%{h}시간 %{m}분"
+    integrity:
+      menu: "무결성"
+      heading: "응답 무결성"
+      reliable: "(점수가 매겨진 응답 %{count}개 중 높음 또는 보통)"
+      explain: "각 응답이 얼마나 신중하게 이루어졌는지: 질문마다 들인 시간, 처음 위치 그대로 둔 슬라이더, 목록 전체에 같은 답, 긴 목록을 끝까지 읽었는지. 점수는 응답에 매기며, 사람에게 매기지 않습니다."
+      unscored_note: "점수 없음 응답은 점수 산정이 시작되기 전에 들어왔거나 가져온 응답입니다. 미확인 응답은 점수에 필요한 신호 없이 들어온 응답이며 낮음으로 계산됩니다."
+      exclude: "낮음 응답 제외 (%{count})"
+      include: "낮음 응답 다시 포함"
+      admin_only: "관리자는 이 결과에서 낮음 응답을 제외할 수 있습니다."
+      notice: "낮음 및 미확인 응답 %{count}개를 제외하고 있습니다. 이 결과와 내보내기, AI 보고서는 높음, 보통, 점수 없음 응답만 집계합니다."
+      notice_public: "이 결과는 신중하게 이루어지지 않은 응답을 제외합니다."
+      bands:
+        high: "높음"
+        medium: "보통"
+        low: "낮음"
+        unverified: "미확인"
+        unscored: "점수 없음"
   shared_results:
     title: 결과
     read_only_badge: 읽기 전용

@@ -45,6 +45,8 @@ class GoogleSheetsExportsController < ApplicationController
   def sheet_title(survey, active)
     base = survey.theme.presence || survey.title.presence || "Verto"
     seg  = active && active[:id] != "overall" ? " (#{active[:label]})" : ""
-    "#{base} — Verto results#{seg}"
+    # As the download's filename does: a sheet outlives the page that made it.
+    low  = survey.excluding_low_integrity? ? " — excluding Low integrity" : ""
+    "#{base} — Verto results#{seg}#{low}"
   end
 end

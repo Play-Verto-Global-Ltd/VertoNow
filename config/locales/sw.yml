@@ -269,6 +269,23 @@ sw:
     dwell_time_seconds: "sek. %{s}"
     dwell_time_minutes: "dak. %{m} sek. %{s}"
     dwell_time_hours: "saa %{h} dak. %{m}"
+    integrity:
+      menu: "Uadilifu"
+      heading: "Uadilifu wa majibu"
+      reliable: "ya majibu %{count} yaliyopimwa ni ya Juu au ya Kati"
+      explain: "Jinsi kila jibu lilivyotolewa kwa uangalifu: muda kwenye kila swali, vitelezi vilivyoachwa pale vilipoanzia, jibu lilelile katika orodha nzima, orodha ndefu zilizosomwa hadi mwisho. Hupima jibu, kamwe si mtu."
+      unscored_note: "Majibu yasiyopimwa yalifika kabla upimaji haujaanza, au yaliletwa kutoka nje. Yasiyothibitishwa yalifika bila ishara zinazohitajika na upimaji, na huhesabiwa kama ya Chini."
+      exclude: "Acha majibu ya Chini (%{count})"
+      include: "Rudisha majibu ya Chini"
+      admin_only: "Msimamizi anaweza kuacha majibu ya Chini katika matokeo haya."
+      notice: "Majibu %{count} ya Chini na yasiyothibitishwa yameachwa. Matokeo haya, faili zake zilizohamishwa na ripoti ya AI huhesabu majibu ya Juu, ya Kati na yasiyopimwa pekee."
+      notice_public: "Matokeo haya yanaacha majibu ambayo hayakutolewa kwa uangalifu."
+      bands:
+        high: "Juu"
+        medium: "Kati"
+        low: "Chini"
+        unverified: "Haijathibitishwa"
+        unscored: "Haijapimwa"
   shared_results:
     title: Matokeo
     read_only_badge: Kusoma tu

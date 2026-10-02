@@ -269,6 +269,23 @@ ja:
     dwell_time_seconds: "%{s}秒"
     dwell_time_minutes: "%{m}分%{s}秒"
     dwell_time_hours: "%{h}時間%{m}分"
+    integrity:
+      menu: "整合性"
+      heading: "回答の整合性"
+      reliable: "（採点済み%{count}件のうち、高または中）"
+      explain: "各回答がどれだけ丁寧に行われたか：各質問にかけた時間、最初の位置のままのスライダー、リスト全体で同じ回答、長いリストを最後まで読んだか。採点するのは回答であり、人ではありません。"
+      unscored_note: "未採点の回答は、採点の開始前に届いたものか、インポートされたものです。未検証の回答は採点に必要なシグナルなしで届いたもので、低として扱われます。"
+      exclude: "低の回答を除外（%{count}件）"
+      include: "低の回答を戻す"
+      admin_only: "管理者はこの結果から低の回答を除外できます。"
+      notice: "低および未検証の回答%{count}件を除外しています。この結果、そのエクスポート、AIレポートは、高・中・未採点の回答のみを集計しています。"
+      notice_public: "この結果では、丁寧に行われなかった回答を除外しています。"
+      bands:
+        high: "高"
+        medium: "中"
+        low: "低"
+        unverified: "未検証"
+        unscored: "未採点"
   shared_results:
     title: 結果
     read_only_badge: 読み取り専用

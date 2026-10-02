@@ -278,6 +278,23 @@ xh:
     dwell_time_seconds: "%{s}s"
     dwell_time_minutes: "%{m}m %{s}s"
     dwell_time_hours: "%{h}h %{m}m"
+    integrity:
+      menu: "Ukuthembeka"
+      heading: "Ukuthembeka kweempendulo"
+      reliable: "kwiimpendulo ezi-%{count} ezinikwe amanqaku zikuPhezulu okanye Phakathi"
+      explain: "Ingaba impendulo nganye inikwe ngononophelo kangakanani: ixesha kumbuzo ngamnye, izilayidi ezishiywe apho ziqale khona, impendulo enye ukuya ezantsi kuluhlu lonke, uluhlu olude olufundwe ukuya esiphelweni. Inika impendulo amanqaku, hayi umntu."
+      unscored_note: "Iimpendulo ezingenamanqaku zifike phambi kokuba kuqalwe ukunika amanqaku, okanye zingeniswe zivela kwenye indawo. Ezingaqinisekiswanga zifike ngaphandle kweempawu ezifunwa ngamanqaku, kwaye zibalwa njengeZiphantsi."
+      exclude: "Shiya iimpendulo eziPhantsi (%{count})"
+      include: "Buyisela iimpendulo eziPhantsi"
+      admin_only: "Umlawuli angashiya iimpendulo eziPhantsi kwezi ziphumo."
+      notice: "Kushiywa iimpendulo ezi-%{count} eziPhantsi nezingaqinisekiswanga. Ezi ziphumo, izinto ezithunyelwe ngaphandle nengxelo ye-AI zibala kuphela iimpendulo eziPhezulu, ezikuPhakathi nezingenamanqaku."
+      notice_public: "Ezi ziphumo zishiya iimpendulo ezingazange zinikwe ngononophelo."
+      bands:
+        high: "Phezulu"
+        medium: "Phakathi"
+        low: "Phantsi"
+        unverified: "Ayiqinisekiswanga"
+        unscored: "Ayinamanqaku"
   shared_results:
     title: "Iziphumo"
     read_only_badge: "Ukufunda kuphela"

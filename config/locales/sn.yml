@@ -271,6 +271,23 @@ sn:
     dwell_time_seconds: "%{s}s"
     dwell_time_minutes: "%{m}m %{s}s"
     dwell_time_hours: "%{h}h %{m}m"
+    integrity:
+      menu: "Kuvimbika"
+      heading: "Kuvimbika kwemhinduro"
+      reliable: "pamhinduro %{count} dzakapihwa mamaki dziri Yakakwira kana Yepakati"
+      explain: "Kuti mhinduro imwe neimwe yakapihwa nekuchenjera zvakadii: nguva pamubvunzo mumwe nemumwe, zvitsvedza zvakasiyiwa pazvakatangira, mhinduro imwe chete kusvika pasi perunyorwa, runyorwa rurefu rwakaverengwa kusvika kumagumo. Zvinopa mamaki kumhinduro, kwete kumunhu."
+      unscored_note: "Mhinduro dzisina mamaki dzakasvika mamaki asati atanga kupihwa, kana kuti dzakaunzwa kubva kumwe. Dzisina kusimbiswa dzakasvika dzisina zviratidzo zvinodiwa nemamaki, uye dzinoverengwa seYakaderera."
+      exclude: "Siya mhinduro dzakaderera (%{count})"
+      include: "Dzosera mhinduro dzakaderera"
+      admin_only: "Admin anogona kusiya mhinduro dzakaderera mumhedzisiro iyi."
+      notice: "Kusiya mhinduro %{count} dzakaderera uye dzisina kusimbiswa. Mhedzisiro iyi, zvinoburitswa zvayo nemushumo weAI zvinoverenga chete mhinduro dzakakwira, dzepakati nedzisina mamaki."
+      notice_public: "Mhedzisiro iyi inosiya mhinduro dzisina kupihwa nekuchenjera."
+      bands:
+        high: "Yakakwira"
+        medium: "Yepakati"
+        low: "Yakaderera"
+        unverified: "Isina kusimbiswa"
+        unscored: "Isina mamaki"
   shared_results:
     title: "Mhedzisiro"
     read_only_badge: "Kungoverenga"

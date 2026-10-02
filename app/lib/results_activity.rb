@@ -18,8 +18,10 @@ module ResultsActivity
     [ survey, :results_activity ]
   end
 
+  # Through Survey#integrity_filtered, so the live tally counts what the
+  # cards under it count.
   def counts_for(survey)
-    responses = survey.responses
+    responses = survey.integrity_filtered(survey.responses)
     {
       responders: responses.where(answered: true).count,
       completed:  responses.where(answered: true, status: "completed").count

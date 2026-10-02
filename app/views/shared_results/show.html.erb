@@ -120,6 +120,7 @@
     <%# Same 22px between cards as the owner's feed (#results-feed) — the two
         surfaces render the same cards and should read at the same rhythm. %>
     <div style="display:flex;flex-direction:column;gap:22px;">
+      <%= render "surveys/integrity_notice", survey: @survey %>
       <% if @too_few %>
         <div class="rc-card rc-suppressed" role="status">
           <div class="rc-suppressed-title">🔒 <%= t("shared_results.too_few_title") %></div>

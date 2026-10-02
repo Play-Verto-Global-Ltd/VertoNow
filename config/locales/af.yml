@@ -270,6 +270,23 @@ af:
     dwell_time_seconds: "%{s} s"
     dwell_time_minutes: "%{m} min %{s} s"
     dwell_time_hours: "%{h} u %{m} min"
+    integrity:
+      menu: "Integriteit"
+      heading: "Antwoordintegriteit"
+      reliable: "van %{count} beoordeelde antwoorde is Hoog of Medium"
+      explain: "Hoe sorgvuldig elke antwoord gegee is: tyd op elke vraag, skuifbalke gelaat waar hulle begin het, dieselfde antwoord heel af in 'n lys, lang lyste tot aan die einde gelees. Dit beoordeel die antwoord, nooit die persoon nie."
+      unscored_note: "Onbeoordeelde antwoorde het opgedaag voordat beoordeling begin het, of is ingevoer. Ongeverifieerde antwoorde het sonder die seine opgedaag wat die telling nodig het, en tel as Laag."
+      exclude: "Laat Lae antwoorde uit (%{count})"
+      include: "Sit Lae antwoorde terug"
+      admin_only: "'n Admin kan Lae antwoorde uit hierdie resultate laat."
+      notice: "%{count} Lae en ongeverifieerde antwoorde word uitgelaat. Hierdie resultate, hul uitvoere en die KI-verslag tel slegs Hoë, Medium en onbeoordeelde antwoorde."
+      notice_public: "Hierdie resultate laat antwoorde uit wat nie met sorg gegee is nie."
+      bands:
+        high: "Hoog"
+        medium: "Medium"
+        low: "Laag"
+        unverified: "Ongeverifieer"
+        unscored: "Onbeoordeel"
   shared_results:
     title: "Resultate"
     read_only_badge: "Leesalleen"

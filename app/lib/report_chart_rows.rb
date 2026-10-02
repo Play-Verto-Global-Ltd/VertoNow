@@ -119,8 +119,8 @@ module ReportChartRows
   # responders rather than every session, matching the dashboard: someone who
   # opened the link and never answered isn't a denominator.
   def summary_stats(survey)
-    responders = survey.responses.where(answered: true).count
-    completed  = survey.responses.where(answered: true, status: "completed").count
+    responders = survey.integrity_filtered(survey.responses.where(answered: true)).count
+    completed  = survey.integrity_filtered(survey.responses.where(answered: true, status: "completed")).count
     questions  = Array(survey.cards).count { |c| c.is_a?(Hash) && CardTypes.question?(c["type"]) }
 
     {

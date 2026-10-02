@@ -6054,6 +6054,46 @@ button.rc-row:focus-visible { outline: 2px solid #01EACB; outline-offset: 1px; }
   background: #FF3F85; border-color: #FF3F85; color: #fff;
 }
 
+/* The Integrity menu (surveys/_results_integrity_menu): the band split and
+   the Exclude-Low switch. Teal outline while Low responses are left out, so
+   the filter is visible from the row without opening the menu. */
+.rh-pill--on { border-color: rgba(1,234,203,0.55); color: #01EACB; }
+.rh-integrity-panel {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 30;
+  width: 300px; padding: 14px; border-radius: 10px;
+  background: #272D4A; border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+  font-family: "ABeeZee", sans-serif; color: rgba(255,255,255,0.72);
+  white-space: normal;
+}
+.rh-integrity-heading { font-family: "Alata", sans-serif; font-size: var(--text-md); color: #fff; }
+.rh-integrity-headline { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; font-size: var(--text-sm); line-height: 1.4; }
+.rh-integrity-pct { font-family: "Alata", sans-serif; font-size: 26px; color: #01EACB; line-height: 1; }
+.rh-integrity-bands { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.rh-integrity-band { display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); }
+.rh-integrity-label { flex: 1; }
+.rh-integrity-count { font-family: "Alata", sans-serif; color: #fff; font-variant-numeric: tabular-nums; }
+.rh-integrity-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); flex: none; }
+.rh-integrity-band--high .rh-integrity-dot { background: #01EACB; }
+.rh-integrity-band--medium .rh-integrity-dot { background: #FFCC00; }
+.rh-integrity-band--low .rh-integrity-dot { background: #FF1E6F; }
+.rh-integrity-band--unverified .rh-integrity-dot { background: transparent; border: 1.5px solid #FF6FA0; }
+.rh-integrity-explain { margin: 10px 0 0; font-size: var(--text-xs); line-height: 1.55; color: rgba(255,255,255,0.55); }
+.rh-integrity-switch {
+  width: 100%; padding: 8px; border-radius: 10px; cursor: pointer;
+  background: transparent; border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.78); font-family: "ABeeZee", sans-serif; font-size: var(--text-sm);
+}
+.rh-integrity-switch--on { background: rgba(1,234,203,0.15); border-color: rgba(1,234,203,0.3); color: #01EACB; }
+/* Says the filter is on, above the cards it changed (surveys/_integrity_notice). */
+.rc-integrity-notice {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 9px 14px; border-radius: 10px;
+  background: rgba(1,234,203,0.07); border: 1px solid rgba(1,234,203,0.25);
+  font-family: "ABeeZee", sans-serif; font-size: var(--text-sm); line-height: 1.5; color: rgba(255,255,255,0.75);
+}
+.rc-integrity-notice svg { flex: none; margin-top: 3px; color: #01EACB; }
+
 /* Menu rows inside the Export dropdown */
 .rh-menu-item {
   display: block; width: 100%; text-align: start; cursor: pointer;

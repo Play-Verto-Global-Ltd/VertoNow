@@ -264,6 +264,23 @@ cs:
     dwell_time_seconds: "%{s} s"
     dwell_time_minutes: "%{m} min %{s} s"
     dwell_time_hours: "%{h} h %{m} min"
+    integrity:
+      menu: "Integrita"
+      heading: "Integrita odpovědí"
+      reliable: "z %{count} hodnocených odpovědí je Vysoká nebo Střední"
+      explain: "Jak pečlivě byla každá odpověď dána: čas strávený u každé otázky, posuvníky ponechané ve výchozí poloze, stejná odpověď v celém seznamu, dlouhé seznamy dočtené do konce. Hodnotí odpověď, nikdy člověka."
+      unscored_note: "Nehodnocené odpovědi přišly před zahájením hodnocení nebo byly importovány. Neověřené přišly bez signálů, které hodnocení potřebuje, a počítají se jako Nízké."
+      exclude: "Vynechat Nízké odpovědi (%{count})"
+      include: "Vrátit Nízké odpovědi"
+      admin_only: "Administrátor může z těchto výsledků vynechat Nízké odpovědi."
+      notice: "Vynecháno %{count} Nízkých a neověřených odpovědí. Tyto výsledky, jejich exporty a zpráva AI počítají pouze Vysoké, Střední a nehodnocené odpovědi."
+      notice_public: "Tyto výsledky vynechávají odpovědi, které nebyly dány pečlivě."
+      bands:
+        high: "Vysoká"
+        medium: "Střední"
+        low: "Nízká"
+        unverified: "Neověřená"
+        unscored: "Nehodnocená"
   shared_results:
     title: "Výsledky"
     read_only_badge: "Jen pro čtení"

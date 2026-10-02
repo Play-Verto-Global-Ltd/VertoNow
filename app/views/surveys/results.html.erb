@@ -413,6 +413,9 @@
           <% end %>
 
 
+        <%= render "surveys/integrity_notice", survey: @survey,
+              count: (@survey.low_integrity_count if @survey.excluding_low_integrity?) %>
+
         <%# ── Per-question cards ── extracted to a partial so the public
             shared-results page can reuse it (see _result_cards.html.erb).
             A combination under the small-cell threshold gets the notice

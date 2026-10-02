@@ -269,6 +269,23 @@ pt:
     dwell_time_seconds: "%{s} s"
     dwell_time_minutes: "%{m} min %{s} s"
     dwell_time_hours: "%{h} h %{m} min"
+    integrity:
+      menu: "Integridade"
+      heading: "Integridade das respostas"
+      reliable: "de %{count} respostas pontuadas são Alta ou Média"
+      explain: "Com que cuidado cada resposta foi dada: o tempo em cada pergunta, os controles deslizantes deixados onde começaram, a mesma resposta ao longo de toda uma lista, listas longas lidas até o fim. Pontua a resposta, nunca a pessoa."
+      unscored_note: "As respostas sem pontuação chegaram antes de a pontuação começar, ou foram importadas. As não verificadas chegaram sem os sinais de que a pontuação precisa e contam como Baixa."
+      exclude: "Excluir respostas Baixas (%{count})"
+      include: "Incluir de novo as respostas Baixas"
+      admin_only: "Um administrador pode excluir as respostas Baixas destes resultados."
+      notice: "Excluindo %{count} respostas Baixas e não verificadas. Estes resultados, suas exportações e o relatório de IA contam apenas respostas Altas, Médias e sem pontuação."
+      notice_public: "Estes resultados excluem respostas que não foram dadas com cuidado."
+      bands:
+        high: "Alta"
+        medium: "Média"
+        low: "Baixa"
+        unverified: "Não verificada"
+        unscored: "Sem pontuação"
   shared_results:
     title: Resultados
     read_only_badge: Somente leitura

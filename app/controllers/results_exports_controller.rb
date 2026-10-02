@@ -12,6 +12,9 @@ class ResultsExportsController < ApplicationController
 
     summary = params[:kind].to_s == "summary"
     label   = summary ? "summary" : "responses"
+    # A file is passed on without the page that made it, so its name says
+    # when Low responses were left out of it.
+    label   = "#{label}-excluding-low" if survey.excluding_low_integrity?
 
     if params[:format].to_s == "xlsx"
       send_xlsx(export, survey, label, summary)

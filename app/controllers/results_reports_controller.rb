@@ -23,7 +23,7 @@ class ResultsReportsController < ApplicationController
       return render json: { ok: false, error: "The report can't be empty." }, status: :unprocessable_entity
     end
 
-    total = survey.responses.where(status: "completed").count
+    total = survey.integrity_filtered(survey.responses.where(status: "completed")).count
     survey.update_columns(
       results_report:                markdown,
       results_report_response_count: total,
