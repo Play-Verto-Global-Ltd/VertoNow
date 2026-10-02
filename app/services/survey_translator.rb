@@ -112,6 +112,10 @@ class SurveyTranslator
     - Preserve numbers, and leave proper nouns / brand names untranslated.
     - For scale labels (e.g. 0–10, "Not likely"…"Very likely") translate the
       words but keep any numerals as-is.
+    - A card may carry a `note` from its author saying what a word or phrase
+      means there (e.g. "power" as in motivation, not authority). Use it to
+      choose the meaning you translate. It is guidance, not copy: never
+      translate it, quote it or put any of it in your output.
 
     Output via the emit_translation tool.
   PROMPT
@@ -124,16 +128,32 @@ class SurveyTranslator
   # array described above. Falls back to source content per field/slot if the
   # model returns a malformed or mis-sized response, so the alignment invariant
   # always holds.
-  def call(cards:, target_locale:, source_locale: SupportedLocales::DEFAULT)
+  #
+  # `notes` is { cid => the author's note on what the card means } (see
+  # LanguageCheck#translator_note). A noted card never touches the cache in
+  # either direction: the cache is keyed by the words alone, so a hit would
+  # hand back the translation made before anyone said what "power" meant, and
+  # a write would serve the note's reading to every other Verto with the same
+  # sentence. `fresh:` skips the lookup for everything — somebody pressing
+  # Re-translate is asking for a new translation, not the one they just read.
+  def call(cards:, target_locale:, source_locale: SupportedLocales::DEFAULT, notes: {}, fresh: false)
     source = Array(cards)
     return [] if source.empty?
 
     target = SupportedLocales.find(target_locale)
     raise ArgumentError, "Unsupported locale: #{target_locale}" unless target
 
+    @notes = Hash(notes).transform_keys(&:to_s).transform_values { |v| v.to_s.strip }.reject { |_, v| v.blank? }
+    noted  = ->(card) { card.is_a?(Hash) && @notes.key?(card["cid"].to_s) }
+
     # Cache lookup: cards we've already translated with the same source
     # content for this target skip Claude entirely.
-    cached = TranslationCache.lookup_many(source, source_locale: source_locale, target_locale: target_locale)
+    cached = if fresh
+      Array.new(source.size)
+    else
+      TranslationCache.lookup_many(source, source_locale: source_locale, target_locale: target_locale)
+                      .each_with_index.map { |hit, i| noted.call(source[i]) ? nil : hit }
+    end
     misses = source.each_with_index.reject { |_, i| cached[i] }
     return cached if misses.empty?
 
@@ -170,6 +190,7 @@ class SurveyTranslator
     else
       # Write each miss back to the cache so the next call hits it.
       miss_cards.zip(translated_misses).each do |card, translation|
+        next if noted.call(card)
         TranslationCache.write(card, source_locale: source_locale, target_locale: target_locale, translation: translation)
       end
     end
@@ -201,6 +222,8 @@ class SurveyTranslator
       entry[:modal_title] = card["modal_title"].to_s if card["modal_title"].present?
       entry[:modal_body]  = card["modal_body"].to_s  if card["modal_body"].present?
       Survey::NPS_ANCHOR_KEYS.each { |k| entry[k.to_sym] = card[k].to_s if card[k].present? }
+      note = @notes.to_h[card["cid"].to_s]
+      entry[:note] = note if note.present?
       entry
     end
 

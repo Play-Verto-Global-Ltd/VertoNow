@@ -544,7 +544,16 @@ class SurveysController < ApplicationController
       warnings << "background_image" if payload["background_image"].present? && attrs[:background_image].nil?
     end
 
+    cards_before = survey.cards if attrs.key?(:cards)
     survey.update!(attrs)
+    # A translation whose words this save changed was written against today's
+    # original, so the Language check screen should stop calling it out of
+    # date. Lines sent back unchanged keep the provenance they had.
+    if cards_before
+      LanguageCheck.record_translated!(
+        survey.id, LanguageCheckLines.changed_translation_pairs(cards_before, survey.cards, survey.default_locale)
+      )
+    end
     # A grantee deleting a portfolio-mandated card in the editor re-appends it
     # on the next autosave — enforced at the data layer, not the editor UI.
     # Scoped to this one survey; never the org-wide backfill from a per-request hook.

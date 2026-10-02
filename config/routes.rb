@@ -277,6 +277,7 @@ Rails.application.routes.draw do
   post "surveys/:id/language_check/languages", to: "language_checks#add_languages", as: :survey_language_check_languages
   post "surveys/:id/language_check/languages/retry", to: "language_checks#retry_language", as: :retry_survey_language_check_language
   get  "surveys/:id/language_check/status", to: "language_checks#status", as: :survey_language_check_status
+  post "surveys/:id/language_check/retranslate", to: "language_checks#retranslate", as: :retranslate_survey_language_check
   post   "surveys/:survey_id/language_check/links",     to: "language_check_links#create",  as: :survey_language_check_links
   patch  "surveys/:survey_id/language_check/links/:id", to: "language_check_links#update",  as: :survey_language_check_link
   delete "surveys/:survey_id/language_check/links/:id", to: "language_check_links#destroy"

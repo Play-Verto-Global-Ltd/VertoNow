@@ -885,4 +885,166 @@ class LanguageCheckScreenTest < ActionDispatch::IntegrationTest
     assert_match "0/2", fr_row
     assert_match I18n.t("language_check.rail_retry"), fr_row
   end
+
+  # ── Translations of an original that has since been rewritten ─────────────
+
+  # The welcome card in the report: Spanish, French, Portuguese and Czech all
+  # still said "5 minutes" under an English that now said "3 minutes", every
+  # line read "Not checked", and nothing on the screen said they were older
+  # than the question they sat under.
+  def record_spanish_provenance!(digest: nil)
+    pairs = LanguageCheckLines.translated_pairs(@survey.reload.cards, [ "es" ])
+    pairs = pairs.map { |cid, locale, _| [ cid, locale, digest ] } if digest
+    LanguageCheck.record_translated!(@survey.id, pairs)
+  end
+
+  def autosave_mc(text: "Favourite colour?", es_text: "¿Color favorito?")
+    patch survey_path(@survey), params: {
+      title: "Colours", translations_revision: @survey.reload.translations_revision,
+      content_locales: %w[en es fr],
+      cards: [
+        { "type" => "welcome_card", "cid" => "c_w", "title" => "hi", "text" => "Welcome" },
+        { "type" => "multiple_choice", "cid" => "c_mc", "text" => text,
+          "description" => "Pick one", "options" => %w[Blue Green],
+          "i18n" => { "es" => { "text" => es_text, "options" => %w[Azul Verde] } } }
+      ]
+    }.to_json, headers: { "CONTENT_TYPE" => "application/json" }
+    assert_response :success
+  end
+
+  def spanish_mc_line
+    response.body[/id="line-c_mc-es".*?(?=id="line-|\z)/m].to_s
+  end
+
+  test "rewriting the original leaves its translation marked out of date" do
+    sign_in
+    record_spanish_provenance!
+    autosave_mc(text: "Your favourite colour, honestly?")
+
+    get survey_language_check_path(@survey)
+    assert_match "lc-outdated", spanish_mc_line
+    assert_match I18n.t("language_check.count_outdated", count: 1), response.body
+    assert_match I18n.t("language_check.retranslate"), spanish_mc_line
+
+    get survey_language_check_path(@survey, filter: "outdated")
+    assert_match 'id="line-c_mc-es"', response.body
+    assert_no_match 'id="line-c_mc-fr"', response.body
+  end
+
+  test "rewriting the translation in the editor makes it current again" do
+    sign_in
+    record_spanish_provenance!
+    autosave_mc(text: "Your favourite colour, honestly?")
+    autosave_mc(text: "Your favourite colour, honestly?", es_text: "¿Tu color favorito, de verdad?")
+
+    get survey_language_check_path(@survey)
+    assert_no_match "lc-outdated", spanish_mc_line
+  end
+
+  test "a translation nobody recorded the origin of is not called out of date" do
+    sign_in
+    autosave_mc(text: "Your favourite colour, honestly?")
+
+    get survey_language_check_path(@survey)
+    assert_no_match "lc-outdated", response.body, "no record is \"we cannot tell\", not \"stale\""
+  end
+
+  test "a reviewer's rewrite of an out-of-date line makes it current" do
+    sign_in
+    record_spanish_provenance!(digest: "an-older-original")
+    post survey_language_check_lines_path(@survey),
+         params: { cid: "c_mc", locale: "es", verb: "edit", fields: { text: "¡El mejor color!" } }
+
+    get survey_language_check_path(@survey)
+    assert_no_match "lc-outdated", spanish_mc_line
+  end
+
+  test "Re-translate on a line asks for that card in that language" do
+    sign_in
+    assert_enqueued_with(job: TranslateLocalesJob, args: [ @survey.id, [ "es" ], [ "c_mc" ] ]) do
+      post retranslate_survey_language_check_path(@survey), params: { locale: "es", cid: "c_mc" }
+    end
+    assert_redirected_to survey_language_check_path(@survey, anchor: "line-c_mc-es")
+  end
+
+  test "re-translating a language leaves the lines a reviewer rewrote alone" do
+    sign_in
+    @survey.update!(cards: @survey.cards.map do |c|
+      c["cid"] == "c_w" ? c.merge("i18n" => { "es" => { "text" => "Bienvenido" } }) : c
+    end)
+    record_spanish_provenance!(digest: "an-older-original")
+    LanguageCheck.find_by(survey: @survey, cid: "c_mc", locale: "es")
+                 .update!(edited_at: 1.hour.ago, edited_by_name: "Marta")
+
+    get survey_language_check_path(@survey)
+    assert_match I18n.t("language_check.rail_retranslate", count: 1), response.body,
+                 "the button's count is the work it will do"
+
+    assert_enqueued_with(job: TranslateLocalesJob, args: [ @survey.id, [ "es" ], [ "c_w" ] ]) do
+      post retranslate_survey_language_check_path(@survey), params: { locale: "es" }
+    end
+  end
+
+  test "a language being re-translated shows as translating, not as done" do
+    sign_in
+    translate_fully!("es")
+    SurveyTranslation.create!(survey: @survey, locale: "es", status: "queued", attempts: 0)
+
+    get survey_language_check_status_path(@survey)
+    body = JSON.parse(response.body)
+    assert_equal "queued", body["languages"].find { |l| l["locale"] == "es" }["state"]
+    assert body["working"], "the page has to wait for the new words, or it never shows them"
+  end
+
+  test "a viewer seat cannot re-translate" do
+    viewer = User.create!(name: "V", email_address: "v5-#{SecureRandom.hex(3)}@test.com",
+                          password: "verylongpassword")
+    @org.memberships.create!(user: viewer, role: "viewer")
+    sign_in(viewer)
+
+    assert_no_enqueued_jobs(only: TranslateLocalesJob) do
+      post retranslate_survey_language_check_path(@survey), params: { locale: "es", cid: "c_mc" }
+    end
+  end
+
+  # ── Translator notes ───────────────────────────────────────────────────────
+
+  test "the author's note on a card is saved and shown on every language's line" do
+    sign_in
+    post survey_language_check_lines_path(@survey),
+         params: { cid: "c_mc", locale: "en", verb: "translator_note", body: "  colour as in favourite paint  " }
+
+    assert_equal "colour as in favourite paint",
+                 LanguageCheck.find_by(survey: @survey, cid: "c_mc", locale: "en").translator_note
+
+    get survey_language_check_path(@survey)
+    assert_match "colour as in favourite paint", spanish_mc_line
+    assert_match "lc-tnote", spanish_mc_line
+  end
+
+  test "a blank note clears it" do
+    sign_in
+    LanguageCheck.create!(survey: @survey, cid: "c_mc", locale: "en", translator_note: "old")
+    post survey_language_check_lines_path(@survey),
+         params: { cid: "c_mc", locale: "en", verb: "translator_note", body: " " }
+
+    assert_nil LanguageCheck.find_by(survey: @survey, cid: "c_mc", locale: "en").translator_note
+  end
+
+  test "a viewer seat cannot set a translator note" do
+    viewer = User.create!(name: "V", email_address: "v6-#{SecureRandom.hex(3)}@test.com",
+                          password: "verylongpassword")
+    @org.memberships.create!(user: viewer, role: "viewer")
+    sign_in(viewer)
+    post survey_language_check_lines_path(@survey),
+         params: { cid: "c_mc", locale: "en", verb: "translator_note", body: "mine" }
+
+    assert_nil LanguageCheck.find_by(survey: @survey, cid: "c_mc", locale: "en")
+  end
+
+  test "changing the primary language forgets where translations came from" do
+    record_spanish_provenance!
+    @survey.switch_primary_locale!("es")
+    assert_equal 0, LanguageCheck.where(survey: @survey).where.not(translated_from_digest: nil).count
+  end
 end

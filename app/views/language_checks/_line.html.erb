@@ -49,6 +49,26 @@
     <p class="lc-untranslated"><%= t("language_check.untranslated_note") %></p>
   <% end %>
 
+  <%# Translated from an original that has since been rewritten — "5 minutos"
+      under an English that now says "3 minutes". Said on the line itself, not
+      only in a count, because the reviewer reading it is the one about to
+      approve it. Re-translate is the creator's (it spends AI and replaces the
+      words), so the reviewer link shows the warning and no button. %>
+  <% if meta[:outdated] %>
+    <div class="lc-outdated">
+      <p class="lc-outdated-text"><%= t("language_check.outdated_note") %></p>
+      <% if local_assigns[:owner] && editable %>
+        <%= form_with url: retranslate_survey_language_check_path(survey), method: :post,
+                      data: { turbo: false }, class: "lc-outdated-form" do %>
+          <%= hidden_field_tag :cid, card[:cid] %>
+          <%= hidden_field_tag :locale, line[:locale] %>
+          <%= hidden_field_tag :filter, filter %>
+          <button type="submit" class="lc-btn lc-btn--ghost lc-btn--small"><%= t("language_check.retranslate") %></button>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
   <div class="lc-words" dir="<%= dir %>" lang="<%= line[:locale] %>" data-language-check-target="words">
     <% fell_back = Array(content["untranslated"]) %>
     <% fields.each do |field| %>
@@ -79,6 +99,34 @@
       </div>
     <% end %>
   </div>
+
+  <%# ── Translator note ──────────────────────────────────────────────────
+      What the card means, from its author. The creator writes it on the
+      original line; every other line shows it, because a reviewer weighing
+      "Wat geeft je energie?" against "What powers you?" needs the same answer
+      the translator was given. %>
+  <% note = local_assigns[:translator_note].presence %>
+  <% if line[:primary] && local_assigns[:owner] && editable %>
+    <details class="lc-tnote-edit"<%= " open" if note %>>
+      <summary class="lc-tnote-summary"><%= t("language_check.translator_note_label") %></summary>
+      <%= form_with url: post_url, method: :post, data: { turbo: false }, class: "lc-tnote-form" do %>
+        <%= hidden_field_tag :cid, card[:cid] %>
+        <%= hidden_field_tag :locale, line[:locale] %>
+        <%= hidden_field_tag :filter, filter %>
+        <%= hidden_field_tag :verb, "translator_note" %>
+        <textarea name="body" rows="2" class="lc-input" maxlength="<%= LanguageCheck::MAX_TRANSLATOR_NOTE %>"
+                  aria-label="<%= t("language_check.translator_note_label") %>"
+                  placeholder="<%= t("language_check.translator_note_placeholder") %>"><%= note %></textarea>
+        <p class="lc-note-hint"><%= t("language_check.translator_note_hint") %></p>
+        <button type="submit" class="lc-btn lc-btn--ghost lc-btn--small"><%= t("language_check.translator_note_save") %></button>
+      <% end %>
+    </details>
+  <% elsif note %>
+    <div class="lc-tnote">
+      <span class="lc-field-label"><%= t("language_check.translator_note_label") %></span>
+      <p class="lc-tnote-body"><%= note %></p>
+    </div>
+  <% end %>
 
   <%# ── The three verbs ──────────────────────────────────────────────────── %>
   <% if actionable %>

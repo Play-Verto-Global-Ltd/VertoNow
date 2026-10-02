@@ -175,6 +175,76 @@ module LanguageCheckLines
     Digest::SHA256.hexdigest(canonical.to_json)
   end
 
+  # The provenance to record after a translation pass wrote these cards:
+  # [[cid, locale, digest of the original], ...] for every line in `locales`
+  # that now has words of its own. See LanguageCheck.record_translated!.
+  def translated_pairs(cards, locales)
+    Array(cards).flat_map do |card|
+      next [] unless card.is_a?(Hash) && card["cid"].present?
+      canonical = canonical_content(card)
+      next [] if canonical.values.all?(&:blank?)
+
+      source = digest(canonical)
+      Array(locales).filter_map do |locale|
+        next if untranslated?(translated_content(card, locale, canonical))
+        [ card["cid"].to_s, locale.to_s, source ]
+      end
+    end
+  end
+
+  # The same, for an editor autosave: only the translations whose WORDS this
+  # save changed. Somebody who rewrote the German in the editor did it reading
+  # today's English, so that line is current again; a German line merely sent
+  # back as it was keeps whatever provenance it had, which is how a rewritten
+  # English question leaves its translations behind.
+  #
+  # Both sides are read against the NEW original, so a slot the editor filled
+  # with the primary label (it does that for an untranslated option) compares
+  # equal to the fallback it replaced rather than counting as a translation.
+  def changed_translation_pairs(existing, incoming, primary)
+    by_cid = Array(existing).each_with_object({}) do |c, h|
+      h[c["cid"].to_s] = c if c.is_a?(Hash) && c["cid"].present?
+    end
+
+    Array(incoming).flat_map do |card|
+      next [] unless card.is_a?(Hash) && card["cid"].present? && card["i18n"].is_a?(Hash)
+      canonical = canonical_content(card)
+      next [] if canonical.values.all?(&:blank?)
+
+      stored = by_cid[card["cid"].to_s]
+      source = digest(canonical)
+      (card["i18n"].keys.map(&:to_s) - [ primary.to_s ]).filter_map do |locale|
+        now = translated_content(card, locale, canonical)
+        next if untranslated?(now)
+        next if stored && digest(translated_content(stored, locale, canonical)) == digest(now)
+        [ card["cid"].to_s, locale, source ]
+      end
+    end
+  end
+
+  # { locale => [cid, ...] } for every translated line whose original has been
+  # rewritten since it was translated (LanguageCheck#outdated_for?). A line
+  # with no words of its own is left out — it is untranslated, which the
+  # screen already says, not out of date. `include_edited: false` also leaves
+  # out lines a reviewer rewrote on the Language check screen: that is what a
+  # bulk Re-translate must not overwrite.
+  def outdated(cards_rows, checks, include_edited: true)
+    out = Hash.new { |h, k| h[k] = [] }
+    cards_rows.each do |card|
+      source = card[:lines].find { |l| l[:primary] }
+      next unless source
+      source_digest = digest(source[:content])
+      card[:lines].each do |line|
+        next if line[:primary] || untranslated?(line[:content])
+        row = checks[[ card[:cid], line[:locale] ]]
+        next unless row&.outdated_for?(source_digest)
+        next if !include_edited && row.edited_at.present?
+        out[line[:locale]] << card[:cid]
+      end
+    end
+    out
+  end
+
   # True when this line has no words of its own at all — every field fell back
   # to the primary language. Shown as "Not translated" rather than as text a
   # reviewer might take for a translation.
@@ -220,7 +290,12 @@ module LanguageCheckLines
       # "incomplete" shows the count and a Try again, and — like "failed" —
       # is not worth polling for, because nothing is on its way.
       run   = "incomplete" if run == "done"
+      # Work in flight outranks coverage: re-translating out-of-date lines
+      # happens to a language that is already fully covered, and reading
+      # "Translated" there would leave the page with nothing to wait for and
+      # the new words arriving behind a screen that never reloads.
       state = if locale == primary then "primary"
+      elsif %w[queued running].include?(run) then run
       elsif done            then "done"
       else run || "none"
       end

@@ -32,9 +32,11 @@ module VertoGeneration
       ErrorReporting.report("SurveyTranslator", e, locale: loc)
     end
 
-    return survey.update!(cards: cards) if if_unchanged.nil?
-
-    write_cards_if_unchanged!(survey, cards, if_unchanged)
+    written = if_unchanged.nil? ? survey.update!(cards: cards) : write_cards_if_unchanged!(survey, cards, if_unchanged)
+    # What these translations were made FROM, so the Language check screen can
+    # tell when the original is rewritten under them. See LanguageCheck.
+    LanguageCheck.record_translated!(survey.id, LanguageCheckLines.translated_pairs(survey.cards, survey.secondary_locales)) if written
+    written
   end
 
   # A stable fingerprint of a deck, for the guard above.

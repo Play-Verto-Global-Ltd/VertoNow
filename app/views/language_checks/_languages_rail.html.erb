@@ -7,7 +7,8 @@
     otherwise report a language as done that a reviewer is about to find in
     English. See LanguageCheckLines.coverage.
 
-    Locals: survey, locales, coverage, addable, editable, runs %>
+    Locals: survey, locales, coverage, addable, editable, runs,
+            retranslatable ({ locale => [cid] } — LanguageCheckLines.outdated) %>
 <%
   # Poll while anything is still expected to land, worked out from the DECK and
   # not from run rows alone. Run rows only exist when TranslateLocalesJob put
@@ -77,6 +78,19 @@
           <% end %>
           <% if (why = run&.stalled_reason).present? %>
             <span class="lc-rail-why" title="<%= why %>"><%= why.truncate(90) %></span>
+          <% end %>
+        <% end %>
+        <%# Lines translated from an original that has since been rewritten. A
+            language can be fully covered and still be saying last month's
+            question, so this sits beside "Translated" rather than replacing it. %>
+        <% stale_cids = Array(local_assigns.fetch(:retranslatable, {})[code]) %>
+        <% if editable && !cov[:primary] && stale_cids.any? && state != "queued" && state != "running" %>
+          <%= form_with url: retranslate_survey_language_check_path(survey), method: :post,
+                        data: { turbo: false }, class: "lc-rail-retry" do %>
+            <%= hidden_field_tag :locale, code %>
+            <button type="submit" class="lc-rail-retry-btn">
+              <%= t("language_check.rail_retranslate", count: stale_cids.size) %>
+            </button>
           <% end %>
         <% end %>
       </li>

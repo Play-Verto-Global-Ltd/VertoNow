@@ -164,6 +164,10 @@ class Survey < ApplicationRecord
       default_locale: new_locale,
       locales:        ([ new_locale ] + (verto_locales - [ new_locale ])).uniq
     )
+    # Every translation's provenance names the OLD primary's wording; against
+    # the new one each would read as out of date, which is not something a
+    # creator did. "We cannot tell" is the honest state after a swap.
+    language_checks.where.not(translated_from_digest: nil).update_all(translated_from_digest: nil)
     true
   end
 

@@ -51,7 +51,7 @@ class GenerateFlowTest < ActionDispatch::IntegrationTest
   def with_translator
     calls = []
     fake  = Object.new
-    fake.define_singleton_method(:call) do |cards:, target_locale:, source_locale:|
+    fake.define_singleton_method(:call) do |cards:, target_locale:, source_locale:, **|
       calls << [ target_locale.to_s, Array(cards).size ]
       Array(cards).map { |c| { "text" => "#{target_locale}:#{c['text']}", "options" => Array(c["options"]) } }
     end

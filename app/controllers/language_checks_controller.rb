@@ -27,6 +27,9 @@ class LanguageChecksController < ApplicationController
     @locales = @survey.verto_locales
     @coverage = LanguageCheckLines.coverage(@cards, @locales, @survey.default_locale)
     @runs = SurveyTranslation.index_for(@survey)
+    # What each language's Re-translate button would ask for — the same list
+    # #retranslate works out, so the count on the button is the work it does.
+    @retranslatable = LanguageCheckLines.outdated(@cards, @checks, include_edited: false)
     # What the sidebar can still offer. Registry order, so the list reads the
     # same here as in the editor's Language settings.
     @addable = SupportedLocales.all.reject { |loc| @locales.include?(loc.code) }
@@ -48,6 +51,11 @@ class LanguageChecksController < ApplicationController
       when "reset"            then record_language_decision(@survey, **line_params, status: "pending")
       when "edit"             then record_language_edit(@survey, **line_params, fields: edit_fields)
       when "note"             then record_language_note(@survey, **line_params, body: params[:body])
+      # The author's word on what a card means. The creator's call, not a
+      # reviewer's — the shared link has no such verb — and a viewer seat reads
+      # it like everything else here but does not set it.
+      when "translator_note"
+        can_edit_vertos? ? record_translator_note(@survey, cid: params[:cid].to_s, body: params[:body]) : :unknown_line
       else :unknown_line
       end
 
@@ -119,6 +127,38 @@ class LanguageChecksController < ApplicationController
       TranslateLocalesJob.enqueue_for(@survey, [ locale ])
     end
     redirect_back_to_screen
+  end
+
+  # POST /surveys/:id/language_check/retranslate — translate lines again from
+  # the original as it reads now.
+  #
+  # With a cid, that one line, whatever has happened to it: the creator is
+  # looking at it and has asked. Without one, every out-of-date line in the
+  # language EXCEPT those somebody rewrote on this screen — a reviewer's
+  # hand-made Spanish is not something a bulk button should quietly replace,
+  # and each of those lines keeps its own button for when that is the point.
+  #
+  # Same bar as adding a language: it spends AI and changes what respondents
+  # read, so a viewer seat cannot.
+  def retranslate
+    locale = params[:locale].to_s
+    return redirect_back_to_screen unless can_edit_vertos? && @survey.secondary_locales.include?(locale)
+
+    cards = LanguageCheckLines.for(@survey)
+    cids  =
+      if params[:cid].present?
+        [ params[:cid].to_s ] & cards.map { |c| c[:cid] }
+      else
+        LanguageCheckLines.outdated(cards, LanguageCheck.index_for(@survey), include_edited: false)[locale]
+      end
+    TranslateLocalesJob.enqueue_for(@survey, [ locale ], cids: cids) if cids.present?
+
+    if params[:cid].present?
+      redirect_to survey_language_check_path(@survey, anchor: "line-#{params[:cid]}-#{locale}",
+                                                      filter: params[:filter].presence)
+    else
+      redirect_back_to_screen
+    end
   end
 
   private

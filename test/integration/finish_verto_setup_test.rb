@@ -20,7 +20,7 @@ class FinishVertoSetupTest < ActiveSupport::TestCase
   # Translates by prefixing, so a merge is visible in the stored cards.
   def with_translator
     fake = Object.new
-    fake.define_singleton_method(:call) do |cards:, target_locale:, source_locale:|
+    fake.define_singleton_method(:call) do |cards:, target_locale:, source_locale:, **|
       Array(cards).map { |c| { "text" => "#{target_locale}:#{c['text']}", "options" => Array(c["options"]) } }
     end
     SurveyTranslator.define_singleton_method(:new) { |*| fake }
@@ -85,7 +85,7 @@ class FinishVertoSetupTest < ActiveSupport::TestCase
     # is for. Everything before that point the job now translates rather than
     # discards — see the test below.
     fake = Object.new
-    fake.define_singleton_method(:call) do |cards:, target_locale:, source_locale:|
+    fake.define_singleton_method(:call) do |cards:, target_locale:, source_locale:, **|
       s.update!(cards: [ { "type" => "yes_no", "cid" => "c_1", "text" => "Creator's edit", "options" => %w[Yes No] } ])
       Array(cards).map { |c| { "text" => "#{target_locale}:#{c['text']}", "options" => Array(c["options"]) } }
     end

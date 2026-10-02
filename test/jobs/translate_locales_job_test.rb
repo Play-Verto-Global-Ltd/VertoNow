@@ -28,7 +28,7 @@ class TranslateLocalesJobTest < ActiveSupport::TestCase
   # double instead of returning it.
   def translator_double(failing: [])
     fake = Object.new
-    fake.define_singleton_method(:call) do |cards:, target_locale:, source_locale:|
+    fake.define_singleton_method(:call) do |cards:, target_locale:, source_locale:, **|
       raise "boom" if failing.include?(target_locale.to_s)
       Array(cards).map do |c|
         { "text" => "#{target_locale}:#{c['text']}",
@@ -132,7 +132,7 @@ class TranslateLocalesJobTest < ActiveSupport::TestCase
 
     moving = Object.new
     survey = @survey
-    moving.define_singleton_method(:call) do |cards:, target_locale:, source_locale:|
+    moving.define_singleton_method(:call) do |cards:, target_locale:, source_locale:, **|
       # Somebody saves the deck while Claude is working.
       survey.class.find(survey.id).update!(cards: survey.reload.cards + [
         { "type" => "open_ended", "cid" => "c3", "text" => "Late addition" }
@@ -159,7 +159,7 @@ class TranslateLocalesJobTest < ActiveSupport::TestCase
     survey = @survey
     seen = []
     shifty = Object.new
-    shifty.define_singleton_method(:call) do |cards:, target_locale:, source_locale:|
+    shifty.define_singleton_method(:call) do |cards:, target_locale:, source_locale:, **|
       seen << target_locale.to_s
       if seen.size == 2
         # Somebody saves the deck while the SECOND language is being translated.
@@ -278,5 +278,58 @@ class TranslateLocalesJobTest < ActiveSupport::TestCase
     assert_equal "queued", row.status
     assert_equal 0, row.attempts
     assert_nil row.last_error
+  end
+
+  # ── Re-translating, and remembering what from ──────────────────────────────
+
+  test "a translation records the original it was made from" do
+    with_translator do
+      perform_enqueued_jobs { TranslateLocalesJob.enqueue_for(@survey, [ "es" ]) }
+    end
+
+    card   = @survey.reload.cards.first
+    source = LanguageCheckLines.digest(LanguageCheckLines.canonical_content(card))
+    row    = LanguageCheck.find_by(survey: @survey, cid: "c1", locale: "es")
+    assert_equal source, row.translated_from_digest
+    assert_equal "pending", row.status, "recording provenance is not a review decision"
+  end
+
+  test "named cards are translated again even though they already have words" do
+    with_translator do
+      perform_enqueued_jobs { TranslateLocalesJob.enqueue_for(@survey, [ "es" ]) }
+    end
+
+    seen = []
+    fresh_flags = []
+    again = Object.new
+    again.define_singleton_method(:call) do |cards:, fresh: false, **|
+      seen.concat(cards.map { |c| c["cid"] })
+      fresh_flags << fresh
+      cards.map { |c| { "text" => "again:#{c['text']}", "options" => Array(c["options"]) } }
+    end
+    stub_method(SurveyTranslator, :new, ->(*_a, **_k) { again }) do
+      perform_enqueued_jobs { TranslateLocalesJob.enqueue_for(@survey, [ "es" ], cids: [ "c2" ]) }
+    end
+
+    assert_equal [ "c2" ], seen, "only the card asked for"
+    assert_equal [ true ], fresh_flags, "a re-translate must not be answered with the line it replaces"
+    assert_equal "again:Why?", entry("c2", "es")["text"]
+    assert_equal "es:Colour?", entry("c1", "es")["text"]
+    assert_equal "done", SurveyTranslation.find_by(survey: @survey, locale: "es").status
+  end
+
+  test "the author's notes go to the translator" do
+    LanguageCheck.create!(survey: @survey, cid: "c2", locale: "en", translator_note: "why as in reason")
+    notes_seen = nil
+    noting = Object.new
+    noting.define_singleton_method(:call) do |cards:, notes: {}, **|
+      notes_seen = notes
+      cards.map { |c| { "text" => "x", "options" => Array(c["options"]) } }
+    end
+    stub_method(SurveyTranslator, :new, ->(*_a, **_k) { noting }) do
+      perform_enqueued_jobs { TranslateLocalesJob.enqueue_for(@survey, [ "es" ]) }
+    end
+
+    assert_equal({ "c2" => "why as in reason" }, notes_seen)
   end
 end

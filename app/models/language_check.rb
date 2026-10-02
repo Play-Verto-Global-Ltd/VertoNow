@@ -7,6 +7,9 @@ class LanguageCheck < ApplicationRecord
 
   STATUSES = %w[pending approved changes_requested].freeze
   MAX_NAME = 60
+  # A translator note says what a word MEANS, in a sentence or two; it rides
+  # along with the card on every translation call, so it is kept short.
+  MAX_TRANSLATOR_NOTE = 500
 
   validates :cid, :locale, presence: true
   validates :status, inclusion: { in: STATUSES }
@@ -52,6 +55,40 @@ class LanguageCheck < ApplicationRecord
     return "pending" if row.nil? || row.status == "pending"
     return "stale" if row.stale_for?(digest, source_digest_now)
     row.status
+  end
+
+  # Is this translation older than the original it was made from? See the
+  # migration: translated_from_digest is the primary wording the words on this
+  # line were produced against, and nil — every line translated before this
+  # was recorded — is "we cannot tell", which shows nothing rather than guess.
+  def outdated_for?(source_digest_now)
+    translated_from_digest.present? && source_digest_now.present? &&
+      translated_from_digest != source_digest_now
+  end
+
+  # Note which original each of these translations was made from: `pairs` is
+  # [[cid, locale, source_digest], ...]. One statement for a whole deck, and it
+  # touches only the provenance column, so a row carrying a reviewer's
+  # decision keeps it — a fresh translation of an approved line shows as
+  # changed since approval, which is the truth.
+  def self.record_translated!(survey_id, pairs)
+    pairs = Array(pairs).uniq { |cid, locale, _| [ cid.to_s, locale.to_s ] }
+    return if survey_id.nil? || pairs.empty?
+
+    now  = Time.current
+    rows = pairs.map do |cid, locale, digest|
+      { survey_id: survey_id, cid: cid.to_s, locale: locale.to_s, status: "pending",
+        translated_from_digest: digest, created_at: now, updated_at: now }
+    end
+    upsert_all(rows, unique_by: %i[survey_id cid locale], update_only: %i[translated_from_digest])
+  end
+
+  # { cid => note } for every card whose author has said what it means. Read
+  # off the primary-language rows, which are the only ones that carry one.
+  def self.translator_notes_for(survey)
+    where(survey_id: survey.id, locale: survey.default_locale)
+      .where.not(translator_note: [ nil, "" ])
+      .pluck(:cid, :translator_note).to_h
   end
 
   def reviewer_label

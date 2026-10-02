@@ -73,6 +73,28 @@ module RecordsLanguageChecks
       edit_revision:  survey.translations_revision,
       language_check_link: row.language_check_link || actor[:link]
     )
+    # Somebody rewriting the Spanish did it reading today's English, so the
+    # line is current again — unless what they left has no Spanish in it at
+    # all, which is not a translation of anything.
+    if locale.to_s != survey.default_locale
+      content = line_content(survey, cid, locale)
+      row.translated_from_digest = source_digest_for(survey, cid, locale) unless
+        content.nil? || LanguageCheckLines.untranslated?(content)
+    end
+    row.save!
+    :ok
+  end
+
+  # What a card MEANS, in its author's words — sent to the translator with the
+  # card and shown on every line of it. Kept on the primary line's row: the
+  # note is about the original, and there is exactly one of those per card.
+  # Blank clears it.
+  def record_translator_note(survey, cid:, body:)
+    return :unknown_line if line_content(survey, cid, survey.default_locale).nil?
+
+    row = LanguageCheck.for_line(survey, cid, survey.default_locale)
+    row.translator_note = body.to_s.strip.gsub(/\r\n?/, "\n").first(LanguageCheck::MAX_TRANSLATOR_NOTE).presence
+    return :unchanged if row.new_record? && row.translator_note.nil?
     row.save!
     :ok
   end

@@ -43,10 +43,15 @@ class TranslateLocalesJob < ApplicationJob
   # `locales` stays an Array for the callers (and the jobs already enqueued
   # against the old signature) that pass several. Each becomes its own job, so
   # a six-language request is six independent units of work.
-  def self.enqueue_for(survey, locales)
+  #
+  # `cids` re-translates those cards whether or not they already have words in
+  # the language — the Language check screen's Re-translate, for lines whose
+  # original has been rewritten since. Without it, only cards with no entry at
+  # all are asked for, which can never repair a stale one.
+  def self.enqueue_for(survey, locales, cids: nil)
     Array(locales).each do |locale|
       SurveyTranslation.enqueue!(survey, locale)
-      perform_later(survey.id, [ locale ])
+      cids.nil? ? perform_later(survey.id, [ locale ]) : perform_later(survey.id, [ locale ], Array(cids).map(&:to_s))
     end
   end
 
@@ -59,7 +64,7 @@ class TranslateLocalesJob < ApplicationJob
   # symptom this rewrite existed to remove, reintroduced one layer up. A row
   # nobody will ever come back for has to be closed by whoever walks away
   # from it.
-  def perform(survey_id, locales)
+  def perform(survey_id, locales, cids = nil)
     asked  = SupportedLocales.sanitize_list(locales, fallback: [])
     survey = Survey.find_by(id: survey_id)
 
@@ -78,7 +83,7 @@ class TranslateLocalesJob < ApplicationJob
                        &.failed!("this Verto is no longer offered in that language", retryable: false)
     end
 
-    wanted.each { |locale| translate_one(survey, locale) }
+    wanted.each { |locale| translate_one(survey, locale, cids) }
   end
 
   private
@@ -90,7 +95,7 @@ class TranslateLocalesJob < ApplicationJob
   # the length of its own Claude call and nothing more. A deck that did move is
   # still not overwritten — that guarantee is the point of the guard — but now
   # only the language in flight is lost, and its row says so.
-  def translate_one(survey, locale)
+  def translate_one(survey, locale, cids = nil)
     row = SurveyTranslation.find_or_initialize_by(survey_id: survey.id, locale: locale)
     row.save! if row.new_record?
     row.running!
@@ -101,14 +106,21 @@ class TranslateLocalesJob < ApplicationJob
     # half-landed could never be repaired: every card had *an* entry, so
     # re-ticking the language skipped it for ever. Asking only for the cards
     # that are actually missing one makes a retry finish the job.
-    missing = cards.each_index.reject { |i| cards[i].dig("i18n", locale).present? }
+    missing = if cids
+      wanted = cids.map(&:to_s)
+      cards.each_index.select { |i| cards[i].is_a?(Hash) && wanted.include?(cards[i]["cid"].to_s) }
+    else
+      cards.each_index.reject { |i| cards[i].dig("i18n", locale).present? }
+    end
     if missing.empty?
       return row.done!
     end
 
     subset     = missing.map { |i| cards[i] }
     translated = SurveyTranslator.new.call(cards: subset, target_locale: locale,
-                                           source_locale: survey.default_locale)
+                                           source_locale: survey.default_locale,
+                                           notes: LanguageCheck.translator_notes_for(survey),
+                                           fresh: !cids.nil?)
     merged = Survey.merge_card_translations(subset, locale, translated)
 
     filled = cards.dup
@@ -116,6 +128,9 @@ class TranslateLocalesJob < ApplicationJob
 
     digest = VertoGeneration.cards_digest(survey)
     if VertoGeneration.write_cards_if_unchanged!(survey, filled, digest)
+      LanguageCheck.record_translated!(
+        survey.id, LanguageCheckLines.translated_pairs(missing.map { |i| filled[i] }, [ locale ])
+      )
       row.done!
     else
       # The deck moved under this language. Not an error — the guard did its

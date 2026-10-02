@@ -11,7 +11,9 @@
       notes     — LanguageCheckNote.index_for(survey), keyed [cid, locale]
       editable  — whether this viewer may rewrite the wording
       post_url  — where a line's actions post
-      filter    — "all" | "pending" | "changes" | "stale" | a locale code
+      filter    — "all" | "pending" | "changes" | "stale" | "outdated" | a locale code
+      owner     — true on the creator's own screen (re-translate, translator
+                  notes); absent on the reviewer link
 %>
 <%
   primary = survey.default_locale
@@ -37,7 +39,12 @@
       states[[ card[:cid], line[:locale] ]] = {
         state:  LanguageCheck.state_for(row, digest, line[:primary] ? nil : source_digest),
         row:    row,
-        digest: digest
+        digest: digest,
+        # Translated from an original that has since been rewritten. Not a
+        # review state — an unchecked line can be out of date, and that is the
+        # case that matters most, since nobody's approval will catch it.
+        outdated: !line[:primary] && !LanguageCheckLines.untranslated?(line[:content]) &&
+                  row&.outdated_for?(source_digest) || false
       }
     end
   end
@@ -50,6 +57,7 @@
   approved = mine.count { |_, v| v[:state] == "approved" }
   flagged  = mine.count { |_, v| v[:state] == "changes_requested" }
   stale    = mine.count { |_, v| v[:state] == "stale" }
+  outdated = mine.count { |_, v| v[:outdated] }
   filter   = params[:filter].presence || "all"
 %>
 
@@ -61,6 +69,7 @@
     <strong><%= t("language_check.progress", approved: approved, total: total) %></strong>
     <% if flagged.positive? %><span class="lc-count lc-count--flagged"><%= t("language_check.count_flagged", count: flagged) %></span><% end %>
     <% if stale.positive? %><span class="lc-count lc-count--stale"><%= t("language_check.count_stale", count: stale) %></span><% end %>
+    <% if outdated.positive? %><span class="lc-count lc-count--stale"><%= t("language_check.count_outdated", count: outdated) %></span><% end %>
   </div>
 </div>
 
@@ -71,7 +80,8 @@
   <% [ [ "all", t("language_check.filter_all") ],
        [ "pending", t("language_check.filter_pending") ],
        [ "changes", t("language_check.filter_changes") ],
-       [ "stale", t("language_check.filter_stale") ] ].each do |value, label| %>
+       [ "stale", t("language_check.filter_stale") ],
+       [ "outdated", t("language_check.filter_outdated") ] ].each do |value, label| %>
     <a class="lc-filter<%= ' is-active' if filter == value %>"
        href="<%= url_for(filter: (value == "all" ? nil : value)) %>"><%= label %></a>
   <% end %>
@@ -98,6 +108,7 @@
       when "pending" then state == "pending"
       when "changes" then state == "changes_requested"
       when "stale"   then state == "stale"
+      when "outdated" then states[[ card[:cid], line[:locale] ]][:outdated]
       when "all"     then true
       else line[:locale] == filter
       end
@@ -127,7 +138,9 @@
                  meta: states[[ card[:cid], line[:locale] ]],
                  notes: notes[[ card[:cid], line[:locale] ]] || [],
                  actionable: locales.include?(line[:locale]),
-                 editable: editable, post_url: post_url, filter: filter %>
+                 editable: editable, post_url: post_url, filter: filter,
+                 owner: local_assigns[:owner],
+                 translator_note: checks[[ card[:cid], primary ]]&.translator_note %>
     <% end %>
   </section>
 <% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_02_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_02_140000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -561,6 +561,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_02_130000) do
     t.string "source_digest"
     t.string "status", default: "pending", null: false
     t.integer "survey_id", null: false
+    t.string "translated_from_digest"
+    t.text "translator_note"
     t.datetime "updated_at", null: false
     t.index ["language_check_link_id"], name: "index_language_checks_on_language_check_link_id"
     t.index ["reviewed_by_user_id"], name: "index_language_checks_on_reviewed_by_user_id"

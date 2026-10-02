@@ -26,7 +26,8 @@
     <div class="lc-layout">
       <%= render "language_checks/languages_rail",
                  survey: @survey, locales: @locales, coverage: @coverage,
-                 addable: @addable, editable: @editable, runs: @runs %>
+                 addable: @addable, editable: @editable, runs: @runs,
+                 retranslatable: @retranslatable %>
 
       <div class="lc-main">
         <% if @locales.size < 2 %>
@@ -42,7 +43,7 @@
                      survey: @survey, cards: @cards, locales: @locales,
                      checks: @checks, notes: @notes, editable: @editable,
                      post_url: survey_language_check_lines_path(@survey),
-                     filter: params[:filter].presence || "all" %>
+                     filter: params[:filter].presence || "all", owner: true %>
         <% end %>
       </div>
     </div>

@@ -262,4 +262,24 @@ class SharedLanguageCheckTest < ActionDispatch::IntegrationTest
     assert_match "Marta", response.body
     assert_match "Approved with one nit.", response.body
   end
+
+  # ── What a reviewer sees of the out-of-date warning and the author's note ──
+
+  test "a reviewer sees the out-of-date warning and the author's note, without the creator's controls" do
+    LanguageCheck.record_translated!(@survey.id, [ [ "c_mc", "es", "an-older-original" ] ])
+    LanguageCheck.create!(survey: @survey, cid: "c_mc", locale: "en", translator_note: "colour as in paint")
+
+    get shared_language_check_path(@link.token)
+    assert_match I18n.t("language_check.outdated_note"), response.body
+    assert_match "colour as in paint", response.body
+    assert_no_match I18n.t("language_check.retranslate"), response.body,
+                    "re-translating spends AI and replaces words — the creator's call"
+    assert_no_match 'value="translator_note"', response.body
+  end
+
+  test "a reviewer cannot set the author's note" do
+    post shared_language_check_lines_path(@link.token),
+         params: { cid: "c_mc", locale: "es", verb: "translator_note", body: "mine" }
+    assert_nil LanguageCheck.where(survey: @survey).where.not(translator_note: nil).first
+  end
 end
