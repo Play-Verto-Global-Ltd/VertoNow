@@ -284,7 +284,10 @@ export default class extends Controller {
     if (!periods[i].counts) {
       const row = document.createElement("div")
       row.className = "rc-timeline-tip-row"
-      row.textContent = t("results.timeline_thin", { count: data.min_answers })
+      // Withheld under a floor, or — on the creator's own page, where the
+      // floor is 1 — simply a period nobody answered in.
+      row.textContent = data.min_answers > 1 ? t("results.timeline_thin", { count: data.min_answers })
+                                             : t("results.timeline_none")
       tip.append(row)
       return
     }

@@ -294,6 +294,7 @@ zu:
         low: "Phansi"
         unverified: "Akuqinisekisiwe"
         unscored: "Akunamaphuzu"
+    timeline_footnote_all: "Ingxenye isuselwa ezimpendulweni ezifike esikhathini ngasinye."
   shared_results:
     title: "Imiphumela"
     read_only_badge: "Ukufunda kuphela"
@@ -795,6 +796,7 @@ zu:
       timeline_change: "uma kuqhathaniswa nezingu-%{n} ezedlule"
       timeline_pts: "amaphuzu %{n}"
       timeline_wc: "iviki lika-%{date}"
+      timeline_none: "Azikho izimpendulo"
   unsubscribe:
     title: "Yeqa ukuthola ama-imeyili e-Playverto"
     body: "Yekela ukuthumela ama-imeyili omkhankaso ku-%{email}?"

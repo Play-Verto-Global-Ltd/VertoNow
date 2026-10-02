@@ -286,6 +286,7 @@ pl:
         low: "Niski"
         unverified: "Niezweryfikowany"
         unscored: "Nieoceniony"
+    timeline_footnote_all: "Udział liczony jest z odpowiedzi, które wpłynęły w danym okresie."
   shared_results:
     title: Wyniki
     read_only_badge: Tylko do odczytu
@@ -781,6 +782,7 @@ pl:
       timeline_change: "vs poprzednie %{n}"
       timeline_pts: "%{n} pkt"
       timeline_wc: "tydz. od %{date}"
+      timeline_none: "Brak odpowiedzi"
   unsubscribe:
     title: "Wypisz się z e-maili Playverto"
     body: "Przestać wysyłać e-maile kampanii na adres %{email}?"

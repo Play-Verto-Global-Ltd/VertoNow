@@ -287,6 +287,7 @@ af:
         low: "Laag"
         unverified: "Ongeverifieer"
         unscored: "Onbeoordeel"
+    timeline_footnote_all: "Die aandeel is van die antwoorde wat in elke tydperk ingekom het."
   shared_results:
     title: "Resultate"
     read_only_badge: "Leesalleen"
@@ -782,6 +783,7 @@ af:
       timeline_change: "teenoor vorige %{n}"
       timeline_pts: "%{n} pte"
       timeline_wc: "wk v. %{date}"
+      timeline_none: "Geen antwoorde nie"
   unsubscribe:
     title: "Onttrek van Playverto-e-posse"
     body: "Stop veldtog-e-posse aan %{email}?"

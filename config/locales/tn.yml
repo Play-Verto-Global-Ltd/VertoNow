@@ -296,6 +296,7 @@ tn:
         low: "Kwa tlase"
         unverified: "Ga e a netefadiwa"
         unscored: "Ga e na maduo"
+    timeline_footnote_all: "Karolo e ikaegile ka dikarabo tse di gorogileng mo nakong nngwe le nngwe."
   shared_results:
     title: "Diphetho"
     read_only_badge: "Go bala fela"
@@ -797,6 +798,7 @@ tn:
       timeline_change: "fa e bapisiwa le tse %{n} tse di fetileng"
       timeline_pts: "dintlha di le %{n}"
       timeline_wc: "beke ya %{date}"
+      timeline_none: "Ga go na dikarabo"
   unsubscribe:
     title: "Ikgogela mo diimeileng tsa Playverto"
     body: "Emisa go romela diimeile tsa letshubisano go %{email}?"

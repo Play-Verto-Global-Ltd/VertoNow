@@ -138,10 +138,12 @@
       <% end %>
       <%# Dwell time — the median time respondents who answered this question
           spent on it. Only where the player recorded any: a deck answered
-          before the measurement existed shows nothing rather than "0s". And
-          only over the minimum group: one person's median is their time. %>
-      <% if dwell.is_a?(Hash) && CardTypes.question?(type) && (stat = dwell[idx]) &&
-            stat[:n] >= Response::MIN_REGION_SAMPLE_SIZE %>
+          before the measurement existed shows nothing rather than "0s". On
+          a page someone outside the organisation reads (the public link, a
+          partner's page) only over the minimum group, because one person's
+          median is their time; the organisation's own page shows it always. %>
+      <% dwell_floor = shared || local_assigns.key?(:baseline) ? Response::MIN_REGION_SAMPLE_SIZE : 1 %>
+      <% if dwell.is_a?(Hash) && CardTypes.question?(type) && (stat = dwell[idx]) && stat[:n] >= dwell_floor %>
         <span class="rc-dwell"
               title="<%= t("results.dwell_hint", count: stat[:n], mean: dwell_time_label(stat[:mean_ms])) %>">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">

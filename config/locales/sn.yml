@@ -288,6 +288,7 @@ sn:
         low: "Yakaderera"
         unverified: "Isina kusimbiswa"
         unscored: "Isina mamaki"
+    timeline_footnote_all: "Chikamu chinobva pamhinduro dzakasvika munguva imwe neimwe."
   shared_results:
     title: "Mhedzisiro"
     read_only_badge: "Kungoverenga"
@@ -785,6 +786,7 @@ sn:
       timeline_change: "kuenzaniswa ne%{n} dzakapfuura"
       timeline_pts: "mapoinzi %{n}"
       timeline_wc: "vhiki ra %{date}"
+      timeline_none: "Hapana mhinduro"
   unsubscribe:
     title: "Rega Kutambira Meimeyili dzePlayverto"
     body: "Mira kutumira meimeyili dzemushandirapamwe kuna %{email}?"

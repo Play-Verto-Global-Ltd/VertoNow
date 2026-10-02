@@ -286,6 +286,7 @@ pt:
         low: "Baixa"
         unverified: "Não verificada"
         unscored: "Sem pontuação"
+    timeline_footnote_all: "O percentual é sobre as respostas recebidas em cada período."
   shared_results:
     title: Resultados
     read_only_badge: Somente leitura
@@ -781,6 +782,7 @@ pt:
       timeline_change: "vs. %{n} anteriores"
       timeline_pts: "%{n} pts"
       timeline_wc: "sem. de %{date}"
+      timeline_none: "Nenhuma resposta"
   unsubscribe:
     title: "Cancelar a assinatura dos e-mails da Playverto"
     body: "Parar de enviar e-mails de campanhas para %{email}?"

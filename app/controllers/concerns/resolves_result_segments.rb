@@ -71,7 +71,11 @@ module ResolvesResultSegments
   # The public shared-results page passes `links: false`: a link's name is the
   # owner's own label for an audience (a research assistant, a newsletter), not
   # something a stranger with the results token should read.
-  def result_segments(survey, base, links: true)
+  #
+  # `floor` is the smallest group a country or demographic slice may show
+  # (see OWNER_FLOOR): the published minimum by default, so a caller that
+  # forgets to say who is looking hides a small slice rather than showing it.
+  def result_segments(survey, base, links: true, floor: MIN_DEMOGRAPHIC_SAMPLE)
     segments = [ { id: "overall", label: "Overall", scope: base, count: base.count } ]
 
     shares = survey.survey_shares
@@ -148,11 +152,12 @@ module ResolvesResultSegments
     # the filter row.
     # reorder(nil) drops base's `ORDER BY created_at`: Postgres rejects an
     # ORDER BY column that isn't in the GROUP BY (SQLite quietly allows it).
-    # Small-cell suppression: a country with fewer than MIN_REGION_SAMPLE_SIZE
-    # respondents never gets its own segment — see Response for why.
+    # Small-cell suppression: outside the organisation that ran the Verto, a
+    # country with fewer than `floor` respondents never gets its own segment
+    # — see Response for why.
     country_counts = base.reorder(nil).where.not(region_country: nil)
                          .group(:region_country).count
-                         .select { |_, count| count >= Response::MIN_REGION_SAMPLE_SIZE }
+                         .select { |_, count| count >= floor }
     country_counts.sort_by { |_, count| -count }.first(REGION_SEGMENT_CAP).each do |country, count|
       segments << {
         id:      "region_#{country}",
@@ -163,13 +168,23 @@ module ResolvesResultSegments
       }
     end
 
-    segments + demographic_segments(base)
+    segments + demographic_segments(base, floor)
   end
 
   REGION_SEGMENT_CAP = 30
   # Same small-cell rule the regions use: a demographic slice thin enough to
-  # identify someone is worse than no slice at all.
+  # identify someone is worse than no slice at all — for anyone OUTSIDE the
+  # organisation that ran the Verto (the public results link, a partner).
   MIN_DEMOGRAPHIC_SAMPLE = Response::MIN_REGION_SAMPLE_SIZE
+
+  # The organisation that ran the Verto sees every response in its own
+  # results, however few: every country, every demographic slice, every
+  # combination (owner's instruction, 2026-10-02). They are its own
+  # respondents — the raw export has always shown it every row — and the
+  # Privacy Notice's minimum group governs what is published from them, not
+  # what their own researcher may look at. Passed as `floor:` by the
+  # creator's own pages and exports; everyone else gets the default.
+  OWNER_FLOOR = 1
 
   # Age bands rather than birth years: a year is close to an identifier on a
   # small Verto, and nobody analyses "people born in 1987" — they analyse
@@ -187,16 +202,16 @@ module ResolvesResultSegments
   # Neurodiversity), from the denormalised columns (see
   # AddDemographicsToResponses for why they aren't read out of the answers
   # JSON). Suppressed below the small-cell threshold, like regions.
-  def demographic_segments(base)
-    gender_segments(base) + age_segments(base) +
-      heritage_segments(base) + neurodiversity_segments(base)
+  def demographic_segments(base, floor = MIN_DEMOGRAPHIC_SAMPLE)
+    gender_segments(base, floor) + age_segments(base, floor) +
+      heritage_segments(base, floor) + neurodiversity_segments(base, floor)
   end
 
-  def gender_segments(base)
+  def gender_segments(base, floor)
     counts = base.reorder(nil).where.not(demographic_gender: nil)
                  .group(:demographic_gender).count
 
-    counts.select { |_g, n| n >= MIN_DEMOGRAPHIC_SAMPLE }
+    counts.select { |_g, n| n >= floor }
           .sort_by { |_g, n| -n }
           .map do |gender, count|
       { id: "gender_#{gender.parameterize}", label: "👤 #{gender}",
@@ -207,11 +222,11 @@ module ResolvesResultSegments
   # Same shape as gender_segments against the opt-in Heritage column — values
   # are tamper-validated at write (sync only stores options the card offered),
   # so grouping the stored data needs no card lookup.
-  def heritage_segments(base)
+  def heritage_segments(base, floor)
     counts = base.reorder(nil).where.not(demographic_heritage: nil)
                  .group(:demographic_heritage).count
 
-    counts.select { |_h, n| n >= MIN_DEMOGRAPHIC_SAMPLE }
+    counts.select { |_h, n| n >= floor }
           .sort_by { |_h, n| -n }
           .map do |heritage, count|
       { id: "heritage_#{heritage.parameterize}", label: "👥 #{heritage}",
@@ -225,14 +240,14 @@ module ResolvesResultSegments
   # (one respondent with ADHD+Dyslexia belongs to both) — correct for filters.
   # The exclusive picks are stored alone, so "None of these" is never inflated
   # by condition-pickers.
-  def neurodiversity_segments(base)
+  def neurodiversity_segments(base, floor)
     tallies = Hash.new(0)
     base.reorder(nil).where.not(demographic_neurodiversity: nil)
         .pluck(:demographic_neurodiversity).each do |packed|
       packed.to_s.split("|").reject(&:empty?).uniq.each { |label| tallies[label] += 1 }
     end
 
-    tallies.select { |_l, n| n >= MIN_DEMOGRAPHIC_SAMPLE }
+    tallies.select { |_l, n| n >= floor }
            .sort_by { |_l, n| -n }
            .map do |label, count|
       # Explicit ESCAPE: SQLite's LIKE has no default escape character
@@ -243,7 +258,7 @@ module ResolvesResultSegments
     end
   end
 
-  def age_segments(base)
+  def age_segments(base, floor)
     this_year = Date.current.year
 
     AGE_BANDS.filter_map do |label, min_age, max_age|
@@ -256,7 +271,7 @@ module ResolvesResultSegments
       scope = base.where(demographic_birth_year: (this_year - max_age)..(this_year - min_age))
                   .or(base.where(demographic_age_band: keys))
       count = scope.reorder(nil).count
-      next if count < MIN_DEMOGRAPHIC_SAMPLE
+      next if count.zero? || count < floor
 
       { id: "age_#{label.parameterize}", label: "🎂 #{label}", scope: scope, count: count }
     end
@@ -280,12 +295,15 @@ module ResolvesResultSegments
   # A Verto whose creator left Low responses out (Survey#integrity_filtered)
   # has them left out here, at the base, so every segment, count, card,
   # export and small-cell check below is made without them.
-  def resolve_result_segments(survey, segment_param, range_param = nil, links: true, window: nil)
+  #
+  # `floor:` as for result_segments — the creator's own pages pass OWNER_FLOOR.
+  def resolve_result_segments(survey, segment_param, range_param = nil, links: true, window: nil,
+                              floor: MIN_DEMOGRAPHIC_SAMPLE)
     base     = survey.integrity_filtered(survey.responses.where(answered: true)).order(created_at: :desc)
     base     = apply_date_range(base, range_param)
     base     = base.where(created_at: window.begin.beginning_of_day..window.end.end_of_day) if window
-    segments = result_segments(survey, base, links: links)
-    [ base, segments, select_result_segment(segments, base, segment_param) ]
+    segments = result_segments(survey, base, links: links, floor: floor)
+    [ base, segments, select_result_segment(segments, base, segment_param, floor: floor) ]
   end
 
   # The segment ?segment= asks for. One id is that segment; several, comma
@@ -295,7 +313,7 @@ module ResolvesResultSegments
   # Unknown ids are dropped rather than failing the whole request, so a
   # combination link keeps working when one of its parts is suppressed in
   # the window it was opened in; the page then names what it is showing.
-  def select_result_segment(segments, base, segment_param)
+  def select_result_segment(segments, base, segment_param, floor: MIN_DEMOGRAPHIC_SAMPLE)
     ids   = ResolvesResultSegments.split_segment_param(segment_param)
     parts = segments.select { |s| ids.include?(s[:id]) }
     parts = parts.reject { |s| s[:id] == "overall" } if parts.size > 1
@@ -303,7 +321,7 @@ module ResolvesResultSegments
     case parts.size
     when 0 then segments.first
     when 1 then parts.first
-    else combine_result_segments(parts, base)
+    else combine_result_segments(parts, base, floor)
     end
   end
 
@@ -320,7 +338,7 @@ module ResolvesResultSegments
   # Relation#and rather than #merge — merge drops an earlier condition on a
   # column the later relation also names, which is right for chaining a
   # default scope and wrong for an intersection.
-  def combine_result_segments(parts, base)
+  def combine_result_segments(parts, base, floor = MIN_DEMOGRAPHIC_SAMPLE)
     by_kind = parts.group_by { |s| ResolvesResultSegments.kind_of(s[:id]) }
     scope   = by_kind.values.map { |same| same.map { |s| s[:scope] }.reduce(:or) }.reduce(:and)
     count   = scope.reorder(nil).count
@@ -330,7 +348,9 @@ module ResolvesResultSegments
     # the disclosure — that exactly three Austrian women over 65 answered —
     # and a scope of none keeps every consumer downstream honest by
     # construction rather than by each of them remembering to check.
-    suppressed = by_kind.keys.intersect?(IDENTITY_KINDS) && count < MIN_DEMOGRAPHIC_SAMPLE
+    # Never for the organisation's own view (floor 1): a combination nobody
+    # matches is an empty result, not a withheld one.
+    suppressed = floor > OWNER_FLOOR && by_kind.keys.intersect?(IDENTITY_KINDS) && count < floor
 
     {
       id:          parts.map { |s| s[:id] }.join(SEGMENT_SEPARATOR),

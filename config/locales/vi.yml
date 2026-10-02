@@ -286,6 +286,7 @@ vi:
         low: "Thấp"
         unverified: "Chưa xác minh"
         unscored: "Chưa chấm điểm"
+    timeline_footnote_all: "Tỷ lệ tính trên các câu trả lời đến trong mỗi kỳ."
   shared_results:
     title: Kết quả
     read_only_badge: Chỉ xem
@@ -781,6 +782,7 @@ vi:
       timeline_change: "so với %{n} kỳ trước"
       timeline_pts: "%{n} điểm"
       timeline_wc: "tuần %{date}"
+      timeline_none: "Không có câu trả lời"
   unsubscribe:
     title: "Hủy đăng ký email Playverto"
     body: "Ngừng gửi email chiến dịch đến %{email}?"

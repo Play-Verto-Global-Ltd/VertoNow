@@ -286,6 +286,7 @@ it:
         low: "Bassa"
         unverified: "Non verificata"
         unscored: "Non valutata"
+    timeline_footnote_all: "La quota è calcolata sulle risposte arrivate in ciascun periodo."
   shared_results:
     title: Risultati
     read_only_badge: Sola lettura
@@ -781,6 +782,7 @@ it:
       timeline_change: "vs %{n} precedenti"
       timeline_pts: "%{n} pt"
       timeline_wc: "sett. dal %{date}"
+      timeline_none: "Nessuna risposta"
   unsubscribe:
     title: "Annulla l'iscrizione alle email di Playverto"
     body: "Smettere di inviare email di campagne a %{email}?"

@@ -296,6 +296,7 @@ st:
         low: "Tlase"
         unverified: "Ha e a netefatswa"
         unscored: "Ha e na matshwao"
+    timeline_footnote_all: "Karolo e ipapisitse le dikarabo tse fihlileng nakong ka nngwe."
   shared_results:
     title: "Diphetho"
     read_only_badge: "Ho Bala Feela"
@@ -797,6 +798,7 @@ st:
       timeline_change: "ho bapiswa le tse %{n} tse fetileng"
       timeline_pts: "dintlha tse %{n}"
       timeline_wc: "beke ya %{date}"
+      timeline_none: "Ha ho dikarabo"
   unsubscribe:
     title: "Ikgula diimeileng tsa Playverto"
     body: "Emisa ho romela diimeile tsa lets'olo ho %{email}?"

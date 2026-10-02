@@ -291,6 +291,7 @@ en-US:
     timeline_share: "Share %"
     timeline_count: "Count"
     timeline_footnote: "Share is of the answers that arrived in each period. A period with fewer than %{count} answers is left blank."
+    timeline_footnote_all: "Share is of the answers that arrived in each period."
     integrity:
       menu: "Integrity"
       heading: "Response integrity"
@@ -806,6 +807,7 @@ en-US:
       timeline_error: "Couldn't load the timeline — please try again."
       timeline_empty: "No answers in this window."
       timeline_thin: "Fewer than %{count} answers"
+      timeline_none: "No answers"
       timeline_latest: "Latest"
       timeline_change: "vs previous %{n}"
       timeline_pts: "%{n} pts"

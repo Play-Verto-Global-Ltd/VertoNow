@@ -1366,7 +1366,9 @@ class SurveysController < ApplicationController
     # ⌘K still reaches everywhere the nav did.
     @hide_main_nav = true
     @date_range = params[:range].presence
-    base, @segments, @active_segment = resolve_result_segments(@survey, params[:segment], @date_range)
+    # The organisation's own results: every response, however few (OWNER_FLOOR).
+    base, @segments, @active_segment = resolve_result_segments(@survey, params[:segment], @date_range,
+                                                               floor: ResolvesResultSegments::OWNER_FLOOR)
     @overall_total  = base.count
 
     @responses  = @active_segment[:scope]
@@ -1410,7 +1412,7 @@ class SurveysController < ApplicationController
     # is called a second time, unfiltered, purely to reuse its wave-segment
     # scoping (including wave 1's nil-absorption) rather than re-deriving it.
     if @survey.survey_waves.size >= 2
-      _unfiltered_base, unfiltered_segments, = resolve_result_segments(@survey, nil, nil)
+      _unfiltered_base, unfiltered_segments, = resolve_result_segments(@survey, nil, nil, floor: ResolvesResultSegments::OWNER_FLOOR)
       wave_segments = unfiltered_segments.select { |s| s[:id].to_s.start_with?("wave_") }
       @wave_stats = @survey.survey_waves.filter_map do |wave|
         seg = wave_segments.find { |s| s[:id] == "wave_#{wave.position}" }
@@ -1465,7 +1467,7 @@ class SurveysController < ApplicationController
   # client-side (no reload per toggle, unlike the single-segment `results`
   # view above).
   def results_compare
-    _base, segments, = resolve_result_segments(@survey, nil)
+    _base, segments, = resolve_result_segments(@survey, nil, floor: ResolvesResultSegments::OWNER_FLOOR)
     cards = Array(@survey.cards)
 
     render json: {

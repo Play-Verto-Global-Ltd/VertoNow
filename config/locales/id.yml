@@ -286,6 +286,7 @@ id:
         low: "Rendah"
         unverified: "Belum terverifikasi"
         unscored: "Tanpa nilai"
+    timeline_footnote_all: "Porsi dihitung dari jawaban yang masuk pada tiap periode."
   shared_results:
     title: Hasil
     read_only_badge: Hanya baca
@@ -781,6 +782,7 @@ id:
       timeline_change: "vs %{n} sebelumnya"
       timeline_pts: "%{n} poin"
       timeline_wc: "pekan %{date}"
+      timeline_none: "Tidak ada jawaban"
   unsubscribe:
     title: "Berhenti berlangganan email Playverto"
     body: "Berhenti mengirim email kampanye ke %{email}?"

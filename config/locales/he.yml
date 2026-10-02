@@ -286,6 +286,7 @@ he:
         low: "נמוכה"
         unverified: "לא מאומתת"
         unscored: "ללא דירוג"
+    timeline_footnote_all: "השיעור מחושב מהתשובות שהתקבלו בכל תקופה."
   shared_results:
     title: תוצאות
     read_only_badge: לקריאה בלבד
@@ -781,6 +782,7 @@ he:
       timeline_change: "לעומת %{n} הקודמים"
       timeline_pts: "%{n} נק׳"
       timeline_wc: "שבוע %{date}"
+      timeline_none: "אין תשובות"
   unsubscribe:
     title: "ביטול הרשמה להודעות Playverto"
     body: "להפסיק לשלוח הודעות קמפיין אל %{email}?"

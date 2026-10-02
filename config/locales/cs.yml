@@ -281,6 +281,7 @@ cs:
         low: "Nízká"
         unverified: "Neověřená"
         unscored: "Nehodnocená"
+    timeline_footnote_all: "Podíl se počítá z odpovědí, které přišly v daném období."
   shared_results:
     title: "Výsledky"
     read_only_badge: "Jen pro čtení"
@@ -826,6 +827,7 @@ cs:
       timeline_pts: "%{n} p. b."
       timeline_wc: "týden od %{date}"
       chat_error: "Omlouváme se, něco se pokazilo. Zkuste to prosím znovu."
+      timeline_none: "Žádné odpovědi"
   unsubscribe:
     title: "Odhlásit odběr e-mailů od Playverto"
     body: "Přestat posílat kampaňové e-maily na %{email}?"

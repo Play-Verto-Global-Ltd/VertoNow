@@ -286,6 +286,7 @@ ja:
         low: "低"
         unverified: "未検証"
         unscored: "未採点"
+    timeline_footnote_all: "割合は各期間に届いた回答に対するものです。"
   shared_results:
     title: 結果
     read_only_badge: 読み取り専用
@@ -781,6 +782,7 @@ ja:
       timeline_change: "直前%{n}期比"
       timeline_pts: "%{n}pt"
       timeline_wc: "%{date}週"
+      timeline_none: "回答なし"
   unsubscribe:
     title: "Playvertoのメール配信を停止"
     body: "%{email} へのキャンペーンメール配信を停止しますか？"

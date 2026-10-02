@@ -49,7 +49,8 @@ class SurveyTextAnswersController < ApplicationController
     # The same resolver the page used to draw the pills, so "this segment"
     # here is exactly the segment the card was counted in. It builds every
     # segment's count to find one — the cost every results endpoint pays.
-    _base, _segments, segment = resolve_result_segments(survey, params[:segment], params[:range].presence)
+    _base, _segments, segment = resolve_result_segments(survey, params[:segment], params[:range].presence,
+                                                       floor: ResolvesResultSegments::OWNER_FLOOR)
     query = params[:q].to_s.strip.downcase
     page  = [ params[:page].to_i, 1 ].max
 

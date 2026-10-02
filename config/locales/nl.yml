@@ -286,6 +286,7 @@ nl:
         low: "Laag"
         unverified: "Niet geverifieerd"
         unscored: "Niet beoordeeld"
+    timeline_footnote_all: "Het aandeel is berekend over de antwoorden die in elke periode binnenkwamen."
   shared_results:
     title: Resultaten
     read_only_badge: Alleen-lezen
@@ -781,6 +782,7 @@ nl:
       timeline_change: "t.o.v. vorige %{n}"
       timeline_pts: "%{n} pt"
       timeline_wc: "wk v. %{date}"
+      timeline_none: "Geen antwoorden"
   unsubscribe:
     title: "Afmelden voor Playverto-e-mails"
     body: "Geen campagne-e-mails meer sturen naar %{email}?"

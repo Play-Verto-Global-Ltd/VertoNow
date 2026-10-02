@@ -286,6 +286,7 @@ ko:
         low: "낮음"
         unverified: "미확인"
         unscored: "점수 없음"
+    timeline_footnote_all: "비율은 각 기간에 들어온 응답을 기준으로 합니다."
   shared_results:
     title: 결과
     read_only_badge: 읽기 전용
@@ -781,6 +782,7 @@ ko:
       timeline_change: "이전 %{n}개 대비"
       timeline_pts: "%{n}p"
       timeline_wc: "%{date} 주"
+      timeline_none: "응답 없음"
   unsubscribe:
     title: "Playverto 이메일 수신 거부"
     body: "%{email} 주소로 캠페인 이메일 발송을 중단할까요?"

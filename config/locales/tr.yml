@@ -286,6 +286,7 @@ tr:
         low: "Düşük"
         unverified: "Doğrulanmamış"
         unscored: "Puanlanmamış"
+    timeline_footnote_all: "Pay, her dönemde gelen yanıtlar üzerinden hesaplanır."
   shared_results:
     title: Sonuçlar
     read_only_badge: Salt okunur
@@ -781,6 +782,7 @@ tr:
       timeline_change: "önceki %{n} ile"
       timeline_pts: "%{n} puan"
       timeline_wc: "%{date} haftası"
+      timeline_none: "Yanıt yok"
   unsubscribe:
     title: "Playverto e-postalarından çık"
     body: "%{email} adresine kampanya e-postaları gönderilmesin mi?"

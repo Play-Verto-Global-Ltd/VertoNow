@@ -83,7 +83,10 @@ class ResultsCompareTest < ActionDispatch::IntegrationTest
     assert data["aggregates"].key?("region_GB")
   end
 
-  test "a country below the sample-size floor is still suppressed" do
+  # The published floor is for people outside the organisation. The one
+  # that ran the Verto sees every country it has answers from, however few
+  # (ResolvesResultSegments::OWNER_FLOOR, owner's instruction 2026-10-02).
+  test "a country below the published floor still gets its own segment on the organisation's own page" do
     org = create_org_and_sign_in("below-floor")
     s   = create_survey(org)
     seed_region(s, "GB", "Yorkshire", 4)
@@ -92,7 +95,9 @@ class ResultsCompareTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     data = JSON.parse(response.body)
-    refute data["segments"].any? { |seg| seg["id"] == "region_GB" }
+    region = data["segments"].find { |seg| seg["id"] == "region_GB" }
+    assert region, "four respondents in one country are the organisation's own to look at"
+    assert_equal 4, region["count"]
   end
 
   test "two different countries produce two segments" do

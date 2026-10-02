@@ -92,14 +92,37 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
     assert_equal 20, all["periods"].first["n"]
   end
 
-  test "a period with fewer answers than the small-cell line is withheld, not shown small" do
+  # The tab is on the organisation's own results page, which is held to no
+  # floor (ResolvesResultSegments::OWNER_FLOOR, owner's instruction
+  # 2026-10-02): a day with two answers shows those two. Only a day nobody
+  # answered on is blank.
+  test "the organisation's own timeline shows a thin period at its real size" do
     sign_in @admin
-    thin = timeline(range: "7d")["periods"].find { |p| p["start"] == 3.days.ago.to_date.iso8601 }
+    data  = timeline(range: "7d")
+    small = data["periods"].find { |p| p["start"] == 3.days.ago.to_date.iso8601 }
 
-    assert thin["thin"]
-    assert_nil thin["n"]
-    assert_nil thin["counts"]
-    refute timeline(range: "7d")["periods"].last["thin"]
+    refute small["thin"]
+    assert_equal 2, small["n"]
+    assert_equal [ 2, 0, 0 ], small["counts"], "the day's two answers, both Blue, as answered"
+
+    data = timeline(from: 70.days.ago.to_date.iso8601, to: 62.days.ago.to_date.iso8601)
+    empty = data["periods"].find { |p| p["start"] == 65.days.ago.to_date.iso8601 }
+    assert empty["thin"], "a day with no answers has nothing to draw"
+    assert_nil empty["counts"]
+  end
+
+  # The service still withholds a thin period for any caller that passes the
+  # published floor — the machinery a published timeline would use.
+  test "under the published floor a period is withheld, not shown small" do
+    timeline = AnswerTimeline.new(card: CARDS[0], index: 0, scope: @survey.responses,
+                                  from: 7.days.ago.to_date, to: Date.current,
+                                  min_answers: Response::MIN_REGION_SAMPLE_SIZE).call
+    thin = timeline.periods.find { |p| p[:start] == 3.days.ago.to_date.iso8601 }
+
+    assert thin[:thin]
+    assert_nil thin[:n]
+    assert_nil thin[:counts]
+    refute timeline.periods.last[:thin]
   end
 
   test "series are the card's rows in the card's order, with the card's own denominator" do
@@ -111,7 +134,7 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
     data["periods"].reject { |p| p["thin"] }.each do |p|
       assert_equal p["counts"].sum, p["n"], "the share's denominator is the row counts' sum, like the card's percentages"
     end
-    assert_equal MIN, data["min_answers"]
+    assert_equal ResolvesResultSegments::OWNER_FLOOR, data["min_answers"]
   end
 
   test "a write-in shows as the Other row" do
@@ -128,13 +151,13 @@ class ResultsTimelineTest < ActionDispatch::IntegrationTest
   # value_count + other_count read that day as 2 × (MIN - 1) and showed it.
   test "a period's small-cell line counts respondents, not picks plus write-ins" do
     (MIN - 1).times { |i| add(20.days, i, extra: { "0" => { "type" => "multiple_choice", "value" => "Blue", "other" => "Teal" } }) }
-    sign_in @admin
-    data = timeline(range: "30d")
+    timeline = AnswerTimeline.new(card: CARDS[0], index: 0, scope: @survey.responses,
+                                  from: 30.days.ago.to_date, to: Date.current, min_answers: MIN).call
 
     day = (Time.current.utc.change(hour: 12) - 20.days).to_date.iso8601
-    period = data["periods"].find { |p| p["start"] == day }
+    period = timeline.periods.find { |p| p[:start] == day }
     assert period, "the day the combined answers landed on is in the window"
-    assert period["thin"], "#{MIN - 1} respondents is under the line, whatever else they each wrote"
+    assert period[:thin], "#{MIN - 1} respondents is under the line, whatever else they each wrote"
   end
 
   # ── Windows ───────────────────────────────────────────────────────────────

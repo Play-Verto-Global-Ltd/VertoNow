@@ -494,7 +494,10 @@
               data-answer-timeline-target="modeBtn" data-answer-timeline-mode-param="count"
               data-action="click->answer-timeline#setMode"><%= t("results.timeline_count") %></button>
     </div>
-    <div class="rc-timeline-foot"><%= t("results.timeline_footnote", count: AnswerTimeline::MIN_PERIOD_ANSWERS) %></div>
+    <%# The organisation's own results page: every period with an answer is
+        drawn (ResolvesResultSegments::OWNER_FLOOR), so the footnote says
+        what the share is of, and nothing about periods being withheld. %>
+    <div class="rc-timeline-foot"><%= t("results.timeline_footnote_all") %></div>
   </aside>
 
   <%# ── Ask Verto ── a floating CTA that opens the chat OVER the feed rather

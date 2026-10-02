@@ -19,8 +19,10 @@ class AnswerTimeline
 
   # The segments' small-cell line, applied per period: a period with fewer
   # answers than this has its counts withheld — not dimmed, withheld — because
-  # "2 of 3 picked X" in one named week is the disclosure the rest of the page
-  # refuses to make.
+  # "2 of 3 picked X" in one named week is the disclosure a published view
+  # refuses to make. The default; the organisation's own results page passes
+  # ResolvesResultSegments::OWNER_FLOOR and sees every period it has answers
+  # for, the only blank ones being those with none.
   MIN_PERIOD_ANSWERS = Response::MIN_REGION_SAMPLE_SIZE
 
   # Buckets by the window's span: days up to a month, weeks up to about half a
@@ -41,7 +43,10 @@ class AnswerTimeline
   #            the window by the caller — the dates here only pick the buckets)
   # from, to:  Dates, inclusive
   # statement: a tap card's statement, whose scale is the answer set
-  def initialize(card:, index:, scope:, from:, to:, statement: nil)
+  # min_answers: the fewest answers a period may show counts for
+  attr_reader :min_answers
+
+  def initialize(card:, index:, scope:, from:, to:, statement: nil, min_answers: MIN_PERIOD_ANSWERS)
     @card      = card
     @type      = card["type"].to_s
     @index     = index
@@ -49,6 +54,7 @@ class AnswerTimeline
     @from      = from
     @to        = to
     @statement = statement
+    @min_answers = [ min_answers.to_i, 1 ].max
   end
 
   def call
@@ -72,7 +78,7 @@ class AnswerTimeline
     periods   = starts.map do |d|
       result = finalized[d]
       counts = result ? counts_for(result, series) : series.map { 0 }
-      thin   = (result ? result[:total].to_i : 0) < MIN_PERIOD_ANSWERS
+      thin   = (result ? result[:total].to_i : 0) < @min_answers
       {
         start:  d.iso8601,
         label:  label_for(d, granularity),

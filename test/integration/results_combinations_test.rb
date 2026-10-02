@@ -244,20 +244,34 @@ class ResultsCombinationsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "a suppressed combination shows the notice in place of the cards, and withholds the number" do
+  # The resolver tests above use the published floor (the default). The
+  # organisation that ran the Verto is held to none: its own results page
+  # shows a combination however few it matches (OWNER_FLOOR, owner's
+  # instruction 2026-10-02). The public results link still withholds it.
+  test "the organisation's own page shows a combination however few it matches" do
     seed_grid
+    add(2, country: "DE", gender: "Female")
 
     get survey_results_path(@survey, segment: "region_DE,gender_female")
     assert_response :success
 
-    assert_select ".rc-suppressed", 1
-    assert_select ".rc-card", 1, "only the notice — no per-question cards saying 'No responses yet'"
-    assert_select ".rh-count-num", text: "<#{MIN}"
+    assert_select ".rc-suppressed", false
+    assert_select ".rh-notice", false
+    assert_select ".rh-count-num", text: "2"
     assert_select ".rh-segments summary .rh-picker-active", text: "🌍 Germany · 👤 Female"
-    # The explanation is in the pinned header too: the feed's card is a whole
-    # screen below the number it explains.
-    assert_select ".results-header .rh-notice", text: /Too few responses/
-    assert_select ".results-header .rh-notice", text: /Fewer than #{MIN} people/
+  end
+
+  test "on the public results link a combination under the line shows the notice in place of the cards" do
+    seed_grid
+    add(2, country: "DE", gender: "Female")
+    @survey.update!(results_share_token: SecureRandom.urlsafe_base64(18))
+
+    get shared_results_path(@survey.results_share_token, segment: "region_DE,gender_female")
+    assert_response :success
+
+    assert_select ".rc-suppressed", 1
+    assert_select ".rc-card", 1, "only the notice — no per-question cards"
+    assert_no_match(/\b2 responses\b/, response.body, "the number itself is the disclosure")
   end
 
   test "a shown combination carries no notice" do
@@ -280,8 +294,9 @@ class ResultsCombinationsTest < ActionDispatch::IntegrationTest
     rows = CSV.parse(response.body.delete_prefix("﻿"))
     assert_equal MIN + 1, rows.drop(1).size
 
+    add(2, country: "DE", gender: "Female")
     get survey_results_export_path(@survey, kind: "responses", segment: "region_DE,gender_female")
     rows = CSV.parse(response.body.delete_prefix("﻿"))
-    assert_equal 0, rows.drop(1).size, "a suppressed combination exports nothing, by the scope not by the view"
+    assert_equal 2, rows.drop(1).size, "the organisation's own export is held to no floor either"
   end
 end

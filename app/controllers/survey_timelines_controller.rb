@@ -46,7 +46,8 @@ class SurveyTimelinesController < ApplicationController
     # preset narrows the base the way the page's own window does; a custom
     # From/To narrows it the same way.
     range  = custom ? nil : params[:range].presence
-    _base, _segments, segment = resolve_result_segments(survey, params[:segment], range, window: custom)
+    _base, _segments, segment = resolve_result_segments(survey, params[:segment], range, window: custom,
+                                                                  floor: ResolvesResultSegments::OWNER_FLOOR)
     scope  = segment[:scope]
 
     to   = custom ? custom.end : Date.current
@@ -55,7 +56,8 @@ class SurveyTimelinesController < ApplicationController
     else scope.reorder(nil).minimum(:created_at)&.to_date || to
     end
 
-    timeline = AnswerTimeline.new(card: card, index: idx, scope: scope, from: from, to: to, statement: statement).call
+    timeline = AnswerTimeline.new(card: card, index: idx, scope: scope, from: from, to: to, statement: statement,
+                                  min_answers: ResolvesResultSegments::OWNER_FLOOR).call
 
     render json: {
       ok:          true,
@@ -64,7 +66,7 @@ class SurveyTimelinesController < ApplicationController
       from:        from.iso8601,
       to:          to.iso8601,
       granularity: timeline.granularity,
-      min_answers: AnswerTimeline::MIN_PERIOD_ANSWERS,
+      min_answers: ResolvesResultSegments::OWNER_FLOOR,
       series:      timeline.series,
       periods:     timeline.periods
     }

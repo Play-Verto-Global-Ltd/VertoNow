@@ -286,6 +286,7 @@ de:
         low: "Niedrig"
         unverified: "Nicht verifiziert"
         unscored: "Nicht bewertet"
+    timeline_footnote_all: "Der Anteil bezieht sich auf die Antworten, die im jeweiligen Zeitraum eingegangen sind."
   shared_results:
     title: Ergebnisse
     read_only_badge: Schreibgeschützt
@@ -781,6 +782,7 @@ de:
       timeline_change: "vs. %{n} davor"
       timeline_pts: "%{n} Pkt."
       timeline_wc: "KW ab %{date}"
+      timeline_none: "Keine Antworten"
   unsubscribe:
     title: "Playverto-E-Mails abbestellen"
     body: "Keine Kampagnen-E-Mails mehr an %{email} senden?"

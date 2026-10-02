@@ -286,6 +286,7 @@ hi:
         low: "निम्न"
         unverified: "असत्यापित"
         unscored: "बिना आँका"
+    timeline_footnote_all: "हिस्सा हर अवधि में आए जवाबों के आधार पर है।"
   shared_results:
     title: परिणाम
     read_only_badge: केवल पढ़ने के लिए
@@ -781,6 +782,7 @@ hi:
       timeline_change: "पिछले %{n} की तुलना"
       timeline_pts: "%{n} अंक"
       timeline_wc: "%{date} का सप्ताह"
+      timeline_none: "कोई जवाब नहीं"
   unsubscribe:
     title: "Playverto ईमेल से सदस्यता समाप्त करें"
     body: "%{email} पर अभियान ईमेल भेजना बंद करें?"

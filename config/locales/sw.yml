@@ -286,6 +286,7 @@ sw:
         low: "Chini"
         unverified: "Haijathibitishwa"
         unscored: "Haijapimwa"
+    timeline_footnote_all: "Sehemu ni ya majibu yaliyofika katika kila kipindi."
   shared_results:
     title: Matokeo
     read_only_badge: Kusoma tu
@@ -781,6 +782,7 @@ sw:
       timeline_change: "dhidi ya %{n} zilizopita"
       timeline_pts: "pointi %{n}"
       timeline_wc: "wiki ya %{date}"
+      timeline_none: "Hakuna majibu"
   unsubscribe:
     title: "Jiondoe kwenye barua pepe za Playverto"
     body: "Kuacha kutuma barua pepe za kampeni kwa %{email}?"

@@ -35,9 +35,12 @@ class Response < ApplicationRecord
   # 10 since 2026-10-02 (it was 5): the Privacy Notice tells respondents that
   # no result is produced from a group of fewer than 10, and the owner chose
   # to make the product match the notice rather than the other way round. One
-  # constant, so the map, the segment pills, the respondent's end-of-Verto
-  # comparison, the account page, the answer timeline, the partner page and
-  # the public results link all move together.
+  # constant, so everything that shows results to someone OUTSIDE the
+  # organisation that ran the Verto moves together: the public results link,
+  # the respondent's end-of-Verto comparison and map, the account page, the
+  # partner page, a funder's portfolio and Ask Verto. The organisation's own
+  # results page and exports are held to none of it — they show every
+  # response, however few (ResolvesResultSegments::OWNER_FLOOR).
   MIN_REGION_SAMPLE_SIZE = 10
 
   # Keep the denormalised `answered` flag (answered ≥1 question with a value) in

@@ -286,6 +286,7 @@ uk:
         low: "Низька"
         unverified: "Не перевірено"
         unscored: "Не оцінено"
+    timeline_footnote_all: "Частка рахується від відповідей, що надійшли в кожному періоді."
   shared_results:
     title: Результати
     read_only_badge: Лише перегляд
@@ -781,6 +782,7 @@ uk:
       timeline_change: "до попередніх %{n}"
       timeline_pts: "%{n} в.п."
       timeline_wc: "тиж. з %{date}"
+      timeline_none: "Немає відповідей"
   unsubscribe:
     title: "Відписатися від листів Playverto"
     body: "Більше не надсилати листи кампаній на %{email}?"

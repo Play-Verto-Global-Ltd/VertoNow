@@ -286,6 +286,7 @@ ar:
         low: "منخفضة"
         unverified: "غير مُتحقَّق منها"
         unscored: "غير مُقيَّمة"
+    timeline_footnote_all: "النسبة محسوبة من الردود الواردة في كل فترة."
   shared_results:
     title: النتائج
     read_only_badge: للقراءة فقط
@@ -781,6 +782,7 @@ ar:
       timeline_change: "مقابل %{n} السابقة"
       timeline_pts: "%{n} نقطة"
       timeline_wc: "أسبوع %{date}"
+      timeline_none: "لا ردود"
   unsubscribe:
     title: "إلغاء الاشتراك في رسائل Playverto"
     body: "هل تريد إيقاف إرسال رسائل الحملات إلى %{email}؟"

@@ -286,6 +286,7 @@ ru:
         low: "Низкая"
         unverified: "Не проверено"
         unscored: "Не оценено"
+    timeline_footnote_all: "Доля считается от ответов, поступивших в каждый период."
   shared_results:
     title: Результаты
     read_only_badge: Только для чтения
@@ -781,6 +782,7 @@ ru:
       timeline_change: "к предыдущим %{n}"
       timeline_pts: "%{n} п.п."
       timeline_wc: "нед. с %{date}"
+      timeline_none: "Нет ответов"
   unsubscribe:
     title: "Отписаться от писем Playverto"
     body: "Больше не отправлять письма кампаний на %{email}?"
