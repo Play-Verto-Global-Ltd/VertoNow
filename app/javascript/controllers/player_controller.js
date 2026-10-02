@@ -253,9 +253,6 @@ export default class extends Controller {
     document.addEventListener("visibilitychange", this._onDwellVisibility)
 
     this._sessionToken = this._ensureToken()
-    // The running dwell totals live beside the token, so a reload carries on
-    // from where this run was rather than timing the same cards from zero.
-    this._dwell = this._loadDwell()
     // The durable identity is minted for the leaderboard, the contact gate,
     // or any ask-once question — for contacts it is the only bridge between
     // the volunteered details and the pseudonymous responses, and for
@@ -1036,7 +1033,6 @@ export default class extends Controller {
     try {
       sessionStorage.removeItem(`verto_session_${this.submitUrlValue}`)
     } catch (_e) { /* storage blocked */ }
-    this._clearStoredDwell()
     // A full navigation, not in-place surgery: Test Mode's guarantee is that the
     // page carries no live endpoint at all, and only a server render can make
     // that true. Same reasoning as playAgain()'s reload — connect() is the one
@@ -1097,7 +1093,6 @@ export default class extends Controller {
     this._answers = {}
     this._endDwell()
     this._dwell = {}
-    this._clearStoredDwell()
     this._declined = true
     this._recordConsent(false)
     if (this.hasConsentMainTarget) this.consentMainTarget.classList.add("hidden")
@@ -1548,6 +1543,16 @@ export default class extends Controller {
   // arriving; _payload() banks before every save, so the server always holds
   // the running totals (Response.merge_dwell keeps the larger per card).
   //
+  // Kept exactly the way the answers are: in memory, and sent with the saves
+  // the answers already ride. Never written to the device. For a while the
+  // totals were mirrored into sessionStorage so a reload could resume them,
+  // but that was the one thing the player stored purely to measure the
+  // respondent, and the Privacy Notice tells them the player keeps no
+  // analytics storage. A reload now loses the time since the last save, the
+  // same way it loses the answers since the last save: the deck starts over,
+  // and the times that reach the server describe the pass that produced the
+  // answers that reach it. test/system/player_dwell_time_test.rb holds this.
+  //
   // What is NOT time to answer, and is not counted: the survey-level consent
   // banner (the deck is inert beneath it, and reading the sheet is not
   // thinking about card one), a hidden tab (switching apps for an hour is
@@ -1587,40 +1592,8 @@ export default class extends Controller {
     const now = performance.now()
     if (this._dwellKey != null && !this._dwellFrozen.has(this._dwellKey)) {
       this._dwell[this._dwellKey] = (this._dwell[this._dwellKey] || 0) + (now - this._dwellSince)
-      this._saveDwell()
     }
     this._dwellSince = now
-  }
-
-  // The totals persist in sessionStorage under the same discipline as the
-  // session token (_ensureToken): same lifetime, same per-Verto key, cleared
-  // together wherever the token is orphaned. A reload then resumes the run's
-  // totals, which is what lets the server keep the larger figure per card
-  // and be right — a run restarted from zero would hand it a smaller one.
-  _dwellStorageKey() {
-    return `verto_dwell_${this.submitUrlValue}`
-  }
-
-  _loadDwell() {
-    try {
-      const parsed = JSON.parse(sessionStorage.getItem(this._dwellStorageKey()) || "null")
-      if (!parsed || typeof parsed !== "object") return {}
-      const out = {}
-      for (const [key, ms] of Object.entries(parsed)) {
-        if (typeof ms === "number" && Number.isFinite(ms) && ms > 0) out[key] = ms
-      }
-      return out
-    } catch (_) {
-      return {}
-    }
-  }
-
-  _saveDwell() {
-    try { sessionStorage.setItem(this._dwellStorageKey(), JSON.stringify(this._dwell)) } catch (_) { /* storage blocked */ }
-  }
-
-  _clearStoredDwell() {
-    try { sessionStorage.removeItem(this._dwellStorageKey()) } catch (_) { /* storage blocked */ }
   }
 
   // Pause: bank and stop, keeping the card so a visible tab can resume it.
@@ -2018,7 +1991,6 @@ export default class extends Controller {
   // the deck's state machine starts clean.
   playAgain() {
     try { sessionStorage.removeItem(`verto_session_${this.submitUrlValue}`) } catch (_) { /* storage blocked */ }
-    this._clearStoredDwell()
     window.location.reload()
   }
 

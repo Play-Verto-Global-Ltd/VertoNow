@@ -81,13 +81,13 @@ class Response < ApplicationRecord
   DWELL_CAP_MS = 24 * 60 * 60 * 1000
 
   # The stored dwell for one card, folded with what a save just sent. Per key
-  # the LARGER wins. The player's totals only grow — it keeps them in
-  # sessionStorage beside the session token, so a reload carries on rather
-  # than starting at zero — and max is the backstop for whatever still
-  # arrives out of order (a grade and a progress racing, a submit drained
-  # from the service worker's queue after a later save): nothing can shrink a
-  # figure, and a save that arrives without one leaves the stored value
-  # standing. Keys are strings of digits naming a QUESTION card in `cards` —
+  # the LARGER wins. Within one page load the player's totals only grow, and
+  # max is the backstop for whatever arrives out of order (a grade and a
+  # progress racing, a submit drained from the service worker's queue after
+  # a later save): nothing can shrink a figure, and a save that arrives
+  # without one leaves the stored value standing. The player keeps its totals
+  # in memory only, as it keeps the answers, so a reload starts them again;
+  # for a card timed on both sides of a reload, the larger of the two stands. Keys are strings of digits naming a QUESTION card in `cards` —
   # the player times every card with an index, welcome and checkpoint cards
   # included, but nothing reports those, so nothing holds them. Values are
   # numbers from zero to the cap. Anything else is ignored, never coerced —

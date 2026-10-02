@@ -81,7 +81,56 @@ class PlayerDwellTimeTest < ApplicationSystemTestCase
     assert_equal 3, row.answers.size
   end
 
+  # Dwell is kept exactly the way the answers are: in memory, sent with the
+  # saves, never written to the device. The Privacy Notice tells respondents
+  # the player keeps no analytics storage, and for a day it did — the totals
+  # were mirrored into sessionStorage so a reload could resume them.
+  test "timings stay off the device, and a reload starts them over just as it starts the answers over" do
+    visit "/play/#{@survey.publish_token}"
+    dismiss_cookie_banner
+    assert_selector ".preview-card.active", wait: 5
+    assert_text "First question"
+
+    sleep 0.5
+    find(".choice-list-item", text: "Alpha").click
+    find(".preview-btn-next").click
+    assert_text "Second question"
+    # The first answered card registers the respondent, carrying its time.
+    wait_until { @survey.responses.reload.first&.answers&.key?("0") }
+    saved = @survey.responses.first.dwell_ms
+    assert_operator saved["0"], :>=, 500, "the first save carried the first card's time"
+
+    sleep 0.4
+    assert_operator client_dwell.fetch("1", 0), :>=, 400, "the second card is being timed"
+    assert_empty stored_dwell_keys, "nothing about timing is written to the browser's storage"
+
+    page.refresh
+    assert_selector ".preview-card.active", wait: 5
+    assert_text "First question"
+
+    state = page.evaluate_script(<<~JS)
+      (() => {
+        const app  = window.Stimulus || window.application
+        const root = document.querySelector('[data-controller~="player"]')
+        const c    = app.getControllerForElementAndIdentifier(root, "player")
+        return { answers: Object.keys(c._answers), dwell: Object.keys(c._dwellPayload()) }
+      })()
+    JS
+    assert_empty state["answers"], "a reload starts the answers over"
+    assert_equal [ "0" ], state["dwell"], "and the timings: only the card on screen now has any"
+    assert_equal saved["0"], @survey.responses.first.reload.dwell_ms["0"],
+                 "what already reached the server stays there"
+    assert_empty stored_dwell_keys
+  end
+
   private
+
+  # Every storage key on the page that names timing, in either store.
+  def stored_dwell_keys
+    page.evaluate_script(<<~JS)
+      [ ...Object.keys(sessionStorage), ...Object.keys(localStorage) ].filter(k => /dwell/i.test(k))
+    JS
+  end
 
   def wait_for_completed
     deadline = Time.current + 8
