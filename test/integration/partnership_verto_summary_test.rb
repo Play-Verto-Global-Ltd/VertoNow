@@ -88,17 +88,22 @@ class PartnershipVertoSummaryTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "a slice under the small-cell line is never sent to the model" do
-    # MIN women and MIN people in the UK, but no woman in the UK: each pill is
-    # offered, and their combination is under the line.
-    MIN.times { respond(@share, "Pitch", "w", gender: "female", country: "ES") }
+  # The partner's own respondents are theirs to read at any size
+  # (ResolvesResultSegments::OWNER_FLOOR, owner's instruction 2026-10-02);
+  # everyone else's are still held to the line, so a thin slice of them never
+  # reaches the model.
+  test "a partner's own thin slice is summarised, and never against a thin slice of everyone else" do
+    2.times { respond(@share, "Pitch", "w", gender: "female", country: "GB") }
     MIN.times { respond(@share, "Court", "w", gender: "male", country: "GB") }
+    2.times { respond(nil, "Court", "w", gender: "female", country: "GB") }
     sign_in
 
     with_fake_summariser do |calls|
       get partnership_partnership_verto_summary_path(@partnership, @pv, segment: "region_GB,gender_female")
       assert_response :success
-      assert_empty calls
+      call = calls.sole
+      assert_equal 2, call[:total], "two of the partner's own women in the UK are theirs to read"
+      assert_nil call[:baseline], "two other women in the UK are too few to stand for anyone"
     end
   end
 

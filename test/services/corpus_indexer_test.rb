@@ -170,15 +170,15 @@ class CorpusIndexerTest < ActiveSupport::TestCase
       "someone who opened the Verto and left answered nothing, and counting them would deflate every share"
   end
 
-  test "by default the floor is the Privacy Notice's minimum group" do
-    # The Privacy Notice promises respondents that no result — "a report, the
-    # Data Commons or an Ask Verto answer" — is produced from a group of fewer
-    # than 10, and the owner chose (2026-10-02) to make the product keep that
-    # promise. It replaces a default of 1, under which every answer counted: a
-    # one-respondent Verto was citable, and so was a segment of one child.
-    assert_equal 10, CorpusEntry.min_sample_size
-    assert_equal Response::MIN_REGION_SAMPLE_SIZE, CorpusEntry.min_sample_size,
-      "one minimum group across the product — Ask Verto must not publish what the results page withholds"
+  test "by default the floor is the Data Commons' minimum group" do
+    # The Privacy Notice promises respondents that nothing goes into the Data
+    # Commons from a group of fewer than 10, and the owner chose (2026-10-02)
+    # to make the product keep that promise — for the Commons alone; results
+    # elsewhere keep their own lines. It replaces a default of 1, under which
+    # every answer counted: a one-respondent Verto was citable, and so was a
+    # segment of one child.
+    assert_equal 10, CorpusEntry::COMMONS_MIN_GROUP
+    assert_equal CorpusEntry::COMMONS_MIN_GROUP, CorpusEntry.min_sample_size
 
     floor  = CorpusEntry.min_sample_size
     survey = survey_with([ { "type" => "multiple_choice", "cid" => "c_m", "text" => "Why?",

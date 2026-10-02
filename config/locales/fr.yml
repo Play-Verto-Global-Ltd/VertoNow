@@ -312,10 +312,6 @@ fr:
     unavailable_title: Ce lien de résultats n'est pas disponible
     unavailable_body: Il a peut-être été mis en pause ou désactivé par son créateur, ou l'adresse comporte une erreur.
     under_responses: "Moins de %{count} réponses"
-    answers_under: "Moins de %{count} réponses"
-    card_too_few: "Moins de %{count} personnes ont répondu à cette question, ses réponses sont donc masquées sur les liens partagés."
-    too_few_title: "Pas encore assez de réponses"
-    too_few_body: "Les résultats apparaîtront ici dès qu'au moins %{count} personnes auront répondu, afin que personne ne puisse être reconnu à ses réponses."
   player:
     compare_promise: "Allez jusqu'au bout pour comparer vos réponses à celles des autres."
     region_search_placeholder: "Recherchez votre ville ou région…"

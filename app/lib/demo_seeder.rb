@@ -91,10 +91,11 @@ class DemoSeeder
       # self-declared sub-regions (e.g. "Greater London" + "Manchester")
       # correctly collapsing into one country total rather than each needing
       # its own dot. Only *completed* responses get tagged with a region (see
-      # seed_responses!), so every COUNTRY here is sized well above
-      # Response::MIN_REGION_SAMPLE_SIZE (10) to clear it even after ~12% of
-      # a cluster don't finish — 15 raw, or two clusters of 8, survives that
-      # with room to spare rather than sitting on the suppression line.
+      # seed_responses!), so every COUNTRY here is sized well above the Data
+      # Commons' minimum group (CorpusEntry::COMMONS_MIN_GROUP, 10 — these
+      # Vertos are enrolled in Ask Verto below, and a country under it has no
+      # breakdown there) even after ~12% of a cluster don't finish — 15 raw,
+      # or two clusters of 8, survives that with room to spare.
       seed_responses!(@money_matters, count: 47, consent: true,
         regions: [
           [ "ZA", "Gauteng", 8 ], [ "ZA", "Western Cape", 8 ],
@@ -414,8 +415,9 @@ class DemoSeeder
   # ── simulated respondents ────────────────────────────────────────────────
 
   # `regions` is [[country_code, label, how_many], ...] — must sum to `count`,
-  # and every country should total comfortably over MIN_REGION_SAMPLE_SIZE so
-  # the region/map view actually has something to show.
+  # and every country should total comfortably over the Commons' minimum
+  # group (CorpusEntry::COMMONS_MIN_GROUP) so the region/map view and Ask
+  # Verto's country breakdowns actually have something to show.
   def seed_responses!(survey, count:, regions:, consent: false, locale_by_country: {})
     region_pool = regions.flat_map { |country, label, n| Array.new(n) { [ country, label ] } }
     raise "region pool (#{region_pool.size}) must total `count` (#{count}) for #{survey.title}" unless region_pool.size == count

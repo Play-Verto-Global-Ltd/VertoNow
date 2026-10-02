@@ -6,8 +6,9 @@
 # skipped.
 #
 # The floor itself is CorpusEntry.min_sample_size, an account setting. It
-# defaults to 10, the minimum group the Privacy Notice promises for anything
-# published (owner's decision, 2026-10-02 — it had been 1, no suppression).
+# defaults to 10 (CorpusEntry::COMMONS_MIN_GROUP), the minimum group the
+# Privacy Notice promises for the Data Commons (owner's decision, 2026-10-02 —
+# it had been 1, no suppression).
 # `ASK_VERTO_MIN_CELL=30` restores the original, stricter floor, because Ask
 # Verto publishes across an organisation boundary.
 #

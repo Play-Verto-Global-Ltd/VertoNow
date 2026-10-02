@@ -33,12 +33,12 @@ class ShowcaseVertoSeeder
 
   # Simulated respondents, so the dashboard, the results screen, the region map
   # and the leaderboard all have something to show. [country, label, how_many]
-  # — each country is comfortably over Response::MIN_REGION_SAMPLE_SIZE (10)
+  # — each cluster is comfortably over Response::MIN_REGION_SAMPLE_SIZE (5)
   # even after the drop-offs below.
   RESPONSE_REGIONS = [
     [ "GB", "Greater London", 9 ], [ "GB", "Greater Manchester", 8 ],
-    [ "US", "California", 15 ], [ "ZA", "Western Cape", 15 ],
-    [ "AU", "New South Wales", 15 ]
+    [ "US", "California", 8 ], [ "ZA", "Western Cape", 8 ],
+    [ "AU", "New South Wales", 8 ]
   ].freeze
   RESPONSE_COUNT   = RESPONSE_REGIONS.sum { |_c, _l, n| n }
   COMPLETION_CHANCE = 0.86

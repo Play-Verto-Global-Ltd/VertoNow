@@ -312,10 +312,6 @@ ko:
     unavailable_title: 이 결과 링크를 사용할 수 없습니다
     unavailable_body: 제작자가 일시 중지했거나 껐을 수 있으며, 주소가 잘못 입력되었을 수도 있습니다.
     under_responses: "%{count}건 미만의 응답"
-    answers_under: "응답 %{count}개 미만"
-    card_too_few: "이 질문에 답한 사람이 %{count}명 미만이라 공유 링크에서는 답변을 숨깁니다."
-    too_few_title: "아직 응답이 충분하지 않습니다"
-    too_few_body: "최소 %{count}명이 응답하면 결과가 여기에 표시됩니다. 누구의 답변인지 알아볼 수 없도록 하기 위해서입니다."
   player:
     compare_promise: "끝까지 완료하면 내 답변을 다른 사람들과 비교해 볼 수 있어요."
     region_search_placeholder: "도시 또는 지역을 검색하세요…"

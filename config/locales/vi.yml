@@ -312,10 +312,6 @@ vi:
     unavailable_title: Liên kết kết quả này không khả dụng
     unavailable_body: Liên kết có thể đã bị người tạo tạm dừng hoặc tắt, hoặc địa chỉ đã bị gõ sai.
     under_responses: "Chưa đến %{count} phản hồi"
-    answers_under: "Dưới %{count} câu trả lời"
-    card_too_few: "Dưới %{count} người đã trả lời câu hỏi này nên các câu trả lời bị ẩn trên liên kết chia sẻ."
-    too_few_title: "Chưa đủ phản hồi"
-    too_few_body: "Kết quả sẽ hiển thị ở đây khi có ít nhất %{count} người phản hồi, để không ai bị nhận ra qua câu trả lời của mình."
   player:
     compare_promise: "Hoàn thành để xem câu trả lời của bạn so với mọi người như thế nào."
     region_search_placeholder: "Tìm thành phố hoặc khu vực của bạn…"

@@ -312,10 +312,6 @@ ja:
     unavailable_title: この結果リンクは利用できません
     unavailable_body: 作成者によって一時停止または無効化されたか、URLの入力が間違っている可能性があります。
     under_responses: "%{count}件未満の回答"
-    answers_under: "%{count}件未満の回答"
-    card_too_few: "この質問に回答した人が%{count}人未満のため、共有リンクでは回答を非表示にしています。"
-    too_few_title: "まだ回答が十分に集まっていません"
-    too_few_body: "少なくとも%{count}人が回答すると、ここに結果が表示されます。誰の回答かを特定できないようにするためです。"
   player:
     compare_promise: "最後まで答えると、自分の回答をみんなと比べられます。"
     region_search_placeholder: "都市または地域を検索…"

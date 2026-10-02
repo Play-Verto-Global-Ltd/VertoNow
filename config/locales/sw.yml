@@ -312,10 +312,6 @@ sw:
     unavailable_title: Kiungo hiki cha matokeo hakipatikani
     unavailable_body: Huenda kimesitishwa au kuzimwa na muundaji wake, au anwani iliandikwa vibaya.
     under_responses: "Chini ya majibu %{count}"
-    answers_under: "Majibu chini ya %{count}"
-    card_too_few: "Watu chini ya %{count} wamejibu swali hili, kwa hivyo majibu yake yamefichwa kwenye viungo vilivyoshirikiwa."
-    too_few_title: "Bado hakuna majibu ya kutosha"
-    too_few_body: "Matokeo yataonekana hapa mara watu wasiopungua %{count} watakapojibu, ili majibu ya mtu yeyote yasiweze kutambuliwa."
   player:
     compare_promise: "Maliza ili uone jinsi majibu yako yanavyolinganishwa na ya wengine."
     region_search_placeholder: "Tafuta jiji au eneo lako…"

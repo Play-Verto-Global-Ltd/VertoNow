@@ -38,17 +38,19 @@ class CorpusEntry < ApplicationRecord
   # collected it.
   #
   # It is a setting rather than a constant because the account owner decides how
-  # their own respondents may be published. The default is 10, the floor the
-  # Privacy Notice promises for "a report, the Data Commons or an Ask Verto
-  # answer", and the owner's decision of 2026-10-02 to make the product keep
-  # that promise. It replaces the 2026-08-08 instruction to suppress nothing,
-  # under which a segment containing one child was publishable to anyone with
-  # an account. `ASK_VERTO_MIN_CELL` still overrides it per deployment (30 was
-  # the original floor); setting it below 10 breaks the notice's promise.
+  # their own respondents may be published. The default is COMMONS_MIN_GROUP:
+  # the Privacy Notice tells respondents that nothing goes into the Data
+  # Commons from a group of fewer than 10 (owner's decision, 2026-10-02 — the
+  # 10 is about the Commons alone; results elsewhere keep their own lines). It
+  # replaces the 2026-08-08 instruction to suppress nothing, under which a
+  # segment containing one child was publishable to anyone with an account.
+  # `ASK_VERTO_MIN_CELL` still overrides it per deployment (30 was the
+  # original floor); setting it below 10 breaks the notice's promise.
   #
   # Importing is unaffected either way — every response is stored whatever this
   # says. The floor only ever governed what may be cited.
-  DEFAULT_MIN_SAMPLE_SIZE = [ ENV.fetch("ASK_VERTO_MIN_CELL", Response::MIN_REGION_SAMPLE_SIZE).to_i, 1 ].max
+  COMMONS_MIN_GROUP = 10
+  DEFAULT_MIN_SAMPLE_SIZE = [ ENV.fetch("ASK_VERTO_MIN_CELL", COMMONS_MIN_GROUP).to_i, 1 ].max
 
   class << self
     attr_writer :min_sample_size

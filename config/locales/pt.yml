@@ -312,10 +312,6 @@ pt:
     unavailable_title: Esta ligação de resultados não está disponível
     unavailable_body: Pode ter sido pausada ou desativada pelo criador, ou o endereço foi escrito incorretamente.
     under_responses: "Menos de %{count} respostas"
-    answers_under: "Menos de %{count} respostas"
-    card_too_few: "Menos de %{count} pessoas responderam a esta pergunta, por isso as respostas ficam ocultas nos links partilhados."
-    too_few_title: "Ainda não há respostas suficientes"
-    too_few_body: "Os resultados aparecem aqui quando pelo menos %{count} pessoas tiverem respondido, para que as respostas de ninguém possam ser identificadas."
   player:
     compare_promise: "Termine para ver como as suas respostas se comparam com as dos outros."
     region_search_placeholder: "Pesquise a sua cidade ou região…"

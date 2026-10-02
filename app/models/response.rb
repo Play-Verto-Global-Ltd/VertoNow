@@ -30,18 +30,17 @@ class Response < ApplicationRecord
   # Small-cell suppression for region groupings: any region/results view
   # grouped by region_country should drop groups smaller than this before
   # display, so a single respondent (or a handful) is never singled out on a
-  # map or in a per-country breakdown.
+  # map or in a per-country breakdown — the same threshold official
+  # statistics bodies (e.g. the UK ONS) use for suppressing small cells.
   #
-  # 10 since 2026-10-02 (it was 5): the Privacy Notice tells respondents that
-  # no result is produced from a group of fewer than 10, and the owner chose
-  # to make the product match the notice rather than the other way round. One
-  # constant, so everything that shows results to someone OUTSIDE the
-  # organisation that ran the Verto moves together: the public results link,
-  # the respondent's end-of-Verto comparison and map, the account page, the
-  # partner page, a funder's portfolio and Ask Verto. The organisation's own
-  # results page and exports are held to none of it — they show every
-  # response, however few (ResolvesResultSegments::OWNER_FLOOR).
-  MIN_REGION_SAMPLE_SIZE = 10
+  # It holds where results reach someone other than the people who collected
+  # them: the public results link's slices, the respondent's comparison and
+  # map, the account page, a partner's view of everyone else, a funder's
+  # portfolio. The organisation that ran the Verto, and a partner looking at
+  # its own respondents, see every response however few
+  # (ResolvesResultSegments::OWNER_FLOOR). The Data Commons has its own,
+  # higher minimum (CorpusEntry::COMMONS_MIN_GROUP).
+  MIN_REGION_SAMPLE_SIZE = 5
 
   # Keep the denormalised `answered` flag (answered ≥1 question with a value) in
   # sync on every save, so the dashboard can count responders with a grouped SQL

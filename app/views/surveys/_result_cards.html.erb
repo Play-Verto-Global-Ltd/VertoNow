@@ -121,29 +121,16 @@
           <%= t("common_questions.badge", default: "Common") %>
         </span>
       <% end %>
-      <%# On the public shared page a question answered by fewer than the
-          minimum group shows neither its count nor its answers — the floor
-          the Privacy Notice promises applies per question, because a card
-          only a handful of people reached is a small group of its own. %>
-      <% too_few = shared && total_ans.to_i.positive? && total_ans.to_i < Response::MIN_REGION_SAMPLE_SIZE %>
-      <span class="rc-answers <%= "is-zero" if total_ans.to_i.zero? || too_few %>">
-        <% if too_few %>
-          <%= t("shared_results.answers_under", count: Response::MIN_REGION_SAMPLE_SIZE) %>
-        <% else %>
-          <%= total_ans %> answer<%= total_ans == 1 ? "" : "s" %>
-        <% end %>
+      <span class="rc-answers <%= "is-zero" if total_ans.to_i.zero? %>">
+        <%= total_ans %> answer<%= total_ans == 1 ? "" : "s" %>
       </span>
       <% if base && CardTypes.question?(type) %>
         <span class="rc-answers rc-vs-n"><%= base[:total].to_i %> <%= t("partnership_verto.everyone_else") %></span>
       <% end %>
       <%# Dwell time — the median time respondents who answered this question
           spent on it. Only where the player recorded any: a deck answered
-          before the measurement existed shows nothing rather than "0s". On
-          a page someone outside the organisation reads (the public link, a
-          partner's page) only over the minimum group, because one person's
-          median is their time; the organisation's own page shows it always. %>
-      <% dwell_floor = shared || local_assigns.key?(:baseline) ? Response::MIN_REGION_SAMPLE_SIZE : 1 %>
-      <% if dwell.is_a?(Hash) && CardTypes.question?(type) && (stat = dwell[idx]) && stat[:n] >= dwell_floor %>
+          before the measurement existed shows nothing rather than "0s". %>
+      <% if dwell.is_a?(Hash) && CardTypes.question?(type) && (stat = dwell[idx]) %>
         <span class="rc-dwell"
               title="<%= t("results.dwell_hint", count: stat[:n], mean: dwell_time_label(stat[:mean_ms])) %>">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -162,9 +149,6 @@
 
     <% if total_ans.to_i.zero? %>
       <div class="rc-empty">No responses yet</div>
-
-    <% elsif too_few %>
-      <div class="rc-sub"><%= t("shared_results.card_too_few", count: Response::MIN_REGION_SAMPLE_SIZE) %></div>
 
     <% elsif type == "welcome_card" %>
       <div class="rc-big-line">
@@ -424,7 +408,7 @@
 
     <% end %>
 
-    <% if result[:other_texts].present? && !too_few %>
+    <% if result[:other_texts].present? %>
       <div class="rc-section">
         <div class="rc-section-head">Other · <%= result[:other_texts].size %> free-text</div>
         <% if shared %>

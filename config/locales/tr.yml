@@ -312,10 +312,6 @@ tr:
     unavailable_title: Bu sonuç bağlantısı kullanılamıyor
     unavailable_body: Oluşturucusu tarafından duraklatılmış veya kapatılmış olabilir ya da adres yanlış yazılmış olabilir.
     under_responses: "%{count} yanıttan az"
-    answers_under: "%{count} yanıttan az"
-    card_too_few: "Bu soruyu %{count} kişiden az kişi yanıtladı, bu yüzden yanıtları paylaşılan bağlantılarda gizlenir."
-    too_few_title: "Henüz yeterli yanıt yok"
-    too_few_body: "En az %{count} kişi yanıt verdiğinde sonuçlar burada görünür; böylece kimsenin yanıtları ayırt edilemez."
   player:
     compare_promise: "Bitir ve yanıtlarının herkesle nasıl karşılaştırıldığını gör."
     region_search_placeholder: "Şehrinizi veya bölgenizi arayın…"

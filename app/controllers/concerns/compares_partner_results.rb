@@ -18,6 +18,13 @@
 # demographic slices, singly or combined — over the PARTNER's respondents, and
 # the same filter is applied to everyone else, so their women are compared
 # with everyone else's women rather than with everyone.
+#
+# The partner's OWN respondents are held to no minimum group: every slice of
+# them shows however few it holds (ResolvesResultSegments::OWNER_FLOOR,
+# owner's instruction 2026-10-02), as the owner's page shows the owner its
+# own. Everyone else stays behind the published minimum on every path —
+# BASELINE_MIN for the whole comparison, and the default floor for the
+# matching slice — because they are not the partner's respondents.
 module ComparesPartnerResults
   extend ActiveSupport::Concern
   include ResolvesResultSegments
@@ -61,8 +68,8 @@ module ComparesPartnerResults
     mine     = answered.where(survey_share_id: @share.id)
     others   = answered.where.not(id: mine.reorder(nil).select(:id))
 
-    @segments       = partner_segments(mine)
-    @active_segment = select_result_segment(@segments, mine, segment_param)
+    @segments       = partner_segments(mine, floor: ResolvesResultSegments::OWNER_FLOOR)
+    @active_segment = select_result_segment(@segments, mine, segment_param, floor: ResolvesResultSegments::OWNER_FLOOR)
     @overall_total  = mine.count
     @mine_total     = @active_segment[:count]
 
@@ -74,8 +81,11 @@ module ComparesPartnerResults
   # The owner's segments, less the "links" kind: a share's name is another
   # partner, and a named link's is the owner's own label for an audience
   # (the public results page leaves those out for the same reason).
-  def partner_segments(base)
-    result_segments(@survey, base, links: false)
+  #
+  # `floor:` as for ResolvesResultSegments#result_segments: the partner's own
+  # respondents pass OWNER_FLOOR; everyone else keeps the published default.
+  def partner_segments(base, floor: ResolvesResultSegments::MIN_DEMOGRAPHIC_SAMPLE)
+    result_segments(@survey, base, links: false, floor: floor)
       .reject { |s| ResolvesResultSegments.kind_of(s[:id]) == "links" }
   end
 

@@ -173,17 +173,18 @@ module ResolvesResultSegments
 
   REGION_SEGMENT_CAP = 30
   # Same small-cell rule the regions use: a demographic slice thin enough to
-  # identify someone is worse than no slice at all — for anyone OUTSIDE the
-  # organisation that ran the Verto (the public results link, a partner).
+  # identify someone is worse than no slice at all — for anyone looking at
+  # respondents who are not their own (the public results link, a partner's
+  # view of everyone else).
   MIN_DEMOGRAPHIC_SAMPLE = Response::MIN_REGION_SAMPLE_SIZE
 
   # The organisation that ran the Verto sees every response in its own
   # results, however few: every country, every demographic slice, every
-  # combination (owner's instruction, 2026-10-02). They are its own
-  # respondents — the raw export has always shown it every row — and the
-  # Privacy Notice's minimum group governs what is published from them, not
-  # what their own researcher may look at. Passed as `floor:` by the
-  # creator's own pages and exports; everyone else gets the default.
+  # combination (owner's instruction, 2026-10-02) — and so does a partner, in
+  # its own respondents. They are their own respondents; the raw export has
+  # always shown the owner every row. Passed as `floor:` by the creator's own
+  # pages and exports and for a partner's own slice; everyone else gets the
+  # default.
   OWNER_FLOOR = 1
 
   # Age bands rather than birth years: a year is close to an identifier on a

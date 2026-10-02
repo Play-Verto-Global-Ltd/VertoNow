@@ -312,10 +312,6 @@ id:
     unavailable_title: Tautan hasil ini tidak tersedia
     unavailable_body: Mungkin telah dijeda atau dimatikan oleh kreator, atau alamatnya salah ketik.
     under_responses: "Kurang dari %{count} tanggapan"
-    answers_under: "Kurang dari %{count} jawaban"
-    card_too_few: "Kurang dari %{count} orang menjawab pertanyaan ini, jadi jawabannya disembunyikan di tautan bersama."
-    too_few_title: "Tanggapan belum cukup"
-    too_few_body: "Hasil akan muncul di sini setelah setidaknya %{count} orang menanggapi, agar jawaban siapa pun tidak dapat dikenali."
   player:
     compare_promise: "Selesaikan untuk melihat perbandingan jawabanmu dengan semua orang."
     region_search_placeholder: "Cari kota atau wilayahmu…"

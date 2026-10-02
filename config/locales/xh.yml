@@ -321,10 +321,6 @@ xh:
     unavailable_title: "Eli khonkco leziphumo alifumaneki"
     unavailable_body: "Kusenokwenzeka limisiwe okanye licinyiwe ngumdali walo, okanye idilesi ibhalwe kakubi."
     under_responses: "Iimpendulo ezingaphantsi kuka-%{count}"
-    answers_under: "Iimpendulo ezingaphantsi kwe-%{count}"
-    card_too_few: "Abantu abangaphantsi kwe-%{count} baphendule lo mbuzo, ngoko iimpendulo zawo zifihliwe kumakhonkco abelanwayo."
-    too_few_title: "Akukabikho mpendulo zaneleyo"
-    too_few_body: "Iziphumo ziya kuvela apha xa ubuncinane abantu aba-%{count} sele bephendule, ukuze kungabikho mntu unokwaziwa ngeempendulo zakhe."
   player:
     compare_promise: "Gqiba ukuze ubone indlela iimpendulo zakho ezithelekiswa nezabo bonke."
     region_search_placeholder: "Khangela isixeko okanye ummandla wakho…"
