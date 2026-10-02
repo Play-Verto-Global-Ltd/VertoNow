@@ -3181,7 +3181,11 @@ export default class extends Controller {
              // The wording revision this page was rendered at — see the value's
              // own comment. Absent on an older cached client, which the server
              // reads as maximally stale rather than as up to date.
-             translations_revision: this.translationsRevisionValue }
+             translations_revision: this.translationsRevisionValue,
+             // The languages this page built i18n for. A language added since
+             // it loaded is one it has no words for, and the server keeps that
+             // language's entries rather than reading their absence as a delete.
+             content_locales: this.localesValue }
   }
 
   // ── Quiz: correct-answer marking ─────────────────────────────────────────

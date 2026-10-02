@@ -212,9 +212,17 @@ module LanguageCheckLines
     locales.map do |locale|
       cov  = coverage[locale] || { total: 0, translated: 0 }
       done = cov[:total].to_i.positive? && cov[:translated] == cov[:total]
+      run   = runs[locale]&.display_status
+      # A run that finished is not a deck that is translated: an editor tab
+      # opened before the language was added used to autosave its lines away
+      # afterwards, and the rail went on reading "Translated" off the run while
+      # every card showed the original wording. The deck has the last word:
+      # "incomplete" shows the count and a Try again, and — like "failed" —
+      # is not worth polling for, because nothing is on its way.
+      run   = "incomplete" if run == "done"
       state = if locale == primary then "primary"
       elsif done            then "done"
-      else runs[locale]&.display_status || "none"
+      else run || "none"
       end
       { locale: locale, state: state, translated: cov[:translated].to_i, total: cov[:total].to_i }
     end
@@ -228,7 +236,7 @@ module LanguageCheckLines
   # translated yet" until they thought to reload. A recorded failure is the one
   # thing that stops the asking: it has a Try again button of its own.
   def outstanding?(rows)
-    rows.any? { |r| r[:total].positive? && !%w[primary done failed].include?(r[:state]) }
+    rows.any? { |r| r[:total].positive? && !%w[primary done failed incomplete].include?(r[:state]) }
   end
 
   # What has to change before the page is worth reloading. States only: a count

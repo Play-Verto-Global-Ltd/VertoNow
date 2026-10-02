@@ -812,4 +812,77 @@ class LanguageCheckScreenTest < ActionDispatch::IntegrationTest
                  "only the (card, language) pairs the reviewer touched are carried forward"
     assert_equal "¡El mejor color!", mc_card.dig("i18n", "es", "text")
   end
+
+  # ── Languages added behind an open editor ──────────────────────────────────
+
+  # The reported bug: German added from the rail while an editor tab was open.
+  # The job translated it, the tab's next autosave rebuilt every card from a
+  # store that had never heard of German, and every German line was gone —
+  # while the rail, reading the finished run, still said "Translated".
+  def add_german_behind_the_editor!
+    @survey.update!(locales: %w[en es fr de])
+    translate_fully!("de")
+  end
+
+  def autosave_from_a_tab_loaded_before_german(extra = {})
+    patch survey_path(@survey), params: {
+      title: "Colours",
+      translations_revision: @survey.reload.translations_revision,
+      cards: [
+        { "type" => "welcome_card", "cid" => "c_w", "title" => "hi", "text" => "Welcome" },
+        { "type" => "multiple_choice", "cid" => "c_mc", "text" => "Favourite colour?",
+          "description" => "Pick one", "options" => %w[Blue Green],
+          "i18n" => { "es" => { "text" => "¿Color favorito?", "options" => %w[Azul Verde] } } }
+      ]
+    }.merge(extra).to_json, headers: { "CONTENT_TYPE" => "application/json" }
+    assert_response :success
+  end
+
+  test "an editor tab that never knew a language does not autosave it away" do
+    sign_in
+    add_german_behind_the_editor!
+
+    autosave_from_a_tab_loaded_before_german(content_locales: %w[en es fr])
+
+    assert_equal "de:Favourite colour?", mc_card.dig("i18n", "de", "text")
+    assert_equal "de:Welcome", @survey.reload.cards.first.dig("i18n", "de", "text")
+  end
+
+  test "a cached editor that sends no language list keeps the languages it never mentioned" do
+    sign_in
+    add_german_behind_the_editor!
+
+    autosave_from_a_tab_loaded_before_german
+
+    assert_equal "de:Favourite colour?", mc_card.dig("i18n", "de", "text")
+  end
+
+  test "a language the editor knows is still the editor's to write" do
+    sign_in
+    add_german_behind_the_editor!
+
+    autosave_from_a_tab_loaded_before_german(content_locales: %w[en es fr de])
+
+    assert_nil mc_card.dig("i18n", "de"),
+               "clearing a language in an editor that shows it is a real edit"
+    assert_equal "¿Color favorito?", mc_card.dig("i18n", "es", "text")
+  end
+
+  test "a finished run does not make an untranslated language read as Translated" do
+    sign_in
+    translate_fully!("es")
+    SurveyTranslation.create!(survey: @survey, locale: "fr", status: "done", attempts: 1,
+                               finished_at: 1.minute.ago)
+
+    get survey_language_check_status_path(@survey)
+    body = JSON.parse(response.body)
+    assert_equal "incomplete", body["languages"].find { |l| l["locale"] == "fr" }["state"]
+    assert_not body["working"], "nothing is on its way, so there is nothing to poll for"
+
+    get survey_language_check_path(@survey)
+    fr_row = response.body[/data-language-row="fr".*?<\/li>/m]
+    assert_no_match "lc-rail-status--done", fr_row, "the deck has no French, whatever the run said"
+    assert_match "0/2", fr_row
+    assert_match I18n.t("language_check.rail_retry"), fr_row
+  end
 end

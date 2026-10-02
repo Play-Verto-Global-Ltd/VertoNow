@@ -529,6 +529,44 @@ class Survey < ApplicationRecord
     end
   end
 
+  # Carry forward every translation in a language the editor did not know the
+  # Verto had.
+  #
+  # The editor builds each card's i18n from `localesValue`, fixed at page load,
+  # so a tab opened before German was added — from the Language check rail,
+  # another tab, a translation job — has no German in its store and sends none.
+  # Read as a decision, that silence deleted every German line on the next
+  # autosave, while the run row that had produced them still said "done". The
+  # editor never removes a whole language from a card on purpose (clearing every
+  # field of one card's translation is the only way, and that language is one it
+  # knows), so a language it does not know is one it cannot have meant to drop.
+  #
+  # `known` is the list the client says it was rendered with. An older cached
+  # client sends none; for it, the languages present anywhere in its payload are
+  # the best available reading of what it knew.
+  def self.keep_unseen_translations(existing, incoming, known, primary:)
+    known = Array(known).map(&:to_s)
+    if known.empty?
+      known = Array(incoming).flat_map { |c| c.is_a?(Hash) && c["i18n"].is_a?(Hash) ? c["i18n"].keys : [] }
+    end
+    known = (known + [ primary.to_s ]).uniq
+
+    by_cid = Array(existing).each_with_object({}) do |c, h|
+      h[c["cid"].to_s] = c if c.is_a?(Hash) && c["cid"].present?
+    end
+
+    Array(incoming).map do |card|
+      next card unless card.is_a?(Hash)
+      stored = by_cid[card["cid"].to_s]
+      unseen = stored.is_a?(Hash) && stored["i18n"].is_a?(Hash) ? stored["i18n"].except(*known) : {}
+      unseen = unseen.select { |_, entry| entry.is_a?(Hash) && entry.present? }
+      next card if unseen.empty?
+
+      own = card["i18n"].is_a?(Hash) ? card["i18n"] : {}
+      card.merge("i18n" => unseen.merge(own))
+    end
+  end
+
   # Carry the database's wording forward over an editor payload that provably
   # could not have seen it.
   #

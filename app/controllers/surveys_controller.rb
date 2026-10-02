@@ -499,6 +499,11 @@ class SurveysController < ApplicationController
       # for exactly those (cid, locale) pairs. Everything the client could
       # actually see still wins. See Survey.keep_reviewed_translations.
       attrs[:cards] = keep_reviewed_translations(survey, attrs[:cards], payload["translations_revision"])
+      # Same family, one level up: a language added since this page loaded
+      # (the Language check rail, a translation job) is absent from its store
+      # altogether, and its silence must not delete every line in it.
+      attrs[:cards] = Survey.keep_unseen_translations(survey.cards, attrs[:cards], payload["content_locales"],
+                                                      primary: survey.default_locale)
       # First-class flows compile down to the per-card `next` pointers the
       # player resolves (see FlowCompiler). Run on every save so the STORED
       # deck can never disagree with the stored flows, whatever the client

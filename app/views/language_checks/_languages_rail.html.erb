@@ -33,7 +33,6 @@
     <% locales.each do |code| %>
       <% loc  = SupportedLocales.find(code) %>
       <% cov  = coverage[code] || { total: 0, translated: 0, primary: false } %>
-      <% done = cov[:total].positive? && cov[:translated] == cov[:total] %>
       <li class="lc-rail-item<%= ' is-primary' if cov[:primary] %>" data-language-row="<%= code %>">
         <span class="lc-rail-lang">
           <span aria-hidden="true"><%= loc&.flag %></span>
@@ -45,7 +44,7 @@
             holds "running" for ever and the clock is the only honest reading of
             it (SurveyTranslation#stale?). %>
         <% run   = runs[code] %>
-        <% state = cov[:primary] ? "primary" : done ? "done" : (run&.display_status || "none") %>
+        <% state = rows.find { |r| r[:locale] == code }&.dig(:state) || "none" %>
         <% if state == "primary" %>
           <span class="lc-chip lc-chip--primary"><%= t("language_check.primary") %></span>
         <% elsif state == "done" %>
