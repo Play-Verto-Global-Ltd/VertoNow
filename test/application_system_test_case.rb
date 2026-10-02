@@ -161,10 +161,19 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # For a state the SERVER reaches (a debounced autosave landing): a fixed
   # sleep passes only when the machine is quick enough, and under parallel
   # workers it often is not.
+  #
+  # A node replaced while the block reads it (Capybara::Cuprite::ObsoleteNode)
+  # is "not yet", not a failure: the condition is usually about the very
+  # re-render that replaced it. ResultsTimelineTest's axis-labels poll raced a
+  # chart redraw this way on 2 October.
   def wait_until(timeout: 10, interval: 0.1)
     deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
     loop do
-      return true if yield
+      begin
+        return true if yield
+      rescue Capybara::Cuprite::ObsoleteNode
+        # fall through to the next poll
+      end
       return false if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
 
       sleep interval
